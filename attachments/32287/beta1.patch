@@ -1,0 +1,38 @@
+--- /etc/sysconfig/jenkins.beta1	2016-03-25 04:18:27.090740784 +0000
++++ /etc/sysconfig/jenkins	2016-03-25 04:18:55.195963535 +0000
+@@ -100,24 +100,6 @@
+ #
+ JENKINS_HTTPS_LISTEN_ADDRESS=""
+ 
+-## Type:        integer(0:65535)
+-## Default:     8009
+-## ServiceRestart: jenkins
+-#
+-# Ajp13 Port Jenkins is listening on.
+-# Set to -1 to disable
+-#
+-JENKINS_AJP_PORT="8009"
+-
+-## Type:        string
+-## Default:     ""
+-## ServiceRestart: jenkins
+-#
+-# IP address Jenkins listens on for Ajp13 requests.
+-# Default is all interfaces (0.0.0.0).
+-#
+-JENKINS_AJP_LISTEN_ADDRESS=""
+-
+ ## Type:        integer(1:9)
+ ## Default:     5
+ ## ServiceRestart: jenkins
+--- /etc/init.d/jenkins.beta1	2016-03-25 04:19:17.940143780 +0000
++++ /etc/init.d/jenkins	2016-03-25 04:19:59.778475340 +0000
+@@ -88,8 +88,6 @@
+ [ -n "$JENKINS_HTTPS_KEYSTORE" ] && PARAMS="$PARAMS --httpsKeyStore=$JENKINS_HTTPS_KEYSTORE"
+ [ -n "$JENKINS_HTTPS_KEYSTORE_PASSWORD" ] && PARAMS="$PARAMS --httpsKeyStorePassword='$JENKINS_HTTPS_KEYSTORE_PASSWORD'"
+ [ -n "$JENKINS_HTTPS_LISTEN_ADDRESS" ] && PARAMS="$PARAMS --httpsListenAddress=$JENKINS_HTTPS_LISTEN_ADDRESS"
+-[ -n "$JENKINS_AJP_PORT" ] && PARAMS="$PARAMS --ajp13Port=$JENKINS_AJP_PORT"
+-[ -n "$JENKINS_AJP_LISTEN_ADDRESS" ] && PARAMS="$PARAMS --ajp13ListenAddress=$JENKINS_AJP_LISTEN_ADDRESS"
+ [ -n "$JENKINS_DEBUG_LEVEL" ] && PARAMS="$PARAMS --debug=$JENKINS_DEBUG_LEVEL"
+ [ -n "$JENKINS_HANDLER_STARTUP" ] && PARAMS="$PARAMS --handlerCountStartup=$JENKINS_HANDLER_STARTUP"
+ [ -n "$JENKINS_HANDLER_MAX" ] && PARAMS="$PARAMS --handlerCountMax=$JENKINS_HANDLER_MAX"
