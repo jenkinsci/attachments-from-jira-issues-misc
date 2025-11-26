@@ -1,4 +1,4 @@
-#attachments-from-jira-issues-misc
+# attachments-from-jira-issues-misc
 
 This repository is used to store attachments from miscellanious Jira issues.
 
