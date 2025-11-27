@@ -1,0 +1,105 @@
+Skipping HTTPS certificate checks altogether. Note that this is not secure at all.
+<?xml version='1.0' encoding='UTF-8'?>
+<matrix-project plugin="matrix-project@1.6">
+  <actions/>
+  <description>currently: duplicating problem reported by CCI-1907 -- throttling</description>
+  <logRotator class="hudson.tasks.LogRotator">
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>20</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.security.AuthorizationMatrixProperty>
+      <permission>hudson.scm.SCM.Tag:#ENG - SW - CM</permission>
+      <permission>hudson.model.Item.Read:#ENG - SW - CM</permission>
+      <permission>hudson.model.Item.Build:#ENG - SW - CM</permission>
+      <permission>hudson.model.Item.Cancel:#ENG - SW - CM</permission>
+      <permission>hudson.model.Item.Workspace:#ENG - SW - CM</permission>
+      <permission>hudson.model.Item.Delete:#ENG - SW - CM</permission>
+      <permission>hudson.model.Item.Configure:#ENG - SW - CM</permission>
+      <permission>hudson.model.Run.Update:#ENG - SW - CM</permission>
+    </hudson.security.AuthorizationMatrixProperty>
+    <hudson.plugins.disk__usage.DiskUsageProperty plugin="disk-usage@0.28"/>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.25">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@1.8.4">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>7</maxConcurrentTotal>
+      <throttleEnabled>true</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <matrixOptions>
+        <throttleMatrixBuilds>false</throttleMatrixBuilds>
+        <throttleMatrixConfigurations>true</throttleMatrixConfigurations>
+      </matrixOptions>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <quietPeriod>0</quietPeriod>
+  <assignedNode>Darrel_Desktop</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>true</concurrentBuild>
+  <axes>
+    <hudson.matrix.TextAxis>
+      <name>COLOR</name>
+      <values>
+        <string>red</string>
+        <string>orange</string>
+        <string>yellow</string>
+        <string>chartreuse</string>
+        <string>green</string>
+        <string>spring</string>
+        <string>cyan</string>
+        <string>azure</string>
+        <string>blue</string>
+        <string>violet</string>
+        <string>magenta</string>
+        <string>rose</string>
+      </values>
+    </hudson.matrix.TextAxis>
+    <hudson.matrix.TextAxis>
+      <name>SHAPE</name>
+      <values>
+        <string>triangle</string>
+        <string>square</string>
+        <string>pentagon</string>
+        <string>hexagon</string>
+        <string>heptagon</string>
+        <string>octagon</string>
+        <string>nonagon</string>
+        <string>decagon</string>
+      </values>
+    </hudson.matrix.TextAxis>
+  </axes>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>echo &quot;Hello World&quot;
+sleep 5</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <hudson.plugins.build__timeout.BuildTimeoutWrapper plugin="build-timeout@1.16">
+      <strategy class="hudson.plugins.build_timeout.impl.NoActivityTimeOutStrategy">
+        <timeoutSecondsString>240</timeoutSecondsString>
+      </strategy>
+      <operationList>
+        <hudson.plugins.build__timeout.operations.AbortOperation/>
+      </operationList>
+    </hudson.plugins.build__timeout.BuildTimeoutWrapper>
+    <hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.7.3"/>
+    <matrixtieparent.BuildWrapperMtp plugin="matrixtieparent@1.2">
+      <labelName>Darrel_Desktop</labelName>
+    </matrixtieparent.BuildWrapperMtp>
+  </buildWrappers>
+  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+    <runSequentially>false</runSequentially>
+  </executionStrategy>
+</matrix-project>

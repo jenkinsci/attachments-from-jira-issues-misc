@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector"/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#!/bin/bash
+
+rm -rf *.tap
+
+echo &quot;1..9&quot; &gt; results_$BUILD_ID.tap
+
+echo &quot;ok 1 This is test 1&quot; &gt;&gt; results_$BUILD_ID.tap
+echo &quot;ok 2 This is test 2&quot; &gt;&gt; results_$BUILD_ID.tap
+echo &quot;ok 3 This is test 3 # skip this test&quot; &gt;&gt; results_$BUILD_ID.tap
+echo &quot;ok 4 This is test 4&quot; &gt;&gt; results_$BUILD_ID.tap
+echo &quot;ok 5 This is test 5&quot; &gt;&gt; results_$BUILD_ID.tap
+echo &quot;not ok 6 This is test 6 # Inline fail comment&quot; &gt;&gt; results_$BUILD_ID.tap
+echo &quot;# Failure comment&quot; &gt;&gt; results_$BUILD_ID.tap
+echo &quot;ok 7 This is test 7&quot; &gt;&gt; results_$BUILD_ID.tap
+echo &quot;ok 8 This is test 8&quot; &gt;&gt; results_$BUILD_ID.tap
+echo &quot;ok 9 This is test 9 # Pass inline comment&quot; &gt;&gt; results_$BUILD_ID.tap
+</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <org.tap4j.plugin.TapPublisher plugin="tap@1.14">
+      <testResults>*.tap</testResults>
+      <failIfNoResults>true</failIfNoResults>
+      <failedTestsMarkBuildAsFailure>true</failedTestsMarkBuildAsFailure>
+      <outputTapToConsole>false</outputTapToConsole>
+      <enableSubtests>false</enableSubtests>
+      <discardOldReports>false</discardOldReports>
+      <todoIsFailure>false</todoIsFailure>
+      <includeCommentDiagnostics>false</includeCommentDiagnostics>
+      <validateNumberOfTests>false</validateNumberOfTests>
+    </org.tap4j.plugin.TapPublisher>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>*.tap</artifacts>
+      <latestOnly>false</latestOnly>
+      <allowEmptyArchive>false</allowEmptyArchive>
+    </hudson.tasks.ArtifactArchiver>
+  </publishers>
+  <buildWrappers/>
+</project>

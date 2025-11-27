@@ -1,0 +1,604 @@
+################ README ################
+jenkins-slave-h4sp2-bdhqd is the original node that I aborted
+jenkins-slave-r9pmz-vgbgl is the first slave to attempt provisioning after I aborted the running job
+Added okhttp3 logs
+Bearer tokens have been removed
+#######################################
+
+
+
+May 01, 2018 3:47:10 PM okhttp3.internal.platform.Platform log
+INFO: <-- END HTTP (2706-byte body)
+May 01, 2018 3:47:10 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud addProvisionedSlave
+INFO: Template instance cap of 1 reached for template jenkins-slave-6ww2x, not provisioning: 2 running or errored in namespace jenkins with label "apipod" and Kubernetes labels {jenkins/apipod=true}
+May 01, 2018 3:47:15 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesSlave _terminate
+INFO: Terminating Kubernetes instance for agent jenkins-slave-h4sp2-bdhqd
+May 01, 2018 3:47:15 PM jenkins.slaves.DefaultJnlpSlaveReceiver channelClosed
+WARNING: Computer.threadPoolForRemoting [#4201] for jenkins-slave-h4sp2-bdhqd terminated
+java.nio.channels.ClosedChannelException
+	at org.jenkinsci.remoting.protocol.impl.ChannelApplicationLayer.onReadClosed(ChannelApplicationLayer.java:209)
+	at org.jenkinsci.remoting.protocol.ApplicationLayer.onRecvClosed(ApplicationLayer.java:222)
+	at org.jenkinsci.remoting.protocol.ProtocolStack$Ptr.onRecvClosed(ProtocolStack.java:832)
+	at org.jenkinsci.remoting.protocol.FilterLayer.onRecvClosed(FilterLayer.java:287)
+	at org.jenkinsci.remoting.protocol.impl.SSLEngineFilterLayer.onRecvClosed(SSLEngineFilterLayer.java:181)
+	at org.jenkinsci.remoting.protocol.impl.SSLEngineFilterLayer.switchToNoSecure(SSLEngineFilterLayer.java:283)
+	at org.jenkinsci.remoting.protocol.impl.SSLEngineFilterLayer.processWrite(SSLEngineFilterLayer.java:503)
+	at org.jenkinsci.remoting.protocol.impl.SSLEngineFilterLayer.processQueuedWrites(SSLEngineFilterLayer.java:248)
+	at org.jenkinsci.remoting.protocol.impl.SSLEngineFilterLayer.doSend(SSLEngineFilterLayer.java:200)
+	at org.jenkinsci.remoting.protocol.impl.SSLEngineFilterLayer.doCloseSend(SSLEngineFilterLayer.java:213)
+	at org.jenkinsci.remoting.protocol.ProtocolStack$Ptr.doCloseSend(ProtocolStack.java:800)
+	at org.jenkinsci.remoting.protocol.ApplicationLayer.doCloseWrite(ApplicationLayer.java:173)
+	at org.jenkinsci.remoting.protocol.impl.ChannelApplicationLayer$ByteBufferCommandTransport.closeWrite(ChannelApplicationLayer.java:314)
+	at hudson.remoting.Channel.close(Channel.java:1450)
+	at hudson.remoting.Channel.close(Channel.java:1403)
+	at hudson.slaves.SlaveComputer.closeChannel(SlaveComputer.java:746)
+	at hudson.slaves.SlaveComputer.access$800(SlaveComputer.java:99)
+	at hudson.slaves.SlaveComputer$3.run(SlaveComputer.java:664)
+	at jenkins.util.ContextResettingExecutorService$1.run(ContextResettingExecutorService.java:28)
+	at jenkins.security.ImpersonatingExecutorService$1.run(ImpersonatingExecutorService.java:59)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: ALPN callback dropped: HTTP/2 is disabled. Is alpn-boot on the boot class path?
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: --> DELETE https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods/jenkins-slave-h4sp2-bdhqd http/1.1
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: Content-Type: application/json; charset=utf-8
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: Content-Length: 67
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: Host: kubernetes.default.svc.cluster.local
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: Connection: Keep-Alive
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: Accept-Encoding: gzip
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: User-Agent: okhttp/3.9.1
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO:
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: {"apiVersion":"v1","kind":"DeleteOptions","orphanDependents":false}
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: --> END DELETE (67-byte body)
+May 01, 2018 3:47:15 PM org.csanchez.jenkins.plugins.kubernetes.pipeline.PodTemplateStepExecution$PodTemplateCallback finished
+INFO: Removing pod template and deleting pod jenkins-slave-h4sp2 from cloud kubernetes
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: <-- 202 Accepted https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods/jenkins-slave-h4sp2-bdhqd (20ms)
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: Content-Type: application/json
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: Date: Tue, 01 May 2018 15:47:15 GMT
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: Transfer-Encoding: chunked
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO:
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: {"kind":"Pod","apiVersion":"v1","metadata":{"name":"jenkins-slave-h4sp2-bdhqd","namespace":"jenkins","selfLink":"/api/v1/namespaces/jenkins/pods/jenkins-slave-h4sp2-bdhqd","uid":"b924dbba-4d56-11e8-9c23-00224807a281","resourceVersion":"6549546","creationTimestamp":"2018-05-01T15:45:50Z","deletionTimestamp":"2018-05-01T15:47:45Z","deletionGracePeriodSeconds":30,"labels":{"jenkins/apipod":"true"}},"spec":{"volumes":[{"name":"volume-0","secret":{"secretName":"jenkins-ssh-keys","defaultMode":420}},{"name":"volume-1","hostPath":{"path":"/var/run/docker.sock"}},{"name":"workspace-volume","emptyDir":{}},{"name":"default-token-0n5rf","secret":{"secretName":"default-token-0n5rf","defaultMode":420}}],"containers":[{"name":"jnlp","image":"jenkins/jnlp-slave:alpine","args":["SECRET","jenkins-slave-h4sp2-bdhqd"],"env":[{"name":"JENKINS_SECRET","value":"SECRET"},{"name":"JENKINS_TUNNEL","value":"jenkins-discovery.jenkins.svc.cluster.local:50000"},{"name":"JENKINS_NAME","value":"jenkins-slave-h4sp2-bdhqd"},{"name":"JENKINS_URL","value":"http://jenkins-ui.jenkins.svc.cluster.local:8080/"},{"name":"HOME","value":"/home/jenkins"}],"resources":{},"volumeMounts":[{"name":"workspace-volume","mountPath":"/home/jenkins"},{"name":"default-token-0n5rf","readOnly":true,"mountPath":"/var/run/secrets/kubernetes.io/serviceaccount"}],"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"Always"}],"restartPolicy":"Never","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","serviceAccountName":"default","serviceAccount":"default","nodeName":"k8s-agentpools-31900720-1","securityContext":{},"imagePullSecrets":[{"name":"regsecret"}],"schedulerName":"default-scheduler"},"status":{"phase":"Running","conditions":[{"type":"Initialized","status":"True","lastProbeTime":null,"lastTransitionTime":"2018-05-01T15:45:50Z"},{"type":"Ready","status":"True","lastProbeTime":null,"lastTransitionTime":"2018-05-01T15:45:53Z"},{"type":"PodScheduled","status":"True","lastProbeTime":null,"lastTransitionTime":"2018-05-01T15:45:50Z"}],"hostIP":"10.240.0.5","podIP":"10.244.2.148","startTime":"2018-05-01T15:45:50Z","containerStatuses":[{"name":"jnlp","state":{"running":{"startedAt":"2018-05-01T15:45:52Z"}},"lastState":{},"ready":true,"restartCount":0,"image":"jenkins/jnlp-slave:alpine","imageID":"docker-pullable://jenkins/jnlp-slave@sha256:7038c115ef71aee0820ccbcc9e2e723767efd47eee664fdb2bdf82a99acfdd71","containerID":"docker://dd4f62eda266320320a23425888a0b460086bfeb6e11412a905eea097323287f"}],"qosClass":"BestEffort"}}
+
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: <-- END HTTP (2679-byte body)
+May 01, 2018 3:47:15 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesSlave _terminate
+INFO: Terminated Kubernetes instance for agent jenkins/jenkins-slave-h4sp2-bdhqd
+Terminated Kubernetes instance for agent jenkins/jenkins-slave-h4sp2-bdhqd
+May 01, 2018 3:47:15 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesSlave _terminate
+INFO: Disconnected computer jenkins-slave-h4sp2-bdhqd
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: ALPN callback dropped: HTTP/2 is disabled. Is alpn-boot on the boot class path?
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: --> DELETE https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods/jenkins-slave-h4sp2 http/1.1
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: Content-Type: application/json; charset=utf-8
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: Content-Length: 67
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: Host: kubernetes.default.svc.cluster.local
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: Connection: Keep-Alive
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: Accept-Encoding: gzip
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: User-Agent: okhttp/3.9.1
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO:
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: {"apiVersion":"v1","kind":"DeleteOptions","orphanDependents":false}
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: --> END DELETE (67-byte body)
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: <-- 404 Not Found https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods/jenkins-slave-h4sp2 (5ms)
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: Content-Type: application/json
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: Date: Tue, 01 May 2018 15:47:15 GMT
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: Content-Length: 206
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO:
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: {"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"pods \"jenkins-slave-h4sp2\" not found","reason":"NotFound","details":{"name":"jenkins-slave-h4sp2","kind":"pods"},"code":404}
+
+May 01, 2018 3:47:15 PM okhttp3.internal.platform.Platform log
+INFO: <-- END HTTP (206-byte body)
+May 01, 2018 3:47:15 PM org.csanchez.jenkins.plugins.kubernetes.pipeline.PodTemplateStepExecution$PodTemplateCallback finished
+WARNING: Failed to delete pod for agent jenkins/jenkins-slave-h4sp2: not found
+May 01, 2018 3:47:15 PM org.jenkinsci.plugins.workflow.job.WorkflowRun finish
+INFO: jsw-api-server/aiman-test2 #8 completed: ABORTED
+May 01, 2018 3:47:20 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud provision
+INFO: Excess workload after pending Kubernetes agents: 2
+May 01, 2018 3:47:20 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud provision
+INFO: Template: Kubernetes Pod Template
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: ALPN callback dropped: HTTP/2 is disabled. Is alpn-boot on the boot class path?
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: --> GET https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods http/1.1
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Host: kubernetes.default.svc.cluster.local
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Connection: Keep-Alive
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Accept-Encoding: gzip
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: User-Agent: okhttp/3.9.1
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: --> END GET
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: <-- 200 OK https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods (4ms)
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Content-Type: application/json
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Date: Tue, 01 May 2018 15:47:20 GMT
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Transfer-Encoding: chunked
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO:
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: {"kind":"PodList","apiVersion":"v1","metadata":{"selfLink":"/api/v1/namespaces/jenkins/pods","resourceVersion":"6549556"},"items":[{"metadata":{"name":"jenkins-0","generateName":"jenkins-","namespace":"jenkins","selfLink":"/api/v1/namespaces/jenkins/pods/jenkins-0","uid":"3d552bd4-4301-11e8-9c23-00224807a281","resourceVersion":"6532806","creationTimestamp":"2018-04-18T12:08:43Z","labels":{"app":"master","controller-revision-hash":"jenkins-234688060"},"annotations":{"kubernetes.io/created-by":"{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"StatefulSet\",\"namespace\":\"jenkins\",\"name\":\"jenkins\",\"uid\":\"f41687cf-42f7-11e8-9c23-00224807a281\",\"apiVersion\":\"apps/v1beta1\",\"resourceVersion\":\"4854526\"}}\n"},"ownerReferences":[{"apiVersion":"apps/v1beta1","kind":"StatefulSet","name":"jenkins","uid":"f41687cf-42f7-11e8-9c23-00224807a281","controller":true,"blockOwnerDeletion":true}]},"spec":{"volumes":[{"name":"jenkins-home","persistentVolumeClaim":{"claimName":"jenkins-master-claim"}},{"name":"jenkins-ssh-keys","secret":{"secretName":"jenkins-ssh-keys","defaultMode":420}},{"name":"default-token-0n5rf","secret":{"secretName":"default-token-0n5rf","defaultMode":420}}],"containers":[{"name":"master","image":"jswriskacr.azurecr.io/jenkins","ports":[{"containerPort":8080,"protocol":"TCP"},{"containerPort":50000,"protocol":"TCP"}],"env":[{"name":"JAVA_OPTS","value":"-Xmx1400m"}],"resources":{"limits":{"cpu":"500m","memory":"1500Mi"},"requests":{"cpu":"500m","memory":"1500Mi"}},"volumeMounts":[{"name":"jenkins-home","mountPath":"/var/jenkins_home"},{"name":"jenkins-ssh-keys","readOnly":true,"mountPath":"/var/jenkins_home/.ssh"},{"name":"default-token-0n5rf","readOnly":true,"mountPath":"/var/run/secrets/kubernetes.io/serviceaccount"}],"readinessProbe":{"httpGet":{"path":"/login","port":8080,"scheme":"HTTP"},"timeoutSeconds":5,"periodSeconds":10,"successThreshold":2,"failureThreshold":5},"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"Always"}],"restartPolicy":"Always","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","serviceAccountName":"default","serviceAccount":"default","nodeName":"k8s-agentpools-31900720-1","securityContext":{"runAsUser":0},"hostname":"jenkins-0","subdomain":"jenkins-ui","schedulerName":"default-scheduler"},"status":{"phase":"Running","conditions":[{"type":"Initialized","status":"True","lastProbeTime":null,"lastTransitionTime":"2018-04-18T12:08:43Z"},{"type":"Ready","status":"True","lastProbeTime":null,"lastTransitionTime":"2018-04-18T14:01:13Z"},{"type":"PodScheduled","status":"True","lastProbeTime":null,"lastTransitionTime":"2018-04-18T12:08:43Z"}],"hostIP":"10.240.0.5","podIP":"10.244.2.18","startTime":"2018-04-18T12:08:43Z","containerStatuses":[{"name":"master","state":{"running":{"startedAt":"2018-04-18T12:11:05Z"}},"lastState":{},"ready":true,"restartCount":0,"image":"jswriskacr.azurecr.io/jenkins:latest","imageID":"docker-pullable://jswriskacr.azurecr.io/jenkins@sha256:03ee8e6eff484953ea03db7c5fe716c3d9f2a2e947cdbe72275950f5432d56ff","containerID":"docker://ab25ebd1aa11cf64741a2e5a6275ec76bbedeed4e2cb6d682d26aaf2b1b06132"}],"qosClass":"Guaranteed"}}]}
+
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: <-- END HTTP (3236-byte body)
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: --> GET https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods?labelSelector=jenkins/apipod%3Dtrue http/1.1
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Host: kubernetes.default.svc.cluster.local
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Connection: Keep-Alive
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Accept-Encoding: gzip
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: User-Agent: okhttp/3.9.1
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: --> END GET
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: <-- 200 OK https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods?labelSelector=jenkins/apipod%3Dtrue (4ms)
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Content-Type: application/json
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Date: Tue, 01 May 2018 15:47:20 GMT
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Content-Length: 134
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO:
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: {"kind":"PodList","apiVersion":"v1","metadata":{"selfLink":"/api/v1/namespaces/jenkins/pods","resourceVersion":"6549556"},"items":[]}
+
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: <-- END HTTP (134-byte body)
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: ALPN callback dropped: HTTP/2 is disabled. Is alpn-boot on the boot class path?
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: --> GET https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods http/1.1
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Host: kubernetes.default.svc.cluster.local
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Connection: Keep-Alive
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Accept-Encoding: gzip
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: User-Agent: okhttp/3.9.1
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: --> END GET
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: <-- 200 OK https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods (5ms)
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Content-Type: application/json
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Date: Tue, 01 May 2018 15:47:20 GMT
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Transfer-Encoding: chunked
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO:
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: {"kind":"PodList","apiVersion":"v1","metadata":{"selfLink":"/api/v1/namespaces/jenkins/pods","resourceVersion":"6549556"},"items":[{"metadata":{"name":"jenkins-0","generateName":"jenkins-","namespace":"jenkins","selfLink":"/api/v1/namespaces/jenkins/pods/jenkins-0","uid":"3d552bd4-4301-11e8-9c23-00224807a281","resourceVersion":"6532806","creationTimestamp":"2018-04-18T12:08:43Z","labels":{"app":"master","controller-revision-hash":"jenkins-234688060"},"annotations":{"kubernetes.io/created-by":"{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"StatefulSet\",\"namespace\":\"jenkins\",\"name\":\"jenkins\",\"uid\":\"f41687cf-42f7-11e8-9c23-00224807a281\",\"apiVersion\":\"apps/v1beta1\",\"resourceVersion\":\"4854526\"}}\n"},"ownerReferences":[{"apiVersion":"apps/v1beta1","kind":"StatefulSet","name":"jenkins","uid":"f41687cf-42f7-11e8-9c23-00224807a281","controller":true,"blockOwnerDeletion":true}]},"spec":{"volumes":[{"name":"jenkins-home","persistentVolumeClaim":{"claimName":"jenkins-master-claim"}},{"name":"jenkins-ssh-keys","secret":{"secretName":"jenkins-ssh-keys","defaultMode":420}},{"name":"default-token-0n5rf","secret":{"secretName":"default-token-0n5rf","defaultMode":420}}],"containers":[{"name":"master","image":"jswriskacr.azurecr.io/jenkins","ports":[{"containerPort":8080,"protocol":"TCP"},{"containerPort":50000,"protocol":"TCP"}],"env":[{"name":"JAVA_OPTS","value":"-Xmx1400m"}],"resources":{"limits":{"cpu":"500m","memory":"1500Mi"},"requests":{"cpu":"500m","memory":"1500Mi"}},"volumeMounts":[{"name":"jenkins-home","mountPath":"/var/jenkins_home"},{"name":"jenkins-ssh-keys","readOnly":true,"mountPath":"/var/jenkins_home/.ssh"},{"name":"default-token-0n5rf","readOnly":true,"mountPath":"/var/run/secrets/kubernetes.io/serviceaccount"}],"readinessProbe":{"httpGet":{"path":"/login","port":8080,"scheme":"HTTP"},"timeoutSeconds":5,"periodSeconds":10,"successThreshold":2,"failureThreshold":5},"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"Always"}],"restartPolicy":"Always","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","serviceAccountName":"default","serviceAccount":"default","nodeName":"k8s-agentpools-31900720-1","securityContext":{"runAsUser":0},"hostname":"jenkins-0","subdomain":"jenkins-ui","schedulerName":"default-scheduler"},"status":{"phase":"Running","conditions":[{"type":"Initialized","status":"True","lastProbeTime":null,"lastTransitionTime":"2018-04-18T12:08:43Z"},{"type":"Ready","status":"True","lastProbeTime":null,"lastTransitionTime":"2018-04-18T14:01:13Z"},{"type":"PodScheduled","status":"True","lastProbeTime":null,"lastTransitionTime":"2018-04-18T12:08:43Z"}],"hostIP":"10.240.0.5","podIP":"10.244.2.18","startTime":"2018-04-18T12:08:43Z","containerStatuses":[{"name":"master","state":{"running":{"startedAt":"2018-04-18T12:11:05Z"}},"lastState":{},"ready":true,"restartCount":0,"image":"jswriskacr.azurecr.io/jenkins:latest","imageID":"docker-pullable://jswriskacr.azurecr.io/jenkins@sha256:03ee8e6eff484953ea03db7c5fe716c3d9f2a2e947cdbe72275950f5432d56ff","containerID":"docker://ab25ebd1aa11cf64741a2e5a6275ec76bbedeed4e2cb6d682d26aaf2b1b06132"}],"qosClass":"Guaranteed"}}]}
+
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: <-- END HTTP (3236-byte body)
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: --> GET https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods?labelSelector=jenkins/apipod%3Dtrue http/1.1
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Host: kubernetes.default.svc.cluster.local
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Connection: Keep-Alive
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Accept-Encoding: gzip
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: User-Agent: okhttp/3.9.1
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: --> END GET
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: <-- 200 OK https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods?labelSelector=jenkins/apipod%3Dtrue (5ms)
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Content-Type: application/json
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Date: Tue, 01 May 2018 15:47:20 GMT
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: Content-Length: 134
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO:
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: {"kind":"PodList","apiVersion":"v1","metadata":{"selfLink":"/api/v1/namespaces/jenkins/pods","resourceVersion":"6549556"},"items":[]}
+
+May 01, 2018 3:47:20 PM okhttp3.internal.platform.Platform log
+INFO: <-- END HTTP (134-byte body)
+May 01, 2018 3:47:20 PM hudson.slaves.NodeProvisioner$StandardStrategyImpl apply
+INFO: Started provisioning Kubernetes Pod Template from kubernetes with 1 executors. Remaining excess workload: 1.106
+May 01, 2018 3:47:20 PM hudson.slaves.NodeProvisioner$StandardStrategyImpl apply
+INFO: Started provisioning Kubernetes Pod Template from kubernetes with 1 executors. Remaining excess workload: 0.106
+May 01, 2018 3:47:30 PM hudson.slaves.NodeProvisioner$2 run
+INFO: Kubernetes Pod Template provisioning successfully completed. We have now 2 computer(s)
+May 01, 2018 3:47:30 PM hudson.slaves.NodeProvisioner$2 run
+INFO: Kubernetes Pod Template provisioning successfully completed. We have now 3 computer(s)
+May 01, 2018 3:47:30 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud provision
+INFO: Excess workload after pending Kubernetes agents: 0
+May 01, 2018 3:47:30 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud provision
+INFO: Template: Kubernetes Pod Template
+May 01, 2018 3:47:30 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesSlave _terminate
+INFO: Terminating Kubernetes instance for agent jenkins-slave-r9pmz-vgbgl
+May 01, 2018 3:47:30 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud provision
+INFO: Template: Kubernetes Pod Template
+May 01, 2018 3:47:30 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud provision
+INFO: Template: Kubernetes Pod Template
+May 01, 2018 3:47:30 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud provision
+INFO: Template: Kubernetes Pod Template
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: ALPN callback dropped: HTTP/2 is disabled. Is alpn-boot on the boot class path?
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: --> POST https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods http/1.1
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Content-Type: application/json; charset=utf-8
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Content-Length: 1183
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Host: kubernetes.default.svc.cluster.local
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Connection: Keep-Alive
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Accept-Encoding: gzip
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: User-Agent: okhttp/3.9.1
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO:
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: {"apiVersion":"v1","kind":"Pod","metadata":{"annotations":{},"finalizers":[],"labels":{"jenkins/apipod":"true"},"name":"jenkins-slave-r9pmz-vgbgl","ownerReferences":[]},"spec":{"containers":[{"args":["9e9a1a0ae413b327a6a1223393ba3c70beb943c831bd479ad99f7689d20185ed","jenkins-slave-r9pmz-vgbgl"],"command":[],"env":[{"name":"JENKINS_SECRET","value":"9e9a1a0ae413b327a6a1223393ba3c70beb943c831bd479ad99f7689d20185ed"},{"name":"JENKINS_TUNNEL","value":"jenkins-discovery.jenkins.svc.cluster.local:50000"},{"name":"JENKINS_NAME","value":"jenkins-slave-r9pmz-vgbgl"},{"name":"JENKINS_URL","value":"http://jenkins-ui.jenkins.svc.cluster.local:8080/"},{"name":"HOME","value":"/home/jenkins"}],"envFrom":[],"image":"jenkins/jnlp-slave:alpine","name":"jnlp","ports":[],"volumeMounts":[{"mountPath":"/home/jenkins","name":"workspace-volume","readOnly":false}]}],"hostAliases":[],"imagePullSecrets":[{"name":"regsecret"}],"initContainers":[],"nodeSelector":{},"restartPolicy":"Never","tolerations":[],"volumes":[{"name":"volume-0","secret":{"items":[],"secretName":"jenkins-ssh-keys"}},{"hostPath":{"path":"/var/run/docker.sock"},"name":"volume-1"},{"emptyDir":{},"name":"workspace-volume"}]}}
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: --> END POST (1183-byte body)
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: <-- 201 Created https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods (9ms)
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Content-Type: application/json
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Date: Tue, 01 May 2018 15:47:30 GMT
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Content-Length: 1776
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO:
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: {"kind":"Pod","apiVersion":"v1","metadata":{"name":"jenkins-slave-r9pmz-vgbgl","namespace":"jenkins","selfLink":"/api/v1/namespaces/jenkins/pods/jenkins-slave-r9pmz-vgbgl","uid":"f4bd85a1-4d56-11e8-9c23-00224807a281","resourceVersion":"6549573","creationTimestamp":"2018-05-01T15:47:30Z","labels":{"jenkins/apipod":"true"}},"spec":{"volumes":[{"name":"volume-0","secret":{"secretName":"jenkins-ssh-keys","defaultMode":420}},{"name":"volume-1","hostPath":{"path":"/var/run/docker.sock"}},{"name":"workspace-volume","emptyDir":{}},{"name":"default-token-0n5rf","secret":{"secretName":"default-token-0n5rf","defaultMode":420}}],"containers":[{"name":"jnlp","image":"jenkins/jnlp-slave:alpine","args":["9e9a1a0ae413b327a6a1223393ba3c70beb943c831bd479ad99f7689d20185ed","jenkins-slave-r9pmz-vgbgl"],"env":[{"name":"JENKINS_SECRET","value":"9e9a1a0ae413b327a6a1223393ba3c70beb943c831bd479ad99f7689d20185ed"},{"name":"JENKINS_TUNNEL","value":"jenkins-discovery.jenkins.svc.cluster.local:50000"},{"name":"JENKINS_NAME","value":"jenkins-slave-r9pmz-vgbgl"},{"name":"JENKINS_URL","value":"http://jenkins-ui.jenkins.svc.cluster.local:8080/"},{"name":"HOME","value":"/home/jenkins"}],"resources":{},"volumeMounts":[{"name":"workspace-volume","mountPath":"/home/jenkins"},{"name":"default-token-0n5rf","readOnly":true,"mountPath":"/var/run/secrets/kubernetes.io/serviceaccount"}],"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"Always"}],"restartPolicy":"Never","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","serviceAccountName":"default","serviceAccount":"default","securityContext":{},"imagePullSecrets":[{"name":"regsecret"}],"schedulerName":"default-scheduler"},"status":{"phase":"Pending","qosClass":"BestEffort"}}
+
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: <-- END HTTP (1776-byte body)
+May 01, 2018 3:47:30 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesLauncher launch
+INFO: Created Pod: jenkins-slave-r9pmz-vgbgl in namespace jenkins
+May 01, 2018 3:47:30 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesLauncher launch
+INFO: Waiting for Pod to be scheduled (0/100): jenkins-slave-r9pmz-vgbgl
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: ALPN callback dropped: HTTP/2 is disabled. Is alpn-boot on the boot class path?
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: --> DELETE https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods/jenkins-slave-r9pmz-vgbgl http/1.1
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Content-Type: application/json; charset=utf-8
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Content-Length: 67
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Host: kubernetes.default.svc.cluster.local
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Connection: Keep-Alive
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Accept-Encoding: gzip
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: User-Agent: okhttp/3.9.1
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: ALPN callback dropped: HTTP/2 is disabled. Is alpn-boot on the boot class path?
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO:
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: {"apiVersion":"v1","kind":"DeleteOptions","orphanDependents":false}
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: --> END DELETE (67-byte body)
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: --> POST https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods http/1.1
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Content-Type: application/json; charset=utf-8
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Content-Length: 1183
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Host: kubernetes.default.svc.cluster.local
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Connection: Keep-Alive
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Accept-Encoding: gzip
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: User-Agent: okhttp/3.9.1
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO:
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: {"apiVersion":"v1","kind":"Pod","metadata":{"annotations":{},"finalizers":[],"labels":{"jenkins/apipod":"true"},"name":"jenkins-slave-r9pmz-szlsc","ownerReferences":[]},"spec":{"containers":[{"args":["7b5955adc7c80971376d0558d5c40fef8e7a33b3db82fa8ee9808350e7400716","jenkins-slave-r9pmz-szlsc"],"command":[],"env":[{"name":"JENKINS_SECRET","value":"7b5955adc7c80971376d0558d5c40fef8e7a33b3db82fa8ee9808350e7400716"},{"name":"JENKINS_TUNNEL","value":"jenkins-discovery.jenkins.svc.cluster.local:50000"},{"name":"JENKINS_NAME","value":"jenkins-slave-r9pmz-szlsc"},{"name":"JENKINS_URL","value":"http://jenkins-ui.jenkins.svc.cluster.local:8080/"},{"name":"HOME","value":"/home/jenkins"}],"envFrom":[],"image":"jenkins/jnlp-slave:alpine","name":"jnlp","ports":[],"volumeMounts":[{"mountPath":"/home/jenkins","name":"workspace-volume","readOnly":false}]}],"hostAliases":[],"imagePullSecrets":[{"name":"regsecret"}],"initContainers":[],"nodeSelector":{},"restartPolicy":"Never","tolerations":[],"volumes":[{"name":"volume-0","secret":{"items":[],"secretName":"jenkins-ssh-keys"}},{"hostPath":{"path":"/var/run/docker.sock"},"name":"volume-1"},{"emptyDir":{},"name":"workspace-volume"}]}}
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: --> END POST (1183-byte body)
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: <-- 202 Accepted https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods/jenkins-slave-r9pmz-vgbgl (7ms)
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Content-Type: application/json
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Date: Tue, 01 May 2018 15:47:30 GMT
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Transfer-Encoding: chunked
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO:
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: {"kind":"Pod","apiVersion":"v1","metadata":{"name":"jenkins-slave-r9pmz-vgbgl","namespace":"jenkins","selfLink":"/api/v1/namespaces/jenkins/pods/jenkins-slave-r9pmz-vgbgl","uid":"f4bd85a1-4d56-11e8-9c23-00224807a281","resourceVersion":"6549577","creationTimestamp":"2018-05-01T15:47:30Z","deletionTimestamp":"2018-05-01T15:48:00Z","deletionGracePeriodSeconds":30,"labels":{"jenkins/apipod":"true"}},"spec":{"volumes":[{"name":"volume-0","secret":{"secretName":"jenkins-ssh-keys","defaultMode":420}},{"name":"volume-1","hostPath":{"path":"/var/run/docker.sock"}},{"name":"workspace-volume","emptyDir":{}},{"name":"default-token-0n5rf","secret":{"secretName":"default-token-0n5rf","defaultMode":420}}],"containers":[{"name":"jnlp","image":"jenkins/jnlp-slave:alpine","args":["9e9a1a0ae413b327a6a1223393ba3c70beb943c831bd479ad99f7689d20185ed","jenkins-slave-r9pmz-vgbgl"],"env":[{"name":"JENKINS_SECRET","value":"9e9a1a0ae413b327a6a1223393ba3c70beb943c831bd479ad99f7689d20185ed"},{"name":"JENKINS_TUNNEL","value":"jenkins-discovery.jenkins.svc.cluster.local:50000"},{"name":"JENKINS_NAME","value":"jenkins-slave-r9pmz-vgbgl"},{"name":"JENKINS_URL","value":"http://jenkins-ui.jenkins.svc.cluster.local:8080/"},{"name":"HOME","value":"/home/jenkins"}],"resources":{},"volumeMounts":[{"name":"workspace-volume","mountPath":"/home/jenkins"},{"name":"default-token-0n5rf","readOnly":true,"mountPath":"/var/run/secrets/kubernetes.io/serviceaccount"}],"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"Always"}],"restartPolicy":"Never","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","serviceAccountName":"default","serviceAccount":"default","nodeName":"k8s-agentpools-31900720-1","securityContext":{},"imagePullSecrets":[{"name":"regsecret"}],"schedulerName":"default-scheduler"},"status":{"phase":"Pending","conditions":[{"type":"Initialized","status":"True","lastProbeTime":null,"lastTransitionTime":"2018-05-01T15:47:30Z"},{"type":"Ready","status":"False","lastProbeTime":null,"lastTransitionTime":"2018-05-01T15:47:30Z","reason":"ContainersNotReady","message":"containers with unready status: [jnlp]"},{"type":"PodScheduled","status":"True","lastProbeTime":null,"lastTransitionTime":"2018-05-01T15:47:30Z"}],"hostIP":"10.240.0.5","startTime":"2018-05-01T15:47:30Z","containerStatuses":[{"name":"jnlp","state":{"waiting":{"reason":"ContainerCreating"}},"lastState":{},"ready":false,"restartCount":0,"image":"jenkins/jnlp-slave:alpine","imageID":""}],"qosClass":"BestEffort"}}
+
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: <-- END HTTP (2535-byte body)
+May 01, 2018 3:47:30 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesSlave _terminate
+INFO: Terminated Kubernetes instance for agent jenkins/jenkins-slave-r9pmz-vgbgl
+Terminated Kubernetes instance for agent jenkins/jenkins-slave-r9pmz-vgbgl
+May 01, 2018 3:47:30 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesSlave _terminate
+INFO: Disconnected computer jenkins-slave-r9pmz-vgbgl
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: <-- 201 Created https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods (10ms)
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Content-Type: application/json
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Date: Tue, 01 May 2018 15:47:30 GMT
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Content-Length: 1776
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO:
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: {"kind":"Pod","apiVersion":"v1","metadata":{"name":"jenkins-slave-r9pmz-szlsc","namespace":"jenkins","selfLink":"/api/v1/namespaces/jenkins/pods/jenkins-slave-r9pmz-szlsc","uid":"f4c3eae5-4d56-11e8-9c23-00224807a281","resourceVersion":"6549578","creationTimestamp":"2018-05-01T15:47:30Z","labels":{"jenkins/apipod":"true"}},"spec":{"volumes":[{"name":"volume-0","secret":{"secretName":"jenkins-ssh-keys","defaultMode":420}},{"name":"volume-1","hostPath":{"path":"/var/run/docker.sock"}},{"name":"workspace-volume","emptyDir":{}},{"name":"default-token-0n5rf","secret":{"secretName":"default-token-0n5rf","defaultMode":420}}],"containers":[{"name":"jnlp","image":"jenkins/jnlp-slave:alpine","args":["7b5955adc7c80971376d0558d5c40fef8e7a33b3db82fa8ee9808350e7400716","jenkins-slave-r9pmz-szlsc"],"env":[{"name":"JENKINS_SECRET","value":"7b5955adc7c80971376d0558d5c40fef8e7a33b3db82fa8ee9808350e7400716"},{"name":"JENKINS_TUNNEL","value":"jenkins-discovery.jenkins.svc.cluster.local:50000"},{"name":"JENKINS_NAME","value":"jenkins-slave-r9pmz-szlsc"},{"name":"JENKINS_URL","value":"http://jenkins-ui.jenkins.svc.cluster.local:8080/"},{"name":"HOME","value":"/home/jenkins"}],"resources":{},"volumeMounts":[{"name":"workspace-volume","mountPath":"/home/jenkins"},{"name":"default-token-0n5rf","readOnly":true,"mountPath":"/var/run/secrets/kubernetes.io/serviceaccount"}],"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"Always"}],"restartPolicy":"Never","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","serviceAccountName":"default","serviceAccount":"default","securityContext":{},"imagePullSecrets":[{"name":"regsecret"}],"schedulerName":"default-scheduler"},"status":{"phase":"Pending","qosClass":"BestEffort"}}
+
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: <-- END HTTP (1776-byte body)
+May 01, 2018 3:47:30 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesLauncher launch
+INFO: Created Pod: jenkins-slave-r9pmz-szlsc in namespace jenkins
+May 01, 2018 3:47:30 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesLauncher launch
+INFO: Waiting for Pod to be scheduled (0/100): jenkins-slave-r9pmz-szlsc
+May 01, 2018 3:47:30 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesSlave _terminate
+INFO: Terminating Kubernetes instance for agent jenkins-slave-r9pmz-szlsc
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: ALPN callback dropped: HTTP/2 is disabled. Is alpn-boot on the boot class path?
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: --> DELETE https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods/jenkins-slave-r9pmz-szlsc http/1.1
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Content-Type: application/json; charset=utf-8
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Content-Length: 67
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Host: kubernetes.default.svc.cluster.local
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Connection: Keep-Alive
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Accept-Encoding: gzip
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: User-Agent: okhttp/3.9.1
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO:
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: {"apiVersion":"v1","kind":"DeleteOptions","orphanDependents":false}
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: --> END DELETE (67-byte body)
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: <-- 202 Accepted https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods/jenkins-slave-r9pmz-szlsc (6ms)
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Content-Type: application/json
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Date: Tue, 01 May 2018 15:47:30 GMT
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: Transfer-Encoding: chunked
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO:
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: {"kind":"Pod","apiVersion":"v1","metadata":{"name":"jenkins-slave-r9pmz-szlsc","namespace":"jenkins","selfLink":"/api/v1/namespaces/jenkins/pods/jenkins-slave-r9pmz-szlsc","uid":"f4c3eae5-4d56-11e8-9c23-00224807a281","resourceVersion":"6549585","creationTimestamp":"2018-05-01T15:47:30Z","deletionTimestamp":"2018-05-01T15:48:00Z","deletionGracePeriodSeconds":30,"labels":{"jenkins/apipod":"true"}},"spec":{"volumes":[{"name":"volume-0","secret":{"secretName":"jenkins-ssh-keys","defaultMode":420}},{"name":"volume-1","hostPath":{"path":"/var/run/docker.sock"}},{"name":"workspace-volume","emptyDir":{}},{"name":"default-token-0n5rf","secret":{"secretName":"default-token-0n5rf","defaultMode":420}}],"containers":[{"name":"jnlp","image":"jenkins/jnlp-slave:alpine","args":["7b5955adc7c80971376d0558d5c40fef8e7a33b3db82fa8ee9808350e7400716","jenkins-slave-r9pmz-szlsc"],"env":[{"name":"JENKINS_SECRET","value":"7b5955adc7c80971376d0558d5c40fef8e7a33b3db82fa8ee9808350e7400716"},{"name":"JENKINS_TUNNEL","value":"jenkins-discovery.jenkins.svc.cluster.local:50000"},{"name":"JENKINS_NAME","value":"jenkins-slave-r9pmz-szlsc"},{"name":"JENKINS_URL","value":"http://jenkins-ui.jenkins.svc.cluster.local:8080/"},{"name":"HOME","value":"/home/jenkins"}],"resources":{},"volumeMounts":[{"name":"workspace-volume","mountPath":"/home/jenkins"},{"name":"default-token-0n5rf","readOnly":true,"mountPath":"/var/run/secrets/kubernetes.io/serviceaccount"}],"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"Always"}],"restartPolicy":"Never","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","serviceAccountName":"default","serviceAccount":"default","nodeName":"k8s-agentpools-31900720-1","securityContext":{},"imagePullSecrets":[{"name":"regsecret"}],"schedulerName":"default-scheduler"},"status":{"phase":"Pending","conditions":[{"type":"Initialized","status":"True","lastProbeTime":null,"lastTransitionTime":"2018-05-01T15:47:30Z"},{"type":"Ready","status":"False","lastProbeTime":null,"lastTransitionTime":"2018-05-01T15:47:30Z","reason":"ContainersNotReady","message":"containers with unready status: [jnlp]"},{"type":"PodScheduled","status":"True","lastProbeTime":null,"lastTransitionTime":"2018-05-01T15:47:30Z"}],"hostIP":"10.240.0.5","startTime":"2018-05-01T15:47:30Z","containerStatuses":[{"name":"jnlp","state":{"waiting":{"reason":"ContainerCreating"}},"lastState":{},"ready":false,"restartCount":0,"image":"jenkins/jnlp-slave:alpine","imageID":""}],"qosClass":"BestEffort"}}
+
+May 01, 2018 3:47:30 PM okhttp3.internal.platform.Platform log
+INFO: <-- END HTTP (2535-byte body)
+May 01, 2018 3:47:30 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesSlave _terminate
+INFO: Terminated Kubernetes instance for agent jenkins/jenkins-slave-r9pmz-szlsc
+Terminated Kubernetes instance for agent jenkins/jenkins-slave-r9pmz-szlsc
+May 01, 2018 3:47:30 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesSlave _terminate
+INFO: Disconnected computer jenkins-slave-r9pmz-szlsc
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: --> GET https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods/jenkins-slave-r9pmz-vgbgl http/1.1
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: Host: kubernetes.default.svc.cluster.local
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: Connection: Keep-Alive
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: Accept-Encoding: gzip
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: User-Agent: okhttp/3.9.1
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: --> END GET
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: <-- 404 Not Found https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods/jenkins-slave-r9pmz-vgbgl (4ms)
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: Content-Type: application/json
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: Date: Tue, 01 May 2018 15:47:36 GMT
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: Content-Length: 218
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO:
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: {"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"pods \"jenkins-slave-r9pmz-vgbgl\" not found","reason":"NotFound","details":{"name":"jenkins-slave-r9pmz-vgbgl","kind":"pods"},"code":404}
+
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: <-- END HTTP (218-byte body)
+May 01, 2018 3:47:36 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesLauncher launch
+WARNING: Error in provisioning; agent=KubernetesSlave name: jenkins-slave-r9pmz-vgbgl, template=PodTemplate{, name='jenkins-slave-r9pmz', namespace='jenkins', instanceCap=1, label='apipod', volumes=[org.csanchez.jenkins.plugins.kubernetes.volumes.SecretVolume@371500ba, HostPathVolume [mountPath=/var/run/docker.sock, hostPath=/var/run/docker.sock]], imagePullSecrets=[org.csanchez.jenkins.plugins.kubernetes.PodImagePullSecret@14ed4844]}
+java.lang.IllegalStateException: Pod no longer exists: jenkins-slave-r9pmz-vgbgl
+	at org.csanchez.jenkins.plugins.kubernetes.KubernetesLauncher.launch(KubernetesLauncher.java:126)
+	at hudson.slaves.SlaveComputer$1.call(SlaveComputer.java:288)
+	at jenkins.util.ContextResettingExecutorService$2.call(ContextResettingExecutorService.java:46)
+	at jenkins.security.ImpersonatingExecutorService$2.call(ImpersonatingExecutorService.java:71)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+May 01, 2018 3:47:36 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesSlave _terminate
+INFO: Terminating Kubernetes instance for agent jenkins-slave-r9pmz-vgbgl
+May 01, 2018 3:47:36 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesSlave _terminate
+SEVERE: Computer for agent is null: jenkins-slave-r9pmz-vgbgl
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: --> GET https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods/jenkins-slave-r9pmz-szlsc http/1.1
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: Host: kubernetes.default.svc.cluster.local
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: Connection: Keep-Alive
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: Accept-Encoding: gzip
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: User-Agent: okhttp/3.9.1
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: --> END GET
+FATAL: Computer for agent is null: jenkins-slave-r9pmz-vgbgl
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: <-- 404 Not Found https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods/jenkins-slave-r9pmz-szlsc (4ms)
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: Content-Type: application/json
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: Date: Tue, 01 May 2018 15:47:36 GMT
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: Content-Length: 218
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO:
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: {"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"pods \"jenkins-slave-r9pmz-szlsc\" not found","reason":"NotFound","details":{"name":"jenkins-slave-r9pmz-szlsc","kind":"pods"},"code":404}
+
+May 01, 2018 3:47:36 PM okhttp3.internal.platform.Platform log
+INFO: <-- END HTTP (218-byte body)
+May 01, 2018 3:47:36 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesLauncher launch
+WARNING: Error in provisioning; agent=KubernetesSlave name: jenkins-slave-r9pmz-szlsc, template=PodTemplate{, name='jenkins-slave-r9pmz', namespace='jenkins', instanceCap=1, label='apipod', volumes=[org.csanchez.jenkins.plugins.kubernetes.volumes.SecretVolume@371500ba, HostPathVolume [mountPath=/var/run/docker.sock, hostPath=/var/run/docker.sock]], imagePullSecrets=[org.csanchez.jenkins.plugins.kubernetes.PodImagePullSecret@14ed4844]}
+java.lang.IllegalStateException: Pod no longer exists: jenkins-slave-r9pmz-szlsc
+	at org.csanchez.jenkins.plugins.kubernetes.KubernetesLauncher.launch(KubernetesLauncher.java:126)
+	at hudson.slaves.SlaveComputer$1.call(SlaveComputer.java:288)
+	at jenkins.util.ContextResettingExecutorService$2.call(ContextResettingExecutorService.java:46)
+	at jenkins.security.ImpersonatingExecutorService$2.call(ImpersonatingExecutorService.java:71)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+May 01, 2018 3:47:36 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesSlave _terminate
+INFO: Terminating Kubernetes instance for agent jenkins-slave-r9pmz-szlsc
+May 01, 2018 3:47:36 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesSlave _terminate
+SEVERE: Computer for agent is null: jenkins-slave-r9pmz-szlsc
+FATAL: Computer for agent is null: jenkins-slave-r9pmz-szlsc
+May 01, 2018 3:47:40 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud provision
+INFO: Excess workload after pending Kubernetes agents: 2
+May 01, 2018 3:47:40 PM org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud provision
+INFO: Template: Kubernetes Pod Template
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: ALPN callback dropped: HTTP/2 is disabled. Is alpn-boot on the boot class path?
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: --> GET https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods http/1.1
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: Host: kubernetes.default.svc.cluster.local
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: Connection: Keep-Alive
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: Accept-Encoding: gzip
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: User-Agent: okhttp/3.9.1
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: --> END GET
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: <-- 200 OK https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods (5ms)
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: Content-Type: application/json
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: Date: Tue, 01 May 2018 15:47:40 GMT
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: Transfer-Encoding: chunked
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO:
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: {"kind":"PodList","apiVersion":"v1","metadata":{"selfLink":"/api/v1/namespaces/jenkins/pods","resourceVersion":"6549601"},"items":[{"metadata":{"name":"jenkins-0","generateName":"jenkins-","namespace":"jenkins","selfLink":"/api/v1/namespaces/jenkins/pods/jenkins-0","uid":"3d552bd4-4301-11e8-9c23-00224807a281","resourceVersion":"6532806","creationTimestamp":"2018-04-18T12:08:43Z","labels":{"app":"master","controller-revision-hash":"jenkins-234688060"},"annotations":{"kubernetes.io/created-by":"{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"StatefulSet\",\"namespace\":\"jenkins\",\"name\":\"jenkins\",\"uid\":\"f41687cf-42f7-11e8-9c23-00224807a281\",\"apiVersion\":\"apps/v1beta1\",\"resourceVersion\":\"4854526\"}}\n"},"ownerReferences":[{"apiVersion":"apps/v1beta1","kind":"StatefulSet","name":"jenkins","uid":"f41687cf-42f7-11e8-9c23-00224807a281","controller":true,"blockOwnerDeletion":true}]},"spec":{"volumes":[{"name":"jenkins-home","persistentVolumeClaim":{"claimName":"jenkins-master-claim"}},{"name":"jenkins-ssh-keys","secret":{"secretName":"jenkins-ssh-keys","defaultMode":420}},{"name":"default-token-0n5rf","secret":{"secretName":"default-token-0n5rf","defaultMode":420}}],"containers":[{"name":"master","image":"jswriskacr.azurecr.io/jenkins","ports":[{"containerPort":8080,"protocol":"TCP"},{"containerPort":50000,"protocol":"TCP"}],"env":[{"name":"JAVA_OPTS","value":"-Xmx1400m"}],"resources":{"limits":{"cpu":"500m","memory":"1500Mi"},"requests":{"cpu":"500m","memory":"1500Mi"}},"volumeMounts":[{"name":"jenkins-home","mountPath":"/var/jenkins_home"},{"name":"jenkins-ssh-keys","readOnly":true,"mountPath":"/var/jenkins_home/.ssh"},{"name":"default-token-0n5rf","readOnly":true,"mountPath":"/var/run/secrets/kubernetes.io/serviceaccount"}],"readinessProbe":{"httpGet":{"path":"/login","port":8080,"scheme":"HTTP"},"timeoutSeconds":5,"periodSeconds":10,"successThreshold":2,"failureThreshold":5},"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"Always"}],"restartPolicy":"Always","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","serviceAccountName":"default","serviceAccount":"default","nodeName":"k8s-agentpools-31900720-1","securityContext":{"runAsUser":0},"hostname":"jenkins-0","subdomain":"jenkins-ui","schedulerName":"default-scheduler"},"status":{"phase":"Running","conditions":[{"type":"Initialized","status":"True","lastProbeTime":null,"lastTransitionTime":"2018-04-18T12:08:43Z"},{"type":"Ready","status":"True","lastProbeTime":null,"lastTransitionTime":"2018-04-18T14:01:13Z"},{"type":"PodScheduled","status":"True","lastProbeTime":null,"lastTransitionTime":"2018-04-18T12:08:43Z"}],"hostIP":"10.240.0.5","podIP":"10.244.2.18","startTime":"2018-04-18T12:08:43Z","containerStatuses":[{"name":"master","state":{"running":{"startedAt":"2018-04-18T12:11:05Z"}},"lastState":{},"ready":true,"restartCount":0,"image":"jswriskacr.azurecr.io/jenkins:latest","imageID":"docker-pullable://jswriskacr.azurecr.io/jenkins@sha256:03ee8e6eff484953ea03db7c5fe716c3d9f2a2e947cdbe72275950f5432d56ff","containerID":"docker://ab25ebd1aa11cf64741a2e5a6275ec76bbedeed4e2cb6d682d26aaf2b1b06132"}],"qosClass":"Guaranteed"}}]}
+
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: <-- END HTTP (3236-byte body)
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: --> GET https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods?labelSelector=jenkins/apipod%3Dtrue http/1.1
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: Host: kubernetes.default.svc.cluster.local
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: Connection: Keep-Alive
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: Accept-Encoding: gzip
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: User-Agent: okhttp/3.9.1
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: --> END GET
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: <-- 200 OK https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods?labelSelector=jenkins/apipod%3Dtrue (5ms)
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: Content-Type: application/json
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: Date: Tue, 01 May 2018 15:47:40 GMT
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: Content-Length: 134
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO:
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: {"kind":"PodList","apiVersion":"v1","metadata":{"selfLink":"/api/v1/namespaces/jenkins/pods","resourceVersion":"6549601"},"items":[]}
+
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: <-- END HTTP (134-byte body)
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: ALPN callback dropped: HTTP/2 is disabled. Is alpn-boot on the boot class path?
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: --> GET https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods http/1.1
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: Host: kubernetes.default.svc.cluster.local
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: Connection: Keep-Alive
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: Accept-Encoding: gzip
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: User-Agent: okhttp/3.9.1
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: --> END GET
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: <-- 200 OK https://kubernetes.default.svc.cluster.local/api/v1/namespaces/jenkins/pods (29ms)
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: Content-Type: application/json
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: Date: Tue, 01 May 2018 15:47:40 GMT
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log
+INFO: Transfer-Encoding: chunked
+May 01, 2018 3:47:40 PM okhttp3.internal.platform.Platform log

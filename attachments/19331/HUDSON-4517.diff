@@ -1,0 +1,489 @@
+From d443cc0b3dffcd289fadf633e44b7f60333dcf8d Mon Sep 17 00:00:00 2001
+From: Bijan Vakili <bvakili@oanda.com>
+Date: Wed, 14 Apr 2010 10:17:45 -0400
+Subject: [PATCH] Partial fix for Redmine #7349:
+ Fixed JIRA issue HUDSON-4517.
+ - fetchFrom now queries the .gitmodules file and uses 'git submodule status'
+   command to retrieve information on submodules.
+ - Added 'show' and 'submodule status' commands to GitAPI
+ - Added 'Submodule' class to capture all information on submodules
+
+---
+ src/main/java/hudson/plugins/git/GitAPI.java       |   27 ++++
+ src/main/java/hudson/plugins/git/GitSCM.java       |   72 +++++-----
+ src/main/java/hudson/plugins/git/IGitAPI.java      |    2 +
+ src/main/java/hudson/plugins/git/Submodule.java    |  143 ++++++++++++++++++++
+ .../java/hudson/plugins/git/util/GitUtils.java     |  113 +++++++++++++++-
+ 5 files changed, 319 insertions(+), 38 deletions(-)
+ create mode 100644 src/main/java/hudson/plugins/git/Submodule.java
+
+diff --git a/src/main/java/hudson/plugins/git/GitAPI.java b/src/main/java/hudson/plugins/git/GitAPI.java
+index df535cb..68f59bf 100644
+--- a/src/main/java/hudson/plugins/git/GitAPI.java
++++ b/src/main/java/hudson/plugins/git/GitAPI.java
+@@ -17,6 +17,7 @@ import java.io.OutputStream;
+ import java.io.PrintStream;
+ import java.io.StringReader;
+ import java.util.ArrayList;
++import java.util.Arrays;
+ import java.util.HashSet;
+ import java.util.List;
+ import java.util.Map;
+@@ -195,6 +196,14 @@ public class GitAPI implements IGitAPI {
+         String result = launchCommand("describe", "--tags", commitIsh);
+         return firstLine(result).trim();
+     }
++    
++    public String show(String[] objects) throws GitException {
++    	ArrayList<String> args = new ArrayList();
++    	args.add("show");
++    	args.addAll(Arrays.asList(objects));
++    	
++        return launchCommand(args.toArray(new String[0]));
++    }
+ 
+     private String firstLine(String result) {
+         BufferedReader reader = new BufferedReader(new StringReader(result));
+@@ -320,6 +329,24 @@ public class GitAPI implements IGitAPI {
+     public void submoduleUpdate() throws GitException {
+         launchCommand("submodule", "update");
+     }
++    
++    /**
++     * Retrieve the submodule status
++     * 
++     * @param path - optional submodule, using null will retrieve all submodules
++     * 
++     * @throws GitException if executing the Git command fails
++     */
++    public String getSubmoduleStatus( String path ) throws GitException {
++    	
++    	ArrayList<String> args = new ArrayList();
++    	args.add("submodule");
++    	args.add("status");
++    	if ( path != null )
++    		args.add(path);
++    	
++    	return launchCommand(args.toArray(new String[0]));
++    }
+ 
+     public void tag(String tagName, String comment) throws GitException {
+         tagName = tagName.replace(' ', '_');
+diff --git a/src/main/java/hudson/plugins/git/GitSCM.java b/src/main/java/hudson/plugins/git/GitSCM.java
+index 96b58e4..10fb120 100644
+--- a/src/main/java/hudson/plugins/git/GitSCM.java
++++ b/src/main/java/hudson/plugins/git/GitSCM.java
+@@ -297,26 +297,37 @@ public class GitSCM extends SCM implements Serializable {
+ 		try {
+ 			git.fetch(remoteRepository);
+ 
+-			List<IndexEntry> submodules = new GitUtils(listener, git)
+-					.getSubmodules("HEAD");
+-
+-			for (IndexEntry submodule : submodules) {
+-				try {
+-					RemoteConfig submoduleRemoteRepository = getSubmoduleRepository(remoteRepository, submodule.getFile());
+-
+-					File subdir = new File(workspace, submodule.getFile());
+-					IGitAPI subGit = new GitAPI(git.getGitExe(), new FilePath(subdir),
+-							listener, git.getEnvironment());
+-
+-					subGit.fetch(submoduleRemoteRepository);
+-				} catch (Exception ex) {
+-					listener
+-							.error(
+-									"Problem fetching from "
+-											+ remoteRepository.getName()
+-											+ " - could be unavailable. Continuing anyway");
++			if ( git.hasGitModules() ) {
++				
++				Collection<Submodule> submodules = new GitUtils(listener, git).getAllSubmoduleInfo(
++					"HEAD"
++				);
++	
++				for (Submodule submodule : submodules) {
++					try {
++						RemoteConfig submoduleRemoteRepository = getSubmoduleRepository(
++							remoteRepository, 
++							submodule
++						);
++	
++						// fetch commits for the submodule only if it has already been
++						// initialized in the workspace
++						File subdir = new File(workspace, submodule.getPath());
++						if ( submodule.getStatus() == Submodule.Status.INITIALIZED ) {
++							IGitAPI subGit = new GitAPI(git.getGitExe(), new FilePath(subdir),
++									listener, git.getEnvironment());
++		
++							subGit.fetch(submoduleRemoteRepository);
++						}
++					} catch (Exception ex) {
++						listener
++								.error(
++										"Problem fetching from "
++												+ remoteRepository.getName()
++												+ " - could be unavailable. Continuing anyway");
++					}
++	
+ 				}
+-
+ 			}
+ 		} catch (GitException ex) {
+ 			listener.error(
+@@ -327,26 +338,13 @@ public class GitSCM extends SCM implements Serializable {
+ 
+ 	}
+ 
+-	public RemoteConfig getSubmoduleRepository(RemoteConfig orig, String name) throws URISyntaxException
++	public RemoteConfig getSubmoduleRepository(RemoteConfig orig, Submodule submodule) throws URISyntaxException
+     {
+-	    // Attempt to guess the submodule URL??
+-
+-        String refUrl = orig.getURIs().get(0).toString();
+-
+-        if (refUrl.endsWith("/.git"))
+-        {
+-            refUrl = refUrl.substring(0, refUrl.length() - 4);
+-        }
+-
+-        if (!refUrl.endsWith("/")) refUrl += "/";
+-
+-        refUrl += name;
+-
+-        if (!refUrl.endsWith("/")) refUrl += "/";
+-
+-        refUrl += ".git";
++        String name = submodule.getName();
++        if ( name == null )
++        	name = submodule.getPath();
+ 
+-        return newRemoteConfig(name, refUrl, orig.getFetchRefSpecs().get(0) );
++        return newRemoteConfig(name, submodule.getUrl(), orig.getFetchRefSpecs().get(0) );
+     }
+ 
+ 	private RemoteConfig newRemoteConfig(String name, String refUrl, RefSpec refSpec) throws URISyntaxException
+diff --git a/src/main/java/hudson/plugins/git/IGitAPI.java b/src/main/java/hudson/plugins/git/IGitAPI.java
+index 3654863..0cb07c5 100644
+--- a/src/main/java/hudson/plugins/git/IGitAPI.java
++++ b/src/main/java/hudson/plugins/git/IGitAPI.java
+@@ -22,6 +22,7 @@ public interface IGitAPI {
+ 
+ 	void submoduleInit()  throws GitException;
+     void submoduleUpdate()  throws GitException;
++    String getSubmoduleStatus( String path ) throws GitException;
+ 
+     public void fetch(String repository, String refspec) throws GitException;
+     void fetch(RemoteConfig remoteRepository);
+@@ -43,6 +44,7 @@ public interface IGitAPI {
+     List<ObjectId> revListAll() throws GitException;
+ 
+     String describe(String commitIsh) throws GitException;
++    String show(String[] objects) throws GitException;
+ 
+     List<Tag> getTagsOnCommit(String revName) throws GitException, IOException;
+ 
+diff --git a/src/main/java/hudson/plugins/git/Submodule.java b/src/main/java/hudson/plugins/git/Submodule.java
+new file mode 100644
+index 0000000..300bd03
+--- /dev/null
++++ b/src/main/java/hudson/plugins/git/Submodule.java
+@@ -0,0 +1,143 @@
++package hudson.plugins.git;
++
++/**
++ * A git submodule definition
++ * 
++ * @author bvakili
++ *
++ */
++public class Submodule implements java.io.Serializable
++{
++	private static final long serialVersionUID = 1L;
++	  
++	/** submodule commit state */
++	public enum Status {
++		UNKNOWN, UNINTIALIZED, INITIALIZED, UNMATCHED_COMMIT
++	}
++	  
++	  
++	/** default action for submodule when updated by the superproject */
++	private static final String DEFAULT_UPDATE_ACTION = "checkout";
++
++	/** unique name of the submodule */
++	private String name; 
++	  
++	/** relative path where the submodule is expected to be checked out */
++	private String path;
++	  
++	/** url from where the submodule repository can be cloned */
++	private String url;
++	  
++	/** what to do when the submodule is updated by the superproject */
++	private String update;
++	  
++	/** submodule state */
++	private Status status = Status.UNKNOWN;
++
++	/** commit ID of the submodule */
++	private String currentCommit;
++
++	
++	public Submodule(
++		String name,
++		String path,
++		String url,
++		String update
++	)
++	{
++		init( name, path, url, update );
++	}
++	  
++	public Submodule(
++		String name,
++		String path,
++		String url
++	)
++	{
++		init( name, path, url, null );
++	}
++	  
++	public void setName( String name ) 
++	{
++		this.name = name;
++	}
++
++	public String getName() 
++	{
++		return this.name;
++	}
++
++	public void setPath( String path ) 
++	{
++		this.path = path;
++	}
++
++	public String getPath() 
++	{
++		return this.path;
++	}
++	  
++	public void setUrl( String url ) 
++	{
++		this.url = url;
++	}
++
++	public String getUrl() 
++	{
++		return this.url;
++	}
++	  
++	public void setUpdate( String update ) 
++	{
++		this.update = update;
++		  
++		if ( this.update == null )
++			this.update = DEFAULT_UPDATE_ACTION;
++	}
++
++	public String getUpdate() 
++	{
++		return this.update;
++	}
++	  
++	public void setStatus( Status status )
++	{
++		this.status = status;
++	}
++		  
++	public Status getStatus()
++	{
++		return this.status;
++	}
++		  
++	public void setCurrentCommit( String currentCommit )
++	{
++		this.currentCommit = currentCommit;
++	}
++		  
++	public String getCurrentCommit()
++	{
++		return this.currentCommit;
++	}
++	  
++	  /**
++	   * Initializes the submodule data
++	   * 
++	   * @param name submodule name
++	   * @param path relative path in git workspace
++	   * @param url repository for submodule
++	   * @param update default action
++	   */
++	  private void init(
++			  String name,
++			  String path,
++			  String url,
++			  String update
++	  )
++	  {
++		  setName( name );
++		  setPath( path );
++		  setUrl( url );
++		  setUpdate( update );
++	  }
++}
+diff --git a/src/main/java/hudson/plugins/git/util/GitUtils.java b/src/main/java/hudson/plugins/git/util/GitUtils.java
+index 5bb1250..9729dab 100644
+--- a/src/main/java/hudson/plugins/git/util/GitUtils.java
++++ b/src/main/java/hudson/plugins/git/util/GitUtils.java
+@@ -6,15 +6,20 @@ import hudson.plugins.git.GitException;
+ import hudson.plugins.git.IGitAPI;
+ import hudson.plugins.git.IndexEntry;
+ import hudson.plugins.git.Revision;
++import hudson.plugins.git.Submodule;
+ 
+ import java.io.IOException;
++import java.util.ArrayList;
+ import java.util.Collection;
+ import java.util.HashMap;
+ import java.util.HashSet;
+ import java.util.Iterator;
+ import java.util.List;
+-import java.util.Map;
+ import java.util.Set;
++import java.util.Map;
++import java.util.TreeMap;
++import java.util.regex.Matcher;
++import java.util.regex.Pattern;
+ 
+ import org.spearce.jgit.lib.ObjectId;
+ 
+@@ -22,6 +27,8 @@ public class GitUtils
+ {
+   IGitAPI git;
+   TaskListener listener;
++  
++  private static final String GITMODULES_FILE = ".gitmodules";
+ 
+   public GitUtils(TaskListener listener, IGitAPI git)
+   {
+@@ -29,6 +36,7 @@ public class GitUtils
+     this.listener = listener;
+   }
+ 
++  @Deprecated
+   public List<IndexEntry> getSubmodules(String treeIsh)
+   {
+     List<IndexEntry> submodules = git.lsTree(treeIsh);
+@@ -43,6 +51,109 @@ public class GitUtils
+     }
+     return submodules;
+   }
++  
++  public Collection<Submodule> getAllSubmoduleInfo(String treeIsh) throws GitException
++  {
++	  List<Submodule> submodules = new ArrayList<Submodule>();
++	  Map<String, Submodule> pathToSubmoduleMap = new TreeMap<String, Submodule>();
++	  
++	  // retrieve the git submodule text information
++	  String modulesFile;
++	  try {
++		  modulesFile = git.show(
++				  new String[] {treeIsh + ":" + GITMODULES_FILE}
++		  );
++	  }
++	  catch ( GitException e ) {
++		  throw new GitException("Unable to locate " + GITMODULES_FILE);
++	  }
++	  
++	  /* Parse the modules files into individual submodule entries
++	   * 
++	   * The expected format is:
++	   * 
++	   * [submodule "NAME"]
++	   * 	KEY = VALUE
++	   * 	KEY = VALUE
++	   */
++      String[] entries = modulesFile.split ("\n");
++      Submodule submodule = null;
++      Pattern submoduleName = Pattern.compile("^\\[submodule\\s*\"(\\S+)\"]");
++      Pattern keyValuePair = Pattern.compile("^\\s*(\\S+)\\s*=\\s*(\\S+)");
++      Matcher matcher = null;
++      for ( String entry : entries ) {
++    	  
++    	  if ( entry.charAt(0) == '[' ) {
++    		  
++    		  matcher = submoduleName.matcher(entry);
++    		  if ( matcher.matches() ) {
++    			  submodule = new Submodule(matcher.group(1), "", "");
++	    		  submodules.add(submodule);
++    		  }
++    	  }
++    	  else {
++    		  
++    		  matcher = keyValuePair.matcher(entry);
++    		  if ( (submodule != null) && matcher.matches() ) {
++    			  
++    			  String type = matcher.group(1);
++    			  String value = matcher.group(2);
++    			  value = value.trim();
++    			  if ( type.equalsIgnoreCase("path") ) {
++    				  submodule.setPath(value);
++    				  pathToSubmoduleMap.put(value, submodule);
++    			  }
++    			  else if ( type.equalsIgnoreCase("url") ) {
++    				  submodule.setUrl(value);
++    			  }
++    			  else if ( type.equalsIgnoreCase("update") ) {
++    				  submodule.setUpdate(value);
++    			  }
++    		  }
++    	  }
++      }
++      
++      /* Rerieve each submodule's status
++       * 
++       * The expected format is:
++       * 
++       * -5430fc823f59629a81b3303d0b375e2ac192c0e3 PATH (DESCRIBETAG)
++       * +5430fc823f59629a81b3303d0b375e2ac192c0e3 PATH (DESCRIBETAG)
++       *  5430fc823f59629a81b3303d0b375e2ac192c0e3 PATH (DESCRIBETAG)
++       */
++      String submoduleStateData;
++      try {
++    	  submoduleStateData = git.getSubmoduleStatus(null);
++      }
++	  catch ( GitException e ) {
++		  throw new GitException("Unable to retrieve status for all submodules");
++	  }
++      
++	  entries = submoduleStateData.split ("\n");
++	  Pattern submoduleStatusEntry = Pattern.compile("^[\\s\\+\\-](\\S+)\\s(\\S+)(\\s\\(\\S+\\))?");
++	  for ( String entry : entries ) {
++		  
++		  matcher = submoduleStatusEntry.matcher(entry);
++		  
++		  if ( matcher.matches() ) {
++			  Submodule.Status status = Submodule.Status.UNKNOWN;
++			  switch ( entry.charAt(0) ) {
++			  case ' ': status = Submodule.Status.INITIALIZED; break;
++			  case '-': status = Submodule.Status.UNINTIALIZED; break;
++			  case '+': status = Submodule.Status.UNMATCHED_COMMIT; break;
++			  }
++	
++			  String commitHash = matcher.group(1);
++			  String path = matcher.group(2);
++			  
++			  submodule = pathToSubmoduleMap.get(path);
++			  submodule.setStatus(status);
++			  submodule.setCurrentCommit(commitHash);
++		  }
++	  }
++	  
++      return submodules;
++  }
+ 
+   /**
+    * Return a list of "Revisions" - where a revision knows about all the branch names that refer to
+-- 
+1.6.5
+

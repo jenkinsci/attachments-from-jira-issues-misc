@@ -1,0 +1,196 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.12"/>
+    <com.chikli.hudson.plugin.naginator.NaginatorOptOutProperty plugin="naginator@1.18">
+      <optOut>false</optOut>
+    </com.chikli.hudson.plugin.naginator.NaginatorOptOutProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.31">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>module</name>
+          <description></description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>version</name>
+          <description></description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>buildnumber</name>
+          <description></description>
+          <defaultValue>994000011</defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>tag</name>
+          <description></description>
+          <defaultValue>fw_loader_harry_main_994000011</defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>output_format</name>
+          <description>Specifies the output format of the SCA.
+Possible values are: simple, csv or xml</description>
+          <defaultValue>csv</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>build_mode</name>
+          <description>builde_mode can be either &apos;full&apos; or &apos;incremental&apos;
+&apos;incremental&apos; indicates to run Cppcheck only if it wasn&apos;t run before on the module in the same version, build_number, and tag.
+&apos;full&apos; indicates to run Cppcheck without checking if it was run before on the same version, build_number, and tag.</description>
+          <defaultValue>incremental</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>flavor_filter</name>
+          <description>Regular expression which specifies on which flavors to run the job
+Examples of possible values:
+*                                   : all flavors
+release.dynamic
+debug.static</description>
+          <defaultValue>*</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>true</concurrentBuild>
+  <customWorkspace>$JENKINS_HOME/workspace/$JOB_NAME/$BUILD_NUMBER</customWorkspace>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>build_path=&quot;/ckp/xm/$module/$version/B$buildnumber/cmadmin&quot;
+export_path=&quot;/var/www/manual/cppcheck/build/$tag&quot;
+
+if [ ! -d &quot;$build_path&quot; ]; then
+	echo &quot;Unable to access $build_path&quot;
+    exit 1
+fi
+
+if [ &quot;$build_mode&quot; == &quot;incremental&quot; ] &amp;&amp; [ -d &quot;$export_path&quot; ]; then
+	echo &quot;Result folder for this build ($export_path) already exists, no need to test.&quot;
+    cp -f $export_path/cppcheck.* .  
+    exit 0
+fi
+
+
+git init
+git remote add origin ssh://gitserver/$module
+git fetch origin $tag --depth 1
+git checkout -q FETCH_HEAD
+
+runcheck () {
+    local platform=$1
+   	local flavor=$2
+    mroot=&quot;`grep &quot;SRCROOT=&quot; $build_path/$platform/$flavor/auto-build.log | awk -F = &apos;{print $2}&apos;`&quot;
+    gcwd=&quot;`pwd`&quot;
+    echo $mroot $gcwd
+    cat &quot;$build_path/$platform/$flavor/auto-build.log&quot; | sed -r &quot;s#gmake\[([0-9]+)\]: Entering directory (.)$mroot#gmake\[\1]: Entering directory \2$gcwd#g&quot; | sed &quot;s#$mroot#$gcwd#g&quot; | sed &apos;s/\/local_ckp/\/ckp/g&apos; &gt; ${platform}.${flavor}.build.log
+    python CheckCommit.py -z ${version} -n ${module} -u ${tag} -v0 -m $output_format -o ./cppCheck.${platform}.${flavor}.log -l ./${platform}.${flavor}.build.log -r --check --full . &gt; cppcheck.$module.$version.$buildnumber.$platform.$flavor.$output_format || touch ERROR
+}
+
+for platform in $(ls -d $build_path/linux* | xargs -n 1 basename); do
+	for flavor in $(ls &quot;$build_path/$platform&quot;); do
+        if [[ $flavor == $flavor_filter ]]; then
+        	echo &quot;Run cppcheck-build on $flavor&quot;
+            runcheck &quot;$platform&quot; &quot;$flavor&quot; &amp;
+        fi
+	done;
+done;
+
+wait
+
+
+
+#exit 0</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.test.AggregatedTestResultPublisher plugin="junit@1.28">
+      <includeFailedBuilds>false</includeFailedBuilds>
+    </hudson.tasks.test.AggregatedTestResultPublisher>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>cppcheck.*.$output_format</artifacts>
+      <allowEmptyArchive>true</allowEmptyArchive>
+      <onlyIfSuccessful>false</onlyIfSuccessful>
+      <fingerprint>false</fingerprint>
+      <defaultExcludes>true</defaultExcludes>
+      <caseSensitive>true</caseSensitive>
+    </hudson.tasks.ArtifactArchiver>
+    <org.jenkinsci.plugins.cppcheck.CppcheckPublisher plugin="cppcheck@1.25">
+      <config>
+        <pattern>cppcheck*.$output_format</pattern>
+        <ignoreBlankFiles>false</ignoreBlankFiles>
+        <allowNoReport>true</allowNoReport>
+        <configSeverityEvaluation>
+          <threshold></threshold>
+          <newThreshold></newThreshold>
+          <failureThreshold></failureThreshold>
+          <newFailureThreshold></newFailureThreshold>
+          <healthy></healthy>
+          <unHealthy></unHealthy>
+          <severityError>true</severityError>
+          <severityWarning>true</severityWarning>
+          <severityStyle>true</severityStyle>
+          <severityPerformance>true</severityPerformance>
+          <severityInformation>true</severityInformation>
+          <severityNoCategory>true</severityNoCategory>
+          <severityPortability>true</severityPortability>
+        </configSeverityEvaluation>
+        <configGraph>
+          <xSize>500</xSize>
+          <ySize>200</ySize>
+          <numBuildsInGraph>0</numBuildsInGraph>
+          <displayAllErrors>true</displayAllErrors>
+          <displayErrorSeverity>false</displayErrorSeverity>
+          <displayWarningSeverity>false</displayWarningSeverity>
+          <displayStyleSeverity>false</displayStyleSeverity>
+          <displayPerformanceSeverity>false</displayPerformanceSeverity>
+          <displayInformationSeverity>false</displayInformationSeverity>
+          <displayNoCategorySeverity>false</displayNoCategorySeverity>
+          <displayPortabilitySeverity>false</displayPortabilitySeverity>
+        </configGraph>
+      </config>
+    </org.jenkinsci.plugins.cppcheck.CppcheckPublisher>
+    <hudson.tasks.Fingerprinter>
+      <targets>cppcheck*.$output_format</targets>
+      <defaultExcludes>true</defaultExcludes>
+      <caseSensitive>true</caseSensitive>
+    </hudson.tasks.Fingerprinter>
+    <hudson.plugins.ws__cleanup.WsCleanup plugin="ws-cleanup@0.38">
+      <patterns class="empty-list"/>
+      <deleteDirs>false</deleteDirs>
+      <skipWhenFailed>false</skipWhenFailed>
+      <cleanWhenSuccess>true</cleanWhenSuccess>
+      <cleanWhenUnstable>true</cleanWhenUnstable>
+      <cleanWhenFailure>true</cleanWhenFailure>
+      <cleanWhenNotBuilt>true</cleanWhenNotBuilt>
+      <cleanWhenAborted>true</cleanWhenAborted>
+      <notFailBuild>false</notFailBuild>
+      <cleanupMatrixParent>false</cleanupMatrixParent>
+      <externalDelete></externalDelete>
+      <disableDeferredWipeout>false</disableDeferredWipeout>
+    </hudson.plugins.ws__cleanup.WsCleanup>
+  </publishers>
+  <buildWrappers>
+    <hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.11.1"/>
+    <com.mig82.folders.wrappers.ParentFolderBuildWrapper plugin="folder-properties@1.1"/>
+  </buildWrappers>
+</project>

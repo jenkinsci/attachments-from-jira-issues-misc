@@ -1,0 +1,282 @@
+From f1061580f9a86d7c7d23f7fd13f17069770eaa64 Mon Sep 17 00:00:00 2001
+From: David Hallas <david@davidhallas.dk>
+Date: Tue, 5 Nov 2013 14:17:19 +0100
+Subject: [PATCH] Adds support for Google Test framework
+
+Adds support for the Google Test framework with XML output. To get
+Google Test to output in XML run it with --gtest_output=xml:filename
+---
+ .../plugins/xunit/types/GoogleTestInputMetric.java | 47 ++++++++++++++++++++++
+ .../plugins/xunit/types/GoogleTestType.java        | 42 +++++++++++++++++++
+ .../plugins/xunit/types/googletest-to-junit-4.xsl  | 40 ++++++++++++++++++
+ .../plugins/xunit/types/GoogleTestTypeTest.java    | 18 +++++++++
+ .../xunit/types/googletest/testcase1/input.xml     | 10 +++++
+ .../xunit/types/googletest/testcase1/result.xml    | 10 +++++
+ .../xunit/types/googletest/testcase2/input.xml     | 17 ++++++++
+ .../xunit/types/googletest/testcase2/result.xml    | 21 ++++++++++
+ 8 files changed, 205 insertions(+)
+ create mode 100644 src/main/java/org/jenkinsci/plugins/xunit/types/GoogleTestInputMetric.java
+ create mode 100644 src/main/java/org/jenkinsci/plugins/xunit/types/GoogleTestType.java
+ create mode 100644 src/main/resources/org/jenkinsci/plugins/xunit/types/googletest-to-junit-4.xsl
+ create mode 100644 src/test/java/org/jenkinsci/plugins/xunit/types/GoogleTestTypeTest.java
+ create mode 100644 src/test/resources/org/jenkinsci/plugins/xunit/types/googletest/testcase1/input.xml
+ create mode 100644 src/test/resources/org/jenkinsci/plugins/xunit/types/googletest/testcase1/result.xml
+ create mode 100644 src/test/resources/org/jenkinsci/plugins/xunit/types/googletest/testcase2/input.xml
+ create mode 100644 src/test/resources/org/jenkinsci/plugins/xunit/types/googletest/testcase2/result.xml
+
+diff --git a/src/main/java/org/jenkinsci/plugins/xunit/types/GoogleTestInputMetric.java b/src/main/java/org/jenkinsci/plugins/xunit/types/GoogleTestInputMetric.java
+new file mode 100644
+index 0000000..9dae8d5
+--- /dev/null
++++ b/src/main/java/org/jenkinsci/plugins/xunit/types/GoogleTestInputMetric.java
+@@ -0,0 +1,47 @@
++package org.jenkinsci.plugins.xunit.types;
++
++import com.thalesgroup.dtkit.junit.model.JUnitModel;
++import com.thalesgroup.dtkit.metrics.model.InputMetricXSL;
++import com.thalesgroup.dtkit.metrics.model.InputType;
++import com.thalesgroup.dtkit.metrics.model.OutputMetric;
++
++/**
++ * @author David Hallas
++ */
++public class GoogleTestInputMetric extends InputMetricXSL {
++
++    @Override
++    public InputType getToolType() {
++        return InputType.TEST;
++    }
++
++    @Override
++    public String getToolVersion() {
++        return "1.6";
++    }
++
++    @Override
++    public String getToolName() {
++        return "GoogleTest";
++    }
++
++    @Override
++    public boolean isDefault() {
++        return false;
++    }
++
++    @Override
++    public String getXslName() {
++        return "googletest-to-junit-4.xsl";
++    }
++
++    @Override
++    public String[] getInputXsdNameList() {
++        return null;
++    }
++
++    @Override
++    public OutputMetric getOutputFormatType() {
++        return JUnitModel.OUTPUT_JUNIT_4;
++    }
++}
+diff --git a/src/main/java/org/jenkinsci/plugins/xunit/types/GoogleTestType.java b/src/main/java/org/jenkinsci/plugins/xunit/types/GoogleTestType.java
+new file mode 100644
+index 0000000..61f0a26
+--- /dev/null
++++ b/src/main/java/org/jenkinsci/plugins/xunit/types/GoogleTestType.java
+@@ -0,0 +1,42 @@
++package org.jenkinsci.plugins.xunit.types;
++
++import com.thalesgroup.dtkit.metrics.hudson.api.descriptor.TestTypeDescriptor;
++import com.thalesgroup.dtkit.metrics.hudson.api.type.TestType;
++import com.thalesgroup.dtkit.metrics.model.InputMetric;
++import com.thalesgroup.dtkit.metrics.model.InputMetricException;
++import com.thalesgroup.dtkit.metrics.model.InputMetricFactory;
++import hudson.Extension;
++import org.kohsuke.stapler.DataBoundConstructor;
++
++/**
++ * @author David Hallas
++ */
++public class GoogleTestType extends TestType {
++
++    @DataBoundConstructor
++    public GoogleTestType(String pattern, boolean ignoreNoResultFiles, boolean failIfNotNew, boolean deleteOutputFiles, boolean stopProcessingIfError) {
++        super(pattern, ignoreNoResultFiles, failIfNotNew, deleteOutputFiles, stopProcessingIfError);
++    }
++
++    @Extension
++    public static class GoogleTestTypeDescriptor extends TestTypeDescriptor<GoogleTestType> {
++
++        public GoogleTestTypeDescriptor() {
++            super(GoogleTestType.class, null);
++        }
++
++        @Override
++        public String getId() {
++            return this.getClass().getName();
++        }
++
++        @Override
++        public InputMetric getInputMetric() {
++            try {
++                return InputMetricFactory.getInstance(GoogleTestInputMetric.class);
++            } catch (InputMetricException e) {
++                throw new RuntimeException("Can't create the inputMetric object for the class " + GoogleTestInputMetric.class);
++            }
++        }
++    }
++}
+diff --git a/src/main/resources/org/jenkinsci/plugins/xunit/types/googletest-to-junit-4.xsl b/src/main/resources/org/jenkinsci/plugins/xunit/types/googletest-to-junit-4.xsl
+new file mode 100644
+index 0000000..b1f87df
+--- /dev/null
++++ b/src/main/resources/org/jenkinsci/plugins/xunit/types/googletest-to-junit-4.xsl
+@@ -0,0 +1,40 @@
++<!-- from src/main/resources/org/jenkinsci/plugins/xunit/types/googletest-to-junit-4.xsl -->
++<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
++    <xsl:output method="xml" indent="yes" cdata-section-elements="system-out"/>
++    <xsl:template match="/">
++		<xsl:apply-templates/>
++    </xsl:template>
++	<xsl:template match="//testsuites">
++		<testsuites>
++			<xsl:apply-templates/>
++		</testsuites>
++    </xsl:template>
++	<xsl:template match="//testsuite">
++		<testsuite>
++			<xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
++			<xsl:attribute name="tests"><xsl:value-of select="@tests"/></xsl:attribute>
++			<xsl:apply-templates select="testcase"/>
++		</testsuite>
++	</xsl:template>
++	<xsl:template match="//testcase">
++		<testcase>
++			<xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
++			<xsl:attribute name="time"><xsl:value-of select="@time"/></xsl:attribute>
++			<xsl:attribute name="classname"><xsl:value-of select="@classname"/></xsl:attribute>
++			<xsl:if test="@status = 'notrun'">
++				<skipped/>
++			</xsl:if>
++			<xsl:apply-templates select="failure"/>
++		</testcase>
++	</xsl:template>
++	<xsl:template match="//failure">
++		<failure>
++			<xsl:value-of select="@message"/>
++		</failure>
++		<system-out>
++			<xsl:value-of select="."/>
++		</system-out>
++	</xsl:template>
++    <!-- this swallows all unmatched text -->
++    <!-- <xsl:template match="text()|@*"/>-->
++</xsl:stylesheet>
+diff --git a/src/test/java/org/jenkinsci/plugins/xunit/types/GoogleTestTypeTest.java b/src/test/java/org/jenkinsci/plugins/xunit/types/GoogleTestTypeTest.java
+new file mode 100644
+index 0000000..d40bded
+--- /dev/null
++++ b/src/test/java/org/jenkinsci/plugins/xunit/types/GoogleTestTypeTest.java
+@@ -0,0 +1,18 @@
++package org.jenkinsci.plugins.xunit.types;
++
++import org.junit.Test;
++
++/**
++ * @author David Hallas
++ */
++public class GoogleTestTypeTest extends AbstractTest {
++
++	@Test
++    public void testTestCase1() throws Exception {
++        convertAndValidate(GoogleTestInputMetric.class, "googletest/testcase1/input.xml", "googletest/testcase1/result.xml");
++    }
++	@Test
++    public void testTestCase2() throws Exception {
++        convertAndValidate(GoogleTestInputMetric.class, "googletest/testcase2/input.xml", "googletest/testcase2/result.xml");
++    }
++}
+diff --git a/src/test/resources/org/jenkinsci/plugins/xunit/types/googletest/testcase1/input.xml b/src/test/resources/org/jenkinsci/plugins/xunit/types/googletest/testcase1/input.xml
+new file mode 100644
+index 0000000..b8d2ee4
+--- /dev/null
++++ b/src/test/resources/org/jenkinsci/plugins/xunit/types/googletest/testcase1/input.xml
+@@ -0,0 +1,10 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<testsuites tests="3" failures="0" disabled="0" errors="0" time="0.042" name="AllTests">
++  <testsuite name="TestAbsTimer" tests="2" failures="0" disabled="0" errors="0" time="0.001">
++    <testcase name="Basic" status="run" time="0.001" classname="TestAbsTimer" />
++    <testcase name="InvalidTime" status="run" time="0.3" classname="TestAbsTimer" />
++  </testsuite>
++  <testsuite name="AppCreator" tests="1" failures="0" disabled="0" errors="0" time="0">
++    <testcase name="Basic" status="run" time="1.42" classname="AppCreator" />
++  </testsuite>
++</testsuites>
+diff --git a/src/test/resources/org/jenkinsci/plugins/xunit/types/googletest/testcase1/result.xml b/src/test/resources/org/jenkinsci/plugins/xunit/types/googletest/testcase1/result.xml
+new file mode 100644
+index 0000000..45cf774
+--- /dev/null
++++ b/src/test/resources/org/jenkinsci/plugins/xunit/types/googletest/testcase1/result.xml
+@@ -0,0 +1,10 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<testsuites>
++  <testsuite name="TestAbsTimer" tests="2">
++    <testcase name="Basic" time="0.001" classname="TestAbsTimer"/>
++    <testcase name="InvalidTime" time="0.3" classname="TestAbsTimer"/>
++  </testsuite>
++  <testsuite name="AppCreator" tests="1">
++    <testcase name="Basic" time="1.42" classname="AppCreator"/>
++  </testsuite>
++</testsuites>
+diff --git a/src/test/resources/org/jenkinsci/plugins/xunit/types/googletest/testcase2/input.xml b/src/test/resources/org/jenkinsci/plugins/xunit/types/googletest/testcase2/input.xml
+new file mode 100644
+index 0000000..0e040c3
+--- /dev/null
++++ b/src/test/resources/org/jenkinsci/plugins/xunit/types/googletest/testcase2/input.xml
+@@ -0,0 +1,17 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<testsuites tests="4" failures="2" disabled="1" errors="0" time="0" name="AllTests">
++  <testsuite name="TestSuite" tests="4" failures="2" disabled="1" errors="0" time="0">
++    <testcase name="Ok_Testcase" status="run" time="0" classname="TestSuite" />
++    <testcase name="Failing_Testcase" status="run" time="0" classname="TestSuite">
++      <failure message="Value of: false&#x0A;  Actual: false&#x0A;Expected: true" type=""><![CDATA[Test_moca_bl.cpp:271
++Value of: false
++  Actual: false
++Expected: true]]></failure>
++    </testcase>
++    <testcase name="Error_Testcase" status="run" time="0" classname="TestSuite">
++      <failure message="Unknown C++ exception thrown in the test body." type=""><![CDATA[unknown file
++Unknown C++ exception thrown in the test body.]]></failure>
++    </testcase>
++    <testcase name="DISABLED_Testcase" status="notrun" time="0" classname="TestSuite" />
++  </testsuite>
++</testsuites>
+diff --git a/src/test/resources/org/jenkinsci/plugins/xunit/types/googletest/testcase2/result.xml b/src/test/resources/org/jenkinsci/plugins/xunit/types/googletest/testcase2/result.xml
+new file mode 100644
+index 0000000..f524e2b
+--- /dev/null
++++ b/src/test/resources/org/jenkinsci/plugins/xunit/types/googletest/testcase2/result.xml
+@@ -0,0 +1,21 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<testsuites>
++  <testsuite name="TestSuite" tests="4">
++    <testcase name="Ok_Testcase" time="0" classname="TestSuite"/>
++    <testcase name="Failing_Testcase" time="0" classname="TestSuite">
++		<failure>Value of: false&#x0A;  Actual: false&#x0A;Expected: true</failure>
++		<system-out><![CDATA[Test_moca_bl.cpp:271
++Value of: false
++  Actual: false
++Expected: true]]></system-out>
++    </testcase>
++    <testcase name="Error_Testcase" time="0" classname="TestSuite">
++		<failure>Unknown C++ exception thrown in the test body.</failure>
++		<system-out><![CDATA[unknown file
++Unknown C++ exception thrown in the test body.]]></system-out>
++    </testcase>
++    <testcase name="DISABLED_Testcase" time="0" classname="TestSuite">
++		<skipped/>
++    </testcase>
++  </testsuite>
++</testsuites>
+-- 
+1.8.1.5
+

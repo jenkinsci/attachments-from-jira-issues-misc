@@ -1,0 +1,29 @@
+--- jacoco-plugin-master/src/main/java/hudson/plugins/jacoco/JacocoBuildAction.java~	2014-08-18 12:31:57.310686900 +0200
++++ jacoco-plugin-master/src/main/java/hudson/plugins/jacoco/JacocoBuildAction.java	2014-08-18 12:28:32.142590600 +0200
+@@ -11,6 +11,7 @@
+ import hudson.plugins.jacoco.model.CoverageObject;
+ import hudson.plugins.jacoco.report.CoverageReport;
+ 
++import java.io.ByteArrayOutputStream;
+ import java.io.IOException;
+ import java.io.PrintStream;
+ import java.io.Serializable;
+@@ -39,7 +40,7 @@
+ 	
+ 	@Deprecated public transient AbstractBuild<?,?> build;
+ 	
+-	public final transient PrintStream logger;
++	public transient PrintStream logger;
+ 	@Deprecated private transient ArrayList reports;
+ 	private transient WeakReference<CoverageReport> report;
+ 	private final String[] inclusions;
+@@ -224,6 +225,9 @@
+ 		final JacocoReportDir reportFolder = getJacocoReport();
+ 
+ 		try {
++			if (logger == null) {
++				logger = new PrintStream(new ByteArrayOutputStream());
++			}
+ 			CoverageReport r = new CoverageReport(this, reportFolder.parse(inclusions, exclusions));
+ 			report = new WeakReference<CoverageReport>(r);
+ 			r.setThresholds(thresholds);

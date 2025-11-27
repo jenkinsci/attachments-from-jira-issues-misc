@@ -1,0 +1,688 @@
+Index: src/main/java/hudson/model/JobView.java
+===================================================================
+--- src/main/java/hudson/model/JobView.java	(revision 0)
++++ src/main/java/hudson/model/JobView.java	(revision 0)
+@@ -0,0 +1,15 @@
++package hudson.model;
++
++import java.util.Set;
++
++/**
++ * For All Viewtypes having their own joblist
++ * @author maxa
++ */
++interface JobView {
++    
++    /**
++     * List of job names. 
++     */
++    public Set<String> getJobNames();
++}
+Index: src/main/java/hudson/model/View.java
+===================================================================
+--- src/main/java/hudson/model/View.java	(revision 9323)
++++ src/main/java/hudson/model/View.java	(working copy)
+@@ -94,6 +94,14 @@
+         // TODO: this object should have its own ACL
+         return Hudson.getInstance().getACL();
+     }
++    
++    /**
++     * For user-owned (personal) views
++     * @return
++     */
++    public String getUserName() {
++	return null;
++    }
+ 
+     /**
+      * Short for {@code getACL().checkPermission(p)}
+Index: src/main/java/hudson/model/PersonalView.java
+===================================================================
+--- src/main/java/hudson/model/PersonalView.java	(revision 0)
++++ src/main/java/hudson/model/PersonalView.java	(revision 0)
+@@ -0,0 +1,139 @@
++package hudson.model;
++
++import hudson.util.CaseInsensitiveComparator;
++import org.kohsuke.stapler.StaplerRequest;
++import org.kohsuke.stapler.StaplerResponse;
++
++import javax.servlet.ServletException;
++import java.io.IOException;
++import java.util.Arrays;
++import java.util.List;
++import java.util.Set;
++import java.util.TreeSet;
++import java.util.regex.Pattern;
++
++/**
++ * Describes so-called persnal view -- displys only job tied to currently
++ * logged user
++ * 
++ * TODO: add adding other jobs, just like in ListView
++ * 
++ * @author Max Sauer
++ */
++public class PersonalView extends View implements JobView {
++
++    private final Hudson owner;
++
++    /**
++     * List of job names. This is what gets serialized.
++     */
++    final Set<String> jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
++    
++    /**
++     * Name of this view.
++     */
++    private String name;
++
++    /**
++     * Message displayed in the view page.
++     */
++    private String description;
++
++    /**
++     * Include regex string.
++     */
++    private String includeRegex;
++    
++    /**
++     * Compiled include pattern from the includeRegex string.
++     */
++    private transient Pattern includePattern;
++    
++    /**
++     * Username of user which created this job
++     */
++    private String userName;
++
++    public PersonalView(Hudson owner, String name) {
++        this.name = name;
++        this.owner = owner;
++	this.userName = Hudson.getAuthentication().getName();
++    }
++    
++    @Override
++    public String getUserName() {
++	return userName;
++    }
++
++    /**
++     * Returns a read-only view of all {@link Job}s in this view.
++     *
++     * <p>
++     * This method returns a separate copy each time to avoid
++     * concurrent modification issue.
++     */
++    public synchronized List<TopLevelItem> getItems() {
++	Set<String> names = new TreeSet<String>();
++	String usn = Hudson.getAuthentication().getName();
++	for (TopLevelItem item : owner.getAllItems()) {
++	    String itemName = item.getName();
++
++	    for (AbstractProject proj : owner.getProjects()) {
++		if (proj.getName().equals(itemName) && proj.getUserName() != null && proj.getUserName().equals(usn)) {
++		    names.add(itemName);
++		}
++	    }
++	}
++
++	TopLevelItem[] items = new TopLevelItem[names.size()];
++	int i = 0;
++	for (String nm : names)
++	    items[i++] = owner.getItem(nm);
++	return Arrays.asList(items);
++    }
++
++    public TopLevelItem getItem(String name) {
++        return owner.getItem(name);
++    }
++
++    public TopLevelItem getJob(String name) {
++        return getItem(name);
++    }
++
++    public boolean contains(TopLevelItem item) {
++        return jobNames.contains(item.getName());
++    }
++
++    public String getViewName() {
++        return name;
++    }
++
++    public String getDescription() {
++        return description;
++    }
++
++    public String getDisplayName() {
++        return name;
++    }
++    
++    public String getIncludeRegex() {
++        return includeRegex;
++    }
++
++    public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
++        Item item = owner.doCreateItem(req, rsp);
++        if(item!=null) {
++            jobNames.add(item.getName());
++            owner.save();
++        }
++        return item;
++    }
++
++    public String getUrl() {
++        return "view/"+name+'/';
++    }
++
++    public Set<String> getJobNames() {
++	return jobNames;
++    }
++}
+Index: src/main/java/hudson/model/AbstractProject.java
+===================================================================
+--- src/main/java/hudson/model/AbstractProject.java	(revision 9323)
++++ src/main/java/hudson/model/AbstractProject.java	(working copy)
+@@ -133,6 +133,16 @@
+      * come and go as configuration change, so it's kept separate.
+      */
+     protected transient /*final*/ List<Action> transientActions = new Vector<Action>();
++    
++    /** 
++     * true if this project should be personal, ie. visible only to the user 
++     * which created it
++     */
++    private boolean personal = true;
++    /**
++     * userName of user, which created this job
++     */
++    private String userName;
+ 
+     protected AbstractProject(ItemGroup parent, String name) {
+         super(parent,name);
+@@ -388,7 +398,22 @@
+     public JDK getJDK() {
+         return Hudson.getInstance().getJDK(jdk);
+     }
++    
++    public boolean getPersonal() {
++	return personal;
++    }
++    
++    public String getUserName() {
++	return userName;
++    }
+ 
++    public boolean isLogged() {
++	String usn = Hudson.getAuthentication().getName();
++	if(usn == null || usn.equals("") || usn.equals("anonymous"))
++	    return false;
++	else return true;
++    }
++    
+     /**
+      * Overwrites the JDK setting.
+      */
+@@ -889,6 +914,15 @@
+             canRoam = true;
+             assignedNode = null;
+         }
++	
++	String personalCB = req.getParameter("personal");
++	if(personalCB != null && personalCB.equals("on")) {
++	    personal = true;
++	    userName = Hudson.getAuthentication().getName();
++	} else {
++	    personal = false;
++	    userName = null;
++	}
+ 
+         authToken = BuildAuthorizationToken.create(req);
+ 
+Index: src/main/java/hudson/model/Hudson.java
+===================================================================
+--- src/main/java/hudson/model/Hudson.java	(revision 9323)
++++ src/main/java/hudson/model/Hudson.java	(working copy)
+@@ -111,6 +111,7 @@
+ import java.util.GregorianCalendar;
+ import java.util.HashMap;
+ import java.util.HashSet;
++import java.util.Iterator;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.Map.Entry;
+@@ -240,7 +241,7 @@
+     /**
+      * {@link ListView}s.
+      */
+-    private List<ListView> views;   // can't initialize it eagerly for backward compatibility
++    private List<View> views;   // can't initialize it eagerly for backward compatibility
+ 
+     private transient final FingerprintMap fingerprintMap = new FingerprintMap();
+ 
+@@ -619,8 +620,23 @@
+      * @see #getAllItems(Class)
+      */
+     public List<TopLevelItem> getItems() {
+-        return new ArrayList<TopLevelItem>(items.values());
++	Set<String> names = new TreeSet<String>();
++	for(AbstractProject proj : getProjects()) {
++	    if(proj.getUserName() == null || proj.getUserName().equals("anonymous"))
++		names.add(proj.getName());
++	}
++	
++	TopLevelItem[] itms = new TopLevelItem[names.size()];
++        int i=0;
++        for (String name : names)
++	    itms[i++] = getItem(name);
++        return Arrays.asList(itms);
++//        return new ArrayList<TopLevelItem>(items.values());
+     }
++    
++    public List<TopLevelItem> getAllItems() {
++	return new ArrayList<TopLevelItem>(items.values());
++    }
+ 
+     /**
+      * Gets all the {@link Item}s recursively in the {@link ItemGroup} tree
+@@ -689,7 +705,7 @@
+ 
+     public synchronized View getView(String name) {
+         if(views!=null) {
+-            for (ListView v : views) {
++            for (View v : views) {
+                 if(v.getViewName().equals(name))
+                     return v;
+             }
+@@ -706,9 +722,34 @@
+     @Exported
+     public synchronized View[] getViews() {
+         if(views==null)
+-            views = new ArrayList<ListView>();
+-        View[] r = new View[views.size()+1];
+-        views.toArray(r);
++	    views = new ArrayList<View>();
++
++	String userName = getAuthentication().getName();
++	List<View> orig = new ArrayList<View>();
++	orig.addAll(views);
++
++	for (View view : views) {
++	    //remove all ListViews, which user does not have permission to watch
++	    if (view instanceof ListView) {
++		String users = ((ListView) view).getUsers();
++		if (users != null && !users.contains(getAuthentication().getName())) {
++//		    System.out.println("Removing ListView: " + view.getDisplayName());
++		    orig.remove(view);
++		}
++	    }
++	    if (view instanceof PersonalView) { //remove personal views of other users
++		if (view.getUserName() != null) {
++		    if (!view.getUserName().equals(userName)) {
++//			System.out.println("Removing PersonalView: " + view.getDisplayName());
++			orig.remove(view);
++		    }
++		}
++	    }
++	}
++
++	View[] r = new View[orig.size()+1];
++        orig.toArray(r);
++	
+         // sort Views and put "all" at the very beginning
+         r[r.length-1] = r[0];
+         Arrays.sort(r,1,r.length, View.SORTER);
+@@ -716,7 +757,7 @@
+         return r;
+     }
+ 
+-    public synchronized void deleteView(ListView view) throws IOException {
++    public synchronized void deleteView(View view) throws IOException {
+         if(views!=null) {
+             views.remove(view);
+             save();
+@@ -876,7 +917,7 @@
+             })
+             .add(new CollectionSearchIndex() {// for views
+                 protected View get(String key) { return getView(key); }
+-                protected Collection<ListView> all() { return views; }
++                protected Collection<View> all() { return views; }
+             });
+     }
+ 
+@@ -1121,10 +1162,14 @@
+ 
+         items.remove(item.getName());
+         if(views!=null) {
+-            for (ListView v : views) {
+-                synchronized(v) {
+-                    v.jobNames.remove(item.getName());
+-                }
++            for (View v : views) {
++		if (v instanceof JobView) {
++		    synchronized (v) {
++			Set<String> set = ((JobView) v).getJobNames();
++			if(set != null)
++			    set.remove(item.getName());
++		    }
++		}
+             }
+             save();
+         }
+@@ -1139,10 +1184,13 @@
+         items.put(newName,job);
+ 
+         if(views!=null) {
+-            for (ListView v : views) {
+-                synchronized(v) {
+-                    if(v.jobNames.remove(oldName))
+-                        v.jobNames.add(newName);
++            for (View v : views) {
++		if(v instanceof JobView) {
++		    synchronized (v) {
++		    Set<String> set = ((JobView) v).getJobNames();
++                    if(set != null && set.remove(oldName))
++                        set.add(newName);
++		    }
+                 }
+             }
+             save();
+@@ -1635,15 +1683,67 @@
+ 
+         ListView v = new ListView(this, name);
+         if(views==null)
+-            views = new Vector<ListView>();
++            views = new Vector<View>();
+         views.add(v);
+         save();
+ 
+         // redirect to the config screen
+         rsp.sendRedirect2("./"+v.getUrl()+"configure");
+     }
++    
++    /**
++     * Creates a personal view from jelly request
++     * @param req
++     * @param rsp
++     * @throws java.io.IOException
++     * @throws javax.servlet.ServletException
++     */
++    public synchronized void doCreatePersonalView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
++        checkPermission(View.CREATE);
+ 
++        req.setCharacterEncoding("UTF-8");
++
++        String name = req.getParameter("name");
++
++        try {
++            checkGoodName(name);
++        } catch (ParseException e) {
++            sendError(e, req, rsp);
++            return;
++        }
++
++        View v = createPersonalView(name);
++
++        // redirect to the config screen
++        rsp.sendRedirect2("./"+v.getUrl()+"configure");
++    }
++    
++    public View createPersonalView(String name) throws IOException {
++	PersonalView v = new PersonalView(this, name);
++        if(views==null)
++            views = new Vector<View>();
++        views.add(v);
++        save();
++	return v;
++    }
++    
+     /**
++     * Checks if there is already a personal view for currently logged user
++     * @return true if there is personal view already created
++     */
++    public boolean existsPersonalViewForUser() {
++	String loggedUsername = Hudson.getAuthentication().getName();
++	boolean exists = false;
++	for (View view : views) {
++	    if(view instanceof PersonalView) {
++		if(view.getUserName().equals(loggedUsername))
++		    exists = true;
++	    }
++	}
++	return exists;
++    }
++
++    /**
+      * Check if the given name is suitable as a name
+      * for job, view, etc.
+      *
+Index: src/main/java/hudson/model/ListView.java
+===================================================================
+--- src/main/java/hudson/model/ListView.java	(revision 9323)
++++ src/main/java/hudson/model/ListView.java	(working copy)
+@@ -10,8 +10,6 @@
+ import javax.servlet.ServletException;
+ import java.io.IOException;
+ import java.util.Arrays;
+-import java.util.Collection;
+-import java.util.Iterator;
+ import java.util.List;
+ import java.util.Set;
+ import java.util.TreeSet;
+@@ -24,7 +22,7 @@
+  *
+  * @author Kohsuke Kawaguchi
+  */
+-public class ListView extends View {
++public class ListView extends View implements JobView {
+ 
+     private final Hudson owner;
+ 
+@@ -52,13 +50,40 @@
+      * Compiled include pattern from the includeRegex string.
+      */
+     private transient Pattern includePattern;
+-
++    
++    /**
++     * List of users allowed to view this View
++     */
++    private String users;
++    
+     public ListView(Hudson owner, String name) {
+         this.name = name;
+         this.owner = owner;
+     }
+-
++    
+     /**
++     * Provides list of users, defaults to username
++     * @return
++     */
++    public String getUsers() {
++//	if(users == null || users.equals(""))
++//	    return Hudson.getAuthentication().getName();
++//	else
++	    return users;
++    }
++    
++    /**
++     * Is someone logged in?
++     * @return true if yes
++     */
++    public boolean isLogged() {
++	String usn = Hudson.getAuthentication().getName();
++	if(usn == null || usn.equals("") || usn.equals("anonymous"))
++	    return false;
++	else return true;
++    }
++    
++    /**
+      * Returns a read-only view of all {@link Job}s in this view.
+      *
+      * <p>
+@@ -66,7 +91,7 @@
+      * concurrent modification issue.
+      */
+     public synchronized List<TopLevelItem> getItems() {
+-        Set<String> names = (Set<String>) ((TreeSet<String>) jobNames).clone();
++	Set<String> names = (Set<String>) ((TreeSet<String>) jobNames).clone();
+         
+         if (includeRegex != null) {
+             try {
+@@ -75,19 +100,19 @@
+                 }
+ 
+                 for (TopLevelItem item : owner.getItems()) {
+-                	String itemName = item.getName();
++		    String itemName = item.getName();
+ 					if (includePattern.matcher(itemName).matches()) {
+-                        names.add(itemName);
+-                    }
+-                }
++			    names.add(itemName);
++			}
++		    }
+             } catch (PatternSyntaxException pse) {
+-            }
++		}
+         }
+         
+         TopLevelItem[] items = new TopLevelItem[names.size()];
+         int i=0;
+         for (String name : names)
+-            items[i++] = owner.getItem(name);
++	    items[i++] = owner.getItem(name);
+         return Arrays.asList(items);
+     }
+ 
+@@ -147,7 +172,8 @@
+         }
+ 
+         description = Util.nullify(req.getParameter("description"));
+-        
++        users = Util.nullify(req.getParameter("users"));
++	
+         if (req.getParameter("useincluderegex") != null) {
+             includeRegex = Util.nullify(req.getParameter("includeregex"));
+         } else {
+@@ -210,4 +236,25 @@
+             }
+         }.process();
+     }
++    
++//    /**
++//     * Checks if the user list is not empty
++//     */
++//    public synchronized void doUserCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
++//	new FormFieldValidator(req, rsp, false) {
++//
++//	    @Override
++//	    protected void check() throws IOException, ServletException {
++//		String v = Util.fixEmpty(request.getParameter("value"));
++//		if (v == null || v.equals(""))
++//		    error("List of allowed users cannot be empty");
++//		else
++//		    ok();
++//	    }
++//	}.process();
++//    }
++
++    public Set<String> getJobNames() {
++	return jobNames;
++    }
+ }
+Index: src/main/java/hudson/security/RememberMeServicesProxy.java
+===================================================================
+--- src/main/java/hudson/security/RememberMeServicesProxy.java	(revision 9323)
++++ src/main/java/hudson/security/RememberMeServicesProxy.java	(working copy)
+@@ -1,5 +1,8 @@
+ package hudson.security;
+ 
++import java.io.IOException;
++import java.util.logging.Level;
++import java.util.logging.Logger;
+ import org.acegisecurity.ui.rememberme.RememberMeServices;
+ import org.acegisecurity.Authentication;
+ 
+@@ -39,6 +42,15 @@
+     public void loginSuccess(HttpServletRequest request, HttpServletResponse response, Authentication successfulAuthentication) {
+         RememberMeServices d = delegate;
+         if(d!=null)     d.loginSuccess(request,response,successfulAuthentication);
++	
++	//Create personal view for logged user
++	Hudson instance = Hudson.getInstance();
++	if(!instance.existsPersonalViewForUser())
++	    try {
++	    instance.createPersonalView("Personal");
++	} catch (IOException ex) {
++	    Logger.getLogger(RememberMeServicesProxy.class.getName()).log(Level.SEVERE, null, ex);
++	}
+     }
+ 
+     public void setDelegate(RememberMeServices delegate) {
+Index: src/main/resources/hudson/model/AbstractItem/configure-common.jelly
+===================================================================
+--- src/main/resources/hudson/model/AbstractItem/configure-common.jelly	(revision 9323)
++++ src/main/resources/hudson/model/AbstractItem/configure-common.jelly	(working copy)
+@@ -32,6 +32,12 @@
+       </f:entry>
+     </f:optionalBlock>
+   </j:if>
++  
++  <j:if test="${it.logged}">
++    <f:section title="Personal">
++      <f:optionalBlock name="personal" title="Make this job personal" checked="${it.personal==true}"/>
++    </f:section>
++  </j:if>
+ 
+   <f:section title="${%Advanced Project Options}">
+     <f:advanced>
+Index: src/main/resources/hudson/model/ListView/configure.jelly
+===================================================================
+--- src/main/resources/hudson/model/ListView/configure.jelly	(revision 9323)
++++ src/main/resources/hudson/model/ListView/configure.jelly	(working copy)
+@@ -19,6 +19,13 @@
+             <br/>
+           </j:forEach>
+         </f:entry>
++	
++	<j:if test="${it.logged}">
++	  <f:entry title="Allowed only Listed Users: ">
++	    <input type="text" class="setting-input" name="users" value="${it.users}"/>
++	    (leave empty for def. visibility)
++	  </f:entry>
++	</j:if>  
+         
+         <f:optionalBlock name="useincluderegex" title="${%Use a regular expression to include jobs into the view}" checked="${it.includeRegex != null}" help="/help/view-config/includeregex.html">
+           <f:entry title="${%Regular expression}">
+Index: src/main/resources/hudson/model/PersonalView/sidepanel2.jelly
+===================================================================
+--- src/main/resources/hudson/model/PersonalView/sidepanel2.jelly	(revision 0)
++++ src/main/resources/hudson/model/PersonalView/sidepanel2.jelly	(revision 0)
+@@ -0,0 +1,8 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
++    
++        <!-- For now, let's not have Personal Jobs view configurable/ deletable -->
++        <!--
++	<l:task icon="images/24x24/gear.gif" href="configure" title="${%Edit View}"  permission="${it.CONFIGURE}" />
++	<l:task icon="images/24x24/edit-delete.gif" href="delete" title="${%Delete View}"  permission="${it.CONFIGURE}" />
++	-->
++</j:jelly>
+\ No newline at end of file
+Index: src/main/resources/hudson/model/PersonalView/noJob.jelly
+===================================================================
+--- src/main/resources/hudson/model/PersonalView/noJob.jelly	(revision 0)
++++ src/main/resources/hudson/model/PersonalView/noJob.jelly	(revision 0)
+@@ -0,0 +1,8 @@
++<j:jelly xmlns:j="jelly:core">
++<div>
++  There are no "Personal" Jobs created. 
++  <j:if test="${h.hasPermission(it.CONFIGURE)}">
++      Please <a href="/newJob">create some</a>
++  </j:if>
++</div>
++</j:jelly>
+\ No newline at end of file

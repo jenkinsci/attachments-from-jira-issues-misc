@@ -1,0 +1,31 @@
+[ws_dev] $ /usr/lib64/jvm/java/bin/java -cp /data/ci/jenkins/plugins/maven-plugin/WEB-INF/lib/maven35-agent-1.12-alpha-1.jar:/data/ci/maven/apache-maven-3.5.0/boot/plexus-classworlds-2.5.2.jar:/data/ci/maven/apache-maven-3.5.0/conf/logg$
+Exception in thread "main" java.lang.reflect.InvocationTargetException
+        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:90)
+        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:55)
+        at java.lang.reflect.Method.invoke(Method.java:508)
+        at jenkins.maven3.agent.Maven35Main.main(Maven35Main.java:135)
+        at jenkins.maven3.agent.Maven35Main.main(Maven35Main.java:64)
+Caused by: java.io.IOException: Failed to initialize the default JAR Cache location
+        at hudson.remoting.JarCache.getDefault(JarCache.java:41)
+        at hudson.remoting.ChannelBuilder.withJarCacheOrDefault(ChannelBuilder.java:219)
+        at hudson.remoting.Launcher.main(Launcher.java:735)
+        at hudson.remoting.Launcher.main(Launcher.java:723)
+        at hudson.remoting.Launcher.main(Launcher.java:714)
+        at hudson.remoting.Launcher.main(Launcher.java:710)
+        ... 6 more
+Caused by: java.lang.IllegalArgumentException: Root directory not writable: /usr/share/tomcat/.jenkins/cache/jars
+        at hudson.remoting.FileSystemJarCache.<init>(FileSystemJarCache.java:58)
+        at hudson.remoting.JarCache.getDefault(JarCache.java:39)
+        ... 11 more
+Caused by: java.nio.file.AccessDeniedException: /usr/share/tomcat/.jenkins
+        at sun.nio.fs.UnixException.translateToIOException(UnixException.java:96)
+        at sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:114)
+        at sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:119)
+        at sun.nio.fs.UnixFileSystemProvider.createDirectory(UnixFileSystemProvider.java:396)
+        at java.nio.file.Files.createDirectory(Files.java:685)
+        at java.nio.file.Files.createAndCheckIsDirectory(Files.java:792)
+        at java.nio.file.Files.createDirectories(Files.java:778)
+        at hudson.remoting.Util.mkdirs(Util.java:231)
+        at hudson.remoting.FileSystemJarCache.<init>(FileSystemJarCache.java:56)
+        ... 12 more

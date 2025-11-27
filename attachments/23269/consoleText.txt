@@ -1,0 +1,40 @@
+Started by user Stuart Whelan
+Building remotely on Ubuntu in workspace /home/swhelan/jenkins/workspace/foo
+hudson.util.IOException2: remote file operation failed: /home/swhelan/jenkins/workspace/foo at hudson.remoting.Channel@211f1041:Ubuntu
+	at hudson.FilePath.act(FilePath.java:861)
+	at hudson.FilePath.act(FilePath.java:838)
+	at hudson.scm.SubversionSCM.checkout(SubversionSCM.java:843)
+	at hudson.scm.SubversionSCM.checkout(SubversionSCM.java:781)
+	at hudson.model.AbstractProject.checkout(AbstractProject.java:1342)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.defaultCheckout(AbstractBuild.java:683)
+	at jenkins.scm.SCMCheckoutStrategy.checkout(SCMCheckoutStrategy.java:88)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.run(AbstractBuild.java:588)
+	at hudson.model.Run.execute(Run.java:1567)
+	at hudson.model.FreeStyleBuild.run(FreeStyleBuild.java:46)
+	at hudson.model.ResourceController.execute(ResourceController.java:88)
+	at hudson.model.Executor.run(Executor.java:237)
+Caused by: java.io.IOException: Remote call on Ubuntu failed
+	at hudson.remoting.Channel.call(Channel.java:681)
+	at hudson.FilePath.act(FilePath.java:854)
+	... 11 more
+Caused by: java.lang.NoSuchMethodError: org.tmatesoft.svn.core.wc.SVNBasicClient.getOperationsFactory()Lorg/tmatesoft/svn/core/wc2/SvnOperationFactory;
+	at hudson.scm.SvnClientManager.wrapUp(SvnClientManager.java:46)
+	at hudson.scm.SvnClientManager.getWCClient(SvnClientManager.java:38)
+	at hudson.scm.subversion.UpdateUpdater$TaskImpl.parseSvnInfo(UpdateUpdater.java:114)
+	at hudson.scm.subversion.UpdateUpdater$TaskImpl.isUpdatable(UpdateUpdater.java:87)
+	at hudson.scm.subversion.UpdateUpdater$TaskImpl.perform(UpdateUpdater.java:120)
+	at hudson.scm.subversion.WorkspaceUpdater$UpdateTask.delegateTo(WorkspaceUpdater.java:153)
+	at hudson.scm.SubversionSCM$CheckOutTask.perform(SubversionSCM.java:903)
+	at hudson.scm.SubversionSCM$CheckOutTask.invoke(SubversionSCM.java:884)
+	at hudson.scm.SubversionSCM$CheckOutTask.invoke(SubversionSCM.java:867)
+	at hudson.FilePath$FileCallableWrapper.call(FilePath.java:2348)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:118)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:48)
+	at hudson.remoting.Request$2.run(Request.java:326)
+	at hudson.remoting.InterceptingExecutorService$1.call(InterceptingExecutorService.java:72)
+	at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:334)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:166)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1110)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:603)
+	at java.lang.Thread.run(Thread.java:679)
+Finished: FAILURE

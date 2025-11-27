@@ -1,0 +1,46 @@
+Démarré par l'utilisateur anonymous
+Parsing POMs
+ERROR: Echec à la lecture des POMs
+org.apache.maven.project.ProjectBuildingException: Cannot find parent: applications:TEST_PARENT for project: null:TEST:war:null for project null:TEST:war:null
+	at org.apache.maven.project.DefaultMavenProjectBuilder.assembleLineage(DefaultMavenProjectBuilder.java:1370)
+	at org.apache.maven.project.DefaultMavenProjectBuilder.buildInternal(DefaultMavenProjectBuilder.java:821)
+	at org.apache.maven.project.DefaultMavenProjectBuilder.buildFromSourceFileInternal(DefaultMavenProjectBuilder.java:506)
+	at org.apache.maven.project.DefaultMavenProjectBuilder.build(DefaultMavenProjectBuilder.java:215)
+	at hudson.maven.MavenEmbedder.readProject(MavenEmbedder.java:323)
+	at hudson.maven.MavenModuleSetBuild$PomParser.invoke(MavenModuleSetBuild.java:735)
+	at hudson.maven.MavenModuleSetBuild$PomParser.invoke(MavenModuleSetBuild.java:681)
+	at hudson.FilePath.act(FilePath.java:649)
+	at hudson.FilePath.act(FilePath.java:633)
+	at hudson.maven.MavenModuleSetBuild$RunnerImpl.parsePoms(MavenModuleSetBuild.java:431)
+	at hudson.maven.MavenModuleSetBuild$RunnerImpl.doRun(MavenModuleSetBuild.java:315)
+	at hudson.model.AbstractBuild$AbstractRunner.run(AbstractBuild.java:271)
+	at hudson.model.Run.run(Run.java:938)
+	at hudson.maven.MavenModuleSetBuild.run(MavenModuleSetBuild.java:234)
+	at hudson.model.ResourceController.execute(ResourceController.java:93)
+	at hudson.model.Executor.run(Executor.java:118)
+Caused by: org.apache.maven.project.ProjectBuildingException: POM 'applications:TEST_PARENT' not found in repository: Unable to download the artifact from any repository
+
+  applications:TEST_PARENT:pom:4.4.0-SNAPSHOT
+
+from the specified remote repositories:
+  central (http://repo1.maven.org/maven2)
+ for project applications:TEST_PARENT
+	at org.apache.maven.project.DefaultMavenProjectBuilder.findModelFromRepository(DefaultMavenProjectBuilder.java:603)
+	at org.apache.maven.project.DefaultMavenProjectBuilder.assembleLineage(DefaultMavenProjectBuilder.java:1366)
+	... 15 more
+Caused by: org.apache.maven.artifact.resolver.ArtifactNotFoundException: Unable to download the artifact from any repository
+
+  *applications:TEST_PARENT:pom:4.4.0-SNAPSHOT
+
+from the specified remote repositories:
+  central (http://repo1.maven.org/maven2)
+
+	at org.apache.maven.artifact.resolver.DefaultArtifactResolver.resolve(DefaultArtifactResolver.java:212)
+	at org.apache.maven.artifact.resolver.DefaultArtifactResolver.resolve(DefaultArtifactResolver.java:74)
+	at org.apache.maven.project.DefaultMavenProjectBuilder.findModelFromRepository(DefaultMavenProjectBuilder.java:556)
+	... 16 more
+Caused by: org.apache.maven.wagon.ResourceDoesNotExistException: Unable to download the artifact from any repository
+	at org.apache.maven.artifact.manager.DefaultWagonManager.getArtifact(DefaultWagonManager.java:331)
+	at org.apache.maven.artifact.resolver.DefaultArtifactResolver.resolve(DefaultArtifactResolver.java:200)
+	... 18 more
+Finished: FAILURE

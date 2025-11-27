@@ -1,0 +1,16 @@
+Index: ActiveDirectoryAuthenticationProvider.java
+===================================================================
+--- ActiveDirectoryAuthenticationProvider.java	(revision 16504)
++++ ActiveDirectoryAuthenticationProvider.java	(working copy)
+@@ -95,7 +95,10 @@
+         } catch (ComException e) {
+             throw new BadCredentialsException("Incorrect password for "+username);
+         }
+-
++        // If username is in fact a group
++        if (usr == null) {
++        	throw new UsernameNotFoundException("User not found: "+username);
++        }
+         List<GrantedAuthority> groups = new ArrayList<GrantedAuthority>();
+         for( Com4jObject g : usr.groups() ) {
+             IADsGroup grp = g.queryInterface(IADsGroup.class);

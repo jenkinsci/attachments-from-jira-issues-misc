@@ -1,0 +1,39 @@
+Started by user admin
+Running in Durability level: MAX_SURVIVABILITY
+[Pipeline] node
+Running on Jenkins in /Users/rkivisto/.jenkins/workspace/pipeline
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (first)
+[Pipeline] sh
+[pipeline] Running shell script
++ pwd
+/Users/rkivisto/.jenkins/workspace/pipeline
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (second)
+[Pipeline] getContext
+[Pipeline] sh
+[pipeline] Running shell script
++ docker inspect -f . alpine:latest
+.
+[Pipeline] withDockerContainer
+Jenkins does not seem to be running inside a container
+$ docker run -t -d -u 501:20 -w /Users/rkivisto/.jenkins/workspace/pipeline -v /Users/rkivisto/.jenkins/workspace/pipeline:/Users/rkivisto/.jenkins/workspace/pipeline:rw,z -v /Users/rkivisto/.jenkins/workspace/pipeline@tmp:/Users/rkivisto/.jenkins/workspace/pipeline@tmp:rw,z -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** alpine:latest cat
+$ docker top e80425a09f9ea823b0cc4df3c0e5561bdcdd263d7ee9611c21fc7da7a5e575d2 -eo pid,comm
+[Pipeline] {
+[Pipeline] sh
+[pipeline] Running shell script
++ pwd
+/Users/rkivisto/.jenkins/workspace/pipeline
+[Pipeline] }
+$ docker stop --time=1 e80425a09f9ea823b0cc4df3c0e5561bdcdd263d7ee9611c21fc7da7a5e575d2
+$ docker rm -f e80425a09f9ea823b0cc4df3c0e5561bdcdd263d7ee9611c21fc7da7a5e575d2
+[Pipeline] // withDockerContainer
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS

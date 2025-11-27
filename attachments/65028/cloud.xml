@@ -1,0 +1,93 @@
+    <hudson.plugins.ec2.EC2Cloud plugin="ec2@2014.v1407740474a_1">
+      <actions/>
+      <name>ec2-mathkins-agents</name>
+      <useInstanceProfileForCredentials>false</useInstanceProfileForCredentials>
+      <roleArn></roleArn>
+      <roleSessionName></roleSessionName>
+      <credentialsId>8846b206-7e04-453f-8deb-84f74a306c85</credentialsId>
+      <sshKeysCredentialsId>5a83daf6-6655-4141-a848-0649c03aaecb</sshKeysCredentialsId>
+      <instanceCap>2147483647</instanceCap>
+      <templates>
+        <hudson.plugins.ec2.SlaveTemplate>
+          <ami>ami-03c8ef27ee60d9520</ami>
+          <description>PFX_base_OEL9_1742512910</description>
+          <zone>us-east-2*</zone>
+          <securityGroups>ssh-from-10dot</securityGroups>
+          <remoteFS>/var/jenkins</remoteFS>
+          <type>c6i.4xlarge</type>
+          <ebsOptimized>true</ebsOptimized>
+          <monitoring>false</monitoring>
+          <t2Unlimited>false</t2Unlimited>
+          <labels>ec2</labels>
+          <mode>EXCLUSIVE</mode>
+          <initScript>sudo mkdir -p /var/jenkins
+sudo chown ec2-user:ec2-user /var/jenkins
+sudo yum install -y coreutils java-21-openjdk python3-pip git jq pigz zip unzip tar
+curl -o awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+unzip awscliv2.zip
+sudo ./aws/install
+rm -rf aws awscliv2.zip</initScript>
+          <tmpDir></tmpDir>
+          <userData></userData>
+          <numExecutors>14</numExecutors>
+          <remoteAdmin>ec2-user</remoteAdmin>
+          <javaPath>java</javaPath>
+          <jvmopts></jvmopts>
+          <subnetId>subnet-05ad7f6c, subnet-406a893b, subnet-64512c29</subnetId>
+          <idleTerminationMinutes>5</idleTerminationMinutes>
+          <iamInstanceProfile></iamInstanceProfile>
+          <deleteRootOnTermination>false</deleteRootOnTermination>
+          <useEphemeralDevices>false</useEphemeralDevices>
+          <customDeviceMapping>/dev/sda1=:64:true:gp3</customDeviceMapping>
+          <instanceCap>50</instanceCap>
+          <minimumNumberOfInstances>0</minimumNumberOfInstances>
+          <minimumNumberOfSpareInstances>0</minimumNumberOfSpareInstances>
+          <stopOnTerminate>true</stopOnTerminate>
+          <tags>
+            <hudson.plugins.ec2.EC2Tag>
+              <name>mathkins</name>
+              <value>agent</value>
+            </hudson.plugins.ec2.EC2Tag>
+            <hudson.plugins.ec2.EC2Tag>
+              <name>Name</name>
+              <value>mathkins-agent</value>
+            </hudson.plugins.ec2.EC2Tag>
+          </tags>
+          <connectionStrategy>PRIVATE_IP</connectionStrategy>
+          <hostKeyVerificationStrategy>CHECK_NEW_HARD</hostKeyVerificationStrategy>
+          <associatePublicIp>false</associatePublicIp>
+          <amiType class="hudson.plugins.ec2.UnixData">
+            <rootCommandPrefix></rootCommandPrefix>
+            <slaveCommandPrefix></slaveCommandPrefix>
+            <slaveCommandSuffix></slaveCommandSuffix>
+            <sshPort>22</sshPort>
+            <bootDelay></bootDelay>
+          </amiType>
+          <launchTimeout>2147483647</launchTimeout>
+          <connectBySSHProcess>true</connectBySSHProcess>
+          <maxTotalUses>-1</maxTotalUses>
+          <avoidUsingOrphanedNodes>false</avoidUsingOrphanedNodes>
+          <nodeProperties>
+            <hudson.plugins.jobConfigHistory.NodeLocalConfiguration plugin="jobConfigHistory@1356.ve360da_6c523a_">
+              <changeReasonComment></changeReasonComment>
+            </hudson.plugins.jobConfigHistory.NodeLocalConfiguration>
+          </nodeProperties>
+          <nextSubnet>0</nextSubnet>
+          <tenancy>Default</tenancy>
+          <ebsEncryptRootVolume>DEFAULT</ebsEncryptRootVolume>
+          <metadataSupported>true</metadataSupported>
+          <metadataEndpointEnabled>true</metadataEndpointEnabled>
+          <metadataTokensRequired>false</metadataTokensRequired>
+          <metadataHopsLimit>1</metadataHopsLimit>
+          <enclaveEnabled>false</enclaveEnabled>
+          <amiOwners></amiOwners>
+          <amiUsers></amiUsers>
+          <usePrivateDnsName>false</usePrivateDnsName>
+          <connectUsingPublicIp>false</connectUsingPublicIp>
+        </hudson.plugins.ec2.SlaveTemplate>
+      </templates>
+      <region>us-east-2</region>
+      <altEC2Endpoint></altEC2Endpoint>
+      <noDelayProvisioning>true</noDelayProvisioning>
+      <cleanUpOrphanedNodes>true</cleanUpOrphanedNodes>
+    </hudson.plugins.ec2.EC2Cloud>

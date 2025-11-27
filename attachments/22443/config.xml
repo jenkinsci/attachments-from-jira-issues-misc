@@ -1,0 +1,127 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Gets update from SVN, builds, runs tests, publishes to SunWebOther.</description>
+  <logRotator>
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>20</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.BooleanParameterDefinition>
+          <name>Publish</name>
+          <description>Should the site be published to SunWebOther when completed?</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>SvnBranchName</name>
+          <description>This should NOT be changed when building. It is set in configuration and should not be changed unless the configuration&apos;s SVN repository URL is changed.</description>
+          <defaultValue>CurrentA</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>PublishCode</name>
+          <description>This should NOT be changed when building. It is set in configuration and indicates which web site to Publish into.</description>
+          <defaultValue>SA</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.SubversionSCM">
+    <locations>
+      <hudson.scm.SubversionSCM_-ModuleLocation>
+        <remote>https://subversion1:8443/svn/Main/Manifast/development/CurrentA</remote>
+      </hudson.scm.SubversionSCM_-ModuleLocation>
+    </locations>
+    <excludedRegions></excludedRegions>
+    <includedRegions></includedRegions>
+    <excludedUsers></excludedUsers>
+    <excludedRevprop></excludedRevprop>
+    <excludedCommitMessages></excludedCommitMessages>
+    <workspaceUpdater class="hudson.scm.subversion.UpdateUpdater"/>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector"/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.BatchFile>
+      <command>@echo off
+rem echo Copying Sunwapta DLLs
+rem del &quot;%WORKSPACE%\%SvnBranchName%\build\sunwapta\inUse\&quot; /q
+rem xcopy &quot;%WORKSPACE%\%SvnBranchName%\build\sunwapta\release\*&quot; &quot;%WORKSPACE%\%SvnBranchName%\build\sunwapta\inuse\&quot; /f</command>
+    </hudson.tasks.BatchFile>
+    <hudson.plugins.msbuild.MsBuildBuilder>
+      <msBuildName>MSBuild 4.0</msBuildName>
+      <msBuildFile>&quot;%WORKSPACE%\%SvnBranchName%\Manifast.sln&quot;</msBuildFile>
+      <cmdLineArgs>/p:Configuration=Release /v:minimal /nologo /p:WarningLevel=1</cmdLineArgs>
+      <buildVariablesAsProperties>false</buildVariablesAsProperties>
+      <continueOnBuilFailure>false</continueOnBuilFailure>
+    </hudson.plugins.msbuild.MsBuildBuilder>
+    <hudson.tasks.BatchFile>
+      <command>nunit-console.exe &quot;%WorkSpace%\%SvnBranchName%\Sunwapta.Utilities.Tests\bin\release\Sunwapta.Utilities.Tests.dll&quot; /noshadow /nologo /output &quot;%WorkSpace%\TestResults1.xml&quot; /xml &quot;TestResults1.xml&quot;</command>
+    </hudson.tasks.BatchFile>
+    <hudson.tasks.BatchFile>
+      <command>nunit-console.exe &quot;%WorkSpace%\%SvnBranchName%\Local.Tests\bin\release\Local.Tests.dll&quot; /noshadow /nologo /output &quot;%WorkSpace%\TestResults2.xml&quot; /xml &quot;TestResults2.xml&quot;</command>
+    </hudson.tasks.BatchFile>
+    <hudson.tasks.BatchFile>
+      <command>@echo Publish is &quot;%publish%&quot;
+@if /i ~%publish%==~true &quot;%SvnBranchName%\Local.Web\Publish&quot; %PublishCode% Hudson</command>
+    </hudson.tasks.BatchFile>
+  </builders>
+  <publishers>
+    <hudson.plugins.tasks.TasksPublisher>
+      <healthy></healthy>
+      <unHealthy></unHealthy>
+      <thresholdLimit>low</thresholdLimit>
+      <pluginName>[TASKS] </pluginName>
+      <defaultEncoding></defaultEncoding>
+      <canRunOnFailed>false</canRunOnFailed>
+      <useDeltaValues>false</useDeltaValues>
+      <thresholds>
+        <unstableTotalAll></unstableTotalAll>
+        <unstableTotalHigh></unstableTotalHigh>
+        <unstableTotalNormal></unstableTotalNormal>
+        <unstableTotalLow></unstableTotalLow>
+        <unstableNewAll></unstableNewAll>
+        <unstableNewHigh></unstableNewHigh>
+        <unstableNewNormal></unstableNewNormal>
+        <unstableNewLow></unstableNewLow>
+        <failedTotalAll></failedTotalAll>
+        <failedTotalHigh></failedTotalHigh>
+        <failedTotalNormal></failedTotalNormal>
+        <failedTotalLow></failedTotalLow>
+        <failedNewAll></failedNewAll>
+        <failedNewHigh></failedNewHigh>
+        <failedNewNormal></failedNewNormal>
+        <failedNewLow></failedNewLow>
+      </thresholds>
+      <shouldDetectModules>false</shouldDetectModules>
+      <dontComputeNew>false</dontComputeNew>
+      <doNotResolveRelativePaths>false</doNotResolveRelativePaths>
+      <high></high>
+      <normal>TODO</normal>
+      <low></low>
+      <ignoreCase>true</ignoreCase>
+      <pattern>**/*.cs, **/*.js</pattern>
+      <excludePattern></excludePattern>
+    </hudson.plugins.tasks.TasksPublisher>
+    <hudson.plugins.nunit.NUnitPublisher>
+      <testResultsPattern>TestResults*.xml</testResultsPattern>
+      <debug>false</debug>
+      <keepJUnitReports>false</keepJUnitReports>
+      <skipJUnitArchiver>false</skipJUnitArchiver>
+    </hudson.plugins.nunit.NUnitPublisher>
+    <hudson.tasks.Mailer>
+      <recipients>fakeName@fakeUrl.com</recipients>
+      <dontNotifyEveryUnstableBuild>true</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>true</sendToIndividuals>
+    </hudson.tasks.Mailer>
+  </publishers>
+  <buildWrappers/>
+</project>

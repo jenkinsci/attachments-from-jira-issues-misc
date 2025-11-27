@@ -1,0 +1,16 @@
+Index: main/core/src/main/java/hudson/model/Job.java
+===================================================================
+--- main/core/src/main/java/hudson/model/Job.java	(revision 13431)
++++ main/core/src/main/java/hudson/model/Job.java	(working copy)
+@@ -999,9 +999,9 @@
+             }
+ 
+             public boolean equals(Object o) {
+-                if(!(o instanceof ChartLabel))  return false;
++                if (o == null || !ChartLabel.class.isAssignableFrom( o.getClass() ))  return false;
+                 ChartLabel that = (ChartLabel) o;
+-                return run == that.run;
++                return this.run == that.run;
+             }
+ 
+             public Color getColor() {

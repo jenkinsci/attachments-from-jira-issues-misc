@@ -1,0 +1,88 @@
+Index: src/main/java/hudson/plugins/msbuild/MsBuildBuilder.java
+===================================================================
+--- src/main/java/hudson/plugins/msbuild/MsBuildBuilder.java	(revision 32962)
++++ src/main/java/hudson/plugins/msbuild/MsBuildBuilder.java	(working copy)
+@@ -2,6 +2,7 @@
+ 
+ import hudson.CopyOnWrite;
+ import hudson.Extension;
++import hudson.FilePath;
+ import hudson.Launcher;
+ import hudson.Util;
+ import hudson.model.AbstractBuild;
+@@ -10,7 +11,6 @@
+ import hudson.tasks.Builder;
+ import hudson.util.ArgumentListBuilder;
+ 
+-import java.io.File;
+ import java.io.IOException;
+ import java.util.Map;
+ 
+@@ -83,25 +83,28 @@
+     @Override
+ 	public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
+         ArgumentListBuilder args = new ArgumentListBuilder();
+-        
++
+         String execName= "msbuild.exe";        
+         MsBuildInstallation ai = getMsBuild();
+         if(ai==null) {
+         	listener.getLogger().println("Path To MSBuild.exe: " +execName);
+         	args.add(execName);
+         } else {
+-            File exec = ai.getExecutable();
+-            if(!ai.getExists()) {
+-                listener.fatalError(exec+" doesn't exist");
++            String pathToMsBuild = ai.getPathToMsBuild();
++            FilePath exec = new FilePath(launcher.getChannel(), pathToMsBuild);
++            try {
++                if(!exec.exists()) {
++                    listener.fatalError(pathToMsBuild + " doesn't exist");
++                    return false;
++                }
++            } catch (IOException e) {
++                listener.fatalError("Failed checking for existence of " + pathToMsBuild);
+                 return false;
+             }
+-            listener.getLogger().println("Path To MSBuild.exe: " +exec.getPath());
+-            args.add(exec.getPath());
++            listener.getLogger().println("Path To MSBuild.exe: " + pathToMsBuild);
++            args.add(pathToMsBuild);
+         }	 
+-        
+-        
+-        
+-        
++
+         //Remove all tabs, carriage returns, and newlines and replace them with
+         //whitespaces, so that we can add them as parameters to the executable
+         String normalizedTarget = cmdLineArgs.replaceAll("[\t\r\n]+"," ");
+Index: src/main/java/hudson/plugins/msbuild/MsBuildInstallation.java
+===================================================================
+--- src/main/java/hudson/plugins/msbuild/MsBuildInstallation.java	(revision 32962)
++++ src/main/java/hudson/plugins/msbuild/MsBuildInstallation.java	(working copy)
+@@ -2,8 +2,6 @@
+ 
+ import org.kohsuke.stapler.DataBoundConstructor;
+ 
+-import java.io.File;
+-
+ /**
+  * MsBuild installation.
+  * 
+@@ -32,15 +30,4 @@
+     public String getName() {
+         return name;
+     }
+-
+-    public File getExecutable() {
+-        return new File(pathToMsBuild);
+-    }
+-    
+-    /**
+-     * Returns true if the executable exists.
+-     */
+-    public boolean getExists() {
+-        return getExecutable().exists();
+-    }
+ }

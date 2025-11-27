@@ -1,0 +1,228 @@
+diff --git a/plugins/scp/src/main/java/be/certipost/hudson/plugin/SCPRepositoryPublisher.java b/plugins/scp/src/main/java/be/certipost/hudson/plugin/SCPRepositoryPublisher.java
+index 7501677..e29b795 100644
+--- a/plugins/scp/src/main/java/be/certipost/hudson/plugin/SCPRepositoryPublisher.java
++++ b/plugins/scp/src/main/java/be/certipost/hudson/plugin/SCPRepositoryPublisher.java
+@@ -263,7 +263,7 @@ public final class SCPRepositoryPublisher extends Notifier {
+ 		private final CopyOnWriteList<SCPSite> sites = new CopyOnWriteList<SCPSite>();
+ 
+ 		public String getDisplayName() {
+-			return "Publish artifacts to SCP Repository";
++			return Messages.SCPRepositoryPublisher_DisplayName();
+ 		}
+ 
+ 		public String getShortName() {
+@@ -311,7 +311,7 @@ public final class SCPRepositoryPublisher extends Notifier {
+ 			if (keyfile != null) {
+ 				File f = new File(keyfile);
+ 				if (!f.isFile()) {
+-					return FormValidation.error("keyfile does not exist");
++					return FormValidation.error(Messages.SCPRepositoryPublisher_KeyFileNotExist());
+ 				}
+ 			}
+ 
+@@ -334,7 +334,7 @@ public final class SCPRepositoryPublisher extends Notifier {
+ 							null);
+ 				} catch (JSchException e) {
+ 					LOGGER.log(Level.SEVERE, e.getMessage());
+-					throw new IOException("Can't connect to server");
++					throw new IOException(Messages.SCPRepositoryPublisher_NotConnect());
+ 				}
+ 			} catch (IOException e) {
+ 				LOGGER.log(Level.SEVERE, e.getMessage());
+diff --git a/plugins/scp/src/main/resources/be/certipost/hudson/plugin/Messages.properties b/plugins/scp/src/main/resources/be/certipost/hudson/plugin/Messages.properties
+new file mode 100644
+index 0000000..7f1cedd
+--- /dev/null
++++ b/plugins/scp/src/main/resources/be/certipost/hudson/plugin/Messages.properties
+@@ -0,0 +1,3 @@
++SCPRepositoryPublisher.DisplayName=Publish artifacts to SCP Repository
++SCPRepositoryPublisher.KeyFileNotExist=keyfile does not exist
++SCPRepositoryPublisher.NotConnect=Can't connect to server
+\ No newline at end of file
+diff --git a/plugins/scp/src/main/resources/be/certipost/hudson/plugin/Messages_ja.properties b/plugins/scp/src/main/resources/be/certipost/hudson/plugin/Messages_ja.properties
+new file mode 100644
+index 0000000..5271a7c
+--- /dev/null
++++ b/plugins/scp/src/main/resources/be/certipost/hudson/plugin/Messages_ja.properties
+@@ -0,0 +1,3 @@
++SCPRepositoryPublisher.DisplayName=\u6210\u679c\u7269\u3092SCP\u30ea\u30dd\u30b8\u30c8\u30ea\u306b\u516c\u958b
++SCPRepositoryPublisher.KeyFileNotExist=\u79d8\u5bc6\u9375\u304c\u3042\u308a\u307e\u305b\u3093\u3002
++SCPRepositoryPublisher.NotConnect=\u30b5\u30fc\u30d0\u306b\u63a5\u7d9a\u3067\u304d\u307e\u305b\u3093\u3002
+\ No newline at end of file
+diff --git a/plugins/scp/src/main/resources/be/certipost/hudson/plugin/SCPRepositoryPublisher/config.jelly b/plugins/scp/src/main/resources/be/certipost/hudson/plugin/SCPRepositoryPublisher/config.jelly
+index 8a18801..6bcb47f 100644
+--- a/plugins/scp/src/main/resources/be/certipost/hudson/plugin/SCPRepositoryPublisher/config.jelly
++++ b/plugins/scp/src/main/resources/be/certipost/hudson/plugin/SCPRepositoryPublisher/config.jelly
+@@ -1,7 +1,7 @@
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+ 
+   <j:set var="helpURL" value="/plugin/scp" />
+-    <f:entry title="SCP site">
++    <f:entry title="${%SCP site}">
+       <select class="setting-input" name="scp.siteName" description="Select configured SCP host.Check global hudson config for defining connection properties for this hosts">
+         <j:forEach var="s" items="${descriptor.sites}">
+           <f:option selected="${s.name==instance.siteName}">${s.name}</f:option>
+@@ -9,15 +9,15 @@
+       </select>
+     </f:entry>
+ 
+-  <f:entry title="Files to upload">
++  <f:entry title="${%Files to upload}">
+ 		
+     <f:repeatable var="e" items="${instance.entries}">
+       <table width="100%">
+-        <f:entry title="Source" help="${helpURL}/help-source.html">
++        <f:entry title="${%Source}" help="${helpURL}/help-source.html">
+           <input class="setting-input" name="scp.entry.sourceFile"
+             type="text" value="${e.sourceFile}" />
+         </f:entry>
+-        <f:entry title="Destination" help="${helpURL}/help-destination.html">
++        <f:entry title="${%Destination}" help="${helpURL}/help-destination.html">
+           <input class="setting-input" name="scp.entry.filePath"
+             type="text" value="${e.filePath}" />
+         </f:entry>
+diff --git a/plugins/scp/src/main/resources/be/certipost/hudson/plugin/SCPRepositoryPublisher/config_ja.properties b/plugins/scp/src/main/resources/be/certipost/hudson/plugin/SCPRepositoryPublisher/config_ja.properties
+new file mode 100644
+index 0000000..4506c32
+--- /dev/null
++++ b/plugins/scp/src/main/resources/be/certipost/hudson/plugin/SCPRepositoryPublisher/config_ja.properties
+@@ -0,0 +1,4 @@
++SCP\ site=SCP\u30b5\u30a4\u30c8
++Files\ to\ upload=\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9\u30d5\u30a1\u30a4\u30eb
++Source=\u30bd\u30fc\u30b9
++Destination=\u9001\u4fe1\u5148
+diff --git a/plugins/scp/src/main/resources/be/certipost/hudson/plugin/SCPRepositoryPublisher/global.jelly b/plugins/scp/src/main/resources/be/certipost/hudson/plugin/SCPRepositoryPublisher/global.jelly
+index 009b3da..a190ba9 100644
+--- a/plugins/scp/src/main/resources/be/certipost/hudson/plugin/SCPRepositoryPublisher/global.jelly
++++ b/plugins/scp/src/main/resources/be/certipost/hudson/plugin/SCPRepositoryPublisher/global.jelly
+@@ -1,33 +1,33 @@
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+   <!-- nothing to configure -->
+-  <f:section title="SCP repository hosts">
+-    <f:entry title="SCP sites"
+-      description="SCP sites that projects will want to connect">
++  <f:section title="${%SCP repository hosts}">
++    <f:entry title="${%SCP sites}"
++      description="${%SCP sites that projects will want to connect}">
+       <f:repeatable var="site" items="${descriptor.sites}">
+         <table width="100%">
+-          <f:entry title="Hostname" help="/plugin/scp/help-hostname.html">
++          <f:entry title="${%Hostname}" help="/plugin/scp/help-hostname.html">
+             <f:textbox name="scp.hostname" value="${site.hostname}"/>
+           </f:entry>
+-          <f:entry title="Port" help="/plugin/scp/help-port.html">
++          <f:entry title="${%Port}" help="/plugin/scp/help-port.html">
+             <f:textbox name="scp.port" value="${site.port}"/>
+           </f:entry>
+-          <f:entry title="Root Repository Path" help="/plugin/scp/help-rootpath.html">
++          <f:entry title="${%Root Repository Path}" help="/plugin/scp/help-rootpath.html">
+             <f:textbox name="scp.rootRepositoryPath" value="${site.rootRepositoryPath}"/>
+           </f:entry>
+-          <f:entry title="User Name" help="/plugin/scp/help-login.html">
++          <f:entry title="${%User Name}" help="/plugin/scp/help-login.html">
+             <f:textbox name="scp.username" value="${site.username}"
+ 				checkMethod="post"
+ 				checkUrl="'${rootURL}/publisher/SCPRepositoryPublisher/loginCheck?hostname='+escape(Form.findMatchingInput(this,'scp.hostname').value)+'&amp;port='+escape(Form.findMatchingInput(this,'scp.port').value)+'&amp;user='+escape(this.value)+'&amp;pass='+escape(Form.findMatchingInput(this,'scp.password').value)+'&amp;keyfile='+escape(Form.findMatchingInput(this,'scp.keyfile').value)"
+ 			/>
+           </f:entry>
+-          <f:entry title="Password/Passphrase" help="/plugin/scp/help-password.html">
++          <f:entry title="${%Password/Passphrase}" help="/plugin/scp/help-password.html">
+             <input class="setting-input" name="scp.password"
+                    type="password" value="${site.password}"
+ 				   onchange="Form.findMatchingInput(this,'scp.username').onchange()"				   
+                     />
+           </f:entry>
+           
+-          <f:entry title="Keyfile" help="/plugin/scp/help-keyfile.html">
++          <f:entry title="${%Keyfile}" help="/plugin/scp/help-keyfile.html">
+           <f:textbox class="setting-input" name="scp.keyfile"
+                    value="${site.keyfile}"
+                    checkUrl="'${rootURL}/publisher/SCPRepositoryPublisher/keyfileCheck?keyfile='+escape(this.value)"/>                   
+diff --git a/plugins/scp/src/main/resources/be/certipost/hudson/plugin/SCPRepositoryPublisher/global_ja.properties b/plugins/scp/src/main/resources/be/certipost/hudson/plugin/SCPRepositoryPublisher/global_ja.properties
+new file mode 100644
+index 0000000..ad81a39
+--- /dev/null
++++ b/plugins/scp/src/main/resources/be/certipost/hudson/plugin/SCPRepositoryPublisher/global_ja.properties
+@@ -0,0 +1,9 @@
++SCP\ repository\ hosts=SCP\u30ea\u30dd\u30b8\u30c8\u30ea\u30db\u30b9\u30c8
++SCP\ sites=SCP\u30b5\u30a4\u30c8
++SCP\ sites\ that\ projects\ will\ want\ to\ connect=\u63a5\u7d9a\u3059\u308bSCP\u30b5\u30a4\u30c8
++Hostname=\u30db\u30b9\u30c8\u540d
++Port=\u30dd\u30fc\u30c8
++Root\ Repository\ Path=\u30eb\u30fc\u30c8\u30ea\u30dd\u30b8\u30c8\u30ea\u30d1\u30b9
++User\ Name=\u30e6\u30fc\u30b6\u30fc\u540d
++Password/Passphrase=\u30d1\u30b9\u30ef\u30fc\u30c9/\u30d1\u30b9\u30d5\u30ec\u30fc\u30ba
++Keyfile=\u79d8\u5bc6\u9375
+\ No newline at end of file
+diff --git a/plugins/scp/src/main/webapp/help-destination_ja.html b/plugins/scp/src/main/webapp/help-destination_ja.html
+new file mode 100644
+index 0000000..7594476
+--- /dev/null
++++ b/plugins/scp/src/main/webapp/help-destination_ja.html
+@@ -0,0 +1 @@
++<div>アップロード先のフォルダーです。存在しなければ作成します。ルートリポジトリパスからの相対パスです。</div>
+diff --git a/plugins/scp/src/main/webapp/help-hostname_ja.html b/plugins/scp/src/main/webapp/help-hostname_ja.html
+new file mode 100644
+index 0000000..f106cce
+--- /dev/null
++++ b/plugins/scp/src/main/webapp/help-hostname_ja.html
+@@ -0,0 +1 @@
++<div>接続するSCPホストです。</div>
+diff --git a/plugins/scp/src/main/webapp/help-keyfile_ja.html b/plugins/scp/src/main/webapp/help-keyfile_ja.html
+new file mode 100644
+index 0000000..dbac550
+--- /dev/null
++++ b/plugins/scp/src/main/webapp/help-keyfile_ja.html
+@@ -0,0 +1 @@
++<div>ユーザー名/パスワード認証の代わりに使用する秘密鍵です。</div>
+\ No newline at end of file
+diff --git a/plugins/scp/src/main/webapp/help-login_ja.html b/plugins/scp/src/main/webapp/help-login_ja.html
+new file mode 100644
+index 0000000..dbedbf7
+--- /dev/null
++++ b/plugins/scp/src/main/webapp/help-login_ja.html
+@@ -0,0 +1 @@
++<div>ログインに使用するユーザー名です。</div>
+diff --git a/plugins/scp/src/main/webapp/help-password_ja.html b/plugins/scp/src/main/webapp/help-password_ja.html
+new file mode 100644
+index 0000000..a4025a8
+--- /dev/null
++++ b/plugins/scp/src/main/webapp/help-password_ja.html
+@@ -0,0 +1 @@
++<div>ユーザーのパスワードか、必要であれば秘密鍵を使用する際のパスフレーズです。</div>
+\ No newline at end of file
+diff --git a/plugins/scp/src/main/webapp/help-port_ja.html b/plugins/scp/src/main/webapp/help-port_ja.html
+new file mode 100644
+index 0000000..627c1fe
+--- /dev/null
++++ b/plugins/scp/src/main/webapp/help-port_ja.html
+@@ -0,0 +1 @@
++<div>SCPのポートです。デフォルトで22を使用します。</div>
+diff --git a/plugins/scp/src/main/webapp/help-rootpath_ja.html b/plugins/scp/src/main/webapp/help-rootpath_ja.html
+new file mode 100644
+index 0000000..bb4a9dc
+--- /dev/null
++++ b/plugins/scp/src/main/webapp/help-rootpath_ja.html
+@@ -0,0 +1 @@
++<div>このSCPホストのルートリポジトリです。存在するパスでなければいけません。</div>
+diff --git a/plugins/scp/src/main/webapp/help-source_ja.html b/plugins/scp/src/main/webapp/help-source_ja.html
+new file mode 100644
+index 0000000..ba0780b
+--- /dev/null
++++ b/plugins/scp/src/main/webapp/help-source_ja.html
+@@ -0,0 +1,5 @@
++<div>
++    アップロードするソースファイルです。
++    この項目は、<tt>**/build/test-reports/*.xml</tt>のように、<a href="http://ant.apache.org/manual/Types/fileset.html">the Ant glob syntax</a>を使用することができます。
++    ベースディレクトリは、<a href="ws/">ワークスペース</a>です。
++</div>
+diff --git a/plugins/scp/src/main/webapp/help_ja.html b/plugins/scp/src/main/webapp/help_ja.html
+new file mode 100644
+index 0000000..00b821f
+--- /dev/null
++++ b/plugins/scp/src/main/webapp/help_ja.html
+@@ -0,0 +1,3 @@
++<div>SFTP (SSH) プロトコルを使用して、成果物をリポジトリサイトにアップロードすることができます。まず、システムの設定でSCPホストを定義する必要があります。
++     定義した後、リストからホストを選択します。
++</div>
+\ No newline at end of file

@@ -1,0 +1,24 @@
+Index: plugins/xfpanel/src/main/resources/maps/hudson/plugin/xfpanel/XFPanelView/configure-entries.jelly
+===================================================================
+--- plugins/xfpanel/src/main/resources/maps/hudson/plugin/xfpanel/XFPanelView/configure-entries.jelly     (revision 34961)
++++ plugins/xfpanel/src/main/resources/maps/hudson/plugin/xfpanel/XFPanelView/configure-entries.jelly     (working copy)
+@@ -24,11 +24,14 @@
+                <f:checkbox name="fullHD" checked="${it.fullHD}" value="true" field="fullHD" />
+        </f:entry>
+
+-       <f:entry title="${%Number of columns}">
+-               <f:textbox name="numColumns" field="numColumns" />
+-       </f:entry>
++        <f:entry name="numColumns" title="Output format" field="numColumns">
++            <select name="numColumns">
++                <option value="1">One column</option>
++                <option value="2">Two columns</option>
++            </select>
++        </f:entry>
+        <f:entry title="${%Refresh time in seconds}">
+-               <f:textbox name="refresh" field="refresh" />
++               <f:textbox clazz="number" name="refresh" value="${it.refresh}" />
+        </f:entry>
+
+        <f:entry title="${%Show Job descriptions}" field="showDescription">
+

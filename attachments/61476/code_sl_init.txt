@@ -1,0 +1,161 @@
+import de.marquardt.build.CMakeBaseYaml
+import de.marquardt.codegen.RhapsodyYaml
+import de.marquardt.test.PolyspaceYaml
+import de.marquardt.test.TessyYaml
+import de.marquardt.test.integration.VerificationKitYaml
+import de.marquardt.util.EContentType
+import de.marquardt.util.RunStepUtil
+import de.marquardt.util.RunStepYaml
+import de.marquardt.util.SchemaValidator
+
+def call(Map params) {
+    // get the checkout configuration
+    final Map checkoutMap = (params && params.checkout) ? params.checkout : [:]
+    final String yaml
+    final SchemaValidator schemaValidator = new SchemaValidator(this)
+    // create the context map
+    Map <String, Map> contextMap = [:]
+    // reference to the node yaml content
+    String nodeYaml
+    
+    // perform checkout and add the git checkout information
+    contextMap.put('checkout', mqPipelineGit(checkoutMap))
+
+    if (params.file) {
+        log.info("[mqPipelineConfigInit]\t Loading YAML file: '${params.file}'")
+        yaml = readFile file:params.file
+        log.debug("[mqPipelineConfigInit]\t YAML file cotent: \n ${yaml.toString()}")
+    } else /* if (params.text) */ {
+        log.debug("Received YAML as string")
+        yaml = params.text as String
+    }
+    
+    // get the node yaml content
+    if(params.nodeFile) {
+        // get the content from the extra node yaml file
+        nodeYaml = readFile file:params.nodeFile
+    } else {
+        // get the content from the project yaml file
+        nodeYaml = yaml
+    }
+
+    log.debug("Starting YAML schema validation")
+    final Set<String> validationMessages = schemaValidator.validateYaml(yaml)
+
+    if (validationMessages == null || validationMessages.size() > 0) {
+        error("YAML config validation failed:\n* ${validationMessages.join('\n *')}")
+        return null
+    }
+
+    log.debug("Converting YAML string to nested maps")
+    contextMap.putAll(readYaml(text:yaml) as Map)
+    // create the unstash map
+	contextMap.put('unstashCodeGenMap', [:])
+	
+    // initialize run step internal data with every pipeline init step
+    RunStepUtil.initInternalData()
+    
+    // validate the compile cmake step
+    initMakeCompileYaml(contextMap, yaml)
+    
+    // init polyspace yaml runtime data
+    initPolyspaceYaml(contextMap, yaml)
+    
+    // init the tessy yaml runtime data
+    initTessyYaml(contextMap, yaml)
+
+    // init the run step yaml runtime data
+    initRunStepYaml(contextMap, nodeYaml)
+    
+    // init the rhapsody yaml step
+    initRhapsodyYaml(contextMap, yaml)
+    
+    // init the verification kit yaml step
+    initVerificationKitYaml(contextMap, yaml)
+
+    return contextMap
+}
+
+def initMakeCompileYaml(Map context, String yamlString) {
+    // create an instance of cmake base yaml object to validate data
+    CMakeBaseYaml cMakeBaseYaml = new CMakeBaseYaml(this)
+    // get the content type
+    EContentType contentType = cMakeBaseYaml.getContentTypeTextVersion(yamlString)
+    // Trigger the correct validation
+    if(contentType != EContentType.UNKNOWN) {
+        // add cmake base runtime data to the context
+        context.putAll(cMakeBaseYaml.validateConfig(yamlString, contentType, context.unstashCodeGenMap))
+    } else {
+        log.warn("[mqPipelineConfigInit]: CMake Compile step is deactivated and it will be skipped!")
+    }
+}
+
+def initPolyspaceYaml(Map context, String yamlString) {
+    // create an instance of polyspace yaml object to validate data
+    PolyspaceYaml polyspaceYaml = new PolyspaceYaml(this)
+    // get the content type
+    EContentType contentType = polyspaceYaml.getContentTypeTextVersion(yamlString)
+    // Trigger the correct validation
+    if(contentType != EContentType.UNKNOWN) {
+        // add cmake base runtime data to the context
+        context.putAll(polyspaceYaml.validateConfig(yamlString, contentType, context.unstashCodeGenMap))
+    } else {
+        log.warn("[mqPipelineConfigInit]: Polyspace step is deactivated and it will be skipped!")
+    }
+}
+
+def initTessyYaml(Map context, String yamlString) {
+    // instantiate tessy yaml class object
+    TessyYaml tessyYaml = new TessyYaml(this)
+    // get the content type
+    EContentType contentType = tessyYaml.getContentTypeTextVersion(yamlString)
+    // check if the tessy yaml class is configured
+    if(contentType != EContentType.UNKNOWN) {
+        // add tessy runtime data to the context
+        context.putAll(tessyYaml.validateConfig(yamlString, contentType, context.unstashCodeGenMap))
+    } else {
+        log.warn("[mqPipelineConfigInit]: Tessy step is deactivated and it will be skipped!")
+    }
+}
+
+def initRhapsodyYaml(Map context, String yamlString) {
+	// instantiate tessy yaml class object
+	RhapsodyYaml rhapsodyYaml = new RhapsodyYaml(this)
+	// get the content type
+	EContentType contentType = rhapsodyYaml.getContentTypeTextVersion(yamlString)
+	// check if the tessy yaml class is configured
+	if(contentType != EContentType.UNKNOWN) {
+		// add tessy runtime data to the context
+		context.putAll(rhapsodyYaml.validateConfig(yamlString, contentType, context.unstashCodeGenMap))
+	} else {
+		log.warn("[mqPipelineConfigInit]: Tessy step is deactivated and it will be skipped!")
+	}
+}
+
+def initRunStepYaml(Map context, String yamlString) {
+    // instantiate run step yaml class object
+    RunStepYaml runStepYaml = new RunStepYaml(this)
+    // get the content type
+    EContentType contentType = runStepYaml.getContentTypeTextVersion(yamlString)
+    // check if the node yaml class is configured
+    if(contentType != EContentType.UNKNOWN) {
+        // add run step runtime data to the context
+        context.putAll(runStepYaml.validateConfig(yamlString, contentType))
+    } else {
+        log.warn("[mqPipelineConfigInit]: Node switch feature is deactivated!")
+    }
+}
+
+def initVerificationKitYaml(Map context, String yamlString) {
+    // instantiate run step yaml class object
+    VerificationKitYaml verifKitYaml = new VerificationKitYaml(this)
+    // get the content type
+    EContentType contentType = verifKitYaml.getContentTypeTextVersion(yamlString)
+    // check if the node yaml class is configured
+    if(contentType != EContentType.UNKNOWN) {
+        // add run step runtime data to the context
+        context.putAll(verifKitYaml.validateConfig(yamlString, contentType, context.unstashCodeGenMap))
+    } else {
+        log.warn("[mqPipelineConfigInit]: Node switch feature is deactivated!")
+    }
+}

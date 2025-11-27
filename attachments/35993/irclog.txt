@@ -1,0 +1,105 @@
+[22:29:12] <bitwiseman> jglick: is there a way to tell a shared library to load from a folder other than root inside a repo?
+[22:29:36] <jglick> bitwiseman: no
+[22:29:53] <jglick> (and no plans to support that either)
+[22:31:41] <bitwiseman> jglick: I'll see if I can change your mind on that.  :)  JIRA soon.
+[22:33:19] <bitwiseman> jglick: out of curiosity, would it be an hard/messy to add it?
+[22:33:51] <jglick> bitwiseman: bad for performance, the lib must be a small checkout since we do it for every build
+[22:35:13] <bitwiseman> jglick: ah, sure, but I'm not talking about large repos, just the aspect of loading from a subdirectory.
+[22:35:30] <jglick> bitwiseman: so what is your goal then?
+[22:38:24] <bitwiseman> jglick: just go with me for a second.  You currently always load from repo root directory, how hard would  it be to allow a library to be loaded from a subdirectory instead?
+[22:39:01] <jglick> Probably easy.
+[22:39:24] <jglick> (I mean, along with the hundreds of probably more important easy things.)
+[22:40:23] <bitwiseman> jglick: sure.   I have an idea about how to solve the method definition JIRA.
+[22:42:09] <jglick> bitwiseman: JENKINS-41396?!
+[22:42:11] <jenkins-admin> JENKINS-41396:Declarative: Add method definition section to root pipeline block (Reopened) https://issues.jenkins-ci.org/browse/JENKINS-41396
+[22:42:52] <jglick> bitwiseman: what on earth does subdirs in external libraries have to do with that?
+[22:45:35] <bitwiseman> jglick: because the don't have to be "external".   A Library could just as well loaded from the local repository, but it would need to be loaded from a subdir instead of root to be safe and not muddy the root dir.
+[22:48:05] <jglick> bitwiseman: no this makes no sense
+[22:48:13] <jglick> totally different system
+[22:48:18] <jglick> just use `loadFile`
+[22:48:42] <jglick> or `evaluate`
+[22:51:31] <bitwiseman> In declarative?
+[22:52:25] <jglick> bitwiseman: inside `pipeline-model-definition`
+[22:53:15] <jglick> Stop thinking about `workflow-cps-global-lib`, you are barking up the wrong tree there.
+[22:53:16] <bitwiseman> `pipeline-model-definition` = Declarative Pipeline, right?
+[22:54:56] <jglick> bitwiseman: yes
+[22:57:08] <bitwiseman> jglick: okay, well, I'll finish filling out the JIRA.  Seemed like a pretty cool idea to me.  Basically reusing the existing functionality to solve a swath of requests all at once.
+[22:58:00] <jglick> bitwiseman: libraries are for sharing, pointless to use it within the same repo
+[22:58:06] <jglick> buys you nothing
+[23:00:31] <bitwiseman> jglick: From a user perspective, I feel like it buys me almost exactly what I was talking about in JENKINS-41396.
+[23:00:32] <jenkins-admin> JENKINS-41396:Declarative: Add method definition section to root pipeline block (Reopened) https://issues.jenkins-ci.org/browse/JENKINS-41396
+[23:04:45] <bitwiseman> Combine with an option on  LibraryStep to load from local repo.   As a user, I get the concept of a library and the structure and behavior of library is defined and documented.
+[23:07:31] <jglick> bitwiseman: total overkill. `pipeline-model-definition` can easily add such a feature using `readTrusted`. It need not and should not use `workflow-cps-global-lib`.
+[23:11:00] <bitwiseman> jglick: I guess this is another case of me knowing just enough to get things all wrong.  :|
+[23:15:45] <jglick> bitwiseman: the raison d’être of `workflow-cps-global-lib` was to avoid issues with the original idiom of grabbing a separate `node` to `checkout` stuff and then `loadFile` it before exiting the block and resuming. But if you have stuff in the same repo you can simply `evaluate` the `readTrusted`. Or even more simply if it is already inside `Jenkinsfile`
+[23:15:45] <jglick> anyway, just call it without further ado.
+[23:18:34] <rtyler> jglick: so I'm understanding correctly, does readTrusted already work in declarative?
+[23:25:57] <jglick> rtyler: it should
+[23:27:36] <rtyler> hrmpw: is the preferred middle ground between declarative pipeline and putting stuff into shared libraries going to be "use readTrusted" then?
+[23:28:22] <hrmpw> ?? rtyler
+[23:28:42] <rtyler> heh, I feel like you've missed a fair bit of discussion here hrmpw
+[23:28:53] <hrmpw> I feel that too
+[23:30:20] <hrmpw> I think readTrusted works if you want to put libraries into your current repo rtyler
+[23:30:42] <hrmpw> but I actually agree with bitwiseman and think JENKINS-41396 is a good step
+[23:30:44] <jenkins-admin> JENKINS-41396:Declarative: Add method definition section to root pipeline block (Reopened) https://issues.jenkins-ci.org/browse/JENKINS-41396
+[23:31:21] <hrmpw> you can already do what bitwiseman says by putting your functions outside of the pipeline block
+[23:31:34] <hrmpw> this just lets you move it inside the pipeline block
+[23:31:57] <bitwiseman> hrmpw: tht functions outside the pipeline block is what I'd like to not do anymore.
+[23:32:04] <rtyler> hrmpw: I want to make sure that we're documenting approaches which are guaranteed to work within the Pipeline Visual Editor, and will be supported by Pipeline moving foprward
+[23:32:40] <bitwiseman> hrmpw: so, JENKINS-41396  would be cool, but as I was thinking about it.
+[23:32:41] <jenkins-admin> JENKINS-41396:Declarative: Add method definition section to root pipeline block (Reopened) https://issues.jenkins-ci.org/browse/JENKINS-41396
+[23:32:48] <hrmpw> I think I’m agreeing with you rtyler
+[23:33:09] <bitwiseman> I  could see technical difficulties.
+[23:33:30] <bitwiseman> which abayer described to me.
+[23:33:43] <bitwiseman> Further there's related issues
+[23:34:07] <bitwiseman> like JENKINS-41335
+[23:34:08] <jenkins-admin> JENKINS-41335:Allow variables and functions to be defined within pipeline to be used in any stage (Open) https://issues.jenkins-ci.org/browse/JENKINS-41335
+[23:34:19] <bitwiseman> And people are saying those are hard to solve.
+[23:34:58] <bitwiseman> the only reason they are hard to solve is we're trying to them in the Jenkinsfile and inside the pipeline section.
+[23:35:54] <bitwiseman> hrmpw All these things are already handled correctly in shared libraries (or if not they should be bugged and fixed).
+[23:36:47] <bitwiseman> hrmpw: which got me thinking, instead of adding "method" to pipeline, using a "local" library would in some ways be even better.
+[23:37:50] <hrmpw> Kindel: node won’t clone it unless you do “checkout sam"
+[23:37:55] <hrmpw> scm not sam
+[23:38:37] <rtyler> bitwiseman: "local" library I'm kind of meh on personally, I like the method block concept because everything would end up in one file
+[23:38:43] <hrmpw> bitwiseman: we talked about having a local library a long time ago
+[23:38:45] <rtyler> and the "pain" of not using a shared library would show up sooner
+[23:39:04] <hrmpw> at first I thought it would be great but then thought it might be hard to manage
+[23:39:17] <rtyler> I'm sure abayer could add a cute little hack to say after 80 lines, we put a console output warning that says " Hey, maybe you should use shared libraries you silly goose"
+[23:39:32] <hrmpw> then again if we build in “library” step in declarative like we plan we could build some sugar around readtrusted and a local file there
+[23:39:42] <bitwiseman> rtyler: but should they really be using a shared library?
+[23:40:15] <bitwiseman> Do we have to push them that way?
+[23:42:29] <rtyler> bitwiseman: i think it should be encouraged
+[23:42:48] <rtyler> in the blog post your wrote as an example, anybody implementing something like that is definitely not going to have just a single Pipeline :P
+[23:43:15] <hrmpw> shared libraries are a good best practice I think but for quick hit, one off helper functions they can seem heavy
+[23:43:37] * rtyler nods
+[23:44:11] <rtyler> I assume that if somebody has exceeded a certain number of helper methods, or exceeded a certain length, they should be encouraged to either use shared libraries or consider just scripted pipeline
+[23:44:29] <bitwiseman> hrmpw: they only seem heavy because they currently have to be a whole separate repo.
+[23:45:03] <rtyler> bitwiseman: I think we're crossing streams here
+[23:46:02] <hrmpw> I’m a little wary of C# style “code-behind” pages for libaries
+[23:46:16] <rtyler> there are two use-cases we're kind of talking around. 1) middle-ground between declarative and a library 2) making libraries more easily created
+[23:46:17] <hrmpw> but that’ because I had to write C# in the first place
+[23:46:20] <rtyler> (I think)
+[23:46:29] * rtyler puts a warm blanket around hrmpw
+[23:46:36] <rtyler> ASP.NET can't hurt you anymore
+[23:46:46] <bitwiseman> :D
+[23:47:12] <bitwiseman> rtyler - "encouraged to ...  consider just scripted pipeline" - I disagree.
+[23:47:28] <hrmpw> I think we all agree on that rtyler
+[23:49:29] <bitwiseman> I think there are fewer cases where people should be pushed to scripted than we are currently thinking.
+[23:49:56] <rtyler> that may be true, but I also don't think we should turn declarative into scripted :P
+[23:50:34] <bitwiseman> rtyler: agreed.  Declarative should not be made into scripted.
+[23:50:45] <rtyler> hrmpw: it might be interesting for you to pick stephend and davehunt's brains about their Jenkinsfile complexity and the perceived boundaries between shared libraries and jenkinsfiles
+[23:51:10] <rtyler> I reviewed a few Jenkinsfiles from mozilla this morning
+[23:51:17] <rtyler> many varying levels of complexity in thar
+[23:51:21] <hrmpw> I saw one of them
+[23:51:30] <hrmpw> had several things before “pipeline"
+[23:52:18] <hrmpw> some of that might also be solved by the readProperties stuff that rsandell is working on too
+[23:52:21] <rtyler> bitwiseman: fwiw I like the local library concept a lot, and think it actually maps to use-cases that Mozilla and other organizations with large repos/projects
+[23:52:32] <rtyler> but I want a methods directive much more right now
+[23:53:07] <hrmpw> the “build” command launches a separate job in Jenkins
+[23:53:47] <hrmpw> if you create a parameter in your pipeline for commit hash and pass that in via build command or otherwise you can use that hash in your pipeline
+[23:53:48] <bitwiseman> rtyler: directive vs local libary - I think we need abayer's opinion, but the local library might be easier to implement.
+[23:54:35] <rtyler> bitwiseman: the downside to a local library for that middle ground though is there would be this additional directory structure and hierarchy needed, for what I believe would just be a one-off helper method in most cases
+[23:54:37] <bitwiseman> rtyler: and because local library would reuse the library code it would probably be more dependable.
+[23:54:58] <bitwiseman> rtyler: fair point.
+[23:57:19] <hrmpw> andrew and jesse know better but there is a difference in how shared libraries are loaded into pipeline versus readTrusted
+[23:59:50] <bitwiseman> rtyler: hrmpw: okay, I'm cool with either.  I just thought the local library might be an expedient solution to several requests. (shrug) I'll finish the JIRA ticket, capture some of this discussion, and move on.

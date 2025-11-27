@@ -1,0 +1,47 @@
+[08/05/14 23:04:41] [SSH] Starting slave process: cd "/uv/uvjenkinsstor001/test002/jobs" && java  -jar slave.jar
+<===[JENKINS REMOTING CAPACITY]===>channel started
+Slave.jar version: 2.43
+This is a Unix slave
+Starting Selenium nodes on UVTEST002CNC
+$ /usr/lib/jvm/java-7-openjdk-amd64/jre/bin/java -Dwebdriver.chrome.driver=-Dwebdriver.chrome.driver=/var/lib/chromedriver/chromedriver -cp /uv/uvjenkinsstor001/test002/jobs/slave.jar hudson.remoting.Launcher -cp /uv/uvjenkinsstor001/test002/jobs/selenium-server-standalone-2.41.0.jar -connectTo localhost:41076
+ERROR: Unexpected error in launching a slave. This is probably a bug in Jenkins.
+java.lang.NullPointerException
+	at hudson.plugins.selenium.configuration.CustomWDConfiguration.initOptions(CustomWDConfiguration.java:112)
+	at hudson.plugins.selenium.process.SeleniumJarRunner.start(SeleniumJarRunner.java:42)
+	at hudson.plugins.selenium.configuration.global.SeleniumGlobalConfiguration.start(SeleniumGlobalConfiguration.java:55)
+	at hudson.plugins.selenium.PluginImpl.startSeleniumNode(PluginImpl.java:444)
+	at hudson.plugins.selenium.ComputerListenerImpl.onOnline(ComputerListenerImpl.java:26)
+	at hudson.slaves.SlaveComputer.setChannel(SlaveComputer.java:512)
+	at hudson.slaves.SlaveComputer.setChannel(SlaveComputer.java:349)
+	at hudson.plugins.sshslaves.SSHLauncher.startSlave(SSHLauncher.java:901)
+	at hudson.plugins.sshslaves.SSHLauncher.access$400(SSHLauncher.java:126)
+	at hudson.plugins.sshslaves.SSHLauncher$2.call(SSHLauncher.java:658)
+	at hudson.plugins.sshslaves.SSHLauncher$2.call(SSHLauncher.java:642)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:262)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+	at java.lang.Thread.run(Thread.java:744)
+[08/05/14 23:04:45] [SSH] Connection closed.
+[08/05/14 23:04:45] Launch failed - cleaning up connection
+ERROR: Connection terminated
+java.io.IOException: Unexpected termination of the channel
+	at hudson.remoting.SynchronousCommandTransport$ReaderThread.run(SynchronousCommandTransport.java:50)
+Caused by: java.io.EOFException
+	at java.io.ObjectInputStream$PeekInputStream.readFully(ObjectInputStream.java:2325)
+	at java.io.ObjectInputStream$BlockDataInputStream.readShort(ObjectInputStream.java:2794)
+	at java.io.ObjectInputStream.readStreamHeader(ObjectInputStream.java:801)
+	at java.io.ObjectInputStream.<init>(ObjectInputStream.java:299)
+	at hudson.remoting.ObjectInputStreamEx.<init>(ObjectInputStreamEx.java:40)
+	at hudson.remoting.AbstractSynchronousByteArrayCommandTransport.read(AbstractSynchronousByteArrayCommandTransport.java:34)
+	at hudson.remoting.SynchronousCommandTransport$ReaderThread.run(SynchronousCommandTransport.java:48)
+ERROR: [08/05/14 23:04:45] slave agent was terminated
+java.io.IOException: Unexpected termination of the channel
+	at hudson.remoting.SynchronousCommandTransport$ReaderThread.run(SynchronousCommandTransport.java:50)
+Caused by: java.io.EOFException
+	at java.io.ObjectInputStream$PeekInputStream.readFully(ObjectInputStream.java:2325)
+	at java.io.ObjectInputStream$BlockDataInputStream.readShort(ObjectInputStream.java:2794)
+	at java.io.ObjectInputStream.readStreamHeader(ObjectInputStream.java:801)
+	at java.io.ObjectInputStream.<init>(ObjectInputStream.java:299)
+	at hudson.remoting.ObjectInputStreamEx.<init>(ObjectInputStreamEx.java:40)
+	at hudson.remoting.AbstractSynchronousByteArrayCommandTransport.read(AbstractSynchronousByteArrayCommandTransport.java:34)
+	at hudson.remoting.SynchronousCommandTransport$ReaderThread.run(SynchronousCommandTransport.java:48)

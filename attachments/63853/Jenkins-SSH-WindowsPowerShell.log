@@ -1,0 +1,83 @@
+Warning: no key algorithms provided; JENKINS-42959 disabled
+SSHLauncher{host='build10d-whs-04.dev.webmd.com', port=22, credentialsId='s.jenkins', jvmOptions='', javaPath='', prefixStartSlaveCmd='', suffixStartSlaveCmd='', launchTimeoutSeconds=60, maxNumRetries=10, retryWaitTime=15, sshHostKeyVerificationStrategy=hudson.plugins.sshslaves.verifiers.KnownHostsFileKeyVerificationStrategy, tcpNoDelay=true, trackCredentials=true}
+[01/24/25 13:52:22] [SSH] Opening SSH connection to build10d-whs-04.dev.webmd.com:22.
+Searching for build10d-whs-04.dev.webmd.com in C:\Users\whsbuilduser\.ssh\known_hosts
+Searching for build10d-whs-04.dev.webmd.com:22 in C:\Users\whsbuilduser\.ssh\known_hosts
+[01/24/25 13:52:22] [SSH] SSH host key matches key in Known Hosts file. Connection will be allowed.
+[01/24/25 13:52:22] [SSH] Authentication successful.
+[01/24/25 13:52:22] [SSH] The remote user's environment is:
+Set-Variable : Cannot process command because of one or more missing mandatory parameters: Name.
+At line:1 char:1
++ set
++ ~~~
+    + CategoryInfo          : InvalidArgument: (:) [Set-Variable], ParameterBindingException
+    + FullyQualifiedErrorId : MissingMandatoryParameter,Microsoft.PowerShell.Commands.SetVariable 
+   Command
+ 
+Checking Java version in the PATH
+openjdk version "21.0.6" 2025-01-21 LTS
+OpenJDK Runtime Environment Microsoft-10800203 (build 21.0.6+7-LTS)
+OpenJDK 64-Bit Server VM Microsoft-10800203 (build 21.0.6+7-LTS, mixed mode, sharing)
+[01/24/25 13:52:23] [SSH] Checking java version of D:\J/jdk/bin/java
+Couldn't figure out the Java version of D:\J/jdk/bin/java
+D:\J/jdk/bin/java : The term 'D:\J/jdk/bin/java' is not recognized as the name of a cmdlet, 
+function, script file, or operable program. Check the spelling of the name, or if a path was 
+included, verify that the path is correct and try again.
+At line:1 char:1
++ D:\J/jdk/bin/java  -version
++ ~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (D:\J/jdk/bin/java:String) [], CommandNotFoundExcep 
+   tion
+    + FullyQualifiedErrorId : CommandNotFoundException
+ 
+
+[01/24/25 13:52:23] [SSH] Checking java version of java
+[01/24/25 13:52:24] [SSH] java -version returned 21.0.6.
+[01/24/25 13:52:24] [SSH] Starting sftp client.
+ERROR: [01/24/25 13:52:24] [SSH] SFTP failed. Copying via SCP.
+java.io.IOException: The subsystem request failed.
+	at PluginClassLoader for trilead-api//com.trilead.ssh2.channel.ChannelManager.requestSubSystem(ChannelManager.java:741)
+	at PluginClassLoader for trilead-api//com.trilead.ssh2.Session.startSubSystem(Session.java:362)
+	at PluginClassLoader for trilead-api//com.trilead.ssh2.SFTPv3Client.<init>(SFTPv3Client.java:100)
+	at PluginClassLoader for trilead-api//com.trilead.ssh2.SFTPv3Client.<init>(SFTPv3Client.java:119)
+	at PluginClassLoader for trilead-api//com.trilead.ssh2.jenkins.SFTPClient.<init>(SFTPClient.java:43)
+	at PluginClassLoader for ssh-slaves//hudson.plugins.sshslaves.SSHLauncher.copyAgentJar(SSHLauncher.java:684)
+	at PluginClassLoader for ssh-slaves//hudson.plugins.sshslaves.SSHLauncher.lambda$launch$0(SSHLauncher.java:463)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: java.io.IOException: The server denied the request.
+	at PluginClassLoader for trilead-api//com.trilead.ssh2.channel.ChannelManager.requestSubSystem(ChannelManager.java:737)
+	... 10 more
+test : The term 'test' is not recognized as the name of a cmdlet, function, script file, or 
+operable program. Check the spelling of the name, or if a path was included, verify that the path 
+is correct and try again.
+At line:1 char:1
++ test -d D:\J
++ ~~~~
+    + CategoryInfo          : ObjectNotFound: (test:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+ 
+[01/24/25 13:52:25] [SSH] Remote file system root D:\J does not exist. Will try to create it...
+mkdir : An item with the specified name D:\J already exists.
+At line:1 char:1
++ mkdir -p D:\J
++ ~~~~~~~~~~~~~
+    + CategoryInfo          : ResourceExists: (D:\J:String) [New-Item], IOException
+    + FullyQualifiedErrorId : DirectoryExist,Microsoft.PowerShell.Commands.NewItemCommand
+ 
+Failed to create D:\J
+[01/24/25 13:52:26] [SSH] Copying latest remoting.jar...
+Expanded the channel window size to 4MB
+[01/24/25 13:52:27] [SSH] Starting agent process: cd "D:\J" && java  -jar remoting.jar -workDir D:\J -jar-cache D:\J/remoting/jarCache
+At line:1 char:11
++ cd "D:\J" && java  -jar remoting.jar -workDir D:\J -jar-cache D:\J/re ...
++           ~~
+The token '&&' is not a valid statement separator in this version.
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : InvalidEndOfLine
+ 
+Agent JVM has terminated. Exit code=1
+[01/24/25 13:52:27] Launch failed - cleaning up connection
+[01/24/25 13:52:27] [SSH] Connection closed.

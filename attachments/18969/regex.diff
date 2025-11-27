@@ -1,0 +1,446 @@
+Index: src/test/java/hudson/plugins/emailext/plugins/ContentBuilderTest.java
+===================================================================
+--- src/test/java/hudson/plugins/emailext/plugins/ContentBuilderTest.java	(r‚vision 24135)
++++ src/test/java/hudson/plugins/emailext/plugins/ContentBuilderTest.java	(copie de travail)
+@@ -117,5 +117,23 @@
+ 		assertEquals(false, tokenizer.getArgs().get("f"));
+ 		assertFalse(tokenizer.find());
+ 	}
++	
++	public void testTokenizer13() {
++		
++		final String regex = 
++			"<mxp4Root><mxp4Fixes><mxp4fix><mxp4description>((?:[\\r\\n]|[^<])*)</mxp4description><mxp4defectID>"+
++			"(DEF[0-9]+)</mxp4defectID><mxp4internal>.</mxp4internal><mxp4warnoneoff>."+
++			"</mxp4warnoneoff></mxp4fix></mxp4Fixes></mxp4Root>";
++		final String replace = "${2}: ${1}";
++		
++		ContentBuilder.Tokenizer tokenizer;
++		tokenizer = new ContentBuilder.Tokenizer(
++				"${CHANGES_SINCE_LAST_SUCCESS, regex=\""+regex+"\", replace=\""+replace+"\"}");
++		assertTrue(tokenizer.find());
++		assertEquals("CHANGES_SINCE_LAST_SUCCESS", tokenizer.getTokenName());
++		assertEquals(2, tokenizer.getArgs().size());
++		assertEquals( regex.replace("\\n", "\n").replace("\\r", "\r"), tokenizer.getArgs().get("regex"));
++		assertEquals(replace, tokenizer.getArgs().get("replace"));
++	}
+ 
+ }
+Index: src/test/java/hudson/plugins/emailext/UtilTest.java
+===================================================================
+--- src/test/java/hudson/plugins/emailext/UtilTest.java	(r‚vision 0)
++++ src/test/java/hudson/plugins/emailext/UtilTest.java	(r‚vision 0)
+@@ -0,0 +1,67 @@
++package hudson.plugins.emailext;
++
++import org.jmock.MockObjectTestCase;
++
++public class UtilTest extends MockObjectTestCase {
++
++	private String formatXmlSubmit(String description, String defect, String internal, String warnoneoff) {
++		return
++		"<mxp4Root><mxp4Fixes><mxp4fix><mxp4description>"+description+
++		"</mxp4description><mxp4defectID>"+defect+
++		"</mxp4defectID><mxp4internal>"+internal+
++		"</mxp4internal><mxp4warnoneoff>"+warnoneoff+"</mxp4warnoneoff></mxp4fix></mxp4Fixes></mxp4Root>";
++	}
++
++	private String cleanXmlSubmit(String submits) {
++		return Util.replaceAll(submits, "<mxp4Root><mxp4Fixes><mxp4fix><mxp4description>((?:[\r\n]|[^<])*)</mxp4description><mxp4defectID>(DEF[0-9]+)</mxp4defectID><mxp4internal>.</mxp4internal><mxp4warnoneoff>.</mxp4warnoneoff></mxp4fix></mxp4Fixes></mxp4Root>", "${2}: ${1}");
++	}
++	
++	public void testOneSubmit() {
++		
++		final String description = "POP BUILD SYSTEM:(RFD::69678) Remove dev files from final installers";
++		final String defect = "DEF0133629";
++		
++		assertEquals(defect+": "+description, cleanXmlSubmit(formatXmlSubmit(description, defect, "N", "N")));
++	}
++
++	public void testManySubmits() {
++		
++		final String rawSubmits =
++			"[mmoustafa] <mxp4Root><mxp4Fixes><mxp4fix><mxp4description>&gt;Synchronize CSharp Task Manager Class Builder.</mxp4description><mxp4defectID>DEF0125304</mxp4defectID><mxp4internal>N</mxp4internal><mxp4warnoneoff>N</mxp4warnoneoff></mxp4fix></mxp4Fixes></mxp4Root>\n\n"+
++			"[zabughazaleh] purify purpurin command and purify properties in pupurin.properties\n\n"+
++			"[ehassoun] <mxp4Root><mxp4Fixes><mxp4fix><mxp4description>No need to nullify the pfSaveObject of the families in the metaDisplayer in case of an import via the Wizard.</mxp4description><mxp4defectID>DEF0133943</mxp4defectID><mxp4internal>N</mxp4internal><mxp4warnoneoff>N</mxp4warnoneoff></mxp4fix></mxp4Fixes></mxp4Root>\n\n"+
++			"[ranisko] <mxp4Root><mxp4Fixes><mxp4fix><mxp4description>Fix path.</mxp4description><mxp4defectID>DEF0133512</mxp4defectID><mxp4internal>N</mxp4internal><mxp4warnoneoff>N</mxp4warnoneoff></mxp4fix></mxp4Fixes></mxp4Root>\n\n";
++
++		final String cleanedSubmits =
++			"[mmoustafa] DEF0125304: &gt;Synchronize CSharp Task Manager Class Builder.\n\n"+
++			"[zabughazaleh] purify purpurin command and purify properties in pupurin.properties\n\n"+
++			"[ehassoun] DEF0133943: No need to nullify the pfSaveObject of the families in the metaDisplayer in case of an import via the Wizard.\n\n"+
++			"[ranisko] DEF0133512: Fix path.\n\n";
++		
++		assertEquals(cleanedSubmits, cleanXmlSubmit(rawSubmits));
++	}
++
++	public void testSubmitWithNewLine() {
++		final String rawSubmits =
++			"[pbourgau] <mxp4Root><mxp4Fixes><mxp4fix><mxp4description>POP BUILD SYSTEM:(RFD::69678) generate a release note for final packages\n"+
++			"  imported email-ext hudson plugin from official svn for a patch</mxp4description><mxp4defectID>DEF0133630</mxp4defectID><mxp4internal>N</mxp4internal><mxp4warnoneoff>N</mxp4warnoneoff></mxp4fix></mxp4Fixes></mxp4Root>";
++
++		final String cleanedSubmits =
++			"[pbourgau] DEF0133630: POP BUILD SYSTEM:(RFD::69678) generate a release note for final packages\n"+
++			"  imported email-ext hudson plugin from official svn for a patch";
++		
++		String actual = cleanXmlSubmit(rawSubmits);
++		assertEquals(cleanedSubmits, actual);
++	}
++	
++	public void testNullRegex() {
++		final String text = 
++			"[mmoustafa] <mxp4Root><mxp4Fixes><mxp4fix><mxp4description>&gt;Synchronize CSharp Task Manager Class Builder.</mxp4description><mxp4defectID>DEF0125304</mxp4defectID><mxp4internal>N</mxp4internal><mxp4warnoneoff>N</mxp4warnoneoff></mxp4fix></mxp4Fixes></mxp4Root>\n\n"+
++			"[zabughazaleh] purify purpurin command and purify properties in pupurin.properties\n\n"+
++			"[ehassoun] <mxp4Root><mxp4Fixes><mxp4fix><mxp4description>No need to nullify the pfSaveObject of the families in the metaDisplayer in case of an import via the Wizard.</mxp4description><mxp4defectID>DEF0133943</mxp4defectID><mxp4internal>N</mxp4internal><mxp4warnoneoff>N</mxp4warnoneoff></mxp4fix></mxp4Fixes></mxp4Root>\n\n"+
++			"[ranisko] <mxp4Root><mxp4Fixes><mxp4fix><mxp4description>Fix path.</mxp4description><mxp4defectID>DEF0133512</mxp4defectID><mxp4internal>N</mxp4internal><mxp4warnoneoff>N</mxp4warnoneoff></mxp4fix></mxp4Fixes></mxp4Root>\n\n";
++		
++		assertEquals(text, Util.replaceAll(text, Util.NULL_REGEX, Util.NULL_REPLACE));
++	}
++
++}
+Index: src/main/java/hudson/plugins/emailext/plugins/content/ChangesSinceLastBuildContent.java
+===================================================================
+--- src/main/java/hudson/plugins/emailext/plugins/content/ChangesSinceLastBuildContent.java	(r‚vision 24135)
++++ src/main/java/hudson/plugins/emailext/plugins/content/ChangesSinceLastBuildContent.java	(copie de travail)
+@@ -30,12 +30,17 @@
+ 	private static final String PATH_FORMAT_ARG_NAME = "pathFormat";
+ 	private static final String PATH_FORMAT_DEFAULT_VALUE = "\\t%p\\n";
+ 
++	private static final String REGEX_ARG_NAME = "regex";
++	private static final String REGEX_DEFAULT_VALUE = Util.NULL_REGEX;
++	private static final String REPLACE_ARG_NAME = "replace";
++	private static final String REPLACE_DEFAULT_VALUE = Util.NULL_REPLACE;
++	
+ 	public String getToken() {
+ 		return TOKEN;
+ 	}
+ 	
+ 	public List<String> getArguments() {
+-		return Arrays.asList(SHOW_PATHS_ARG_NAME, FORMAT_ARG_NAME, PATH_FORMAT_ARG_NAME);
++		return Arrays.asList(SHOW_PATHS_ARG_NAME, FORMAT_ARG_NAME, PATH_FORMAT_ARG_NAME, REGEX_ARG_NAME, REPLACE_ARG_NAME);
+ 	}
+ 	
+ 	public String getHelpText() {
+@@ -57,6 +62,14 @@
+ 		"%p to indicate how to print paths.<br>\n" +
+ 		"Defaults to \"" + PATH_FORMAT_DEFAULT_VALUE + "\".\n" +
+ 		
++		"<li><i>" + REGEX_ARG_NAME + "</i>, <i>" + REPLACE_ARG_NAME + "</i> - " +
++		"defines a regular expression and replacement to transform the message of " +
++		"the changes, the synthax used is that of java regex, notice that backslashes "+
++		"need to be escaped. groups can be captured and used in the replace expression " +
++		"with something like \"${i}\" where i is the index of a matched group.<br>\n" +
++		"Defaults to \"" + REGEX_DEFAULT_VALUE + "\" \"" + REPLACE_DEFAULT_VALUE + 
++		"\" which leaves the text unchanged.\n" +
++		
+ 		"</ul>\n";
+ 	}
+ 	
+@@ -67,16 +80,19 @@
+ 		String formatStringDefault = showPaths ? FORMAT_DEFAULT_VALUE_WITH_PATHS : FORMAT_DEFAULT_VALUE;
+ 		String formatString = Args.get(args, FORMAT_ARG_NAME, formatStringDefault);
+ 		String pathFormatString = Args.get(args, PATH_FORMAT_ARG_NAME, PATH_FORMAT_DEFAULT_VALUE);
++		String regexString = Args.get(args, REGEX_ARG_NAME, REGEX_DEFAULT_VALUE);
++		String replaceString = Args.get(args, REPLACE_ARG_NAME, REPLACE_DEFAULT_VALUE);
+ 		
+ 		StringBuffer buf = new StringBuffer();
+ 		for (ChangeLogSet.Entry entry : build.getChangeSet()) {
+-			appendEntry(buf, entry, formatString, pathFormatString);
++			appendEntry(buf, entry, formatString, pathFormatString, regexString, replaceString);
+ 		}
+ 		
+ 		return buf.toString();
+ 	}
+ 
+-	private void appendEntry(StringBuffer buf, final ChangeLogSet.Entry entry, final String formatString, final String pathFormatString) {
++	private void appendEntry(StringBuffer buf, final ChangeLogSet.Entry entry, final String formatString, final String pathFormatString, 
++			final String regexString, final String replaceString) {
+ 		Util.printf(buf, formatString, new PrintfSpec() {
+ 
+ 			public boolean printSpec(StringBuffer buf, char formatChar) {
+@@ -99,8 +115,9 @@
+ 				}
+ 				case 'm': {
+ 					String m = entry.getMsg();
+-					buf.append(m);
+-					if (!m.endsWith("\n")) {
++					String transformedMessage = Util.replaceAll(m, regexString, replaceString);
++					buf.append(transformedMessage);
++					if (!transformedMessage.endsWith("\n")) {
+ 						buf.append('\n');
+ 					}
+ 					return true;
+Index: src/main/java/hudson/plugins/emailext/plugins/content/ChangesSinceLastSuccessfulBuildContent.java
+===================================================================
+--- src/main/java/hudson/plugins/emailext/plugins/content/ChangesSinceLastSuccessfulBuildContent.java	(r‚vision 24135)
++++ src/main/java/hudson/plugins/emailext/plugins/content/ChangesSinceLastSuccessfulBuildContent.java	(copie de travail)
+@@ -28,12 +28,15 @@
+ 	private static final String CHANGES_FORMAT_ARG_NAME = "changesFormat";
+ 	private static final String PATH_FORMAT_ARG_NAME = "pathFormat";
+ 
++	private static final String CHANGES_REGEX_ARG_NAME = "regex";
++	private static final String CHANGES_REPLACE_ARG_NAME = "replace";
++	
+ 	public String getToken() {
+ 		return TOKEN;
+ 	}
+ 
+ 	public List<String> getArguments() {
+-		return Arrays.asList(REVERSE_ARG_NAME, FORMAT_ARG_NAME, SHOW_PATHS_ARG_NAME, CHANGES_FORMAT_ARG_NAME, PATH_FORMAT_ARG_NAME);
++		return Arrays.asList(REVERSE_ARG_NAME, FORMAT_ARG_NAME, SHOW_PATHS_ARG_NAME, CHANGES_FORMAT_ARG_NAME, PATH_FORMAT_ARG_NAME, CHANGES_REGEX_ARG_NAME, CHANGES_REPLACE_ARG_NAME);
+ 	}
+ 	
+ 	public String getHelpText() {
+@@ -53,6 +56,9 @@
+ 			"defined as <i>showPaths</i>, <i>format</i>, and <i>pathFormat</i> " +
+ 			"from ${CHANGES}, repectively.\n" +
+ 			
++			"<li><i>" + CHANGES_REGEX_ARG_NAME + "</i>, <i>" + CHANGES_REPLACE_ARG_NAME + "</i> - " +
++			"defined as <i>regex</i> and <i>replace</i> from ${CHANGES}, repectively.\n" +
++
+ 			"</ul>\n";
+ 	}
+ 
+@@ -78,6 +84,8 @@
+ 		Map<String, Object> childArgs = new HashMap<String, Object>();
+ 		childArgs.put(FORMAT_ARG_NAME, args.get(CHANGES_FORMAT_ARG_NAME));
+ 		childArgs.put(PATH_FORMAT_ARG_NAME, args.get(PATH_FORMAT_ARG_NAME));
++		childArgs.put(CHANGES_REGEX_ARG_NAME, args.get(CHANGES_REGEX_ARG_NAME));
++		childArgs.put(CHANGES_REPLACE_ARG_NAME, args.get(CHANGES_REPLACE_ARG_NAME));
+ 
+ 		StringBuffer sb = new StringBuffer();
+ 		final AbstractBuild<P, B> startBuild;
+Index: src/main/java/hudson/plugins/emailext/plugins/content/BuildLogContent.java
+===================================================================
+--- src/main/java/hudson/plugins/emailext/plugins/content/BuildLogContent.java	(r‚vision 24135)
++++ src/main/java/hudson/plugins/emailext/plugins/content/BuildLogContent.java	(copie de travail)
+@@ -1,74 +1,74 @@
+-package hudson.plugins.emailext.plugins.content;
+-
+-import hudson.model.AbstractBuild;
+-import hudson.model.AbstractProject;
+-import hudson.plugins.emailext.EmailType;
+-import hudson.plugins.emailext.ExtendedEmailPublisher;
+-import hudson.plugins.emailext.plugins.EmailContent;
+-import hudson.tasks.Mailer;
+-import java.io.IOException;
+-import java.util.Collections;
+-import java.util.List;
+-import java.util.Map;
+-import java.util.logging.Level;
+-import java.util.logging.Logger;
+-
+-/**
+- * An EmailContent for build log. Shows last 250 lines of the build log file.
+- * 
+- * @author dvrzalik
+- */
+-public class BuildLogContent implements EmailContent {
+-	
+-	private static final Logger LOGGER = Logger.getLogger(Mailer.class.getName());
+-
+-	private static final String TOKEN = "BUILD_LOG";
+-	
+-	private static final String MAX_LINES_ARG_NAME = "maxLines";
+-	private static final int MAX_LINES_DEFAULT_VALUE = 250;
+-	
+-	public String getToken() {
+-		return TOKEN;
+-	}
+-
+-	public List<String> getArguments() {
+-		return Collections.singletonList(MAX_LINES_ARG_NAME);
+-	}
+-	
+-	public String getHelpText() {
+-		return "Displays the end of the build log.\n" +
+-		"<ul>\n" +
+-		
+-		"<li><i>" + MAX_LINES_ARG_NAME + "</i> - display at most this many " +
+-		"lines of the log.<br>\n" +
+-		"Defaults to " + MAX_LINES_DEFAULT_VALUE + ".\n" +
+-		
+-		"</ul>\n";
+-	}
+-
+-	public <P extends AbstractProject<P, B>, B extends AbstractBuild<P, B>>
+-	String getContent(AbstractBuild<P, B> build, ExtendedEmailPublisher publisher,
+-			EmailType emailType, Map<String, ?> args) {
+-		
+-		StringBuffer buffer = new StringBuffer();
+-		// getLog() chokes and dies if called with a number <= 0.
+-		int maxLines = Math.max(Args.get(args, MAX_LINES_ARG_NAME, MAX_LINES_DEFAULT_VALUE), 1);
+-		try {
+-			List<String> lines = build.getLog(maxLines);
+-			for(String line: lines) {
+-				//TODO: show file links the same way as MailSender
+-				buffer.append(line);
+-				buffer.append('\n');
+-			}
+-		} catch (IOException ex) {
+-			LOGGER.log(Level.SEVERE, null, ex);
+-		}
+-		
+-		return buffer.toString();
+-	}
+-
+-	public boolean hasNestedContent() {
+-		return false;
+-	}
+-	
+-}
++package hudson.plugins.emailext.plugins.content;
++
++import hudson.model.AbstractBuild;
++import hudson.model.AbstractProject;
++import hudson.plugins.emailext.EmailType;
++import hudson.plugins.emailext.ExtendedEmailPublisher;
++import hudson.plugins.emailext.plugins.EmailContent;
++import hudson.tasks.Mailer;
++import java.io.IOException;
++import java.util.Collections;
++import java.util.List;
++import java.util.Map;
++import java.util.logging.Level;
++import java.util.logging.Logger;
++
++/**
++ * An EmailContent for build log. Shows last 250 lines of the build log file.
++ * 
++ * @author dvrzalik
++ */
++public class BuildLogContent implements EmailContent {
++	
++	private static final Logger LOGGER = Logger.getLogger(Mailer.class.getName());
++
++	private static final String TOKEN = "BUILD_LOG";
++	
++	private static final String MAX_LINES_ARG_NAME = "maxLines";
++	private static final int MAX_LINES_DEFAULT_VALUE = 250;
++	
++	public String getToken() {
++		return TOKEN;
++	}
++
++	public List<String> getArguments() {
++		return Collections.singletonList(MAX_LINES_ARG_NAME);
++	}
++	
++	public String getHelpText() {
++		return "Displays the end of the build log.\n" +
++		"<ul>\n" +
++		
++		"<li><i>" + MAX_LINES_ARG_NAME + "</i> - display at most this many " +
++		"lines of the log.<br>\n" +
++		"Defaults to " + MAX_LINES_DEFAULT_VALUE + ".\n" +
++		
++		"</ul>\n";
++	}
++
++	public <P extends AbstractProject<P, B>, B extends AbstractBuild<P, B>>
++	String getContent(AbstractBuild<P, B> build, ExtendedEmailPublisher publisher,
++			EmailType emailType, Map<String, ?> args) {
++		
++		StringBuffer buffer = new StringBuffer();
++		// getLog() chokes and dies if called with a number <= 0.
++		int maxLines = Math.max(Args.get(args, MAX_LINES_ARG_NAME, MAX_LINES_DEFAULT_VALUE), 1);
++		try {
++			List<String> lines = build.getLog(maxLines);
++			for(String line: lines) {
++				//TODO: show file links the same way as MailSender
++				buffer.append(line);
++				buffer.append('\n');
++			}
++		} catch (IOException ex) {
++			LOGGER.log(Level.SEVERE, null, ex);
++		}
++		
++		return buffer.toString();
++	}
++
++	public boolean hasNestedContent() {
++		return false;
++	}
++	
++}
+Index: src/main/java/hudson/plugins/emailext/Util.java
+===================================================================
+--- src/main/java/hudson/plugins/emailext/Util.java	(r‚vision 24135)
++++ src/main/java/hudson/plugins/emailext/Util.java	(copie de travail)
+@@ -1,5 +1,8 @@
+ package hudson.plugins.emailext;
+ 
++import java.util.regex.Matcher;
++import java.util.regex.Pattern;
++
+ /**
+  * Utility class for internal use.
+  *
+@@ -102,5 +105,54 @@
+ 			}
+ 		}
+ 	}
++	
++	
++	
++	private static String expandReplaceString(Matcher matched, String replaceExpression) {
+ 
++		Pattern pattern = Pattern.compile("\\$\\{([0-9]+)\\}");
++		Matcher matcher = pattern.matcher(replaceExpression);
++		StringBuffer result = new StringBuffer();
++		while(matcher.find()) {
++			int groupNo = Integer.parseInt(matcher.group(1));
++			String replacement = matched.group(groupNo);
++			matcher.appendReplacement(result, replacement);
++		}
++		matcher.appendTail(result);
++		return result.toString();
++	}
++	
++	private static String replaceAll(Matcher matcher, String replace) {
++
++		StringBuffer result = new StringBuffer();
++		while(matcher.find()) {
++			String replacement = expandReplaceString(matcher, replace);
++			matcher.appendReplacement(result, replacement);
++		}
++		matcher.appendTail(result);
++		return result.toString();
++	}
++	
++	/**
++	 * Repeatedly replaces occurrences of regex in fullText with replace. Regex can contain
++	 * groups, to which the replace string can contain references like ${i}.
++	 *  
++	 * @param fullText Complete text to transform
++	 * @param regex Regular expression to search for, using standard java regex synthax
++	 * @param replace Replacement string, can contain group references
++	 * @return The transformed text
++	 */
++	public static String replaceAll(String fullText, String regex, String replace) {
++		
++		Pattern pattern = Pattern.compile(regex);
++		Matcher matcher = pattern.matcher(fullText);
++		
++		return replaceAll(matcher, replace);
++	}
++	
++	/**
++	 * Null regex and replace expressions, that leave the text unchanged when used with replaceAll.
++	 */
++	public final static String NULL_REGEX = "";
++	public final static String NULL_REPLACE = "";
+ }
+Index: src/main/webapp/help/globalConfig/override-global-settings.html
+===================================================================
+--- src/main/webapp/help/globalConfig/override-global-settings.html	(r‚vision 24135)
++++ src/main/webapp/help/globalConfig/override-global-settings.html	(copie de travail)
+@@ -1,4 +1,4 @@
+-<div>
+-	If unchecked, the plugin will use the settings from the E-mail Notification section. 
+-	Select Override Global Settings to specify different settings. 
++<div>
++	If unchecked, the plugin will use the settings from the E-mail Notification section. 
++	Select Override Global Settings to specify different settings. 
+ </div>
+\ No newline at end of file

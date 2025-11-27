@@ -1,0 +1,602 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson>
+  <disabledAdministrativeMonitors/>
+  <version>1.451</version>
+  <numExecutors>4</numExecutors>
+  <mode>NORMAL</mode>
+  <useSecurity>true</useSecurity>
+  <authorizationStrategy class="hudson.security.ProjectMatrixAuthorizationStrategy">
+    <permission>hudson.model.Computer.Configure:ast</permission>
+    <permission>hudson.model.Computer.Configure:authenticated</permission>
+    <permission>hudson.model.Hudson.Administer:ajohns28</permission>
+    <permission>hudson.model.Hudson.Administer:bszeliga</permission>
+    <permission>hudson.model.Hudson.Administer:cmmorris</permission>
+    <permission>hudson.model.Hudson.Administer:davidsj2</permission>
+    <permission>hudson.model.Hudson.Administer:kflemin</permission>
+    <permission>hudson.model.Hudson.Administer:millergr</permission>
+    <permission>hudson.model.Hudson.Administer:roberpe</permission>
+    <permission>hudson.model.Hudson.Administer:scnguyen</permission>
+    <permission>hudson.model.Hudson.Administer:ssturdiv</permission>
+    <permission>hudson.model.Hudson.Administer:wyleung</permission>
+    <permission>hudson.model.Hudson.Read:anonymous</permission>
+    <permission>hudson.model.Hudson.Read:ast</permission>
+    <permission>hudson.model.Hudson.Read:authenticated</permission>
+    <permission>hudson.model.Hudson.Read:cmmorris</permission>
+    <permission>hudson.model.Item.Build:anonymous</permission>
+    <permission>hudson.model.Item.Create:cmmorris</permission>
+    <permission>hudson.model.Item.Create:millergr</permission>
+    <permission>hudson.model.Item.Read:anonymous</permission>
+    <permission>hudson.model.Item.Read:ast</permission>
+    <permission>hudson.model.Item.Read:authenticated</permission>
+    <permission>hudson.model.Run.Update:ast</permission>
+  </authorizationStrategy>
+  <securityRealm class="hudson.security.LDAPSecurityRealm">
+    <server>ldaps://a02dc80.acct02.us.lmco.com:3269</server>
+    <rootDN>dc=lmco,dc=com</rootDN>
+    <inhibitInferRootDN>false</inhibitInferRootDN>
+    <userSearchBase></userSearchBase>
+    <userSearch>sAMAccountName={0}</userSearch>
+    <managerDN>opsjedi@acct02.us.lmco.com</managerDN>
+    <managerPassword>QkxPVy0xMi1DaHVua3Mh</managerPassword>
+  </securityRealm>
+  <workspaceDir>${ITEM_ROOTDIR}/workspace</workspaceDir>
+  <buildsDir>${ITEM_ROOTDIR}/builds</buildsDir>
+  <markupFormatter class="hudson.markup.RawHtmlMarkupFormatter">
+    <disableSyntaxHighlighting>false</disableSyntaxHighlighting>
+  </markupFormatter>
+  <jdks/>
+  <viewsTabBar class="hudson.views.DefaultViewsTabBar"/>
+  <myViewsTabBar class="hudson.views.DefaultMyViewsTabBar"/>
+  <clouds/>
+  <slaves>
+    <slave>
+      <name>simulation-cygwin-box</name>
+      <description></description>
+      <remoteFS>C:\jenkins</remoteFS>
+      <numExecutors>1</numExecutors>
+      <mode>EXCLUSIVE</mode>
+      <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
+      <launcher class="hudson.slaves.JNLPLauncher"/>
+      <label>cygwin</label>
+      <nodeProperties>
+        <hudson.slaves.EnvironmentVariablesNodeProperty>
+          <envVars serialization="custom">
+            <unserializable-parents/>
+            <tree-map>
+              <default>
+                <comparator class="hudson.util.CaseInsensitiveComparator"/>
+              </default>
+              <int>0</int>
+            </tree-map>
+          </envVars>
+        </hudson.slaves.EnvironmentVariablesNodeProperty>
+      </nodeProperties>
+    </slave>
+    <slave>
+      <name>AST-Windows-Build-Laptop</name>
+      <description>Lord help us if this machine ever reboots</description>
+      <remoteFS>C:\BUILD</remoteFS>
+      <numExecutors>1</numExecutors>
+      <mode>EXCLUSIVE</mode>
+      <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
+      <launcher class="hudson.slaves.JNLPLauncher"/>
+      <label>ast_windows_x86</label>
+      <nodeProperties>
+        <hudson.slaves.EnvironmentVariablesNodeProperty>
+          <envVars serialization="custom">
+            <unserializable-parents/>
+            <tree-map>
+              <default>
+                <comparator class="hudson.util.CaseInsensitiveComparator"/>
+              </default>
+              <int>3</int>
+              <string>AST_ECLIPSE</string>
+              <string>C:\Tools\Eclipse\eclipsec.exe</string>
+              <string>AST_MAX_JOBS</string>
+              <string>1</string>
+              <string>EMC_CYGWIN_DIR</string>
+              <string>C:\EMC_Cygwin</string>
+            </tree-map>
+          </envVars>
+        </hudson.slaves.EnvironmentVariablesNodeProperty>
+      </nodeProperties>
+    </slave>
+    <slave>
+      <name>AST-Windows-Backroom-Computer</name>
+      <description>Might as well use this machine for something</description>
+      <remoteFS>C:\BUILD</remoteFS>
+      <numExecutors>5</numExecutors>
+      <mode>EXCLUSIVE</mode>
+      <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
+      <launcher class="hudson.slaves.JNLPLauncher"/>
+      <label>ast_windows_x64</label>
+      <nodeProperties>
+        <hudson.slaves.EnvironmentVariablesNodeProperty>
+          <envVars serialization="custom">
+            <unserializable-parents/>
+            <tree-map>
+              <default>
+                <comparator class="hudson.util.CaseInsensitiveComparator"/>
+              </default>
+              <int>3</int>
+              <string>AST_ECLIPSE</string>
+              <string>c:\eclipse\eclipsec.exe</string>
+              <string>AST_MAX_JOBS</string>
+              <string>4</string>
+              <string>DOORS_PATH</string>
+              <string>c:\Program Files (x86)\IBM\Rational\DOORS\9.2\bin</string>
+            </tree-map>
+          </envVars>
+        </hudson.slaves.EnvironmentVariablesNodeProperty>
+      </nodeProperties>
+    </slave>
+    <slave>
+      <name>temp</name>
+      <description></description>
+      <remoteFS>C:\BUILD2</remoteFS>
+      <numExecutors>1</numExecutors>
+      <mode>NORMAL</mode>
+      <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
+      <launcher class="hudson.slaves.JNLPLauncher"/>
+      <label></label>
+      <nodeProperties/>
+    </slave>
+    <slave>
+      <temporaryOfflineCause class="hudson.slaves.OfflineCause$ChannelTermination">
+        <cause class="java.net.SocketException">
+          <detailMessage>Connection reset</detailMessage>
+          <stackTrace>
+            <trace>java.net.SocketInputStream.read(SocketInputStream.java:185)</trace>
+            <trace>java.io.BufferedInputStream.fill(BufferedInputStream.java:235)</trace>
+            <trace>java.io.BufferedInputStream.read(BufferedInputStream.java:254)</trace>
+            <trace>java.io.ObjectInputStream$PeekInputStream.peek(ObjectInputStream.java:2265)</trace>
+            <trace>java.io.ObjectInputStream$BlockDataInputStream.peek(ObjectInputStream.java:2558)</trace>
+            <trace>java.io.ObjectInputStream$BlockDataInputStream.peekByte(ObjectInputStream.java:2568)</trace>
+            <trace>java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1314)</trace>
+            <trace>java.io.ObjectInputStream.readObject(ObjectInputStream.java:368)</trace>
+            <trace>hudson.remoting.Channel$ReaderThread.run(Channel.java:1109)</trace>
+          </stackTrace>
+        </cause>
+      </temporaryOfflineCause>
+      <name>Brians_Windows_Laptop</name>
+      <description>Brian&apos;s Windows Laptop</description>
+      <remoteFS>C:\BUILD</remoteFS>
+      <numExecutors>1</numExecutors>
+      <mode>EXCLUSIVE</mode>
+      <retentionStrategy class="hudson.slaves.RetentionStrategy$Demand">
+        <inDemandDelay>5</inDemandDelay>
+        <idleDelay>5</idleDelay>
+      </retentionStrategy>
+      <launcher class="hudson.slaves.JNLPLauncher"/>
+      <label>ast_windows_x86</label>
+      <nodeProperties>
+        <hudson.slaves.EnvironmentVariablesNodeProperty>
+          <envVars serialization="custom">
+            <unserializable-parents/>
+            <tree-map>
+              <default>
+                <comparator class="hudson.util.CaseInsensitiveComparator"/>
+              </default>
+              <int>1</int>
+              <string>AST_MAX_JOBS</string>
+              <string>1</string>
+            </tree-map>
+          </envVars>
+        </hudson.slaves.EnvironmentVariablesNodeProperty>
+      </nodeProperties>
+    </slave>
+    <slave>
+      <name>AST-Linux-x64-scts01</name>
+      <description></description>
+      <remoteFS>/disk01/BUILD</remoteFS>
+      <numExecutors>1</numExecutors>
+      <mode>EXCLUSIVE</mode>
+      <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
+      <launcher class="hudson.slaves.JNLPLauncher"/>
+      <label>ast_linux_x64</label>
+      <nodeProperties>
+        <hudson.slaves.EnvironmentVariablesNodeProperty>
+          <envVars serialization="custom">
+            <unserializable-parents/>
+            <tree-map>
+              <default>
+                <comparator class="hudson.util.CaseInsensitiveComparator"/>
+              </default>
+              <int>5</int>
+              <string>AST_ECLIPSE</string>
+              <string>/disk01/apps/eclipse/eclipse</string>
+              <string>AST_MAX_JOBS</string>
+              <string>16</string>
+              <string>CPATH</string>
+              <string>/disk01/include</string>
+              <string>LIBRARY_PATH</string>
+              <string>/disk01/lib</string>
+              <string>SIMICS_LICENSE_FILE</string>
+              <string>27017@astsden-a60.ast.lmco.com</string>
+            </tree-map>
+          </envVars>
+        </hudson.slaves.EnvironmentVariablesNodeProperty>
+      </nodeProperties>
+    </slave>
+    <slave>
+      <name>goesr-ste0</name>
+      <description></description>
+      <remoteFS>/jenkins</remoteFS>
+      <numExecutors>4</numExecutors>
+      <mode>EXCLUSIVE</mode>
+      <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
+      <launcher class="hudson.plugins.sshslaves.SSHLauncher">
+        <host>goesr-ste0</host>
+        <port>22</port>
+        <username>goesrjen</username>
+        <password>w4NMtuojLFz6YNhWwQNj+Q==</password>
+        <privatekey>/home/goesrjen/.ssh/id_rsa</privatekey>
+      </launcher>
+      <label>ast_linux_rhel5_x64, redhawk</label>
+      <nodeProperties>
+        <hudson.slaves.EnvironmentVariablesNodeProperty>
+          <envVars serialization="custom">
+            <unserializable-parents/>
+            <tree-map>
+              <default>
+                <comparator class="hudson.util.CaseInsensitiveComparator"/>
+              </default>
+              <int>5</int>
+              <string>AST_MAX_JOBS</string>
+              <string>8</string>
+              <string>CPATH</string>
+              <string>/data/goesrsw/goesr/include</string>
+              <string>LD_LIBRARY_PATH</string>
+              <string>/data/goesrsw/goesr/lib/ste:$LD_LIBRARY_PATH</string>
+              <string>PATH</string>
+              <string>/data/goesrsw/goesr/bin:$PATH</string>
+              <string>SIMICS_LICENSE_FILE</string>
+              <string>27017@astsden-a60.ast.lmco.com</string>
+            </tree-map>
+          </envVars>
+        </hudson.slaves.EnvironmentVariablesNodeProperty>
+      </nodeProperties>
+    </slave>
+    <slave>
+      <name>goesr02</name>
+      <description></description>
+      <remoteFS>/jenkins</remoteFS>
+      <numExecutors>4</numExecutors>
+      <mode>EXCLUSIVE</mode>
+      <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
+      <launcher class="hudson.plugins.sshslaves.SSHLauncher">
+        <host>goesr02</host>
+        <port>22</port>
+        <username>goesrjen</username>
+        <password>w4NMtuojLFz6YNhWwQNj+Q==</password>
+        <privatekey>/home/goesrjen/.ssh/id_rsa</privatekey>
+      </launcher>
+      <label>ast_linux_rhel5_x64, redhawk</label>
+      <nodeProperties>
+        <hudson.slaves.EnvironmentVariablesNodeProperty>
+          <envVars serialization="custom">
+            <unserializable-parents/>
+            <tree-map>
+              <default>
+                <comparator class="hudson.util.CaseInsensitiveComparator" reference="../../../../../../../slave[3]/nodeProperties/hudson.slaves.EnvironmentVariablesNodeProperty/envVars/tree-map/default/comparator"/>
+              </default>
+              <int>5</int>
+              <string>AST_MAX_JOBS</string>
+              <string>8</string>
+              <string>CPATH</string>
+              <string>/data/goesrsw/goesr/include</string>
+              <string>LD_LIBRARY_PATH</string>
+              <string>/data/goesrsw/goesr/lib/ste:$LD_LIBRARY_PATH</string>
+              <string>PATH</string>
+              <string>/data/goesrsw/goesr/bin:$PATH</string>
+              <string>SIMICS_LICENSE_FILE</string>
+              <string>27017@astsden-a60.ast.lmco.com</string>
+            </tree-map>
+          </envVars>
+        </hudson.slaves.EnvironmentVariablesNodeProperty>
+      </nodeProperties>
+    </slave>
+    <slave>
+      <name>goesr-satsim4</name>
+      <description>GOES-R SatSim 4</description>
+      <remoteFS>/jenkins</remoteFS>
+      <numExecutors>4</numExecutors>
+      <mode>EXCLUSIVE</mode>
+      <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
+      <launcher class="hudson.slaves.JNLPLauncher"/>
+      <label>fsve_satsim_builder</label>
+      <nodeProperties>
+        <hudson.slaves.EnvironmentVariablesNodeProperty>
+          <envVars serialization="custom">
+            <unserializable-parents/>
+            <tree-map>
+              <default>
+                <comparator class="hudson.util.CaseInsensitiveComparator"/>
+              </default>
+              <int>4</int>
+              <string>AST_ECLIPSE</string>
+              <string>/data/goesrsw/eclipse/eclipse</string>
+              <string>CPATH</string>
+              <string>/data/goesrsw/goesr/include</string>
+              <string>LD_LIBRARY_PATH</string>
+              <string>/data/goesrsw/goesr/lib/ste:$LD_LIBRARY_PATH</string>
+              <string>PATH</string>
+              <string>/data/goesrsw/goesr/bin:$PATH</string>
+            </tree-map>
+          </envVars>
+        </hudson.slaves.EnvironmentVariablesNodeProperty>
+      </nodeProperties>
+    </slave>
+    <slave>
+      <name>josh-lappy</name>
+      <description>Windows 7 Laptop</description>
+      <remoteFS>C:\BUILD</remoteFS>
+      <numExecutors>1</numExecutors>
+      <mode>EXCLUSIVE</mode>
+      <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
+      <launcher class="hudson.slaves.JNLPLauncher"/>
+      <label>ast_windows_x64</label>
+      <nodeProperties>
+        <hudson.slaves.EnvironmentVariablesNodeProperty>
+          <envVars serialization="custom">
+            <unserializable-parents/>
+            <tree-map>
+              <default>
+                <comparator class="hudson.util.CaseInsensitiveComparator" reference="../../../../../../../slave[2]/nodeProperties/hudson.slaves.EnvironmentVariablesNodeProperty/envVars/tree-map/default/comparator"/>
+              </default>
+              <int>3</int>
+              <string>AST_ECLIPSE</string>
+              <string>C:\Tools\Eclipse\eclipsec.exe</string>
+              <string>AST_MAX_JOBS</string>
+              <string>4</string>
+              <string>DOORS_PATH</string>
+              <string>c:\Program Files (x86)\IBM\Rational\DOORS\9.2\bin</string>
+            </tree-map>
+          </envVars>
+        </hudson.slaves.EnvironmentVariablesNodeProperty>
+      </nodeProperties>
+    </slave>
+  </slaves>
+  <quietPeriod>5</quietPeriod>
+  <scmCheckoutRetryCount>0</scmCheckoutRetryCount>
+  <views>
+    <listView>
+      <owner class="hudson" reference="../../.."/>
+      <name>Simulation</name>
+      <description>All things Sim</description>
+      <filterExecutors>false</filterExecutors>
+      <filterQueue>false</filterQueue>
+      <properties class="hudson.model.View$PropertyList"/>
+      <jobNames class="tree-set">
+        <comparator class="hudson.util.CaseInsensitiveComparator"/>
+        <string>sim</string>
+        <string>sim-cygwin</string>
+        <string>sim-dev</string>
+        <string>sim-gncp-test</string>
+        <string>sim-integration-test</string>
+        <string>sim-interfaces-win64</string>
+        <string>sim-model-db</string>
+        <string>sim-python</string>
+        <string>sim-python-time</string>
+        <string>sim-simulink-ut</string>
+      </jobNames>
+      <jobFilters/>
+      <columns>
+        <hudson.views.StatusColumn/>
+        <hudson.views.WeatherColumn/>
+        <hudson.views.JobColumn/>
+        <hudson.views.LastSuccessColumn/>
+        <hudson.views.LastFailureColumn/>
+        <hudson.views.LastDurationColumn/>
+        <hudson.views.BuildButtonColumn/>
+      </columns>
+      <includeRegex>sim.*</includeRegex>
+    </listView>
+    <listView>
+      <owner class="hudson" reference="../../.."/>
+      <name>STE</name>
+      <filterExecutors>false</filterExecutors>
+      <filterQueue>false</filterQueue>
+      <properties class="hudson.model.View$PropertyList"/>
+      <jobNames class="tree-set">
+        <comparator class="hudson.util.CaseInsensitiveComparator" reference="../../../listView/jobNames/comparator"/>
+        <string>board_and_box_builder</string>
+      </jobNames>
+      <jobFilters/>
+      <columns>
+        <hudson.views.StatusColumn/>
+        <hudson.views.WeatherColumn/>
+        <hudson.views.JobColumn/>
+        <hudson.views.LastSuccessColumn/>
+        <hudson.views.LastFailureColumn/>
+        <hudson.views.LastDurationColumn/>
+        <hudson.views.BuildButtonColumn/>
+      </columns>
+      <includeRegex>ste.*</includeRegex>
+    </listView>
+    <listView>
+      <owner class="hudson" reference="../../.."/>
+      <name>AST</name>
+      <description>View for all the AST related projects.</description>
+      <filterExecutors>false</filterExecutors>
+      <filterQueue>false</filterQueue>
+      <properties class="hudson.model.View$PropertyList"/>
+      <jobNames class="tree-set">
+        <comparator class="hudson.util.CaseInsensitiveComparator"/>
+        <string>ast</string>
+        <string>ast_build_linux64</string>
+        <string>ast_build_linux64_rhel5</string>
+        <string>ast_build_win32</string>
+        <string>ast_build_win64</string>
+        <string>ast_int_test_linux64</string>
+        <string>ast_int_test_linux64_rhel5</string>
+        <string>ast_int_test_win32</string>
+        <string>ast_int_test_win64</string>
+        <string>ast_leak_test_linux64</string>
+        <string>ast_requirements</string>
+        <string>ast_simics</string>
+        <string>ast_unit_test_linux64</string>
+        <string>ast_unit_test_linux64_rhel5</string>
+        <string>ast_unit_test_win32</string>
+        <string>ast_unit_test_win64</string>
+        <string>scts_builder</string>
+        <string>scts_results</string>
+      </jobNames>
+      <jobFilters/>
+      <columns>
+        <hudson.views.StatusColumn/>
+        <hudson.views.WeatherColumn/>
+        <hudson.views.JobColumn/>
+        <hudson.views.LastSuccessColumn/>
+        <hudson.views.LastFailureColumn/>
+        <hudson.views.LastDurationColumn/>
+        <hudson.views.BuildButtonColumn/>
+      </columns>
+      <includeRegex>ast.*</includeRegex>
+    </listView>
+    <listView>
+      <owner class="hudson" reference="../../.."/>
+      <name> Default</name>
+      <filterExecutors>false</filterExecutors>
+      <filterQueue>false</filterQueue>
+      <properties class="hudson.model.View$PropertyList"/>
+      <jobNames class="tree-set">
+        <comparator class="hudson.util.CaseInsensitiveComparator"/>
+        <string>aaa</string>
+        <string>ast_build_linux64_rhel5</string>
+        <string>ast_documentation</string>
+        <string>ast_leak_test_linux64</string>
+        <string>ast_simics</string>
+        <string>ast_unit_test_linux64_rhel5</string>
+        <string>BuildScripts</string>
+        <string>cardtest</string>
+        <string>CMDTLMDB</string>
+        <string>fsw</string>
+        <string>fsw-emc</string>
+        <string>fsw-kernel</string>
+        <string>fsw-obc</string>
+        <string>fsw-testartifacts</string>
+        <string>pygoes</string>
+        <string>Redmine</string>
+        <string>sandbox-test</string>
+        <string>scm_scr_checker</string>
+        <string>scott-bb-builder</string>
+        <string>scts_builder</string>
+        <string>scts_results</string>
+        <string>sim-common-linux64</string>
+        <string>sim-common-linux64-rhel5</string>
+        <string>sim-common-win32</string>
+        <string>sim-common-win64</string>
+        <string>sim-interfaces-linux64</string>
+        <string>sim-interfaces-linux64-rhel5</string>
+        <string>sim-interfaces-win32</string>
+        <string>sim-python-linux64</string>
+        <string>ste-card-scripts</string>
+        <string>sw_config_files</string>
+      </jobNames>
+      <jobFilters/>
+      <columns>
+        <hudson.views.StatusColumn/>
+        <hudson.views.WeatherColumn/>
+        <hudson.views.JobColumn/>
+        <hudson.views.LastSuccessColumn/>
+        <hudson.views.LastFailureColumn/>
+        <hudson.views.LastDurationColumn/>
+        <hudson.views.BuildButtonColumn/>
+      </columns>
+      <includeRegex>.*</includeRegex>
+    </listView>
+    <listView>
+      <owner class="hudson" reference="../../.."/>
+      <name>HWIL</name>
+      <description>HWIL Jenkins Jobs</description>
+      <filterExecutors>false</filterExecutors>
+      <filterQueue>false</filterQueue>
+      <properties class="hudson.model.View$PropertyList"/>
+      <jobNames class="tree-set">
+        <comparator class="hudson.util.CaseInsensitiveComparator"/>
+        <string>fsve_builder</string>
+        <string>fsve_builder_promotion</string>
+        <string>fsve_builder_results</string>
+        <string>fsw-emc</string>
+        <string>fsw-kernel</string>
+        <string>fsw-obc</string>
+        <string>hwil</string>
+        <string>hwil_integration_test</string>
+        <string>hwil_interation_test_setup</string>
+        <string>hwil_local_unit_test</string>
+        <string>hwil_remote_unit_test</string>
+        <string>hwil_sim_build</string>
+        <string>hwil_sim_build_complete</string>
+        <string>hwil_sim_interface_build</string>
+        <string>hwil_sim_interface_build_complete</string>
+        <string>hwil_ste_build</string>
+        <string>hwil_ste_build_complete</string>
+        <string>hwil_unit_test_setup</string>
+        <string>sim-interfaces-linux64-rhel5</string>
+        <string>sim-python</string>
+        <string>ste</string>
+      </jobNames>
+      <jobFilters/>
+      <columns>
+        <hudson.views.StatusColumn/>
+        <hudson.views.WeatherColumn/>
+        <hudson.views.JobColumn/>
+        <hudson.views.LastSuccessColumn/>
+        <hudson.views.LastFailureColumn/>
+        <hudson.views.LastDurationColumn/>
+        <hudson.views.BuildButtonColumn/>
+        <org.jenkins.ci.plugins.column.console.LastBuildColumn/>
+      </columns>
+    </listView>
+    <listView>
+      <owner class="hudson" reference="../../.."/>
+      <name>Flight SW</name>
+      <description>Includes OBC, EMC and kernel builds</description>
+      <filterExecutors>false</filterExecutors>
+      <filterQueue>false</filterQueue>
+      <properties class="hudson.model.View$PropertyList"/>
+      <jobNames class="tree-set">
+        <comparator class="hudson.util.CaseInsensitiveComparator"/>
+        <string>fsw</string>
+        <string>fsw-0.1</string>
+        <string>fsw-emc</string>
+        <string>fsw-emc-startup</string>
+        <string>fsw-kernel</string>
+        <string>fsw-obc</string>
+        <string>fsw-rad750_startup</string>
+      </jobNames>
+      <jobFilters/>
+      <columns>
+        <hudson.views.StatusColumn/>
+        <hudson.views.WeatherColumn/>
+        <hudson.views.JobColumn/>
+        <hudson.views.LastSuccessColumn/>
+        <hudson.views.LastFailureColumn/>
+        <hudson.views.LastDurationColumn/>
+        <hudson.views.BuildButtonColumn/>
+        <org.jenkins.ci.plugins.column.console.LastBuildColumn/>
+      </columns>
+    </listView>
+  </views>
+  <primaryView> Default</primaryView>
+  <slaveAgentPort>0</slaveAgentPort>
+  <label>ast_linux_rhel5_x64 redhawk</label>
+  <nodeProperties/>
+  <globalNodeProperties>
+    <hudson.slaves.EnvironmentVariablesNodeProperty>
+      <envVars serialization="custom">
+        <unserializable-parents/>
+        <tree-map>
+          <default>
+            <comparator class="hudson.util.CaseInsensitiveComparator" reference="../../../../../../slaves/slave[6]/nodeProperties/hudson.slaves.EnvironmentVariablesNodeProperty/envVars/tree-map/default/comparator"/>
+          </default>
+          <int>1</int>
+          <string>SIMICS_LICENSE_FILE</string>
+          <string>27017@astsden-a60.ast.lmco.com</string>
+        </tree-map>
+      </envVars>
+    </hudson.slaves.EnvironmentVariablesNodeProperty>
+  </globalNodeProperties>
+  <noUsageStatistics>true</noUsageStatistics>
+</hudson>

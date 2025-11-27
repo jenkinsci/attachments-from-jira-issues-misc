@@ -1,0 +1,61 @@
+Started by user Name, Othername
+ Loading library shared-pipeline-library@master
+ Attempting to resolve master from remote references...
+  > git --version # timeout=10
+  > git --version # 'git version 2.32.0'
+ using GIT_ASKPASS to set credentials gitUser Git-User (Active Directory)
+  > git ls-remote -- https://gitea.address.com/repo.git # timeout=10
+ Found match: refs/heads/master revision e176d837c2f7f4e61f46e90a626cce867369bc6c
+ The recommended git tool is: git
+ using credential gitUser-Git-User
+  > git rev-parse --resolve-git-dir /var/jenkins_home/workspace/Special/Test_AgentPlugin@libs/shared-pipeline-library/.git # timeout=10
+ Fetching changes from the remote Git repository
+  > git config remote.jenkinsLibrary.url https://gitea.address.com/repo.git # timeout=10
+ Using shallow fetch with depth 1
+ Fetching upstream changes from https://gitea.address.com/repo.git
+  > git --version # timeout=10
+  > git --version # 'git version 2.32.0'
+ using GIT_ASKPASS to set credentials gitUser Git-User (Active Directory)
+  > git fetch --no-tags --force --progress --depth=1 -- https://gitea.address.com/repo.git +refs/heads/master:refs/remotes/jenkinsLibrary/master # timeout=10
+ ERROR: Error fetching remote repo 'jenkinsLibrary'
+ hudson.plugins.git.GitException: Failed to fetch from https://gitea.address.com/repo.git
+ 	at hudson.plugins.git.GitSCM.fetchFrom(GitSCM.java:1001)
+ 	at hudson.plugins.git.GitSCM.retrieveChanges(GitSCM.java:1242)
+ 	at hudson.plugins.git.GitSCM.checkout(GitSCM.java:1302)
+ 	at org.jenkinsci.plugins.workflow.steps.scm.SCMStep.checkout(SCMStep.java:129)
+ 	at org.jenkinsci.plugins.workflow.libs.SCMSourceRetriever.lambda$doRetrieve$1(SCMSourceRetriever.java:198)
+ 	at org.jenkinsci.plugins.workflow.libs.SCMSourceRetriever.retrySCMOperation(SCMSourceRetriever.java:148)
+ 	at org.jenkinsci.plugins.workflow.libs.SCMSourceRetriever.doRetrieve(SCMSourceRetriever.java:197)
+ 	at org.jenkinsci.plugins.workflow.libs.SCMSourceRetriever.retrieve(SCMSourceRetriever.java:137)
+ 	at org.jenkinsci.plugins.workflow.libs.LibraryAdder.retrieve(LibraryAdder.java:196)
+ 	at org.jenkinsci.plugins.workflow.libs.LibraryAdder.add(LibraryAdder.java:138)
+ 	at org.jenkinsci.plugins.workflow.libs.LibraryDecorator$1.call(LibraryDecorator.java:125)
+ 	at org.codehaus.groovy.control.CompilationUnit.applyToPrimaryClassNodes(CompilationUnit.java:1065)
+ 	at org.codehaus.groovy.control.CompilationUnit.doPhaseOperation(CompilationUnit.java:603)
+ 	at org.codehaus.groovy.control.CompilationUnit.processPhaseOperations(CompilationUnit.java:581)
+ 	at org.codehaus.groovy.control.CompilationUnit.compile(CompilationUnit.java:558)
+ 	at groovy.lang.GroovyClassLoader.doParseClass(GroovyClassLoader.java:298)
+ 	at groovy.lang.GroovyClassLoader.parseClass(GroovyClassLoader.java:268)
+ 	at groovy.lang.GroovyShell.parseClass(GroovyShell.java:688)
+ 	at groovy.lang.GroovyShell.parse(GroovyShell.java:700)
+ 	at org.jenkinsci.plugins.workflow.cps.CpsGroovyShell.doParse(CpsGroovyShell.java:142)
+ 	at org.jenkinsci.plugins.workflow.cps.CpsGroovyShell.reparse(CpsGroovyShell.java:127)
+ 	at org.jenkinsci.plugins.workflow.cps.CpsFlowExecution.parseScript(CpsFlowExecution.java:571)
+ 	at org.jenkinsci.plugins.workflow.cps.CpsFlowExecution.start(CpsFlowExecution.java:523)
+ 	at org.jenkinsci.plugins.workflow.job.WorkflowRun.run(WorkflowRun.java:334)
+ 	at hudson.model.ResourceController.execute(ResourceController.java:99)
+ 	at hudson.model.Executor.run(Executor.java:432)
+ Caused by: hudson.plugins.git.GitException: Command "git fetch --no-tags --force --progress --depth=1 -- https://gitea.address.com/repo.git +refs/heads/master:refs/remotes/jenkinsLibrary/master" returned status code 128:
+ stdout: 
+ stderr: /var/jenkins_home/workspace/Special/Test_AgentPlugin@libs/shared-pipeline-library@tmp/jenkins-gitclient-pass2040443278107503574.sh: line 3: cat: not found
+ error: unable to read askpass response from '/var/jenkins_home/workspace/Special/Test_AgentPlugin@libs/shared-pipeline-library@tmp/jenkins-gitclient-pass2040443278107503574.sh'
+ fatal: could not read Username for 'https://gitea.its-service.de': terminal prompts disabled
+ 
+ 	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandIn(CliGitAPIImpl.java:2671)
+ 	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandWithCredentials(CliGitAPIImpl.java:2096)
+ 	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.access$500(CliGitAPIImpl.java:84)
+ 	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl$1.execute(CliGitAPIImpl.java:618)
+ 	at hudson.plugins.git.GitSCM.fetchFrom(GitSCM.java:999)
+ 	... 25 more
+ ERROR: Error fetching remote repo 'jenkinsLibrary'
+ Retrying after 10 seconds

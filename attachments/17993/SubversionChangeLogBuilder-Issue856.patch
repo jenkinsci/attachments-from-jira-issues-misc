@@ -1,0 +1,16 @@
+Index: src/main/java/hudson/scm/SubversionChangeLogBuilder.java
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/java/hudson/scm/SubversionChangeLogBuilder.java,v
+retrieving revision 1.5
+diff -u -r1.5 SubversionChangeLogBuilder.java
+--- src/main/java/hudson/scm/SubversionChangeLogBuilder.java	19 Sep 2007 13:12:53 -0000	1.5
++++ src/main/java/hudson/scm/SubversionChangeLogBuilder.java	28 Sep 2007 04:27:38 -0000
+@@ -109,7 +109,7 @@
+             svnlc.doLog(SVNURL.parseURIEncoded(url),null,
+                 SVNRevision.UNDEFINED, SVNRevision.create(prevRev+1),
+                 SVNRevision.create(thisRev),
+-                false, true, Long.MAX_VALUE, logHandler);
++                false, true, 0, logHandler); // pass limit = 0 for no limit - not yet documented by svnkit
+         } catch (SVNException e) {
+             e.printStackTrace(listener.error("revision check failed on "+url));
+         }

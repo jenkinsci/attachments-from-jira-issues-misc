@@ -1,0 +1,236 @@
+### Eclipse Workspace Patch 1.0
+#P perforce-plugin
+diff --git src/main/java/hudson/plugins/perforce/PerforceSCM.java src/main/java/hudson/plugins/perforce/PerforceSCM.java
+index 19cb273..9befc6e 100644
+--- src/main/java/hudson/plugins/perforce/PerforceSCM.java
++++ src/main/java/hudson/plugins/perforce/PerforceSCM.java
+@@ -102,6 +102,11 @@
+     String p4Tool;
+ 
+     /**
++     * Build one changelist only, after the last one.
++     */
++    boolean oneChangelistOnly = false;
++    
++    /**
+      * Use ClientSpec text file from depot to prepare the workspace view
+      */
+     boolean useClientSpec = false;
+@@ -291,6 +296,7 @@
+             String p4Charset,
+             String p4CommandCharset,
+             String clientOwner,
++            boolean oneChangelistOnly,
+             boolean updateCounterValue,
+             boolean forceSync,
+             boolean dontUpdateServer,
+@@ -347,6 +353,7 @@
+             this.p4SysDrive = p4SysDrive.trim();
+         }
+ 
++        this.oneChangelistOnly = oneChangelistOnly;
+         this.lineEndValue = lineEndValue;
+         this.forceSync = forceSync;
+         this.dontUpdateServer = dontUpdateServer;
+@@ -792,7 +799,7 @@
+                 "P4DISABLESYNCONLY", build, this.disableSyncOnly);
+         disableSyncOnly = overrideWithBooleanParameter(
+                 "P4DISABLESYNC", build, this.disableSyncOnly);
+-
++        
+         // If we're doing a matrix build, we should always force sync.
+         if ((Object)build instanceof MatrixBuild || (Object)build instanceof MatrixRun) {
+             if (!alwaysForceSync && !wipeBeforeBuild)
+@@ -904,14 +911,23 @@
+                 } else {
+                     //use the latest submitted change from workspace, or depot
+                     try {
+-                        List<Integer> workspaceChanges = depot.getChanges().getChangeNumbers(p4WorkspacePath, 0, 1);
+-                        if (workspaceChanges != null && workspaceChanges.size() > 0) {
+-                            newestChange = workspaceChanges.get(0);
+-                        } else {
++                    	List<Integer> workspaceChanges;
++                    	boolean buildNextChangelist = oneChangelistOnly && build.getPreviousBuild() != null;
++                    	if (buildNextChangelist) {
++                    	 	workspaceChanges = depot.getChanges().getChangeNumbersTo(p4WorkspacePath, lastChange+1);
++                    	} else {
++                    		workspaceChanges = depot.getChanges().getChangeNumbers(p4WorkspacePath, 0, 1);
++                    	}
++                    	if (workspaceChanges == null || workspaceChanges.size() == 0) {
+                             List<Integer> depotChanges = depot.getChanges().getChangeNumbers("//...", 0, 1);
+                             if (depotChanges != null && depotChanges.size() > 0) {
+                                 newestChange = depotChanges.get(0);
+                             }
++                        } else if (buildNextChangelist) {
++                        	log.println("Remaining changes: " + workspaceChanges);
++                        	newestChange = workspaceChanges.get(workspaceChanges.size()-1);
++                        } else {
++                        	newestChange = workspaceChanges.get(0);
+                         }
+                     } catch (PerforceException e) {
+                         //fall back onto 'change' counter value
+@@ -1160,10 +1176,11 @@
+         logger.println("Looking for changes...");
+         final PerforceSCMRevisionState baseline;
+ 
+-        if (scmrs instanceof PerforceSCMRevisionState) {
+-            baseline = (PerforceSCMRevisionState)scmrs;
+-        } else if (project.getLastBuild() != null) {
++        if (project.getLastBuild() != null) {
+             baseline = (PerforceSCMRevisionState)calcRevisionsFromBuild(project.getLastBuild(), launcher, listener);
++            logger.println("Last build #" + project.getLastBuild().getNumber() + " changelist is " + baseline.getRevision());
++        } else if (scmrs instanceof PerforceSCMRevisionState) {
++            baseline = (PerforceSCMRevisionState)scmrs;
+         } else {
+             baseline = new PerforceSCMRevisionState(-1);
+         }
+@@ -2667,6 +2684,13 @@
+     public boolean isUpdateView() {
+         return updateView;
+     }
++    
++    /**
++     * @return  True if we are progressing with one changlelist at a time
++     */
++    public boolean isOneChangelistOnly() {
++        return oneChangelistOnly;
++    }
+ 
+     /**
+      * @return  True if we are performing a one-time force sync
+@@ -2697,12 +2721,19 @@
+     }
+ 
+     /**
++     * @param onlyOne True to perform a one changelist build at a time
++     */
++    public void setOneChangelistOnly(boolean onlyOne) {
++        this.oneChangelistOnly = onlyOne;
++    }
++    
++    /**
+      * @param force True to perform a one time force sync, false to perform normal sync
+      */
+     public void setForceSync(boolean force) {
+         this.forceSync = force;
+     }
+-
++    
+     /**
+      * @param force True to perform a one time force sync, false to perform normal sync
+      */
+diff --git src/main/resources/hudson/plugins/perforce/PerforceSCM/config.jelly src/main/resources/hudson/plugins/perforce/PerforceSCM/config.jelly
+index 3aca752..d242c57 100644
+--- src/main/resources/hudson/plugins/perforce/PerforceSCM/config.jelly
++++ src/main/resources/hudson/plugins/perforce/PerforceSCM/config.jelly
+@@ -83,6 +83,10 @@
+       </select>
+     </f:entry>
+     
++    <f:entry title="One Changelist Only" help="/plugin/perforce/help/oneChangelistOnly.html">
++      <f:checkbox field="oneChangelistOnly" value="False" />
++    </f:entry>
++    
+     <f:optionalBlock name="p4.cleanWorkspace" title="Clean Workspace Before Each Build" help="/plugin/perforce/help/cleanBeforeBuild.html" checked="${instance.cleanWorkspaceBeforeBuild}">
+         <f:entry><table width="100%">
+         <f:radioBlock title="Full Wipe" name="p4.cleanType" value="wipe" id="p4.wipeClean" checked="${instance.wipeBeforeBuild}" help="/plugin/perforce/help/wipeBeforeBuild.html"/>
+diff --git src/main/webapp/help/oneChangelistOnly.html src/main/webapp/help/oneChangelistOnly.html
+new file mode 100644
+index 0000000..e188549
+--- /dev/null
++++ src/main/webapp/help/oneChangelistOnly.html
+@@ -0,0 +1,9 @@
++<div>
++  <p>
++    <b>One Changelist Only</b>: Synct to next changelist after the one that was
++    build last time.
++  </p>
++  <p><b>Important Note:</b> Option useful for fast builds, but better not enable it 
++    for long running jobs with lots of commits.
++  </p>
++</div>
+diff --git src/test/java/hudson/plugins/perforce/PerforceSCMTest.java src/test/java/hudson/plugins/perforce/PerforceSCMTest.java
+index cf7d18f..da203c9 100644
+--- src/test/java/hudson/plugins/perforce/PerforceSCMTest.java
++++ src/test/java/hudson/plugins/perforce/PerforceSCMTest.java
+@@ -28,7 +28,7 @@
+         P4Web browser = new P4Web(new URL("http://localhost/"));
+         PerforceSCM scm = new PerforceSCM(
+         		"user", "pass", "client", "port", "", "exe", "sysRoot",
+-        		"sysDrive", "label", "counter", "upstreamProject", "shared", "charset", "charset2", "user", false, true, true, true, true, true, false,
++        		"sysDrive", "label", "counter", "upstreamProject", "shared", "charset", "charset2", "user", false, false, true, true, true, true, true, false,
+                         false, true, false, false, false, "${basename}", 0, -1, browser, "exclude_user", "exclude_file", true);
+         scm.setProjectPath("path");
+         project.setScm(scm);
+@@ -49,7 +49,7 @@
+         P4Web browser = new P4Web(new URL("http://localhost/"));
+         PerforceSCM scm = new PerforceSCM(
+                         "user", "pass", "client", "port", "", "exe", "",
+-                        "", "label", "counter", "upstreamProject", "shared", "charset", "charset2", "user", false, true, true, true, true, true, false,
++                        "", "label", "counter", "upstreamProject", "shared", "charset", "charset2", "user", false, false, true, true, true, true, true, false,
+                         false, true, false, false, false, "${basename}", 0, -1, browser, "exclude_user", "exclude_file", true);
+         assertEquals("", scm.getP4SysDrive());
+         assertEquals("", scm.getP4SysRoot());
+@@ -69,7 +69,7 @@
+         P4Web browser = new P4Web(new URL("http://localhost/"));
+         PerforceSCM scm = new PerforceSCM(
+         		"user", "pass", "client", "port", "", "exe", "sysRoot",
+-        		"sysDrive", "label", "counter", "upstreamProject", "shared", "charset", "charset2", "user", false, true, true, true, true, true, false,
++        		"sysDrive", "label", "counter", "upstreamProject", "shared", "charset", "charset2", "user", false, false, true, true, true, true, true, false,
+                         false, true, false, false, false, "${basename}", 0, -1, browser, "exclude_user", "exclude_file", true);
+         scm.setP4Stream("stream");
+         scm.setUseStreamDepot(true);
+@@ -96,7 +96,7 @@
+         String password = "pass";
+         PerforceSCM scm = new PerforceSCM(
+         		"user", password, "client", "port", "", "test_installation", "sysRoot",
+-        		"sysDrive", "label", "counter", "upstreamProject", "shared", "charset", "charset2", "user", false, true, true, true, true, true, false,
++        		"sysDrive", "label", "counter", "upstreamProject", "shared", "charset", "charset2", "user", false, false, true, true, true, true, true, false,
+                         false, true, false, false, false, "${basename}", 0, -1, browser, "exclude_user", "exclude_file", true);
+         scm.setProjectPath("path");
+         project.setScm(scm);
+@@ -125,7 +125,7 @@
+         String password = "pass";
+         PerforceSCM scm = new PerforceSCM(
+         		"user", password, "client", "port", "", "test_installation", "sysRoot",
+-        		"sysDrive", "label", "counter", "upstreamProject", "shared", "charset", "charset2", "user", false, true, true, true, true, true, false,
++        		"sysDrive", "label", "counter", "upstreamProject", "shared", "charset", "charset2", "user", false, false, true, true, true, true, true, false,
+                         false, true, false, false, false, "${basename}", 0, -1, browser, "exclude_user", "exclude_file", true);
+         scm.setProjectPath("path");
+         project.setScm(scm);
+@@ -143,7 +143,7 @@
+         String password = "pass";
+         PerforceSCM scm = new PerforceSCM(
+         		"user", password, "client", "port", "", "test_installation", "sysRoot",
+-        		"sysDrive", "label", "counter", "upstreamProject", "shared", "charset", "charset2", "user", false, true, true, true, true, true, false,
++        		"sysDrive", "label", "counter", "upstreamProject", "shared", "charset", "charset2", "user", false, false, true, true, true, true, true, false,
+                         false, true, false, false, false, "${basename}", 0, -1, browser, "exclude_user", "exclude_file", true);
+         scm.setProjectPath("path");
+         project.setScm(scm);
+@@ -325,7 +325,7 @@
+         String password = "pass";
+         PerforceSCM scm = new PerforceSCM(
+                 "user", password, "client", "port", "", "test_installation", "sysRoot",
+-                "sysDrive", "label", "counter", "upstreamProject", "shared", "charset", "charset2", "user", false, true, true, true, true, true, false,
++                "sysDrive", "label", "counter", "upstreamProject", "shared", "charset", "charset2", "user", false, false, true, true, true, true, true, false,
+                         false, false, true, false, false, "${basename}", 0, -1, browser, "exclude_user", "exclude_file", true);
+         scm.setP4Stream("stream");
+         project.setScm(scm);
+@@ -363,7 +363,7 @@
+         FreeStyleProject upstreamProject = createFreeStyleProject();
+         PerforceSCM upstreamScm = new PerforceSCM(
+                 "user", "pass", "client", "port", "", "test_installation", "sysRoot",
+-                "sysDrive", null, null, null, "shared", "charset", "charset2", "user", false, true, true, true, true, true, false,
++                "sysDrive", null, null, null, "shared", "charset", "charset2", "user", false, false, true, true, true, true, true, false,
+                         false, true, false, false, false, "${basename}", 0, -1, browser, "exclude_user", "exclude_file", true);
+         upstreamScm.setProjectPath("path");
+         upstreamProject.setScm(upstreamScm);
+@@ -372,7 +372,7 @@
+         String oldName = upstreamProject.getName();
+         PerforceSCM downstreamScm = new PerforceSCM(
+                 "user", "pass", "client", "port", "", "test_installation", "sysRoot",
+-                "sysDrive", null, null, oldName, "shared", "charset", "charset2", "user", false, true, true, true, true, true, false,
++                "sysDrive", null, null, oldName, "shared", "charset", "charset2", "user", false, false, true, true, true, true, true, false,
+                         false, true, false, false, false, "${basename}", 0, -1, browser, "exclude_user", "exclude_file", true);
+         downstreamScm.setProjectPath("path");
+         downstreamProject.setScm(downstreamScm);

@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>true</concurrentBuild>
+  <builders>
+    <hudson.tasks.Ant plugin="ant@1.2">
+      <targets>jar</targets>
+    </hudson.tasks.Ant>
+    <hudson.plugins.testlink.TestLinkBuilder plugin="testlink@3.10">
+      <testLinkName>WashingtonTestLink</testLinkName>
+      <testProjectName>TAM</testProjectName>
+      <testPlanName>NR-TAM-Automated-Jenkins-AB</testPlanName>
+      <buildName>NR-TAM-Automated-Jenkins_ABLOC_$BUILD_NUMBER</buildName>
+      <platformName></platformName>
+      <customFields>JenkinsClass</customFields>
+      <singleBuildSteps>
+        <hudson.tasks.BatchFile>
+          <command>@echo Single Build Steps Start
+@echo TESTLINK_BUILD_NAME=%TESTLINK_BUILD_NAME%
+@echo TESTLINK_TESTPLAN_NAME=%TESTLINK_TESTPLAN_NAME%
+@echo TESTLINK_TESTPROJECT_NAME=%TESTLINK_TESTPROJECT_NAME%
+@echo TESTLINK_TESTCASE_TOTAL=%TESTLINK_TESTCASE_TOTAL%
+@echo Single Build Steps Stop
+@echo ====</command>
+        </hudson.tasks.BatchFile>
+        <hudson.tasks.BatchFile>
+          <command>rem java -classpath .\*;.\external\dom4j\*;.\external\hornetq\*;.\external\ingestate\*;.\external\jxl\*;.\external\opencsv\*;.\external\poi\*;.\external\selenium\*;.\external\tam-calls-simulator\*;.\external\xmlbeans\*;.\external\postgresql\*  org.testng.TestNG -DBrowserURL=&quot;http://aqa01-tam2.lab.services.ingenico.com:8080/tam/control/eportal&quot; -testnames &quot;&quot; .\suites\All.xml
+
+java -classpath .\*;.\external\dom4j\*;.\external\hornetq\*;.\external\ingestate\*;.\external\jxl\*;.\external\opencsv\*;.\external\poi\*;.\external\selenium\*;.\external\tam-calls-simulator\*;.\external\xmlbeans\*;.\external\postgresql\* -DBrowserURL=&quot;&quot; org.testng.TestNG .\suites\All.xml
+
+exit 0</command>
+        </hudson.tasks.BatchFile>
+      </singleBuildSteps>
+      <iterativeBuildSteps>
+        <hudson.tasks.BatchFile>
+          <command>@echo Iterative Test Build Steps Start
+@echo TESTLINK_TESTCASE_ID=%TESTLINK_TESTCASE_ID%
+@echo TESTLINK_TESTCASE_NAME=%TESTLINK_TESTCASE_NAME%
+@echo TESTLINK_TESTCASE_TESTSUITEID=%TESTLINK_TESTCASE_TESTSUITEID%
+@echo TESTLINK_TESTCASE_TESTPROJECTID=%TESTLINK_TESTCASE_TESTPROJECTID%
+@echo TESTLINK_TESTCASE_AUTHOR=%TESTLINK_TESTCASE_AUTHOR%
+@echo TESTLINK_TESTCASE_SUMMARY=%TESTLINK_TESTCASE_SUMMARY%
+@echo TESTLINK_BUILD_NAME=%TESTLINK_BUILD_NAME%
+@echo TESTLINK_TESTPLAN_NAME=%TESTLINK_TESTPLAN_NAME%
+@echo TESTLINK_TESTPROJECT_NAME=%TESTLINK_TESTPROJECT_NAME%
+@echo TESTLINK_TESTCASE_cfName=%TESTLINK_TESTCASE_JenkinsClass%
+@echo Iterative Test Build Steps Stop
+@echo -------</command>
+        </hudson.tasks.BatchFile>
+      </iterativeBuildSteps>
+      <transactional>false</transactional>
+      <failedTestsMarkBuildAsFailure>false</failedTestsMarkBuildAsFailure>
+      <failIfNoResults>false</failIfNoResults>
+      <failOnNotRun>false</failOnNotRun>
+      <executionOrderComparator/>
+      <failure>false</failure>
+      <resultSeekers>
+        <hudson.plugins.testlink.result.TestNGClassNameResultSeeker>
+          <includePattern>test-output/testng-results.xml</includePattern>
+          <keyCustomField>JenkinsClass</keyCustomField>
+          <includeNotes>false</includeNotes>
+          <parser/>
+          <attachTestNGXML>false</attachTestNGXML>
+          <markSkippedTestAsBlocked>false</markSkippedTestAsBlocked>
+        </hudson.plugins.testlink.result.TestNGClassNameResultSeeker>
+      </resultSeekers>
+    </hudson.plugins.testlink.TestLinkBuilder>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

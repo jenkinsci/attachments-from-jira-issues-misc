@@ -1,0 +1,120 @@
+Index: plugins/sonar/src/main/java/hudson/plugins/sonar/SonarPublisher.java
+===================================================================
+--- plugins/sonar/src/main/java/hudson/plugins/sonar/SonarPublisher.java	(revision 22747)
++++ plugins/sonar/src/main/java/hudson/plugins/sonar/SonarPublisher.java	(working copy)
+@@ -16,6 +16,7 @@
+ import hudson.model.Result;
+ import hudson.model.TaskListener;
+ import hudson.model.Cause.UpstreamCause;
++import hudson.model.Cause.UserCause;
+ import hudson.plugins.sonar.template.SimpleTemplate;
+ import hudson.tasks.BuildStepDescriptor;
+ import hudson.tasks.BuildStepMonitor;
+@@ -60,18 +61,22 @@
+   private final String coberturaReportPath;
+   private final String cloverReportPath;
+   private final boolean scmBuilds;
+-  private boolean timerBuilds = true;
++  private final boolean timerBuilds;
++  private final boolean userBuilds;
+   private final boolean snapshotDependencyBuilds;
+   private final boolean skipIfBuildFails;
+   
+   @Deprecated
+   private Boolean skipOnScm;
+ 
+-  @DataBoundConstructor
+-  public SonarPublisher(String installationName, String jobAdditionalProperties, boolean useSonarLight,
+-                        String groupId, String artifactId, String projectName, String projectVersion, String projectSrcDir, String javaVersion,
+-                        String projectDescription, String mavenOpts, String mavenInstallationName, boolean snapshotDependencyBuilds, boolean scmBuilds, boolean timerBuilds, boolean skipIfBuildFails, String projectBinDir,
+-                        boolean reuseReports, String coberturaReportPath, String surefireReportsPath, String cloverReportPath, String projectSrcEncoding) {
++	@DataBoundConstructor
++  public SonarPublisher(String installationName, String jobAdditionalProperties, boolean useSonarLight, String groupId,
++                        String artifactId, String projectName, String projectVersion, String projectSrcDir,
++                        String javaVersion, String projectDescription, String mavenOpts, String mavenInstallationName,
++                        boolean snapshotDependencyBuilds, boolean scmBuilds, boolean timerBuilds, boolean userBuilds,
++                        boolean skipIfBuildFails, String projectBinDir, boolean reuseReports,
++                        String coberturaReportPath, String surefireReportsPath, String cloverReportPath,
++                        String projectSrcEncoding) {
+     this.jobAdditionalProperties = jobAdditionalProperties;
+     this.installationName = installationName;
+     this.useSonarLight = useSonarLight;
+@@ -85,6 +90,7 @@
+     this.mavenOpts = mavenOpts;
+     this.scmBuilds = scmBuilds;
+     this.timerBuilds = timerBuilds;
++    this.userBuilds = userBuilds;
+     this.snapshotDependencyBuilds = snapshotDependencyBuilds;
+     this.mavenInstallationName = mavenInstallationName;
+     this.skipIfBuildFails = skipIfBuildFails;
+@@ -120,7 +126,11 @@
+   public boolean isTimerBuilds() {
+     return timerBuilds;
+   }
+-  
++
++  public boolean isUserBuilds() {
++    return userBuilds;
++  }
++
+   public boolean isScmBuilds() {
+     return scmBuilds;
+   }
+@@ -237,6 +247,8 @@
+       skipLaunchMsg = Messages.SonarPublisher_SCMBuild();
+     } else if (!isTimerBuilds() && isTrigger(build, TimerTriggerCause.class)) {
+       skipLaunchMsg = Messages.SonarPublisher_TimerBuild();
++    } else if (!isUserBuilds() && isTrigger(build, UserCause.class)) {
++      skipLaunchMsg = Messages.SonarPublisher_UserBuild();
+     } else if (!isSnapshotDependencyBuilds() && isTrigger(build, UpstreamCause.class)) {
+       skipLaunchMsg = Messages.SonarPublisher_SnapshotDepBuild();
+     }
+Index: plugins/sonar/src/main/resources/hudson/plugins/sonar/SonarPublisher/config.properties
+===================================================================
+--- plugins/sonar/src/main/resources/hudson/plugins/sonar/SonarPublisher/config.properties	(revision 22747)
++++ plugins/sonar/src/main/resources/hudson/plugins/sonar/SonarPublisher/config.properties	(working copy)
+@@ -6,6 +6,7 @@
+ BuildTriggers=Triggers
+ ScmBuilds=Poll SCM
+ TimerBuilds=Build periodically
++UserBuilds=Manually started by user
+ SnapshotsDepBuilds=Build whenever a SNAPSHOT dependency is built
+ SkipIfBuildFails=Skip analysis on build failure
+ SonarLight=Check if this project is NOT built with maven 2.
+Index: plugins/sonar/src/main/resources/hudson/plugins/sonar/SonarPublisher/config.jelly
+===================================================================
+--- plugins/sonar/src/main/resources/hudson/plugins/sonar/SonarPublisher/config.jelly	(revision 22747)
++++ plugins/sonar/src/main/resources/hudson/plugins/sonar/SonarPublisher/config.jelly	(working copy)
+@@ -31,6 +31,11 @@
+             <label>${%TimerBuilds}</label>
+           </f:entry>
+           
++          <f:entry title="" help="${rootURL}/plugin/sonar/help-trigger-user.html">
++            <f:checkbox name="sonar.userBuilds" checked="${instance.isUserBuilds()}" default="true"/>
++            <label>${%UserBuilds}</label>
++          </f:entry>
++
+           <f:entry title="" help="${rootURL}/plugin/sonar/help-trigger-snapshot-dep.html">
+             <f:checkbox name="sonar.snapshotDependencyBuilds" checked="${instance.isSnapshotDependencyBuilds()}" default="false"/>
+             <label>${%SnapshotsDepBuilds}</label>
+Index: plugins/sonar/src/main/resources/hudson/plugins/sonar/Messages.properties
+===================================================================
+--- plugins/sonar/src/main/resources/hudson/plugins/sonar/Messages.properties	(revision 22747)
++++ plugins/sonar/src/main/resources/hudson/plugins/sonar/Messages.properties	(working copy)
+@@ -3,6 +3,7 @@
+ SonarPublisher.InstallDisabled=Sonar is disabled (version {0}). See Hudson global configuration.
+ SonarPublisher.SCMBuild=Skipping sonar analysis due to SCM build trigger
+ SonarPublisher.TimerBuild=Skipping sonar analysis due to timer build trigger
++SonarPublisher.UserBuild=Skipping sonar analysis due to user build trigger
+ SonarPublisher.SnapshotDepBuild=Skipping sonar analysis due to snapshot dependency build trigger
+ SonarPublisher.NoMavenInstallation=No Maven installation found. Call the 'mvn' executable from path
+ SonarPublisher.MandatoryProperty=This property is mandatory.
+Index: plugins/sonar/src/main/webapp/help-trigger-user.html
+===================================================================
+--- plugins/sonar/src/main/webapp/help-trigger-user.html	(revision 22747)
++++ plugins/sonar/src/main/webapp/help-trigger-user.html	(working copy)
+@@ -1,3 +1,3 @@
+ <div>
+-  <p>If checked, Sonar will run when the build was triggered by the crontab.</p>
++  <p>If checked, Sonar will run when the build was triggered by the user.</p>
+ </div>

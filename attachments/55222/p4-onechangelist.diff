@@ -1,0 +1,76 @@
+diff --git a/src/main/java/org/jenkinsci/plugins/p4/PerforceScm.java b/src/main/java/org/jenkinsci/plugins/p4/PerforceScm.java
+index e430480..64f4bef 100644
+--- a/src/main/java/org/jenkinsci/plugins/p4/PerforceScm.java
++++ b/src/main/java/org/jenkinsci/plugins/p4/PerforceScm.java
+@@ -13,6 +13,7 @@ import hudson.matrix.MatrixConfiguration;
+ import hudson.matrix.MatrixExecutionStrategy;
+ import hudson.matrix.MatrixProject;
+ import hudson.model.AbstractProject;
++import hudson.model.FreeStyleBuild;
+ import hudson.model.Item;
+ import hudson.model.Job;
+ import hudson.model.Node;
+@@ -551,18 +552,27 @@ public class PerforceScm extends SCM {
+ 
+ 		// Override build change if polling per change.
+ 		if (FilterPerChangeImpl.isActive(getFilter())) {
+-			Run<?, ?> lastRun = run.getPreviousBuiltBuild();
+-			/* Fix for JENKINS-58639
+-			Check if a previous build is in progress. If yes, do not try and build the same change that is being built.
+-			To help lookForChanges() find the correct change to build, sending it the previousBuildInProgress
+-			if not null else previousBuiltBuild.
+-			 */
+-			Run<?, ?> inProgressRun = run.getPreviousBuildInProgress();
+-			if (inProgressRun != null) {
+-				lastRun = inProgressRun;
++			String p4OneChangelist = null;
++
++			if (run instanceof FreeStyleBuild) {
++				EnvVars envVars = run.getEnvironment(listener);
++				p4OneChangelist = envVars.get("P4_INCREMENTAL");
++			}
++
++			if (p4OneChangelist == null || p4OneChangelist.equals("true")) {
++				Run<?, ?> lastRun = run.getPreviousBuiltBuild();
++				/* Fix for JENKINS-58639
++				Check if a previous build is in progress. If yes, do not try and build the same change that is being built.
++				To help lookForChanges() find the correct change to build, sending it the previousBuildInProgress
++				if not null else previousBuiltBuild.
++				 */
++				Run<?, ?> inProgressRun = run.getPreviousBuildInProgress();
++				if (inProgressRun != null) {
++					lastRun = inProgressRun;
++				}
++				List<P4Ref> changes = lookForChanges(buildWorkspace, ws, lastRun, listener);
++				task.setIncrementalChanges(changes);
+ 			}
+-			List<P4Ref> changes = lookForChanges(buildWorkspace, ws, lastRun, listener);
+-			task.setIncrementalChanges(changes);
+ 		}
+ 
+ 		// If the Latest Change filter is set, apply the baseline change to the checkout task.
+diff --git a/src/main/resources/org/jenkinsci/plugins/p4/PerforceScm/buildEnv.groovy b/src/main/resources/org/jenkinsci/plugins/p4/PerforceScm/buildEnv.groovy
+index 262b269..de3d383 100644
+--- a/src/main/resources/org/jenkinsci/plugins/p4/PerforceScm/buildEnv.groovy
++++ b/src/main/resources/org/jenkinsci/plugins/p4/PerforceScm/buildEnv.groovy
+@@ -2,7 +2,7 @@ package org.jenkinsci.plugins.p4.PerforceScm;
+ 
+ def l = namespace(lib.JenkinsTagLib)
+ 
+-["P4_CHANGELIST","P4_CLIENT","P4_PORT","P4_ROOT","P4_USER","P4_TICKET","P4_REVIEW","P4_REVIEW_TYPE","HUDSON_CHANGELOG_FILE","JENKINSFILE_PATH"].each { name ->
++["P4_CHANGELIST","P4_CLIENT","P4_PORT","P4_ROOT","P4_USER","P4_TICKET","P4_REVIEW","P4_REVIEW_TYPE","P4_INCREMENTAL","HUDSON_CHANGELOG_FILE","JENKINSFILE_PATH"].each { name ->
+     l.buildEnvVar(name:name) {
+         raw(_("${name}.blurb"))
+     }
+diff --git a/src/main/resources/org/jenkinsci/plugins/p4/PerforceScm/buildEnv.properties b/src/main/resources/org/jenkinsci/plugins/p4/PerforceScm/buildEnv.properties
+index 793d954..d3e3704 100644
+--- a/src/main/resources/org/jenkinsci/plugins/p4/PerforceScm/buildEnv.properties
++++ b/src/main/resources/org/jenkinsci/plugins/p4/PerforceScm/buildEnv.properties
+@@ -6,5 +6,6 @@ P4_USER.blurb=The Perforce username.
+ P4_TICKET.blurb=A valid Perforce ticket (if the credential is valid).
+ P4_REVIEW.blurb=The Swarm Review ID.
+ P4_REVIEW_TYPE.blurb=The Swarm Review Type ('shelved' or 'committed').
++P4_INCREMENTAL.blurb=Build only oldest changelist returned by polling task.
+ HUDSON_CHANGELOG_FILE.blurb=Location of the changelog file.
+ JENKINSFILE_PATH.blurb=Location of the Jenkinsfile in depot.
+\ No newline at end of file

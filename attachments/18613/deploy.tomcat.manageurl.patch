@@ -1,0 +1,27 @@
+Index: src/main/java/hudson/plugins/deploy/tomcat/TomcatAdapter.java
+===================================================================
+--- src/main/java/hudson/plugins/deploy/tomcat/TomcatAdapter.java	(revision 21573)
++++ src/main/java/hudson/plugins/deploy/tomcat/TomcatAdapter.java	(working copy)
+@@ -27,7 +27,7 @@
+     public void configure(Configuration config) {
+         super.configure(config);
+         try {
+-        	URL _url = new URL(url + "/manager");
++        	URL _url = new URL(url);
+             config.setProperty(TomcatPropertySet.MANAGER_URL,_url.toExternalForm());
+         } catch (MalformedURLException e) {
+             throw new AssertionError(e);
+Index: src/main/resources/hudson/plugins/deploy/tomcat/TomcatAdapter/config.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/deploy/tomcat/TomcatAdapter/config.jelly	(revision 21573)
++++ src/main/resources/hudson/plugins/deploy/tomcat/TomcatAdapter/config.jelly	(working copy)
+@@ -6,7 +6,7 @@
+   <f:entry title="Manager password" field="password">
+     <f:password />
+   </f:entry>
+-  <f:entry title="Tomcat URL" field="url">
++  <f:entry title="Tomcat Manager URL" field="url">
+     <f:textbox />
+   </f:entry>
+ </j:jelly>
+\ No newline at end of file

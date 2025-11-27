@@ -1,0 +1,37 @@
+Index: src/main/resources/lib/form/advanced.jelly
+===================================================================
+--- src/main/resources/lib/form/advanced.jelly	(revision 13751)
++++ src/main/resources/lib/form/advanced.jelly	(working copy)
+@@ -3,6 +3,8 @@
+   Upon clicking it, a section unfolds.
+ -->
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
++<j:choose>
++<j:when test="${!attrs.unfolded}">
+ 	<tr><td></td><td></td>
+ 	  <td>
+ 	    <div class="advancedLink">
+@@ -14,4 +16,9 @@
+ 	    </tbody></table>
+ 	  </td>
+ 	</tr>
++</j:when>
++<j:otherwise>
++	<tr><d:invokeBody/></tr>
++</j:otherwise>
++</j:choose>
+ </j:jelly>
+\ No newline at end of file
+Index: src/main/resources/hudson/model/AbstractItem/configure-common.jelly
+===================================================================
+--- src/main/resources/hudson/model/AbstractItem/configure-common.jelly	(revision 13751)
++++ src/main/resources/hudson/model/AbstractItem/configure-common.jelly	(working copy)
+@@ -34,7 +34,7 @@
+   </j:if>
+ 
+   <f:section title="${%Advanced Project Options}">
+-    <f:advanced>
++    <f:advanced unfolded="${it.customWorkspace != null or it.hasCustomQuietPeriod}">
+       <p:config-quietPeriod />
+       <st:include page="configure-advanced.jelly" optional="true" />
+     </f:advanced>

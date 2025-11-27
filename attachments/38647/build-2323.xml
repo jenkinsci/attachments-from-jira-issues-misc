@@ -1,0 +1,163 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<build>
+  <actions>
+    <com.tikal.jenkins.plugins.multijob.MultiJobParametersAction plugin="jenkins-multijob-plugin@1.25">
+      <safeParameters class="sorted-set"/>
+      <parameters class="java.util.Arrays$ArrayList">
+        <a class="hudson.model.ParameterValue-array">
+          <hudson.model.StringParameterValue>
+            <name>BRANCH</name>
+            <description></description>
+            <value>next_branch</value>
+          </hudson.model.StringParameterValue>
+          <hudson.model.StringParameterValue>
+            <name>version</name>
+            <description></description>
+            <value>MS123470</value>
+          </hudson.model.StringParameterValue>
+          <hudson.model.BooleanParameterValue>
+            <name>EXEC_TDG</name>
+            <description>Specifies, if the TestDataGenerator should be executed.</description>
+            <value>true</value>
+          </hudson.model.BooleanParameterValue>
+        </a>
+      </parameters>
+      <parameterDefinitionNames class="hudson.model.ParametersDefinitionProperty$1">
+        <outer-class>
+          <parameterDefinitions>
+            <hudson.model.ChoiceParameterDefinition>
+              <name>BRANCH</name>
+              <description></description>
+              <choices class="java.util.Arrays$ArrayList">
+                <a class="string-array">
+                  <string>next_branch</string>
+                </a>
+              </choices>
+            </hudson.model.ChoiceParameterDefinition>
+            <hudson.model.ChoiceParameterDefinition>
+              <name>version</name>
+              <description></description>
+              <choices class="java.util.Arrays$ArrayList">
+                <a class="string-array">
+                  <string>MS123470</string>
+                  <string>MS123460</string>
+                </a>
+              </choices>
+            </hudson.model.ChoiceParameterDefinition>
+          </parameterDefinitions>
+        </outer-class>
+      </parameterDefinitionNames>
+      <parameters class="java.util.Arrays$ArrayList" defined-in="com.tikal.jenkins.plugins.multijob.MultiJobParametersAction" reference="../parameters"/>
+    </com.tikal.jenkins.plugins.multijob.MultiJobParametersAction>
+    <com.tikal.jenkins.plugins.multijob.MultiJobBuilder_-MultiJobAction plugin="jenkins-multijob-plugin@1.25">
+      <buildNumber>1457</buildNumber>
+      <index>1</index>
+      <outer-class>
+        <phaseName>Restore</phaseName>
+        <phaseJobs>
+          <com.tikal.jenkins.plugins.multijob.PhaseJobsConfig>
+            <jobName>Restore db 10005</jobName>
+            <currParams>true</currParams>
+            <exposedSCM>false</exposedSCM>
+            <disableJob>false</disableJob>
+            <parsingRulesPath></parsingRulesPath>
+            <maxRetries>0</maxRetries>
+            <enableRetryStrategy>false</enableRetryStrategy>
+            <enableCondition>false</enableCondition>
+            <abortAllJob>false</abortAllJob>
+            <condition></condition>
+            <configs class="empty-list"/>
+            <killPhaseOnJobResultCondition>FAILURE</killPhaseOnJobResultCondition>
+            <buildOnlyIfSCMChanges>false</buildOnlyIfSCMChanges>
+            <applyConditionOnlyIfNoSCMChanges>false</applyConditionOnlyIfNoSCMChanges>
+          </com.tikal.jenkins.plugins.multijob.PhaseJobsConfig>
+        </phaseJobs>
+        <continuationCondition>SUCCESSFUL</continuationCondition>
+        <executionType>PARALLEL</executionType>
+      </outer-class>
+    </com.tikal.jenkins.plugins.multijob.MultiJobBuilder_-MultiJobAction>
+    <hudson.model.CauseAction>
+      <causeBag class="linked-hash-map">
+        <entry>
+          <hudson.model.Cause_-UpstreamCause>
+            <upstreamProject>Restore And Deploy - 10005</upstreamProject>
+            <upstreamUrl>job/Restore%20And%20Deploy%20-%2010005/</upstreamUrl>
+            <upstreamBuild>1457</upstreamBuild>
+            <upstreamCauses>
+              <hudson.triggers.TimerTrigger_-TimerTriggerCause/>
+            </upstreamCauses>
+          </hudson.model.Cause_-UpstreamCause>
+          <int>1</int>
+        </entry>
+      </causeBag>
+    </hudson.model.CauseAction>
+    <org.jenkinsci.plugins.envinject.EnvInjectPluginAction plugin="envinject@2.1"/>
+    <hudson.plugins.perforce.PerforceTagAction plugin="perforce@1.3.36">
+      <changeNumber>317891</changeNumber>
+      <depot>
+        <settings>
+          <entry>
+            <string>SystemDrive</string>
+            <string>C:</string>
+          </entry>
+          <entry>
+            <string>P4CHARSET</string>
+            <string>winansi</string>
+          </entry>
+          <entry>
+            <string>P4PASSWD</string>
+            <string>**************</string>
+          </entry>
+          <entry>
+            <string>SystemRoot</string>
+            <string>C:\WINDOWS</string>
+          </entry>
+          <entry>
+            <string>P4PORT</string>
+            <string>192.168.123.123:1234</string>
+          </entry>
+          <entry>
+            <string>P4USER</string>
+            <string>anonymized_user</string>
+          </entry>
+          <entry>
+            <string>P4CLIENT</string>
+            <string>RestoreDatabase_10005</string>
+          </entry>
+        </settings>
+        <validEnvp>false</validEnvp>
+        <p4exe>C:\\Program Files\\Perforce\\p4.exe</p4exe>
+        <threshold>10000</threshold>
+        <execFactory class="hudson.plugins.perforce.HudsonP4ExecutorFactory"/>
+        <changes>
+          <depot reference="../.."/>
+        </changes>
+        <workspaces>
+          <depot reference="../.."/>
+        </workspaces>
+      </depot>
+      <tags/>
+      <view>//depot/anonymized/path/... //RestoreDatabase_10005/anonymized/path/...</view>
+      <owner>anonymized_user</owner>
+    </hudson.plugins.perforce.PerforceTagAction>
+    <hudson.plugins.perforce.PerforceSCMRevisionState plugin="perforce@1.3.36">
+      <revision>317891</revision>
+    </hudson.plugins.perforce.PerforceSCMRevisionState>
+    <com.sonyericsson.rebuild.RebuildAction plugin="rebuild@1.25"/>
+    <jenkins.plugins.show__build__parameters.ShowParametersBuildAction plugin="show-build-parameters@1.0">
+      <build class="build" reference="../../.."/>
+    </jenkins.plugins.show__build__parameters.ShowParametersBuildAction>
+  </actions>
+  <queueId>1553</queueId>
+  <timestamp>1498426228547</timestamp>
+  <startTime>1498426228548</startTime>
+  <result>SUCCESS</result>
+  <duration>345785</duration>
+  <charset>windows-1252</charset>
+  <keepLog>false</keepLog>
+  <builtOn>anonymized_slave</builtOn>
+  <workspace>c:\jenkins\workspace\Restore db 10005</workspace>
+  <hudsonVersion>2.66</hudsonVersion>
+  <scm class="hudson.plugins.perforce.PerforceChangeLogParser" plugin="perforce@1.3.36"/>
+  <culprits class="com.google.common.collect.EmptyImmutableSortedSet"/>
+</build>

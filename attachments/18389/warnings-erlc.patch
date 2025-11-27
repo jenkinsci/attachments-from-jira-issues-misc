@@ -1,0 +1,139 @@
+Index: C:/entw/hudson-org/warnings/src/test/java/hudson/plugins/warnings/parser/ErlcParserTest.java
+===================================================================
+--- C:/entw/hudson-org/warnings/src/test/java/hudson/plugins/warnings/parser/ErlcParserTest.java	(revision 0)
++++ C:/entw/hudson-org/warnings/src/test/java/hudson/plugins/warnings/parser/ErlcParserTest.java	(revision 0)
+@@ -0,0 +1,44 @@
++package hudson.plugins.warnings.parser;
++
++import static junit.framework.Assert.*;
++import hudson.plugins.warnings.util.model.FileAnnotation;
++import hudson.plugins.warnings.util.model.Priority;
++
++import java.io.IOException;
++import java.util.Collection;
++import java.util.Iterator;
++
++import org.junit.Test;
++
++/**
++ * Tests the class {@link ErlcParser}.
++ */
++public class ErlcParserTest extends ParserTester {
++    /**
++     * Parses a file with two Erlc warnings.
++     *
++     * @throws IOException
++     *      if the file could not be read
++     */
++    @Test
++    public void testWarningsParser() throws IOException {
++        Collection<FileAnnotation> warnings = new ErlcParser().parse(ErlcParserTest.class.getResourceAsStream("erlc.txt"));
++
++        assertEquals("Wrong number of warnings detected.", 2, warnings.size());
++
++        Iterator<FileAnnotation> iterator = warnings.iterator();
++        FileAnnotation annotation = iterator.next();
++        checkWarning(annotation,
++                125,
++                "variable 'Name' is unused",
++                "./test.erl",
++                ErlcParser.WARNING_TYPE, "ERLC Warning", Priority.NORMAL);
++        annotation = iterator.next();
++        checkWarning(annotation,
++                175,
++                "record 'Extension' undefined",
++                "./test2.erl",
++                ErlcParser.WARNING_TYPE, "ERLC Error", Priority.HIGH);
++    }
++}
++
+
+Property changes on: C:\entw\hudson-org\warnings\src\test\java\hudson\plugins\warnings\parser\ErlcParserTest.java
+___________________________________________________________________
+Name: svn:mime-type
+   + text/plain
+
+Index: C:/entw/hudson-org/warnings/src/test/resources/hudson/plugins/warnings/parser/erlc.txt
+===================================================================
+--- C:/entw/hudson-org/warnings/src/test/resources/hudson/plugins/warnings/parser/erlc.txt	(revision 0)
++++ C:/entw/hudson-org/warnings/src/test/resources/hudson/plugins/warnings/parser/erlc.txt	(revision 0)
+@@ -0,0 +1,3 @@
++
++./test.erl:125: Warning: variable 'Name' is unused
++./test2.erl:175: record 'Extension' undefined
+
+Property changes on: C:\entw\hudson-org\warnings\src\test\resources\hudson\plugins\warnings\parser\erlc.txt
+___________________________________________________________________
+Name: svn:mime-type
+   + text/plain
+
+Index: C:/entw/hudson-org/warnings/src/main/java/hudson/plugins/warnings/parser/ErlcParser.java
+===================================================================
+--- C:/entw/hudson-org/warnings/src/main/java/hudson/plugins/warnings/parser/ErlcParser.java	(revision 0)
++++ C:/entw/hudson-org/warnings/src/main/java/hudson/plugins/warnings/parser/ErlcParser.java	(revision 0)
+@@ -0,0 +1,45 @@
++package hudson.plugins.warnings.parser;
++
++import hudson.plugins.warnings.util.model.Priority;
++
++import java.util.regex.Matcher;
++
++/**
++ * A parser for the erlc compiler warnings.
++ *
++ * @author Stefan Brausch
++ */
++public class ErlcParser extends RegexpParser {
++    /** Warning type of this parser. */
++    static final String WARNING_TYPE = "erlc";
++    /** Pattern of erlc compiler warnings. */
++    private static final String ERLC_WARNING_PATTERN = "(.*\\.(?:erl|yrl|mib|bin|rel|asn1|idl)):(\\d*):\\s*([wW]arning:)?\\s*(.*)";
++
++    /**
++     * Creates a new instance of <code>ErlcCompileParser</code>.
++     */
++    public ErlcParser() {
++        super(ERLC_WARNING_PATTERN);
++    }
++
++    /** {@inheritDoc} */
++    @Override
++    protected Warning createWarning(final Matcher matcher) {
++        final String filename = matcher.group(1);
++        final int linenumber = getLineNumber(matcher.group(2));
++        final Priority priority;
++        final String category;
++        final String message = matcher.group(4);
++        final String group3 = matcher.group(3);
++        if ("warning:".equalsIgnoreCase(group3)) {
++            priority = Priority.NORMAL;
++            category = "ERLC " + group3.substring(0, group3.length() - 1);
++        }
++        else {
++            priority = Priority.HIGH;
++            category = "ERLC Error";
++        }
++        return new Warning(filename, linenumber, WARNING_TYPE, category, message, priority);
++    }
++}
++
+
+Property changes on: C:\entw\hudson-org\warnings\src\main\java\hudson\plugins\warnings\parser\ErlcParser.java
+___________________________________________________________________
+Name: svn:mime-type
+   + text/plain
+
+Index: C:/entw/hudson-org/warnings/src/main/java/hudson/plugins/warnings/parser/ParserRegistry.java
+===================================================================
+--- C:/entw/hudson-org/warnings/src/main/java/hudson/plugins/warnings/parser/ParserRegistry.java	(revision 13216)
++++ C:/entw/hudson-org/warnings/src/main/java/hudson/plugins/warnings/parser/ParserRegistry.java	(working copy)
+@@ -45,7 +45,9 @@
+         parsers.add(new GccParser());
+         parsers.add(new InvalidsParser());
+         parsers.add(new SunCParser());
++        parsers.add(new ErlcParser());
+ 
++
+         if (!StringUtils.isEmpty(excludePattern)) {
+             excludeFilter = new ExcludeFilter(excludePattern);
+         }

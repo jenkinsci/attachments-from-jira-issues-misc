@@ -1,0 +1,43 @@
+### Eclipse Workspace Patch 1.0
+#P hudson-war
+Index: resources/help/system-config/numExecutors.html
+===================================================================
+RCS file: /cvs/hudson/hudson/main/war/resources/help/system-config/numExecutors.html,v
+retrieving revision 1.2
+diff -u -r1.2 numExecutors.html
+--- resources/help/system-config/numExecutors.html	30 Nov 2007 21:35:23 -0000	1.2
++++ resources/help/system-config/numExecutors.html	4 Dec 2007 07:49:06 -0000
+@@ -11,4 +11,10 @@
+   <p>
+   When using Hudson in the master/slave mode, setting this value to 0 would prevent the master
+   to do any build on its own.
++
++  <p>
++  Hudson may not always build in the same order as your project dependencies.
++  If you need Hudson to always build projects in the order of their dependencies, set this value
++  to 1.
++
+ </div>
+\ No newline at end of file
+#P hudson-core
+Index: src/main/java/hudson/triggers/SCMTrigger.java
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/java/hudson/triggers/SCMTrigger.java,v
+retrieving revision 1.27
+diff -u -r1.27 SCMTrigger.java
+--- src/main/java/hudson/triggers/SCMTrigger.java	28 Nov 2007 00:57:05 -0000	1.27
++++ src/main/java/hudson/triggers/SCMTrigger.java	4 Dec 2007 07:49:09 -0000
+@@ -70,6 +70,13 @@
+         pollingScheduled = true;
+         LOGGER.fine("Scheduling a polling for "+job);
+ 
++        // if only one executor, have build order match dependencies 
++        // by using only one polling thread and polling synchronously. 
++        if (Hudson.getInstance().getNumExecutors() == 1) { 
++        	DESCRIPTOR.synchronousPolling = true;
++        	DESCRIPTOR.maximumThreads = 1;
++        }
++
+         if (DESCRIPTOR.synchronousPolling) {
+         	LOGGER.fine("Running the trigger directly without threading, " +
+         			"as it's already taken care of by Trigger.Cron");

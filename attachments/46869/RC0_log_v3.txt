@@ -1,0 +1,114 @@
+Started by user USER
+[EnvInject] - Loading node environment variables.
+Building remotely on xcambldm1p.q (linux bld zosconnect) in workspace <workspace>
+[WS-CLEANUP] Deleting project workspace...
+[WS-CLEANUP] Deferred wipeout is used...
+[WS-CLEANUP] Done
+[mf_test_proj] $ /bin/sh -xe <temp>
++ cd <workspace>
++ USER=<user>
++ PASS=<pass>
++ HOST=<addr>
++ ftp -inv <addr>
+Connected to <addr> (<addr>).
+220-FTPD1 IBM FTP CS V2R3 at <env>, 06:48:35 on 2019-04-24.
+220 Connection will close if idle for more than 5 minutes.
+Remote system type is MVS.
+331 Send password please.
+230 <user> is logged on.  Working directory is "<user>.".
+local: SAMPJCL.txt remote: '<user>.COBOL.SAMP.JCL(IDCAMSJ)'
+227 Entering Passive Mode (nodes)
+125 Sending data set <user>.COBOL.SAMP.JCL(IDCAMSJ) FIXrecfm 80
+250 Transfer completed successfully.
+321 bytes received in 0.00144 secs (223.38 Kbytes/sec)
+221 Quit command received. Goodbye.
+FTP: connected to <addr>:21
+Submitted job [JOB05632]
+Found job <user>I in OUTPUT
+Found HASP395: <RC=0000>
+Found job <user>I in OUTPUT
+Found HASP395: <RC=0000>
+Found job <user>I in OUTPUT
+Found HASP395: <RC=0000>
+Found job <user>I in OUTPUT
+Found HASP395: <RC=0000>
+Found job <user>I in OUTPUT
+Found HASP395: <RC=0000>
+Found job <user>I in OUTPUT
+Found HASP395: <RC=0000>
+Job [JOB05632] processing failed. Reason: [WAIT_ERROR]
+1                   J E S 2  J O B  L O G  --  S Y S T E M  A E 5 1  --  N O D E  A E P L E X 0 7        
+0 
+ 06.48.35 JOB05632 ---- WEDNESDAY, 24 APR 2019 ----
+ 06.48.35 JOB05632  TSS7000I <user> Last-Used 24 Apr 19 06:48 System=<env> Facility=FTP
+ 06.48.35 JOB05632  TSS7001I Count=00086 Mode=Fail Locktime=None Name=USER
+ 06.48.35 JOB05632  $HASP373 <user>I STARTED - INIT 14   - CLASS A        - SYS <env>
+ 06.48.35 JOB05632  IEF403I <user>I - STARTED - TIME=06.48.35
+ 06.48.35 JOB05632  -                                              --TIMINGS (MINS.)--            -----PAGING COUNTS----
+ 06.48.35 JOB05632  -STEPNAME PROCSTEP    RC   EXCP   CONN    TCB    SRB  CLOCK   SERV  WORKLOAD  PAGE  SWAP   VIO SWAPS
+ 06.48.35 JOB05632  -STEP1                00     53      3    .00    .00     .0   3572  BATCH        0     0     0     0
+ 06.48.35 JOB05632  IEF404I <user>I - ENDED - TIME=06.48.35
+ 06.48.35 JOB05632  -<user>I ENDED.  NAME-UPDATE               TOTAL TCB CPU TIME=    .00 TOTAL ELAPSED TIME=    .0
+ 06.48.35 JOB05632  $HASP395 <user>I ENDED - RC=0000
+0------ JES2 JOB STATISTICS ------
+-  24 APR 2019 JOB EXECUTION DATE
+-           10 CARDS READ
+-           69 SYSOUT PRINT RECORDS
+-            0 SYSOUT PUNCH RECORDS
+-            7 SYSOUT SPOOL KBYTES
+-         0.00 MINUTES EXECUTION TIME
+ !! END OF JES SPOOL FILE !!
+        1 //<user>I JOB (1G890820),'UPDATE',CLASS=A,                             JOB05632
+          //            MSGCLASS=H,REGION=0M,NOTIFY=&SYSUID                               
+          IEFC653I SUBSTITUTION JCL - (1G890820),'UPDATE',CLASS=A,MSGCLASS=H,REGION=0M,NOTIFY=<user>
+        2 //STEP1 EXEC PGM=IDCAMS                                                         
+        3 //SYSPRINT DD  SYSOUT=*                                                         
+        4 //SYSOUT   DD  SYSOUT=*                                                         
+          //*N       DD  DSN=<user>.SAMP.SORT.INPUT,DISP=SHR                             
+        5 //IN       DD DSN=<user>.SAMP.SORT.OUT1,DISP=SHR                               
+        6 //SYSIN DD *                                                                    
+ !! END OF JES SPOOL FILE !!
+ TSS7000I <user> Last-Used 24 Apr 19 06:48 System=<env> Facility=FTP
+ TSS7001I Count=00086 Mode=Fail Locktime=None Name=USER
+ IEFA111I <user>I IS USING THE FOLLOWING JOB RELATED SETTINGS:
+          SWA=ABOVE,TIOT SIZE=32K,DSENQSHR=DISALLOW,GDGBIAS=JOB
+ IEF236I ALLOC. FOR <user>I STEP1
+ IEF237I JES2 ALLOCATED TO SYSPRINT
+ IEF237I JES2 ALLOCATED TO SYSOUT
+ IGD103I SMS ALLOCATED TO DDNAME IN
+ IEF237I JES2 ALLOCATED TO SYSIN
+ IEF142I <user>I STEP1 - STEP WAS EXECUTED - COND CODE 0000
+ IEF285I   <user>.<user>I.JOB05632.D0000102.?         SYSOUT        
+ IEF285I   <user>.<user>I.JOB05632.D0000103.?         SYSOUT        
+ IGD104I <user>.SAMP.SORT.OUT1                       RETAINED,  DDNAME=IN      
+ IEF285I   <user>.<user>I.JOB05632.D0000101.?         SYSIN         
+ IEF373I STEP/STEP1   /START 2019114.0648
+ IEF032I STEP/STEP1   /STOP  2019114.0648 
+         CPU:     0 HR  00 MIN  00.01 SEC    SRB:     0 HR  00 MIN  00.00 SEC    
+         VIRT:   328K  SYS:   260K  EXT:       40K  SYS:    10452K
+         ATB- REAL:                  1044K  SLOTS:                     0K
+              VIRT- ALLOC:      11M SHRD:       0M
+ IEF375I  JOB/<user>I/START 2019114.0648
+ IEF033I  JOB/<user>I/STOP  2019114.0648 
+         CPU:     0 HR  00 MIN  00.01 SEC    SRB:     0 HR  00 MIN  00.00 SEC    
+ !! END OF JES SPOOL FILE !!
+1IDCAMS  SYSTEM SERVICES                                           TIME: 06:48:35        04/24/19     PAGE      1
+0        
+  PRINT INFILE(IN) COUNT(1)
+1IDCAMS  SYSTEM SERVICES                                           TIME: 06:48:35        04/24/19     PAGE      2
+-LISTING OF DATA SET -<user>.SAMP.SORT.OUT1
+0RECORD SEQUENCE NUMBER - 1
+ 000000  F1F1F1F1 F1F1F1F1 F1F1                                                      *1111111111                      *
+         
+0IDC0005I NUMBER OF RECORDS PROCESSED WAS 1
+0IDC0001I FUNCTION COMPLETED, HIGHEST CONDITION CODE WAS 0
+1IDCAMS  SYSTEM SERVICES                                           TIME: 06:48:35        04/24/19     PAGE      3
+0        
+0IDC0002I IDCAMS PROCESSING COMPLETE. MAXIMUM CONDITION CODE WAS 0
+ !! END OF JES SPOOL FILE !!
+
+ERROR: z/OS job failed with CC WAIT_ERROR
+[BFA] Scanning build for known causes...
+[BFA] No failure causes found
+[BFA] Done. 0s
+Finished: FAILURE

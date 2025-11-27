@@ -1,0 +1,38 @@
+diff --git a/src/test/java/hudson/plugins/git/GitChangeSetTest.java b/src/test/java/hudson/plugins/git/GitChangeSetTest.java
+index c83d26f..df7d7ab 100644
+--- a/src/test/java/hudson/plugins/git/GitChangeSetTest.java
++++ b/src/test/java/hudson/plugins/git/GitChangeSetTest.java
+@@ -40,11 +40,12 @@ public class GitChangeSetTest extends TestCase {
+         expectedAffectedPaths.add("src/test/add.file");
+         expectedAffectedPaths.add("src/test/deleted.file");
+         expectedAffectedPaths.add("src/test/modified.file");
+-        expectedAffectedPaths.add("src/test/renamedFrom.file\tsrc/test/renamedTo.file");
++        expectedAffectedPaths.add("src/test/renamedFrom.file");
++        expectedAffectedPaths.add("src/test/renamedTo.file");
+         Assert.assertEquals(expectedAffectedPaths, changeSet.getAffectedPaths());
+ 
+         Collection<Path> actualPaths = changeSet.getPaths();
+-        Assert.assertEquals(4, actualPaths.size());
++        Assert.assertEquals(5, actualPaths.size());
+         for (Path path : actualPaths) {
+             if ("src/test/add.file".equals(path.getPath())) {
+                 Assert.assertEquals(EditType.ADD, path.getEditType());
+@@ -58,10 +59,14 @@ public class GitChangeSetTest extends TestCase {
+                 Assert.assertEquals(EditType.EDIT, path.getEditType());
+                 Assert.assertEquals("123abc456def789abc012def345abc678def901a", path.getSrc());
+                 Assert.assertEquals("bc234def567abc890def123abc456def789abc01", path.getDst());
+-            } else if ("src/test/renamedFrom.file\tsrc/test/renamedTo.file".equals(path.getPath())) {
+-                Assert.assertEquals(EditType.EDIT, path.getEditType());
+-                Assert.assertNull(path.getSrc());
+-                Assert.assertNull(path.getDst());
++            } else if ("src/test/renamedFrom.file".equals(path.getPath())) {
++                Assert.assertEquals(EditType.DELETE, path.getEditType());
++                Assert.assertEquals("123abc456def789abc012def345abc678def901a", path.getSrc());
++                Assert.assertEquals("bc234def567abc890def123abc456def789abc01", path.getDst());
++            } else if ("src/test/renamedTo.file".equals(path.getPath())) {
++                Assert.assertEquals(EditType.ADD, path.getEditType());
++                Assert.assertEquals("123abc456def789abc012def345abc678def901a", path.getSrc());
++                Assert.assertEquals("bc234def567abc890def123abc456def789abc01", path.getDst());
+             } else {
+                 Assert.fail("Unrecognized path.");
+             }

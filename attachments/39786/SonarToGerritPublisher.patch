@@ -1,0 +1,90 @@
+diff --git a/src/main/java/org/jenkinsci/plugins/sonargerrit/SonarToGerritPublisher.java b/src/main/java/org/jenkinsci/plugins/sonargerrit/SonarToGerritPublisher.java
+index df7799e..c460780 100644
+--- a/src/main/java/org/jenkinsci/plugins/sonargerrit/SonarToGerritPublisher.java
++++ b/src/main/java/org/jenkinsci/plugins/sonargerrit/SonarToGerritPublisher.java
+@@ -49,6 +49,7 @@
+ import java.util.*;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
++import java.util.regex.Pattern;
+ 
+ import static org.jenkinsci.plugins.sonargerrit.util.Localization.getLocalized;
+ 
+@@ -67,11 +68,13 @@
+     private static final NotifyHandling DEFAULT_NOTIFICATION_ISSUES = NotifyHandling.OWNER;
+ 
+     public static final String EMPTY_STR = "";
++	public static final String MAVEN_DELIMITER = ":";
+ 
+     private static final Logger LOGGER = Logger.getLogger(SonarToGerritPublisher.class.getName());
+     public static final String GERRIT_CHANGE_NUMBER_ENV_VAR_NAME = "GERRIT_CHANGE_NUMBER";
+     public static final String GERRIT_NAME_ENV_VAR_NAME = "GERRIT_NAME";
+     public static final String GERRIT_PATCHSET_NUMBER_ENV_VAR_NAME = "GERRIT_PATCHSET_NUMBER";
++	public static final String GERRIT_FILE_DELIMITER = "/";
+ 
+     // left here for compatibility with previous version. will be removed in further releases
+     private final String path;
+@@ -266,6 +269,12 @@
+ 
+             // Step 4 - Filter issues by changed files
+             final Map<String, FileInfo> files = revision.files();
++			
++            if(needsAlignment(file2issues)){
++                file2issues = alignKeys(file2issues, files);
++                listener.getLogger().println("alignment needed.");
++            }
++			
+             file2issues = Multimaps.filterKeys(file2issues, new Predicate<String>() {
+                 @Override
+                 public boolean apply(@Nullable String input) {
+@@ -411,6 +420,50 @@
+ 
+     }
+ 
++   private boolean needsAlignment(Multimap<String, Issue> files2issues){
++        boolean result = false;
++        Iterator<Map.Entry<String,Issue>> entriesIterator = files2issues.entries().iterator();
++        String module = EMPTY_STR;
++        if(entriesIterator.hasNext()){
++            Map.Entry<String, Issue> entry = files2issues.entries().iterator().next();
++            Issue it = entry.getValue();
++            module = getModule2File(it.getComponent()).keySet().iterator().next();//has only one entry
++            result = !entry.getKey().contains(module);
++        }
++        return result;
++    }
++    
++    private Multimap<String, Issue> alignKeys(Multimap<String, Issue> files2issues, Map<String, FileInfo> changes) {
++        Multimap<String, Issue> alignKeysMap = LinkedListMultimap.create();
++        String module = EMPTY_STR;
++        String newKey = EMPTY_STR;
++        for (Map.Entry<String, Issue> eachEntry : files2issues.entries()) {
++        	Map<String,String> module2file = getModule2File(eachEntry.getValue().getComponent());
++        	module = module2file.keySet().iterator().next();
++            module = module == null || module.equals(EMPTY_STR) ? EMPTY_STR : module + GERRIT_FILE_DELIMITER;
++            newKey=module + eachEntry.getKey();
++            if (module != null) {
++			  for (String change : changes.keySet()) {
++				if (change.contains(module2file.values().iterator().next())) {
++					newKey=change;
++					break;
++				}
++			  }
++			}
++            
++            alignKeysMap.put(newKey, eachEntry.getValue());
++        }
++        return alignKeysMap;
++    }
++
++    private Map<String,String> getModule2File(String component){
++    	Map<String,String> module2file = new HashMap<>();
++    	Pattern p = Pattern.compile(MAVEN_DELIMITER);
++    	String[] splitPattern = p.split(component);
++    	module2file.put(splitPattern[1],splitPattern[2]);
++    	return module2file;
++    }	
++	
+     @VisibleForTesting
+     ReviewInput getReviewResult(Multimap<String, Issue> finalIssues) {
+         String reviewMessage = getReviewMessage(finalIssues);

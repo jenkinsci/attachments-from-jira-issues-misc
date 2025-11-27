@@ -1,0 +1,35 @@
+Started by user admin
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/lib/jenkins/workspace/app-folder/app-pipeline
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Hello)
+[Pipeline] withCredentials
+Masking supported pattern matches of $SSH_PRIVATE_KEY
+[Pipeline] {
+[Pipeline] echo
+This will use SSH private key for server access...
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] withCredentials
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+java.lang.ClassCastException: org.jenkinsci.plugins.workflow.job.WorkflowRun cannot be cast to hudson.model.AbstractItem
+	at org.conjur.jenkins.conjursecrets.ConjurSecretCredentials.credentialFromContextIfNeeded(ConjurSecretCredentials.java:64)
+	at org.conjur.jenkins.conjursecrets.ConjurSecretCredentials.credentialWithID(ConjurSecretCredentials.java:89)
+	at org.conjur.jenkins.conjursecrets.ConjurSecretCredentials.getSecretFromCredentialIDWithConfigAndContext(ConjurSecretCredentials.java:122)
+	at org.conjur.jenkins.conjursecrets.ConjurSecretUsernameCredentialsImpl.getPassword(ConjurSecretUsernameCredentialsImpl.java:134)
+	at org.conjur.jenkins.conjursecrets.ConjurSecretUsernameCredentialsBinding.bind(ConjurSecretUsernameCredentialsBinding.java:73)
+	at org.jenkinsci.plugins.credentialsbinding.impl.BindingStep$Execution2.doStart(BindingStep.java:134)
+	at org.jenkinsci.plugins.workflow.steps.GeneralNonBlockingStepExecution.lambda$run$0(GeneralNonBlockingStepExecution.java:77)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+Finished: FAILURE

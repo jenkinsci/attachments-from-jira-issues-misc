@@ -1,0 +1,97 @@
+Started by user Build Automation
+ > git rev-parse --is-inside-work-tree # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://gitlab.com/Infrastructure/website-dotcom # timeout=10
+Cleaning workspace
+ > git rev-parse --verify HEAD # timeout=10
+Resetting working tree
+ > git reset --hard # timeout=10
+ > git clean -fdx # timeout=10
+Fetching upstream changes from https://gitlab.com/Infrastructure/website-dotcom
+ > git --version # timeout=10
+using GIT_ASKPASS to set credentials 
+ > git fetch --tags --progress https://gitlab.com/Infrastructure/website-dotcom +refs/heads/*:refs/remotes/origin/* +refs/merge-requests/*/head:refs/remotes/origin/merge-requests/* # timeout=50
+ > git rev-parse 5550655b304ddea7a5d37dd01b09b03545682c4a^{commit} # timeout=10
+Checking out Revision 5550655b304ddea7a5d37dd01b09b03545682c4a (detached)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 5550655b304ddea7a5d37dd01b09b03545682c4a # timeout=50
+ > git branch -a -v --no-abbrev # timeout=10
+ > git branch -D WEB-12539-Jono-Walker-Case-Study-master # timeout=10
+ > git checkout -b WEB-12539-Jono-Walker-Case-Study-master 5550655b304ddea7a5d37dd01b09b03545682c4a # timeout=50
+ > git rev-list 1b26cb5cb0d6b837eb09b0cf7fb31d01cb567f26 # timeout=10
+[Pipeline] node
+Running on website(Infra) in C:\workspace\Infrastructure\Website-dotcom
+[Pipeline] {
+[Pipeline] stage (Checkout)
+Using the ‘stage’ step without a block argument is deprecated
+Entering stage Checkout
+Proceeding
+[Pipeline] checkout
+ > C:\Program Files\Git\bin\git.exe rev-parse --is-inside-work-tree # timeout=10
+Fetching changes from the remote Git repository
+ > C:\Program Files\Git\bin\git.exe config remote.origin.url https://gitlab.com/Infrastructure/website-dotcom.git # timeout=10
+Fetching upstream changes from https://gitlab.com/Infrastructure/website-dotcom.git
+ > C:\Program Files\Git\bin\git.exe --version # timeout=10
+using GIT_ASKPASS to set credentials 
+ > C:\Program Files\Git\bin\git.exe fetch --tags --progress https://gitlab.com/Infrastructure/website-dotcom.git +refs/heads/*:refs/remotes/origin/*
+ERROR: Timeout after 10 minutes
+ERROR: Error fetching remote repo 'origin'
+hudson.plugins.git.GitException: Failed to fetch from https://gitlab.com/Infrastructure/website-dotcom.git
+	at hudson.plugins.git.GitSCM.fetchFrom(GitSCM.java:806)
+	at hudson.plugins.git.GitSCM.retrieveChanges(GitSCM.java:1066)
+	at hudson.plugins.git.GitSCM.checkout(GitSCM.java:1097)
+	at org.jenkinsci.plugins.workflow.steps.scm.SCMStep.checkout(SCMStep.java:109)
+	at org.jenkinsci.plugins.workflow.steps.scm.SCMStep$StepExecutionImpl.run(SCMStep.java:83)
+	at org.jenkinsci.plugins.workflow.steps.scm.SCMStep$StepExecutionImpl.run(SCMStep.java:73)
+	at org.jenkinsci.plugins.workflow.steps.AbstractSynchronousNonBlockingStepExecution$1$1.call(AbstractSynchronousNonBlockingStepExecution.java:47)
+	at hudson.security.ACL.impersonate(ACL.java:260)
+	at org.jenkinsci.plugins.workflow.steps.AbstractSynchronousNonBlockingStepExecution$1.run(AbstractSynchronousNonBlockingStepExecution.java:44)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:748)
+Caused by: hudson.plugins.git.GitException: Command "C:\Program Files\Git\bin\git.exe fetch --tags --progress https://gitlab.com/Infrastructure/website-dotcom.git +refs/heads/*:refs/remotes/origin/*" returned status code -1:
+stdout: 
+stderr: 
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandIn(CliGitAPIImpl.java:1793)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandWithCredentials(CliGitAPIImpl.java:1519)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.access$300(CliGitAPIImpl.java:64)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl$1.execute(CliGitAPIImpl.java:315)
+	at org.jenkinsci.plugins.gitclient.RemoteGitImpl$CommandInvocationHandler$1.call(RemoteGitImpl.java:153)
+	at org.jenkinsci.plugins.gitclient.RemoteGitImpl$CommandInvocationHandler$1.call(RemoteGitImpl.java:146)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:153)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:50)
+	at hudson.remoting.Request$2.run(Request.java:336)
+	at hudson.remoting.InterceptingExecutorService$1.call(InterceptingExecutorService.java:68)
+	at java.util.concurrent.FutureTask.run(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at hudson.remoting.Engine$1$1.run(Engine.java:94)
+	at java.lang.Thread.run(Unknown Source)
+	at ......remote call to JNLP4-connect connection from 150.107.121.2/150.107.121.2:59553(Native Method)
+	at hudson.remoting.Channel.attachCallSiteStackTrace(Channel.java:1647)
+	at hudson.remoting.UserResponse.retrieve(UserRequest.java:308)
+	at hudson.remoting.Channel.call(Channel.java:896)
+	at org.jenkinsci.plugins.gitclient.RemoteGitImpl$CommandInvocationHandler.execute(RemoteGitImpl.java:146)
+	at sun.reflect.GeneratedMethodAccessor613.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.jenkinsci.plugins.gitclient.RemoteGitImpl$CommandInvocationHandler.invoke(RemoteGitImpl.java:132)
+	at com.sun.proxy.$Proxy114.execute(Unknown Source)
+	at hudson.plugins.git.GitSCM.fetchFrom(GitSCM.java:804)
+	... 13 more
+[Pipeline] stage (Delete Workspace)
+Using the ‘stage’ step without a block argument is deprecated
+Entering stage Delete Workspace
+Proceeding
+[Pipeline] step
+[WS-CLEANUP] Deleting project workspace...[WS-CLEANUP] done
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+[BFA] Scanning build for known causes...
+[BFA] Found failure cause(s):
+[BFA] Source Checkout from category Gitlab
+[BFA] Done. 0s
+Finished: FAILURE

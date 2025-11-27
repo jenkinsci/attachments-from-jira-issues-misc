@@ -1,0 +1,241 @@
+Index: src/main/java/hudson/plugins/locksandlatches/LockWrapper.java
+===================================================================
+--- src/main/java/hudson/plugins/locksandlatches/LockWrapper.java	(revision 31629)
++++ src/main/java/hudson/plugins/locksandlatches/LockWrapper.java	(working copy)
+@@ -4,6 +4,7 @@
+ import hudson.Launcher;
+ import hudson.model.*;
+ import hudson.tasks.BuildWrapper;
++import hudson.matrix.MatrixRun;
+ import net.sf.json.JSONObject;
+ import org.kohsuke.stapler.DataBoundConstructor;
+ import org.kohsuke.stapler.StaplerRequest;
+@@ -61,7 +62,8 @@
+ 
+     @Override
+     public Environment setUp(AbstractBuild abstractBuild, Launcher launcher, BuildListener buildListener) throws IOException, InterruptedException {
+-        final List<ReentrantLock> backups = new ArrayList<ReentrantLock>();
++        final List<SharedReentrantLock> unsharedBackups = new ArrayList<SharedReentrantLock>();
++        final List<SharedReentrantLock> sharedBackups = new ArrayList<SharedReentrantLock>();
+         List<LockWaitConfig> locks = new ArrayList<LockWaitConfig>(this.locks);
+         // sort this list of locks so that we _always_ ask for the locks in order
+         Collections.sort(locks, new Comparator<LockWaitConfig>() {
+@@ -70,23 +72,31 @@
+             }
+         });
+         for (LockWaitConfig lock : locks) {
+-            ReentrantLock backupLock;
++            SharedReentrantLock backupLock;
+             do {
+                 backupLock = DESCRIPTOR.backupLocks.get(lock.getName());
+                 if (backupLock == null) {
+-                    DESCRIPTOR.backupLocks.putIfAbsent(lock.getName(), new ReentrantLock());
++                    DESCRIPTOR.backupLocks.putIfAbsent(lock.getName(), new SharedReentrantLock());
+                 }
+             } while (backupLock == null);
+-            backups.add(backupLock);
++            if(lock.getShared())
++                sharedBackups.add(backupLock);
++            else
++                unsharedBackups.add(backupLock);
+         }
++        String buildName;
++        if (abstractBuild instanceof MatrixRun)
++            buildName = ((MatrixRun)abstractBuild).getParentBuild().getParent().getDisplayName();
++        else
++            buildName = abstractBuild.getParent().getDisplayName();
+         buildListener.getLogger().println("[locks-and-latches] Checking to see if we really have the locks");
+         boolean haveAll = false;
+         while (!haveAll) {
+             haveAll = true;
+-            List<ReentrantLock> locked = new ArrayList<ReentrantLock>();
++            List<SharedReentrantLock> locked = new ArrayList<SharedReentrantLock>();
+             DESCRIPTOR.lockingLock.lock();
+             try {
+-                for (ReentrantLock lock : backups) {
++                for (SharedReentrantLock lock : unsharedBackups) {
+                     if (lock.tryLock()) {
+                         locked.add(lock);
+                     } else {
+@@ -94,9 +104,17 @@
+                         break;
+                     }
+                 }
++                for (SharedReentrantLock lock : sharedBackups) {
++                    if (lock.tryLock(buildName)) {
++                        locked.add(lock);
++                    } else {
++                        haveAll = false;
++                        break;
++                    }
++                }
+                 if (!haveAll) {
+                     // release them all
+-                    for (ReentrantLock lock : locked) {
++                    for (SharedReentrantLock lock : locked) {
+                         lock.unlock();
+                     }
+                 }
+@@ -114,9 +132,12 @@
+             @Override
+             public boolean tearDown(AbstractBuild abstractBuild, BuildListener buildListener) throws IOException, InterruptedException {
+                 buildListener.getLogger().println("[locks-and-latches] Releasing all the locks");
+-                for (ReentrantLock lock : backups) {
++                for (SharedReentrantLock lock : unsharedBackups) {
+                     lock.unlock();
+                 }
++                for (SharedReentrantLock lock : sharedBackups) {
++                    lock.unlock();
++                }
+                 buildListener.getLogger().println("[locks-and-latches] All the locks released");
+                 return super.tearDown(abstractBuild, buildListener);
+             }
+@@ -133,8 +154,8 @@
+         /**
+          * required to work around https://hudson.dev.java.net/issues/show_bug.cgi?id=2450
+          */
+-        private transient ConcurrentMap<String, ReentrantLock> backupLocks =
+-                new ConcurrentHashMap<String, ReentrantLock>();
++        private transient ConcurrentMap<String, SharedReentrantLock> backupLocks =
++                new ConcurrentHashMap<String, SharedReentrantLock>();
+ 
+         private transient ReentrantLock lockingLock = new ReentrantLock();
+ 
+@@ -187,7 +208,7 @@
+             if (locks == null) {
+                 locks = new ArrayList<LockConfig>();
+                 // provide default if we have none
+-                locks.add(new LockConfig("(default)"));
++                locks.add(new LockConfig("(default)", false));
+             }
+             return locks;
+         }
+@@ -231,14 +252,16 @@
+ 
+     public static final class LockConfig implements Serializable {
+         private String name;
++        private boolean shared;
+         private transient AbstractBuild owner = null;
+ 
+         public LockConfig() {
+         }
+ 
+         @DataBoundConstructor
+-        public LockConfig(String name) {
++        public LockConfig(String name, boolean shared) {
+             this.name = name;
++            this.shared = shared;
+         }
+ 
+         public String getName() {
+@@ -249,6 +272,13 @@
+             this.name = name;
+         }
+ 
++        public boolean getShared() {
++            return shared;
++        }
++        public void setShared(boolean shared) {
++            this.shared = shared;
++        }
++
+         @Override
+         public boolean equals(Object o) {
+             if (this == o) return true;
+@@ -271,21 +301,24 @@
+ 
+     public static final class LockWaitConfig implements Serializable {
+         private String name;
++	private boolean shared;
+         private transient LockConfig lock;
+ 
+         public LockWaitConfig() {
+         }
+ 
+         @DataBoundConstructor
+-        public LockWaitConfig(String name) {
++        public LockWaitConfig(String name, boolean shared) {
+             this.name = name;
++            this.shared = shared;
+         }
+-
++        
+         public LockConfig getLock() {
+             if (lock == null && name != null && !"".equals(name)) {
+                 setLock(DESCRIPTOR.getLock(name));
+             }
+             return lock;
++
+         }
+ 
+         public void setLock(LockConfig lock) {
+@@ -303,7 +336,47 @@
+             setLock(DESCRIPTOR.getLock(this.name = name));
+         }
+ 
++        public boolean getShared() {
++            return shared;
++        }
++        public void setShared(boolean shared) { 
++            this.shared = shared;
++        }
++
+     }
+ 
++    public class SharedReentrantLock extends ReentrantLock {
++        private int references;
++        private String job;
++        public SharedReentrantLock() {
++            super();
++            references = 0;
++        }
++        public synchronized void unlock() {
++            references--;
++            if (references == 0) {
++                super.unlock();
++                this.job = null;
++            }
++        }
++        public synchronized boolean tryLock() {
++            if (references == 0)
++                if (super.tryLock()) {
++                    this.job = job;
++                    references++;
++                    return true;
++                }
++            return false;
++        }
++        public synchronized boolean tryLock(String job) {
++            if (job != null && job.equals(this.job)) {
++                references++;
++                return true;
++            } else {
++                return this.tryLock();
++            }
++        }
++    }
++
+     private static final Logger LOGGER = Logger.getLogger(LockWrapper.class.getName());
+ }
+Index: src/main/resources/hudson/plugins/locksandlatches/LockWrapper/config.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/locksandlatches/LockWrapper/config.jelly	(revision 31629)
++++ src/main/resources/hudson/plugins/locksandlatches/LockWrapper/config.jelly	(working copy)
+@@ -19,9 +19,15 @@
+                                 </div>
+                             </td>
+                         </tr>
++                        <tr>
++                            <td>
++                                <f:checkbox name="locks.locks.shared" checked="${locks.shared}"/>
++                                <label class="attach-previous"> ${%Share this lock with slaves}</label>
++                            </td>
++                        </tr>
+                     </table>
+                 </f:entry>
+             </table>
+         </f:repeatable>
+     </f:entry>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>

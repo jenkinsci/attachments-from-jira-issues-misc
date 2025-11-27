@@ -1,0 +1,108 @@
+Index: main/core/src/main/java/hudson/security/AuthorizationMatrixProperty.java
+===================================================================
+--- main/core/src/main/java/hudson/security/AuthorizationMatrixProperty.java (revision 13596)
++++ main/core/src/main/java/hudson/security/AuthorizationMatrixProperty.java (working copy)
+@@ -5,9 +5,10 @@
+ import hudson.model.JobProperty;
+ import hudson.model.JobPropertyDescriptor;
+ import hudson.model.Hudson;
++import hudson.model.Run;
+
++import java.util.ArrayList;
+ import java.util.Arrays;
+-import java.util.Collections;
+ import java.util.HashMap;
+ import java.util.HashSet;
+ import java.util.List;
+@@ -136,7 +137,10 @@
+                }
+
+                public List<PermissionGroup> getAllGroups() {
+-                       return Collections.singletonList(PermissionGroup.get(Item.class));
++                       List<PermissionGroup> list = new ArrayList<PermissionGroup>(2);
++                       list.add(PermissionGroup.get(Item.class));
++                       list.add(PermissionGroup.get(Run.class));
++                       return list;
+                }
+
+         public boolean showPermission(Permission p) {
+Index: main/core/src/main/java/hudson/Functions.java
+===================================================================
+--- main/core/src/main/java/hudson/Functions.java       (revision 13596)
++++ main/core/src/main/java/hudson/Functions.java       (working copy)
+@@ -489,8 +489,25 @@
+         return hasPermission(Hudson.getInstance(),permission);
+     }
+
+-    public static boolean hasPermission(AccessControlled object, Permission permission) throws IOException, ServletException {
+-        return permission==null || object.hasPermission(permission);
++    /**
++     * This version is so that the 'hasPermission' can degrade gracefully
++     * if "it" is not an {@link AccessControlled} object.
++     */
++    public static boolean hasPermission(Object object, Permission permission) throws IOException, ServletException {
++        if (permission == null)
++            return true;
++        if (object instanceof AccessControlled)
++            return ((AccessControlled)object).hasPermission(permission);
++        else {
++            List<Ancestor> ancs = Stapler.getCurrentRequest().getAncestors();
++            for(Ancestor anc : Iterators.reverse(ancs)) {
++                Object o = anc.getObject();
++                if (o instanceof AccessControlled) {
++                    return ((AccessControlled)o).hasPermission(permission);
++                }
++            }
++            return Hudson.getInstance().hasPermission(permission);
++        }
+     }
+
+     public static void adminCheck(StaplerRequest req, StaplerResponse rsp, Object required, Permission permission) throws IOException, ServletException {
+Index: main/core/src/main/resources/lib/hudson/summary.jelly
+===================================================================
+--- main/core/src/main/resources/lib/hudson/summary.jelly       (revision 13596)
++++ main/core/src/main/resources/lib/hudson/summary.jelly       (working copy)
+@@ -13,7 +13,7 @@
+        permission object. If specified, the link will be displayed only if you have a permission
+ -->
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+-  <j:if test="${h.hasPermission(attrs.permission)}">
++  <j:if test="${h.hasPermission(it,attrs.permission)}">
+     <j:if test="${attrs.icon!=null}">
+       <tr>
+         <td>
+@@ -30,4 +30,4 @@
+       </tr>
+     </j:if>
+   </j:if>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>
+Index: main/core/src/main/resources/hudson/model/AbstractBuild/index.jelly
+===================================================================
+--- main/core/src/main/resources/hudson/model/AbstractBuild/index.jelly (revision 13596)
++++ main/core/src/main/resources/hudson/model/AbstractBuild/index.jelly (working copy)
+@@ -3,12 +3,12 @@
+     <st:include page="sidepanel.jelly" />
+     <l:main-panel>
+       <div style="float:right; background-color:white; z-index: 1; position:relative; margin-left: 1em">
+-        <j:if test="${h.hasPermission(it.UPDATE)}">
++        <l:hasPermission permission="${it.UPDATE}">
+           <st:include page="logKeep.jelly" />
+-        </j:if>
+-        <j:if test="${h.hasPermission(it.DELETE)}">
++        </l:hasPermission>
++        <l:hasPermission permission="${it.DELETE}">
+           <st:include page="delete.jelly" />
+-        </j:if>
++        </l:hasPermission>
+         <div style="margin-top:1em">
+           ${%startedAgo(it.timestampString)}
+           </div><div>
+@@ -125,4 +125,4 @@
+       </ul>
+     </l:main-panel>
+   </l:layout>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>

@@ -1,0 +1,31 @@
+#!/usr/bin/env groovy
+
+pipeline {
+    agent { label 'master' }
+    stages {
+        stage('Stage in parallel') {
+            parallel {
+                stage('My stage 1') {
+                    agent { label 'agent1' }
+                    steps {
+                        logstash {
+                            sh '''#!/bin/bash
+                                echo "$STAGE_NAME runs on $NODE_NAME"
+                            '''
+                        }
+                    }
+                }
+                stage('My stage 2') {
+                    agent { label 'agent2' }
+                    steps {
+                        logstash {
+                            sh '''#!/bin/bash
+                                echo "$STAGE_NAME runs on $NODE_NAME"
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

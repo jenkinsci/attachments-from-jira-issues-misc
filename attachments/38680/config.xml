@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.disk__usage.DiskUsageProperty plugin="disk-usage@0.28"/>
+    <com.sonyericsson.jenkins.plugins.bfa.model.ScannerJobProperty plugin="build-failure-analyzer@1.19.0">
+      <doNotScan>false</doNotScan>
+    </com.sonyericsson.jenkins.plugins.bfa.model.ScannerJobProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.25">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <assignedNode>LR_slave</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <com.hp.application.automation.tools.run.RunFromFileBuilder plugin="hp-application-automation-tools-plugin@5.1">
+      <ResultFilename>ApiResults.xml</ResultFilename>
+      <ParamFileName>ApiRun.txt</ParamFileName>
+      <runFromFileModel>
+        <fsTests>C:\LAaS_Perftest\LR Scenario\Scalability test_400vu.lrs
+</fsTests>
+        <fsTimeout></fsTimeout>
+        <controllerPollingInterval>30</controllerPollingInterval>
+        <perScenarioTimeOut>10</perScenarioTimeOut>
+        <ignoreErrorStrings></ignoreErrorStrings>
+        <mcServerName></mcServerName>
+        <fsUserName></fsUserName>
+        <fsPassword>LQOllyUG5HrreqEQhB9Pmw==</fsPassword>
+        <fsDeviceId></fsDeviceId>
+        <fsOs></fsOs>
+        <fsManufacturerAndModel></fsManufacturerAndModel>
+        <fsTargetLab></fsTargetLab>
+        <fsAutActions></fsAutActions>
+        <fsLaunchAppName></fsLaunchAppName>
+        <fsInstrumented></fsInstrumented>
+        <fsDevicesMetrics></fsDevicesMetrics>
+        <fsExtraApps></fsExtraApps>
+        <fsJobId></fsJobId>
+        <useSSL>false</useSSL>
+      </runFromFileModel>
+    </com.hp.application.automation.tools.run.RunFromFileBuilder>
+  </builders>
+  <publishers>
+    <com.hp.application.automation.tools.results.RunResultRecorder plugin="hp-application-automation-tools-plugin@5.1">
+      <__resultsPublisherModel>
+        <archiveTestResultsMode>ONLY_ARCHIVE_FAILED_TESTS_REPORT</archiveTestResultsMode>
+      </__resultsPublisherModel>
+    </com.hp.application.automation.tools.results.RunResultRecorder>
+  </publishers>
+  <buildWrappers/>
+</project>

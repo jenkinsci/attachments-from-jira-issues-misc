@@ -1,0 +1,46 @@
+Started by user melo
+Building in workspace /volume1/@appstore/jenkins/workspace/Publish CV
+Cloning the remote Git repository
+Cloning repository /volume1/git_repos/my_cv.git
+ > git init /volume1/@appstore/jenkins/workspace/Publish CV # timeout=10
+Fetching upstream changes from /volume1/git_repos/my_cv.git
+ > git --version # timeout=10
+ > git -c core.askpass=true fetch --tags --progress /volume1/git_repos/my_cv.git +refs/heads/*:refs/remotes/origin/*
+ > git config remote.origin.url /volume1/git_repos/my_cv.git # timeout=10
+ > git config --add remote.origin.fetch +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git config remote.origin.url /volume1/git_repos/my_cv.git # timeout=10
+Fetching upstream changes from /volume1/git_repos/my_cv.git
+ > git -c core.askpass=true fetch --tags --progress /volume1/git_repos/my_cv.git +refs/heads/*:refs/remotes/origin/*
+ > git rev-parse refs/remotes/origin/master^{commit} # timeout=10
+ > git rev-parse refs/remotes/origin/origin/master^{commit} # timeout=10
+Checking out Revision ea553e207c8df3feb58d2e9711befa0188478e9c (refs/remotes/origin/master)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f ea553e207c8df3feb58d2e9711befa0188478e9c
+First time build. Skipping changelog.
+ > git remote # timeout=10
+ > git submodule init # timeout=10
+ > git submodule sync # timeout=10
+ > git config --get remote.origin.url # timeout=10
+ > git --git-dir=/volume1/git_repos/my_cv.git rev-parse --is-bare-repository # timeout=10
+ > git submodule update --init --recursive --remote
+[Publish CV] $ /bin/sh -xe /var/packages/Tomcat7/target/src/temp/hudson4198536283152891255.sh
++ npm install
+npm WARN package.json Carmelo_Scollo_CV_ger@1.1.0 No repository field.
+npm WARN package.json Carmelo_Scollo_CV_ger@1.1.0 No README data
+npm ERR! addLocal Could not install /volume1/@appstore/jenkins/workspace/Publish CV/libs/themes/jsonresume-theme-paper-ger
+npm ERR! Linux 3.2.40
+npm ERR! argv "/usr/bin/node" "/usr/bin/npm" "install"
+npm ERR! node v0.12.4
+npm ERR! npm  v2.10.1
+npm ERR! code EISDIR
+npm ERR! errno -21
+
+npm ERR! EISDIR, read
+npm ERR! 
+npm ERR! If you need help, you may report this error at:
+npm ERR!     <https://github.com/npm/npm/issues>
+
+npm ERR! Please include the following file with any support request:
+npm ERR!     /volume1/@appstore/jenkins/workspace/Publish CV/npm-debug.log
+Build step 'Execute shell' marked build as failure
+Finished: FAILURE

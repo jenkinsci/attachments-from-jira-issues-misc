@@ -1,0 +1,50 @@
+### Eclipse Workspace Patch 1.0
+#P ruby-metrics
+Index: src/main/resources/hudson/plugins/rubyMetrics/railsStats/RailsStatsPublisher/config.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/rubyMetrics/railsStats/RailsStatsPublisher/config.jelly	(revision 23097)
++++ src/main/resources/hudson/plugins/rubyMetrics/railsStats/RailsStatsPublisher/config.jelly	(working copy)
+@@ -9,5 +9,11 @@
+ 	      </j:forEach>
+ 	    </select>
+   	</f:entry>     
++  	
++  	<f:advanced>
++        <f:entry title="Rake working directory" description="Specify the rake working directory, by default it's '.'">
++            <f:textbox name="rake.rakeWorkingDir" value="${instance.rakeWorkingDir}"/>
++        </f:entry>
++    </f:advanced>
+       
+ </j:jelly>
+\ No newline at end of file
+Index: src/main/java/hudson/plugins/rubyMetrics/railsStats/RailsStatsPublisher.java
+===================================================================
+--- src/main/java/hudson/plugins/rubyMetrics/railsStats/RailsStatsPublisher.java	(revision 23097)
++++ src/main/java/hudson/plugins/rubyMetrics/railsStats/RailsStatsPublisher.java	(working copy)
+@@ -31,11 +31,13 @@
+ 	
+ 	private final Rake rake;
+ 	private final String rakeInstallation;
++	private final String rakeWorkingDir;
+ 	
+ 	@DataBoundConstructor
+-	public RailsStatsPublisher(String rakeInstallation) {
++	public RailsStatsPublisher(String rakeInstallation, String rakeWorkingDir) {
+ 		this.rakeInstallation = rakeInstallation;
+-		this.rake = new Rake(this.rakeInstallation, null, "stats", null, null, true);
++		this.rakeWorkingDir = rakeWorkingDir;
++		this.rake = new Rake(this.rakeInstallation, null, "stats", null, this.rakeWorkingDir, true);
+ 	}
+ 
+ 	@Override
+@@ -67,6 +69,10 @@
+ 		return rakeInstallation;
+ 	}
+ 	
++	public String getRakeWorkingDir() {
++	    return rakeWorkingDir;
++	}
++	
+ 	private boolean isRailsProject(FilePath workspace) {
+ 		try { //relaxed rails app schema
+ 			return workspace.isDirectory()

@@ -1,0 +1,230 @@
+Index: src/main/java/hudson/plugins/warnings/parser/ParserRegistry.java
+===================================================================
+--- src/main/java/hudson/plugins/warnings/parser/ParserRegistry.java	(revision 23373)
++++ src/main/java/hudson/plugins/warnings/parser/ParserRegistry.java	(working copy)
+@@ -264,6 +264,7 @@
+         parsers.add(pclintParser);
+         parsers.add(new BuckminsterParser());
+         parsers.add(new YuiCompressorParser());
++		parsers.add(new TiCcsParser());
+         return Collections.unmodifiableList(parsers);
+     }
+ 
+Index: src/main/java/hudson/plugins/warnings/parser/TiCcsParser.java
+===================================================================
+--- src/main/java/hudson/plugins/warnings/parser/TiCcsParser.java	(revision 0)
++++ src/main/java/hudson/plugins/warnings/parser/TiCcsParser.java	(revision 0)
+@@ -0,0 +1,64 @@
++package hudson.plugins.warnings.parser;
++
++import hudson.plugins.warnings.util.model.Priority;
++
++import java.util.regex.Matcher;
++
++import org.apache.commons.lang.StringUtils;
++
++/**
++ * A parser for the Texas Instruments Code Composer Studio compiler warnings.
++ *
++ * @author Jan Linnenkohl
++ */
++public class TiCcsParser extends RegexpLineParser {
++    /** Warning type of this parser. */
++    static final String WARNING_TYPE = "TiCcs";
++    /** Pattern of TiCcs compiler warnings. */
++    private static final String TI_CCS_WARNING_PATTERN = "^((\"(.*)\",\\s*)(line\\s*(\\d+)(\\s*\\(.*\\))?:)?\\s*)?(WARNING|ERROR|remark|warning|(fatal\\s*)?error)(!\\s*at line\\s(\\d+))?\\s*([^:]*)\\s*:\\s*(.*)$";
++
++    /**
++     * Creates a new instance of <code>TiCcsParser</code>.
++     */
++    public TiCcsParser() {
++		super(TI_CCS_WARNING_PATTERN, "Texas Instruments Code Composer Studio (C/C++)");
++    }
++
++    /** {@inheritDoc} */
++    @Override
++    protected Warning createWarning(final Matcher matcher) {
++        Priority priority;
++        if (isOfType(matcher, "remark")) {
++            priority = Priority.LOW;
++        }
++        else if (isOfType(matcher, "warning")) {
++            priority = Priority.NORMAL;
++        }
++        else {
++            priority = Priority.HIGH;
++        }
++        String fileName = matcher.group(3);
++        if (StringUtils.isBlank(fileName)) {
++            fileName = "unknown.file";
++        }
++		String lineNumber = matcher.group(5);
++		if (StringUtils.isBlank(lineNumber)) {
++            lineNumber = matcher.group(10);
++        }
++        return new Warning(fileName, getLineNumber(lineNumber), WARNING_TYPE, matcher.group(11), matcher.group(12), priority);
++    }
++
++    /**
++     * Returns whether the warning type is of the specified type.
++     *
++     * @param matcher
++     *            the matcher
++     * @param type
++     *            the type to match with
++     * @return <code>true</code> if the warning type is of the specified type
++     */
++    private boolean isOfType(final Matcher matcher, final String type) {
++        return StringUtils.containsIgnoreCase(matcher.group(7), type);
++    }
++}
++
+Index: src/test/java/hudson/plugins/warnings/parser/TiCcsParserTest.java
+===================================================================
+--- src/test/java/hudson/plugins/warnings/parser/TiCcsParserTest.java	(revision 0)
++++ src/test/java/hudson/plugins/warnings/parser/TiCcsParserTest.java	(revision 0)
+@@ -0,0 +1,115 @@
++package hudson.plugins.warnings.parser;
++
++import static junit.framework.Assert.*;
++import hudson.plugins.warnings.util.ParserResult;
++import hudson.plugins.warnings.util.model.FileAnnotation;
++import hudson.plugins.warnings.util.model.Priority;
++
++import java.io.File;
++import java.io.IOException;
++import java.io.InputStreamReader;
++import java.util.ArrayList;
++import java.util.Collection;
++import java.util.Iterator;
++
++import org.apache.commons.io.IOUtils;
++import org.junit.Test;
++
++/**
++ * Tests the class {@link TiCcsParser}.
++ */
++public class TiCcsParserTest extends ParserTester {
++    /** Error message. */
++    private static final String WRONG_NUMBER_OF_WARNINGS_DETECTED = "Wrong number of warnings detected.";
++
++    /**
++     * Creates a new instance of {@link TiCcsParserTest}.
++     */
++    public TiCcsParserTest() {
++        super(TiCcsParser.class);
++    }
++
++
++    /**
++     * Parses a file with warnings of the TI CodeComposer tools.
++     *
++     * @throws IOException
++     *      if the file could not be read
++     */
++    @Test
++    public void parseWarnings() throws IOException {
++        ArrayList<FileAnnotation> sortedWarnings = sort(new TiCcsParser().parse(openFile()));
++
++        assertEquals(WRONG_NUMBER_OF_WARNINGS_DETECTED, 10, sortedWarnings.size());
++
++        Iterator<FileAnnotation> iterator = sortedWarnings.iterator();
++        FileAnnotation annotation = iterator.next();
++        checkWarning(annotation,
++                341,
++                "parameter \"params\" was never referenced",
++                "C:/SCM/Lr/src/fxns.c",
++                TiCcsParser.WARNING_TYPE, "#880-D", Priority.LOW);
++        annotation = iterator.next();
++        checkWarning(annotation,
++                177,
++                "may want to suffix float constant with an f",
++                "C:/SCM/Lr/src/edge.c",
++                TiCcsParser.WARNING_TYPE, "#1116-D", Priority.LOW);
++        annotation = iterator.next();
++        checkWarning(annotation,
++                0,
++                "symbol 'memset' redeclared with incompatible type",
++                "unknown.file",
++                TiCcsParser.WARNING_TYPE, "", Priority.NORMAL);
++        annotation = iterator.next();
++        checkWarning(annotation,
++                12,
++                "variable \"h\" was declared but never referenced",
++                "i2cDisplay12x2.c",
++                TiCcsParser.WARNING_TYPE, "", Priority.NORMAL);
++        annotation = iterator.next();
++        checkWarning(annotation,
++                2578,
++                "variable",
++                "c:/DOCUME~1/JLINNE~1/LOCALS~1/Temp/0360811",
++                TiCcsParser.WARNING_TYPE, "", Priority.NORMAL);
++        annotation = iterator.next();
++        checkWarning(annotation,
++                11,
++                "expected a \";\"",
++                "i2cDisplay12x2.c",
++                TiCcsParser.WARNING_TYPE, "", Priority.HIGH);
++		annotation = iterator.next();
++        checkWarning(annotation,
++                0,
++                "unresolved symbols remain",
++                "unknown.file",
++                TiCcsParser.WARNING_TYPE, "", Priority.HIGH);
++		annotation = iterator.next();
++        checkWarning(annotation,
++                0,
++                "errors encountered during linking; \"../../bin/Debug/lrxyz.out\" not",
++                "unknown.file",
++                TiCcsParser.WARNING_TYPE, "", Priority.HIGH);
++		annotation = iterator.next();
++        checkWarning(annotation,
++                3,
++                "could not open source file \"i2cDisplay12x12.h\"",
++                "i2cDisplay12x2.c",
++                TiCcsParser.WARNING_TYPE, "", Priority.HIGH);
++		annotation = iterator.next();
++        checkWarning(annotation,
++                5,
++                "[E0002] Illegal mnemonic specified",
++                "foo.asm",
++                TiCcsParser.WARNING_TYPE, "", Priority.HIGH);
++    }
++
++
++    /** {@inheritDoc} */
++    @Override
++    protected String getWarningsFile() {
++        return "ticcs.txt";
++    }
++}
++
+Index: src/test/resources/hudson/plugins/warnings/parser/ticcs.txt
+===================================================================
+--- src/test/resources/hudson/plugins/warnings/parser/ticcs.txt	(revision 0)
++++ src/test/resources/hudson/plugins/warnings/parser/ticcs.txt	(revision 0)
+@@ -0,0 +1,24 @@
++// Remarks
++"C:\SCM\Lr\src\fxns.c", line 341: remark #880-D: parameter "params" was never referenced
++"C:\SCM\Lr\src\edge.c", line 177 (col. 42): remark #1116-D: may want to suffix float constant with an f
++
++// Warnings
++warning: symbol 'memset' redeclared with incompatible type
++"i2cDisplay12x2.c", line 12: warning: variable "h" was declared but never referenced
++"c:\DOCUME~1\JLINNE~1\LOCALS~1\Temp\0360811", WARNING! at line 2578: variable
++
++// Errors
++"i2cDisplay12x2.c", line 11: error: expected a ";"
++error: unresolved symbols remain
++error: errors encountered during linking; "../../bin/Debug/lrxyz.out" not
++"i2cDisplay12x2.c", line 3: fatal error: could not open source file "i2cDisplay12x12.h"
++"foo.asm", ERROR!   at line 5: [E0002] Illegal mnemonic specified
++
++
++// Ignore
++  0 Errors, 2 Warnings, 1225 Remarks.
++  Please view the build output for errors and warnings for any custom steps.
++  3 errors detected in the compilation of "i2cDisplay12x2.c".
++  1 fatal error detected in the compilation of "i2cDisplay12x2.c".
++  No Assembly Errors, 1 Assembly Warning
++  

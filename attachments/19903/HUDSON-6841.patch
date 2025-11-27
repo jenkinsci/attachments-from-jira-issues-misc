@@ -1,0 +1,119 @@
+Index: core/src/main/java/hudson/tasks/test/AbstractTestResultAction.java
+===================================================================
+--- core/src/main/java/hudson/tasks/test/AbstractTestResultAction.java	(r√©vision 36282)
++++ core/src/main/java/hudson/tasks/test/AbstractTestResultAction.java	(copie de travail)
+@@ -311,11 +311,11 @@
+                 AbstractTestResultAction a = label.build.getAction(AbstractTestResultAction.class);
+                 switch (row) {
+                     case 0:
+-                        return String.valueOf(Messages.AbstractTestResultAction_fail(a.getFailCount()));
++                        return String.valueOf(Messages.AbstractTestResultAction_fail(label.build.getDisplayName(), a.getFailCount()));
+                     case 1:
+-                        return String.valueOf(Messages.AbstractTestResultAction_skip(a.getSkipCount()));
++                        return String.valueOf(Messages.AbstractTestResultAction_skip(label.build.getDisplayName(), a.getSkipCount()));
+                     default:
+-                        return String.valueOf(Messages.AbstractTestResultAction_test(a.getTotalCount()));
++                        return String.valueOf(Messages.AbstractTestResultAction_test(label.build.getDisplayName(), a.getTotalCount()));
+                 }
+             }
+         };
+Index: core/src/main/resources/hudson/tasks/test/Messages_es.properties
+===================================================================
+--- core/src/main/resources/hudson/tasks/test/Messages_es.properties	(r√©vision 36282)
++++ core/src/main/resources/hudson/tasks/test/Messages_es.properties	(copie de travail)
+@@ -24,9 +24,9 @@
+ AbstractTestResultAction.zeroTestDescription={0}: 0 tests en total.
+ AbstractTestResultAction.TestsDescription={0}: {1} tests fallidos de un total de {2} tests.
+ 
+-AbstractTestResultAction.fail={0} {0,choice,0#fallos|1#fallo|1<fallos}
+-AbstractTestResultAction.skip={0} {0,choice,0#omitido|1#omitido|1<omitidos}
+-AbstractTestResultAction.test={0} {0,choice,0#Tests|1#Test|1<Tests}
++AbstractTestResultAction.fail={0}: {1} {1,choice,0#fallos|1#fallo|1<fallos}
++AbstractTestResultAction.skip={0}: {1} {1,choice,0#omitido|1#omitido|1<omitidos}
++AbstractTestResultAction.test={0}: {1} {1,choice,0#Tests|1#Test|1<Tests}
+ 
+ AggregatedTestResultPublisher.DisplayName=Agregar los resultados de los tests de los proyectos padre
+ AggregatedTestResultPublisher.Title=Agregar resultados de tests.
+Index: core/src/main/resources/hudson/tasks/test/Messages_fr.properties
+===================================================================
+--- core/src/main/resources/hudson/tasks/test/Messages_fr.properties	(r√©vision 36282)
++++ core/src/main/resources/hudson/tasks/test/Messages_fr.properties	(copie de travail)
+@@ -24,5 +24,9 @@
+ AbstractTestResultAction.zeroTestDescription={0}: 0 test au total.
+ AbstractTestResultAction.TestsDescription={0}: {1} tests en Èchec sur un total de {2} tests.
+ 
++AbstractTestResultAction.fail={0}: {1} {1,choice,0#Èchec|1#Èchec|1<Èchecs}
++AbstractTestResultAction.skip={0}: {1} {1,choice,0#ignorÈ|1#ignorÈ|1<ignorÈs}
++AbstractTestResultAction.test={0}: {1} {1,choice,0#tests|1#test|1<tests}
++
+ AggregatedTestResultPublisher.DisplayName=Consolider les rÈsultats des tests en aval
+ AggregatedTestResultPublisher.Title=RÈsultats consolidÈs des tests
+Index: core/src/main/resources/hudson/tasks/test/Messages.properties
+===================================================================
+--- core/src/main/resources/hudson/tasks/test/Messages.properties	(r√©vision 36282)
++++ core/src/main/resources/hudson/tasks/test/Messages.properties	(copie de travail)
+@@ -25,9 +25,9 @@
+ AbstractTestResultAction.TestsDescription={0}: {1} {1,choice,0#tests|1#test|1<tests} failing \
+   out of a total of {2} {2,choice,1#test|1<tests}.
+ 
+-AbstractTestResultAction.fail={0} {0,choice,0#failures|1#failure|1<failures}
+-AbstractTestResultAction.skip={0} {0,choice,0#skips|1#skip|1<skips}
+-AbstractTestResultAction.test={0} {0,choice,0#tests|1#test|1<tests}
++AbstractTestResultAction.fail={0}: {1} {1,choice,0#failures|1#failure|1<failures}
++AbstractTestResultAction.skip={0}: {1} {1,choice,0#skips|1#skip|1<skips}
++AbstractTestResultAction.test={0}: {1} {1,choice,0#tests|1#test|1<tests}
+ 
+ AggregatedTestResultPublisher.DisplayName=Aggregate downstream test results
+ AggregatedTestResultPublisher.Title=Aggregated Test Result
+Index: core/src/main/resources/hudson/tasks/test/Messages_da.properties
+===================================================================
+--- core/src/main/resources/hudson/tasks/test/Messages_da.properties	(r√©vision 36282)
++++ core/src/main/resources/hudson/tasks/test/Messages_da.properties	(copie de travail)
+@@ -21,10 +21,10 @@
+ # THE SOFTWARE.
+ 
+ AggregatedTestResultPublisher.Title=Samling af testresultater
+-AbstractTestResultAction.test={0} test
++AbstractTestResultAction.test={0}: {1} test
+ AbstractTestResultAction.TestsDescription={0}: {1} test fejler \ 
+ ud af i alt {2} test.
+-AbstractTestResultAction.fail={0} fejler
++AbstractTestResultAction.fail={0}: {1} fejler
+ AbstractTestResultAction.getDisplayName=Testresultat
+ AggregatedTestResultPublisher.DisplayName=Samle downstream testresultater
+ AbstractTestResultAction.skip={0} sprunget over
+Index: core/src/main/resources/hudson/tasks/test/Messages_de.properties
+===================================================================
+--- core/src/main/resources/hudson/tasks/test/Messages_de.properties	(r√©vision 36282)
++++ core/src/main/resources/hudson/tasks/test/Messages_de.properties	(copie de travail)
+@@ -23,9 +23,9 @@
+ AbstractTestResultAction.getDisplayName=Testergebnis
+ AbstractTestResultAction.zeroTestDescription={0}: Insgesamt 0 Tests.
+ AbstractTestResultAction.TestsDescription={0}: {1} {1,choice,0#Tests|1#Test|1<Tests} von {2} {2,choice,1#Test|1<Tests} fehlgeschlagen.
+-AbstractTestResultAction.fail={0} {0,choice,0#fehlgeschlagen|1#fehlgeschlagen|1<fehlgeschlagen}
+-AbstractTestResultAction.skip={0} {0,choice,0#ausgelassen|1#ausgelassen|1<ausgelassen}
+-AbstractTestResultAction.test={0} {0,choice,0#Tests|1#Test|1<Tests}
++AbstractTestResultAction.fail={0}: {1} {1,choice,0#fehlgeschlagen|1#fehlgeschlagen|1<fehlgeschlagen}
++AbstractTestResultAction.skip={0}: {1} {1,choice,0#ausgelassen|1#ausgelassen|1<ausgelassen}
++AbstractTestResultAction.test={0}: {1} {1,choice,0#Tests|1#Test|1<Tests}
+ 
+ AggregatedTestResultPublisher.DisplayName=Nachgelagerte Testergebnisse zusammenfassen
+ AggregatedTestResultPublisher.Title=Zusammengefasste Testergebnisse
+\ No newline at end of file
+Index: core/src/main/resources/hudson/tasks/test/Messages_ja.properties
+===================================================================
+--- core/src/main/resources/hudson/tasks/test/Messages_ja.properties	(r√©vision 36282)
++++ core/src/main/resources/hudson/tasks/test/Messages_ja.properties	(copie de travail)
+@@ -24,9 +24,9 @@
+ AbstractTestResultAction.zeroTestDescription={0}: \u30C6\u30B9\u30C8\u306F\u3042\u308A\u307E\u305B\u3093\u3002
+ AbstractTestResultAction.TestsDescription={0}: {2}\u500B\u306E\u30C6\u30B9\u30C8\u4E2D\u3001{1}\u500B\u306E\u30C6\u30B9\u30C8\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002
+ 
+-AbstractTestResultAction.fail={0} {0,choice,0#\u5931\u6557|1#\u5931\u6557|1<\u5931\u6557}
+-AbstractTestResultAction.skip={0} {0,choice,0#\u30B9\u30AD\u30C3\u30D7|1#\u30B9\u30AD\u30C3\u30D7|1<\u30B9\u30AD\u30C3\u30D7}
+-AbstractTestResultAction.test={0} {0,choice,0#\u30C6\u30B9\u30C8|1#\u30C6\u30B9\u30C8|1<\u30C6\u30B9\u30C8}
++AbstractTestResultAction.fail={0}: {1} {1,choice,0#\u5931\u6557|1#\u5931\u6557|1<\u5931\u6557}
++AbstractTestResultAction.skip={0}: {1} {1,choice,0#\u30B9\u30AD\u30C3\u30D7|1#\u30B9\u30AD\u30C3\u30D7|1<\u30B9\u30AD\u30C3\u30D7}
++AbstractTestResultAction.test={0}: {1} {1,choice,0#\u30C6\u30B9\u30C8|1#\u30C6\u30B9\u30C8|1<\u30C6\u30B9\u30C8}
+ 
+ AggregatedTestResultPublisher.DisplayName=\u4E0B\u6D41\u30D7\u30ED\u30B8\u30A7\u30AF\u30C8\u306E\u30C6\u30B9\u30C8\u7D50\u679C\u3092\u96C6\u7D04
+ AggregatedTestResultPublisher.Title=\u96C6\u7D04\u3055\u308C\u305F\u30C6\u30B9\u30C8\u7D50\u679C

@@ -1,0 +1,150 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<matrix-project>
+  <actions/>
+  <description>xVM Ops Center 2.5</description>
+  <logRotator>
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>5</numToKeep>
+  </logRotator>
+  <keepDependencies>true</keepDependencies>
+  <properties>
+    <hudson.plugins.disk__usage.DiskUsageProperty/>
+    <hudson.plugins.batch__task.BatchTaskProperty>
+      <tasks>
+        <hudson.plugins.batch__task.BatchTask>
+          <name>CheckEnv</name>
+          <script>set&#xd;
+ulimit -a&#xd;
+pwd</script>
+        </hudson.plugins.batch__task.BatchTask>
+      </tasks>
+    </hudson.plugins.batch__task.BatchTaskProperty>
+  </properties>
+  <scm class="hudson.plugins.mercurial.MercurialSCM">
+    <source>ssh://hg@krumholz.central/repo/OC25</source>
+    <modules></modules>
+    <clean>true</clean>
+  </scm>
+  <quietPeriod>120</quietPeriod>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <triggers class="vector">
+    <hudson.triggers.SCMTrigger>
+      <spec>*/3 * * * *</spec>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+  <axes>
+    <axis>
+      <name>BuildTarget</name>
+      <values>
+        <string>nightly</string>
+        <string>nightly-xvmserver</string>
+        <string>nightly-zone</string>
+        <string>nightly-ldom</string>
+      </values>
+    </axis>
+    <axis>
+      <name>jdk</name>
+      <values>
+        <string>COSO_jdk-1.6.0</string>
+      </values>
+    </axis>
+    <axis>
+      <name>label</name>
+      <values>
+        <string>solaris-nv-x86</string>
+        <string>solaris-10-x86</string>
+        <string>solaris-10-sparc</string>
+        <string>linux-rhel5-x86</string>
+      </values>
+    </axis>
+  </axes>
+  <combinationFilter>(BuildTarget == &quot;nightly&quot; &amp;&amp; label != &quot;solaris-nv-x86&quot;) || (BuildTarget == &quot;nightly-xvmserver&quot; &amp;&amp; label == &quot;solaris-nv-x86&quot;) || (BuildTarget == &quot;nightly-ldom&quot; &amp;&amp; label == &quot;solaris-10-sparc&quot;) || (BuildTarget == &quot;nightly-zone&quot; &amp;&amp; (label == &quot;solaris-10-x86&quot; || label == &quot;solaris-10-sparc&quot;))</combinationFilter>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#
+# Show the current environment
+#
+
+set
+ulimit -a
+pwd</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Ant>
+      <targets>$BuildTarget</targets>
+      <antName>COSO_ant-1.7.0</antName>
+      <buildFile>src/build.xml</buildFile>
+    </hudson.tasks.Ant>
+    <hudson.tasks.Shell>
+      <command>#
+# Remove the CBE link before tasks that search the WS scan the CBE as well
+#
+
+rm -f src/build_env</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>#
+# Create our own ZIP archive of the build distribution.
+# Hudson zipper does not preserve file attributes (such as executable)
+#
+cd src
+for dir in dvd*; do
+    [ -d &quot;$dir&quot; ] &amp;&amp; { zip -ru &quot;$dir&quot;.zip &quot;$dir&quot; || exit $?; }
+done</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>src/dvd*/**/*,src/dvd*.zip</artifacts>
+      <latestOnly>true</latestOnly>
+    </hudson.tasks.ArtifactArchiver>
+    <hudson.tasks.test.AggregatedTestResultPublisher/>
+    <hudson.tasks.junit.JUnitResultArchiver>
+      <testResults>src/**/TEST*.xml</testResults>
+    </hudson.tasks.junit.JUnitResultArchiver>
+    <hudson.plugins.warnings.WarningsPublisher>
+      <threshold></threshold>
+      <newThreshold></newThreshold>
+      <failureThreshold></failureThreshold>
+      <newFailureThreshold></newFailureThreshold>
+      <healthy></healthy>
+      <unHealthy></unHealthy>
+      <pluginName>[WARNINGS] </pluginName>
+      <thresholdLimit>low</thresholdLimit>
+      <defaultEncoding></defaultEncoding>
+      <pattern>src/coso-*.txt</pattern>
+      <parserNames>
+        <string>GNU compiler (gcc)</string>
+        <string>Java Compiler</string>
+        <string>JavaDoc</string>
+        <string>SUN C++ Compiler</string>
+      </parserNames>
+      <canRunOnFailed>false</canRunOnFailed>
+    </hudson.plugins.warnings.WarningsPublisher>
+    <hudson.plugins.emailext.ExtendedEmailPublisher>
+      <recipientList>Bob_Holstine_Staff&lt;bholstine-eng@sun.com&gt;</recipientList>
+      <configuredTriggers>
+        <hudson.plugins.emailext.plugins.trigger.FailureTrigger>
+          <email>
+            <recipientList></recipientList>
+            <subject>$PROJECT_DEFAULT_SUBJECT</subject>
+            <body>$PROJECT_DEFAULT_CONTENT</body>
+            <sendToDevelopers>false</sendToDevelopers>
+            <includeCulprits>false</includeCulprits>
+            <sendToRecipientList>true</sendToRecipientList>
+          </email>
+        </hudson.plugins.emailext.plugins.trigger.FailureTrigger>
+      </configuredTriggers>
+      <defaultSubject>Automated xVM Ops Center 2.5 Build: $DEFAULT_SUBJECT</defaultSubject>
+      <defaultContent>$DEFAULT_CONTENT&#xd;
+&#xd;
+Build Log Information ============&#xd;
+$BUILD_LOG</defaultContent>
+    </hudson.plugins.emailext.ExtendedEmailPublisher>
+  </publishers>
+  <buildWrappers>
+    <hudson.plugins.build__timeout.BuildTimeoutWrapper>
+      <timeoutMinutes>100</timeoutMinutes>
+    </hudson.plugins.build__timeout.BuildTimeoutWrapper>
+  </buildWrappers>
+</matrix-project>

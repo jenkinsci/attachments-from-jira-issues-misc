@@ -1,0 +1,83 @@
+Jun 25, 2019 11:45:22 AM hudson.model.UpdateSite updateData
+INFO: Obtained the latest update center data file for UpdateSource default
+Jun 25, 2019 11:45:24 AM hudson.model.UpdateSite$Plugin deploy
+INFO: Adding dependent install of jackson2-api for plugin kubernetes
+Jun 25, 2019 11:45:24 AM hudson.model.UpdateSite$Plugin deploy
+INFO: Adding dependent install of kubernetes-credentials for plugin kubernetes
+Jun 25, 2019 11:45:24 AM hudson.model.UpdateSite$Plugin deploy
+INFO: Adding dependent install of cloudbees-folder for plugin kubernetes
+Jun 25, 2019 11:45:24 AM hudson.model.UpdateSite$Plugin deploy
+INFO: Adding dependent install of workflow-step-api for plugin kubernetes
+Jun 25, 2019 11:45:24 AM hudson.model.UpdateSite$Plugin deploy
+INFO: Adding dependent install of structs for plugin workflow-step-api
+Jun 25, 2019 11:45:24 AM hudson.model.UpdateSite$Plugin deploy
+INFO: Adding dependent install of pipeline-model-extensions for plugin kubernetes
+Jun 25, 2019 11:45:24 AM hudson.model.UpdateSite$Plugin deploy
+INFO: Adding dependent install of workflow-cps for plugin pipeline-model-extensions
+Jun 25, 2019 11:45:24 AM hudson.model.UpdateSite$Plugin deploy
+INFO: Dependent install of structs for plugin workflow-cps already added, skipping
+Jun 25, 2019 11:45:24 AM hudson.model.UpdateSite$Plugin deploy
+INFO: Adding dependent install of script-security for plugin workflow-cps
+Jun 25, 2019 11:45:24 AM hudson.model.UpdateSite$Plugin deploy
+INFO: Adding dependent install of workflow-support for plugin workflow-cps
+Jun 25, 2019 11:45:24 AM hudson.model.UpdateSite$Plugin deploy
+INFO: Dependent install of workflow-step-api for plugin workflow-cps already added, skipping
+Jun 25, 2019 11:45:24 AM hudson.model.UpdateSite$Plugin deploy
+INFO: Adding dependent install of pipeline-model-api for plugin pipeline-model-extensions
+Jun 25, 2019 11:45:24 AM hudson.model.UpdateSite$Plugin deploy
+INFO: Dependent install of structs for plugin pipeline-model-api already added, skipping
+Jun 25, 2019 11:45:24 AM hudson.model.UpdateSite$Plugin deploy
+INFO: Dependent install of workflow-step-api for plugin pipeline-model-api already added, skipping                                                                                             
+Jun 25, 2019 11:45:28 AM hudson.model.UpdateCenter$DownloadJob run
+INFO: Starting the installation of Jackson 2 API on behalf of akom
+Jun 25, 2019 11:45:37 AM hudson.model.UpdateCenter$UpdateCenterConfiguration download
+INFO: Downloading Jackson 2 API
+Jun 25, 2019 11:45:37 AM hudson.PluginManager dynamicLoad
+INFO: Attempting to dynamic load /var/lib/jenkins/plugins/jackson2-api.jpi
+Jun 25, 2019 11:45:37 AM hudson.model.UpdateCenter$DownloadJob run
+INFO: Starting the installation of Kubernetes Credentials on behalf of akom
+Jun 25, 2019 11:45:38 AM hudson.model.UpdateCenter$UpdateCenterConfiguration download
+INFO: Downloading Kubernetes Credentials
+Jun 25, 2019 11:45:38 AM hudson.PluginManager dynamicLoad
+INFO: Attempting to dynamic load /var/lib/jenkins/plugins/kubernetes-credentials.jpi
+Jun 25, 2019 11:45:38 AM hudson.ExtensionFinder$GuiceFinder$FaultTolerantScope$1 error
+INFO: Failed to instantiate optional component org.jenkinsci.plugins.kubernetes.credentials.FileSystemServiceAccountCredential$DescriptorImpl; skipping                                        
+Jun 25, 2019 11:45:37 AM hudson.model.UpdateCenter$UpdateCenterConfiguration download
+INFO: Downloading Jackson 2 API
+Jun 25, 2019 11:45:37 AM hudson.PluginManager dynamicLoad
+INFO: Attempting to dynamic load /var/lib/jenkins/plugins/jackson2-api.jpi
+Jun 25, 2019 11:45:37 AM hudson.model.UpdateCenter$DownloadJob run
+INFO: Starting the installation of Kubernetes Credentials on behalf of akom
+Jun 25, 2019 11:45:38 AM hudson.model.UpdateCenter$UpdateCenterConfiguration download
+INFO: Downloading Kubernetes Credentials
+Jun 25, 2019 11:45:38 AM hudson.PluginManager dynamicLoad
+INFO: Attempting to dynamic load /var/lib/jenkins/plugins/kubernetes-credentials.jpi
+Jun 25, 2019 11:45:38 AM hudson.ExtensionFinder$GuiceFinder$FaultTolerantScope$1 error
+INFO: Failed to instantiate optional component org.jenkinsci.plugins.kubernetes.credentials.FileSystemServiceAccountCredential$DescriptorImpl; skipping                                        
+.....
+
+Jun 25, 2019 11:46:07 AM hudson.PluginManager dynamicLoad
+INFO: Attempting to dynamic load /var/lib/jenkins/plugins/kubernetes.jpi
+Jun 25, 2019 11:46:07 AM hudson.model.UpdateCenter$DownloadJob run
+SEVERE: Failed to install Kubernetes
+java.io.IOException: Failed to dynamically deploy this plugin
+        at hudson.model.UpdateCenter$InstallationJob._run(UpdateCenter.java:2034)
+        at hudson.model.UpdateCenter$DownloadJob.run(UpdateCenter.java:1726)
+        at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+        at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+        at hudson.remoting.AtmostOneThreadExecutor$Worker.run(AtmostOneThreadExecutor.java:112)
+        at java.lang.Thread.run(Thread.java:748)
+Caused by: java.io.IOException: Failed to install kubernetes plugin
+        at hudson.PluginManager.dynamicLoad(PluginManager.java:916)
+        at hudson.PluginManager.dynamicLoad(PluginManager.java:852)
+        at hudson.model.UpdateCenter$InstallationJob._run(UpdateCenter.java:2030)
+        ... 5 more
+Caused by: java.io.IOException: Kubernetes plugin version 1.16.1 failed to load.
+ - Folders Plugin version 6.7 is older than required. To fix, install version 6.8 or later.
+ - Pipeline: Step API version 2.19 is older than required. To fix, install version 2.20 or later.                                                                                              
+ - Jackson 2 API Plugin version 2.9.8 is older than required. To fix, install version 2.9.9 or later.                                                                                          
+ - Pipeline: Declarative Extension Points API version 1.3.5 is older than required. To fix, install version 1.3.7 or later.                                                                    
+        at hudson.PluginWrapper.resolvePluginDependencies(PluginWrapper.java:868)
+        at hudson.PluginManager.dynamicLoad(PluginManager.java:906)
+        ... 7 more
+

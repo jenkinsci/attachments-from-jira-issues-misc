@@ -1,0 +1,25 @@
+From a73866de7ef26d004c164f7b739a7c754c8e3ef6 Mon Sep 17 00:00:00 2001
+From: Peter Collingbourne <peter@pcc.me.uk>
+Date: Mon, 9 Nov 2009 23:16:08 -0800
+Subject: [PATCH] Merge with merge target from origin
+
+---
+ src/main/java/hudson/plugins/git/GitSCM.java |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/src/main/java/hudson/plugins/git/GitSCM.java b/src/main/java/hudson/plugins/git/GitSCM.java
+index 0d0202d..207fa8b 100644
+--- a/src/main/java/hudson/plugins/git/GitSCM.java
++++ b/src/main/java/hudson/plugins/git/GitSCM.java
+@@ -450,7 +450,7 @@ public class GitSCM extends SCM implements Serializable {
+ 										+ mergeOptions.getMergeTarget());
+ 
+ 						// checkout origin/blah
+-						ObjectId target = git.revParse(mergeOptions.getMergeTarget());
++						ObjectId target = git.revParse("origin/" + mergeOptions.getMergeTarget());
+ 						git.checkout(target.name());
+ 
+ 						try {
+-- 
+1.6.3.3
+

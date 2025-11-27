@@ -1,0 +1,1155 @@
+Started by user Malik, Kapil (Contractor - India)
+Obtained Maven-Jenkinsfile from git http://bitbucket-dev.mfs.com/scm/dops/all-pipeline-script.git
+Running in Durability level: MAX_SURVIVABILITY
+Loading library pipeline-shared@develop
+Attempting to resolve develop from remote references...
+ > C:\Program Files\Git\bin\git.exe --version # timeout=10
+using GIT_ASKPASS to set credentials SCM Credential ID
+ > C:\Program Files\Git\bin\git.exe ls-remote -h http://bitbucket-dev.mfs.com/scm/dops/pipeline-shared-library.git # timeout=10
+Found match: refs/heads/develop revision 46fe26657d85a49139665b7f39ce51ad9e4f5dde
+using credential SCM_Credential_ID
+ > C:\Program Files\Git\bin\git.exe rev-parse --is-inside-work-tree # timeout=10
+Fetching changes from the remote Git repository
+ > C:\Program Files\Git\bin\git.exe config remote.origin.url http://bitbucket-dev.mfs.com/scm/dops/pipeline-shared-library.git # timeout=10
+Fetching without tags
+Fetching upstream changes from http://bitbucket-dev.mfs.com/scm/dops/pipeline-shared-library.git
+ > C:\Program Files\Git\bin\git.exe --version # timeout=10
+using GIT_ASKPASS to set credentials SCM Credential ID
+ > C:\Program Files\Git\bin\git.exe fetch --no-tags --progress http://bitbucket-dev.mfs.com/scm/dops/pipeline-shared-library.git +refs/heads/*:refs/remotes/origin/*
+Checking out Revision 46fe26657d85a49139665b7f39ce51ad9e4f5dde (develop)
+ > C:\Program Files\Git\bin\git.exe config core.sparsecheckout # timeout=10
+ > C:\Program Files\Git\bin\git.exe checkout -f 46fe26657d85a49139665b7f39ce51ad9e4f5dde
+Commit message: "disable all scans"
+ > C:\Program Files\Git\bin\git.exe rev-list --no-walk edbe691366030da881578b1e45981b67312bafba # timeout=10
+[Pipeline] Start of Pipeline
+[Pipeline] timestamps
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Build)
+[Pipeline] node
+04:56:32 Running on Windows-BOSJENKSLVD3 in D:\Jenkins\workspace\MP_mp_develop
+[Pipeline] {
+[Pipeline] checkout
+04:56:33 using credential SCM_Credential_ID
+04:56:33 Cloning the remote Git repository
+04:56:33 Cloning with configured refspecs honoured and without tags
+Cloning repository http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git
+ > C:\Program Files\Git\bin\git.exe init D:\Jenkins\workspace\MP_mp_develop # timeout=10
+Fetching upstream changes from http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git
+ > C:\Program Files\Git\bin\git.exe --version # timeout=10
+using GIT_ASKPASS to set credentials SCM Credential ID
+ > C:\Program Files\Git\bin\git.exe fetch --no-tags --progress http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git +refs/heads/develop:refs/remotes/origin/develop
+04:56:34 Cleaning workspace
+ > C:\Program Files\Git\bin\git.exe config remote.origin.url http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git # timeout=10
+ > C:\Program Files\Git\bin\git.exe config --add remote.origin.fetch +refs/heads/develop:refs/remotes/origin/develop # timeout=10
+ > C:\Program Files\Git\bin\git.exe config remote.origin.url http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git # timeout=10
+ > C:\Program Files\Git\bin\git.exe rev-parse --verify HEAD # timeout=10
+No valid HEAD. Skipping the resetting
+ > C:\Program Files\Git\bin\git.exe clean -fdx # timeout=10
+04:56:35 Fetching without tags
+04:56:35 Checking out Revision 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736 (develop)
+Fetching upstream changes from http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git
+using GIT_ASKPASS to set credentials SCM Credential ID
+ > C:\Program Files\Git\bin\git.exe fetch --no-tags --progress http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git +refs/heads/develop:refs/remotes/origin/develop
+ > C:\Program Files\Git\bin\git.exe config core.sparsecheckout # timeout=10
+ > C:\Program Files\Git\bin\git.exe checkout -f 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736
+ > C:\Program Files\Git\bin\git.exe branch -a -v --no-abbrev # timeout=10
+ > C:\Program Files\Git\bin\git.exe checkout -b develop 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736
+04:56:36 Commit message: "pass nexus iq scan"
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] script
+[Pipeline] {
+[Pipeline] readJSON
+[Pipeline] echo
+04:56:36 feature branch did not match
+[Pipeline] readMavenPom
+[Pipeline] configFileProvider
+04:56:37 provisioning config files...
+04:56:37 copy managed file [tfsbuild settings] to file:/D:/Jenkins/workspace/MP_mp_develop/maven_config_file_location
+[Pipeline] {
+[Pipeline] bat
+ > C:\Program Files\Git\bin\git.exe rev-list --no-walk 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736 # timeout=10
+04:56:37 
+04:56:37 D:\Jenkins\workspace\MP_mp_develop>mvn -s D:\Jenkins\workspace\MP_mp_develop\maven_config_file_location clean compile 
+04:56:38 [INFO] Scanning for projects...
+04:56:38 [INFO]                                                                         
+04:56:38 [INFO] ------------------------------------------------------------------------
+04:56:38 [INFO] Building MFS App - Message Processor Branch-Production 1.0.0-SNAPSHOT
+04:56:38 [INFO] ------------------------------------------------------------------------
+04:56:38 [INFO] 
+04:56:38 [INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ mp ---
+04:56:39 [INFO] 
+04:56:39 [INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ mp ---
+04:56:39 [INFO] Using 'Cp1252' encoding to copy filtered resources.
+04:56:39 [INFO] skip non existing resourceDirectory D:\Jenkins\workspace\MP_mp_develop\src\main\resources
+04:56:39 [INFO] 
+04:56:39 [INFO] --- maven-compiler-plugin:3.3:compile (default-compile) @ mp ---
+04:56:39 [INFO] Changes detected - recompiling the module!
+04:56:39 [INFO] Compiling 162 source files to D:\Jenkins\workspace\MP_mp_develop\target\classes
+04:56:46 [INFO] /D:/Jenkins/workspace/MP_mp_develop/src/main/java/com/mfs/fi/mp/MQReceiveQueue.java: D:\Jenkins\workspace\MP_mp_develop\src\main\java\com\mfs\fi\mp\MQReceiveQueue.java uses or overrides a deprecated API.
+04:56:46 [INFO] /D:/Jenkins/workspace/MP_mp_develop/src/main/java/com/mfs/fi/mp/MQReceiveQueue.java: Recompile with -Xlint:deprecation for details.
+04:56:46 [INFO] /D:/Jenkins/workspace/MP_mp_develop/src/main/java/com/mfs/fi/mp/MQReceiveQueue.java: Some input files use unchecked or unsafe operations.
+04:56:46 [INFO] /D:/Jenkins/workspace/MP_mp_develop/src/main/java/com/mfs/fi/mp/MQReceiveQueue.java: Recompile with -Xlint:unchecked for details.
+04:56:46 [INFO] ------------------------------------------------------------------------
+04:56:46 [INFO] BUILD SUCCESS
+04:56:46 [INFO] ------------------------------------------------------------------------
+04:56:46 [INFO] Total time: 7.081 s
+04:56:46 [INFO] Finished at: 2019-08-02T04:56:45-04:00
+04:56:46 [INFO] Final Memory: 21M/541M
+04:56:46 [INFO] ------------------------------------------------------------------------
+[Pipeline] }
+[Pipeline] // configFileProvider
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Unit Tests)
+[Pipeline] node
+04:56:46 Running on Windows-BOSJENKSLVD3 in D:\Jenkins\workspace\MP_mp_develop
+[Pipeline] {
+[Pipeline] checkout
+04:56:46 using credential SCM_Credential_ID
+04:56:47 Fetching changes from the remote Git repository
+04:56:47 Cleaning workspace
+04:56:47 Fetching without tags
+ > C:\Program Files\Git\bin\git.exe rev-parse --is-inside-work-tree # timeout=10
+ > C:\Program Files\Git\bin\git.exe config remote.origin.url http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git # timeout=10
+ > C:\Program Files\Git\bin\git.exe rev-parse --verify HEAD # timeout=10
+Resetting working tree
+ > C:\Program Files\Git\bin\git.exe reset --hard # timeout=10
+ > C:\Program Files\Git\bin\git.exe clean -fdx # timeout=10
+Fetching upstream changes from http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git
+ > C:\Program Files\Git\bin\git.exe --version # timeout=10
+04:56:48 Checking out Revision 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736 (develop)
+using GIT_ASKPASS to set credentials SCM Credential ID
+ > C:\Program Files\Git\bin\git.exe fetch --no-tags --progress http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git +refs/heads/develop:refs/remotes/origin/develop
+ > C:\Program Files\Git\bin\git.exe config core.sparsecheckout # timeout=10
+ > C:\Program Files\Git\bin\git.exe checkout -f 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736
+ > C:\Program Files\Git\bin\git.exe branch -a -v --no-abbrev # timeout=10
+ > C:\Program Files\Git\bin\git.exe branch -D develop # timeout=10
+04:56:49 Commit message: "pass nexus iq scan"
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] script
+[Pipeline] {
+[Pipeline] configFileProvider
+04:56:49 provisioning config files...
+04:56:49 copy managed file [tfsbuild settings] to file:/D:/Jenkins/workspace/MP_mp_develop/maven_config_file_location
+[Pipeline] {
+[Pipeline] bat
+04:56:49 
+04:56:49 D:\Jenkins\workspace\MP_mp_develop>mvn -s D:\Jenkins\workspace\MP_mp_develop\maven_config_file_location test 
+ > C:\Program Files\Git\bin\git.exe checkout -b develop 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736
+04:56:51 [INFO] Scanning for projects...
+04:56:51 [INFO]                                                                         
+04:56:51 [INFO] ------------------------------------------------------------------------
+04:56:51 [INFO] Building MFS App - Message Processor Branch-Production 1.0.0-SNAPSHOT
+04:56:51 [INFO] ------------------------------------------------------------------------
+04:56:51 [INFO] 
+04:56:51 [INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ mp ---
+04:56:51 [INFO] Using 'Cp1252' encoding to copy filtered resources.
+04:56:51 [INFO] skip non existing resourceDirectory D:\Jenkins\workspace\MP_mp_develop\src\main\resources
+04:56:51 [INFO] 
+04:56:51 [INFO] --- maven-compiler-plugin:3.3:compile (default-compile) @ mp ---
+04:56:51 [INFO] Changes detected - recompiling the module!
+04:56:51 [INFO] Compiling 162 source files to D:\Jenkins\workspace\MP_mp_develop\target\classes
+04:56:56 [INFO] /D:/Jenkins/workspace/MP_mp_develop/src/main/java/com/mfs/fi/mp/MQReceiveQueue.java: D:\Jenkins\workspace\MP_mp_develop\src\main\java\com\mfs\fi\mp\MQReceiveQueue.java uses or overrides a deprecated API.
+04:56:56 [INFO] /D:/Jenkins/workspace/MP_mp_develop/src/main/java/com/mfs/fi/mp/MQReceiveQueue.java: Recompile with -Xlint:deprecation for details.
+04:56:56 [INFO] /D:/Jenkins/workspace/MP_mp_develop/src/main/java/com/mfs/fi/mp/MQReceiveQueue.java: Some input files use unchecked or unsafe operations.
+04:56:56 [INFO] /D:/Jenkins/workspace/MP_mp_develop/src/main/java/com/mfs/fi/mp/MQReceiveQueue.java: Recompile with -Xlint:unchecked for details.
+04:56:56 [INFO] 
+04:56:56 [INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ mp ---
+04:56:56 [INFO] Using 'Cp1252' encoding to copy filtered resources.
+04:56:56 [INFO] skip non existing resourceDirectory D:\Jenkins\workspace\MP_mp_develop\src\test\resources
+04:56:56 [INFO] 
+04:56:56 [INFO] --- maven-compiler-plugin:3.3:testCompile (default-testCompile) @ mp ---
+04:56:56 [INFO] Changes detected - recompiling the module!
+04:56:56 [INFO] Compiling 57 source files to D:\Jenkins\workspace\MP_mp_develop\target\test-classes
+04:56:57 [INFO] /D:/Jenkins/workspace/MP_mp_develop/src/test/java/com/mfs/fi/mp/JMSMQReceiveTest.java: D:\Jenkins\workspace\MP_mp_develop\src\test\java\com\mfs\fi\mp\JMSMQReceiveTest.java uses or overrides a deprecated API.
+04:56:57 [INFO] /D:/Jenkins/workspace/MP_mp_develop/src/test/java/com/mfs/fi/mp/JMSMQReceiveTest.java: Recompile with -Xlint:deprecation for details.
+04:56:57 [INFO] 
+04:56:57 [INFO] --- maven-surefire-plugin:2.19:test (default-test) @ mp ---
+04:56:57 [INFO] Tests are skipped.
+04:56:57 [INFO] ------------------------------------------------------------------------
+04:56:57 [INFO] BUILD SUCCESS
+04:56:57 [INFO] ------------------------------------------------------------------------
+04:56:57 [INFO] Total time: 6.983 s
+04:56:57 [INFO] Finished at: 2019-08-02T04:56:57-04:00
+04:56:57 [INFO] Final Memory: 24M/526M
+04:56:57 [INFO] ------------------------------------------------------------------------
+[Pipeline] }
+[Pipeline] // configFileProvider
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Build Artifact)
+[Pipeline] node
+04:56:58 Running on Windows-BOSJENKSLVD3 in D:\Jenkins\workspace\MP_mp_develop
+[Pipeline] {
+[Pipeline] checkout
+04:56:58 using credential SCM_Credential_ID
+04:56:58 Fetching changes from the remote Git repository
+04:56:58 Cleaning workspace
+04:56:59 Fetching without tags
+ > C:\Program Files\Git\bin\git.exe rev-parse --is-inside-work-tree # timeout=10
+ > C:\Program Files\Git\bin\git.exe config remote.origin.url http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git # timeout=10
+ > C:\Program Files\Git\bin\git.exe rev-parse --verify HEAD # timeout=10
+Resetting working tree
+ > C:\Program Files\Git\bin\git.exe reset --hard # timeout=10
+ > C:\Program Files\Git\bin\git.exe clean -fdx # timeout=10
+Fetching upstream changes from http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git
+ > C:\Program Files\Git\bin\git.exe --version # timeout=10
+using GIT_ASKPASS to set credentials SCM Credential ID
+ > C:\Program Files\Git\bin\git.exe fetch --no-tags --progress http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git +refs/heads/develop:refs/remotes/origin/develop
+04:56:59 Checking out Revision 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736 (develop)
+04:57:00 Commit message: "pass nexus iq scan"
+ > C:\Program Files\Git\bin\git.exe config core.sparsecheckout # timeout=10
+ > C:\Program Files\Git\bin\git.exe checkout -f 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736
+ > C:\Program Files\Git\bin\git.exe branch -a -v --no-abbrev # timeout=10
+ > C:\Program Files\Git\bin\git.exe branch -D develop # timeout=10
+ > C:\Program Files\Git\bin\git.exe checkout -b develop 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] script
+[Pipeline] {
+[Pipeline] configFileProvider
+04:57:00 provisioning config files...
+04:57:00 copy managed file [tfsbuild settings] to file:/D:/Jenkins/workspace/MP_mp_develop/maven_config_file_location
+[Pipeline] {
+[Pipeline] bat
+04:57:00 
+04:57:00 D:\Jenkins\workspace\MP_mp_develop>mvn -s D:\Jenkins\workspace\MP_mp_develop\maven_config_file_location package 
+04:57:02 [INFO] Scanning for projects...
+04:57:02 [INFO]                                                                         
+04:57:02 [INFO] ------------------------------------------------------------------------
+04:57:02 [INFO] Building MFS App - Message Processor Branch-Production 1.0.0-SNAPSHOT
+04:57:02 [INFO] ------------------------------------------------------------------------
+04:57:02 [INFO] 
+04:57:02 [INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ mp ---
+04:57:02 [INFO] Using 'Cp1252' encoding to copy filtered resources.
+04:57:02 [INFO] skip non existing resourceDirectory D:\Jenkins\workspace\MP_mp_develop\src\main\resources
+04:57:02 [INFO] 
+04:57:02 [INFO] --- maven-compiler-plugin:3.3:compile (default-compile) @ mp ---
+04:57:03 [INFO] Changes detected - recompiling the module!
+04:57:03 [INFO] Compiling 162 source files to D:\Jenkins\workspace\MP_mp_develop\target\classes
+04:57:09 [INFO] /D:/Jenkins/workspace/MP_mp_develop/src/main/java/com/mfs/fi/mp/MQReceiveQueue.java: D:\Jenkins\workspace\MP_mp_develop\src\main\java\com\mfs\fi\mp\MQReceiveQueue.java uses or overrides a deprecated API.
+04:57:09 [INFO] /D:/Jenkins/workspace/MP_mp_develop/src/main/java/com/mfs/fi/mp/MQReceiveQueue.java: Recompile with -Xlint:deprecation for details.
+04:57:09 [INFO] /D:/Jenkins/workspace/MP_mp_develop/src/main/java/com/mfs/fi/mp/MQReceiveQueue.java: Some input files use unchecked or unsafe operations.
+04:57:09 [INFO] /D:/Jenkins/workspace/MP_mp_develop/src/main/java/com/mfs/fi/mp/MQReceiveQueue.java: Recompile with -Xlint:unchecked for details.
+04:57:09 [INFO] 
+04:57:09 [INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ mp ---
+04:57:09 [INFO] Using 'Cp1252' encoding to copy filtered resources.
+04:57:09 [INFO] skip non existing resourceDirectory D:\Jenkins\workspace\MP_mp_develop\src\test\resources
+04:57:09 [INFO] 
+04:57:09 [INFO] --- maven-compiler-plugin:3.3:testCompile (default-testCompile) @ mp ---
+04:57:09 [INFO] Changes detected - recompiling the module!
+04:57:09 [INFO] Compiling 57 source files to D:\Jenkins\workspace\MP_mp_develop\target\test-classes
+04:57:09 [INFO] /D:/Jenkins/workspace/MP_mp_develop/src/test/java/com/mfs/fi/mp/JMSMQReceiveTest.java: D:\Jenkins\workspace\MP_mp_develop\src\test\java\com\mfs\fi\mp\JMSMQReceiveTest.java uses or overrides a deprecated API.
+04:57:09 [INFO] /D:/Jenkins/workspace/MP_mp_develop/src/test/java/com/mfs/fi/mp/JMSMQReceiveTest.java: Recompile with -Xlint:deprecation for details.
+04:57:09 [INFO] 
+04:57:09 [INFO] --- maven-surefire-plugin:2.19:test (default-test) @ mp ---
+04:57:10 [INFO] Tests are skipped.
+04:57:10 [INFO] 
+04:57:10 [INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ mp ---
+04:57:10 [INFO] Building jar: D:\Jenkins\workspace\MP_mp_develop\target\mp-1.0.0-SNAPSHOT.jar
+04:57:10 [INFO] ------------------------------------------------------------------------
+04:57:10 [INFO] BUILD SUCCESS
+04:57:10 [INFO] ------------------------------------------------------------------------
+04:57:10 [INFO] Total time: 8.442 s
+04:57:10 [INFO] Finished at: 2019-08-02T04:57:10-04:00
+04:57:10 [INFO] Final Memory: 25M/519M
+04:57:10 [INFO] ------------------------------------------------------------------------
+[Pipeline] }
+[Pipeline] // configFileProvider
+[Pipeline] echo
+04:57:11 archive working dir
+[Pipeline] stash
+04:57:11 Stashed 466 file(s)
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { ( )
+[Pipeline] parallel
+[Pipeline] { (Branch:  ) (Branch:  )
+[Pipeline] { (Branch: Sonar)
+[Pipeline] { (Branch: NexusIQ)
+[Pipeline] { (Branch: AppScan)
+[Pipeline] stage
+[Pipeline] { ( )
+[Pipeline] stage
+[Pipeline] { (Sonar)
+[Pipeline] stage
+[Pipeline] { (NexusIQ)
+[Pipeline] stage
+[Pipeline] { (AppScan)
+[Pipeline] node
+04:57:12 Running on Windows-BOSJNKSLVSOND1 in D:\Jenkins\workspace\MP_mp_develop
+[Pipeline] node
+[Pipeline] node
+04:57:12 Running on Windows-bosjnkslvnexd1 in D:\Jenkins\workspace\MP_mp_develop
+04:57:12 Running on Windows-BOSJNKSLVAPPD1 in D:\Jenkins\workspace\MP_mp_develop
+[Pipeline] {
+[Pipeline] {
+[Pipeline] checkout
+[Pipeline] checkout
+04:57:12 using credential SCM_Credential_ID
+[Pipeline] {
+04:57:12 using credential SCM_Credential_ID
+04:57:12 Cloning the remote Git repository
+04:57:12 Cloning with configured refspecs honoured and without tags
+04:57:12 Fetching changes from the remote Git repository
+[Pipeline] stage
+[Pipeline] { (Upload Artifact to Snapshot)
+04:57:12 Cleaning workspace
+[Pipeline] checkout
+04:57:12 using credential SCM_Credential_ID
+[Pipeline] node
+04:57:13 Running on Windows-BOSJENKSLVD3 in D:\Jenkins\workspace\MP_mp_develop
+[Pipeline] {
+04:57:13 Fetching changes from the remote Git repository
+[Pipeline] checkout
+04:57:13 using credential SCM_Credential_ID
+04:57:13 Cleaning workspace
+04:57:13 Fetching changes from the remote Git repository
+04:57:13 Fetching without tags
+04:57:13 Cleaning workspace
+04:57:13 Fetching without tags
+ > C:\Program Files\Git\bin\git.exe rev-parse --is-inside-work-tree # timeout=10
+ > C:\Program Files\Git\bin\git.exe config remote.origin.url http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git # timeout=10
+ > C:\Program Files\Git\bin\git.exe rev-parse --verify HEAD # timeout=10
+Resetting working tree
+ > C:\Program Files\Git\bin\git.exe reset --hard # timeout=10
+ > C:\Program Files\Git\bin\git.exe clean -fdx # timeout=10
+Fetching upstream changes from http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git
+ > C:\Program Files\Git\bin\git.exe --version # timeout=10
+using GIT_ASKPASS to set credentials SCM Credential ID
+ > C:\Program Files\Git\bin\git.exe fetch --no-tags --progress http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git +refs/heads/develop:refs/remotes/origin/develop
+Cloning repository http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git
+ > C:\Program Files\Git\bin\git.exe init D:\Jenkins\workspace\MP_mp_develop # timeout=10
+Fetching upstream changes from http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git
+ > C:\Program Files\Git\bin\git.exe --version # timeout=10
+using GIT_ASKPASS to set credentials SCM Credential ID
+ > C:\Program Files\Git\bin\git.exe fetch --no-tags --progress http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git +refs/heads/develop:refs/remotes/origin/develop
+04:57:13 Fetching without tags
+ > C:\Program Files\Git\bin\git.exe rev-parse --is-inside-work-tree # timeout=10
+ > C:\Program Files\Git\bin\git.exe config remote.origin.url http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git # timeout=10
+ > C:\Program Files\Git\bin\git.exe rev-parse --verify HEAD # timeout=10
+Resetting working tree
+ > C:\Program Files\Git\bin\git.exe reset --hard # timeout=10
+ > C:\Program Files\Git\bin\git.exe clean -fdx # timeout=10
+ > C:\Program Files\Git\bin\git.exe rev-parse --is-inside-work-tree # timeout=10
+ > C:\Program Files\Git\bin\git.exe config remote.origin.url http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git # timeout=10
+ > C:\Program Files\Git\bin\git.exe rev-parse --verify HEAD # timeout=10
+Resetting working tree
+ > C:\Program Files\Git\bin\git.exe reset --hard # timeout=10
+ > C:\Program Files\Git\bin\git.exe clean -fdx # timeout=10
+Fetching upstream changes from http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git
+ > C:\Program Files\Git\bin\git.exe --version # timeout=10
+using GIT_ASKPASS to set credentials SCM Credential ID
+ > C:\Program Files\Git\bin\git.exe fetch --no-tags --progress http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git +refs/heads/develop:refs/remotes/origin/develop
+Fetching upstream changes from http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git
+ > C:\Program Files\Git\bin\git.exe --version # timeout=10
+using GIT_ASKPASS to set credentials SCM Credential ID
+ > C:\Program Files\Git\bin\git.exe fetch --no-tags --progress http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git +refs/heads/develop:refs/remotes/origin/develop
+04:57:14 Checking out Revision 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736 (develop)
+04:57:14 Checking out Revision 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736 (develop)
+04:57:14 Commit message: "pass nexus iq scan"
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+ > C:\Program Files\Git\bin\git.exe config core.sparsecheckout # timeout=10
+ > C:\Program Files\Git\bin\git.exe checkout -f 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736
+ > C:\Program Files\Git\bin\git.exe branch -a -v --no-abbrev # timeout=10
+ > C:\Program Files\Git\bin\git.exe branch -D develop # timeout=10
+ > C:\Program Files\Git\bin\git.exe checkout -b develop 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736
+[Pipeline] // node
+Stage "Sonar" skipped due to when conditional
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+04:57:14 Checking out Revision 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736 (develop)
+ > C:\Program Files\Git\bin\git.exe config core.sparsecheckout # timeout=10
+04:57:15 Commit message: "pass nexus iq scan"
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] script
+[Pipeline] {
+ > C:\Program Files\Git\bin\git.exe config core.sparsecheckout # timeout=10
+ > C:\Program Files\Git\bin\git.exe checkout -f 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736
+ > C:\Program Files\Git\bin\git.exe branch -a -v --no-abbrev # timeout=10
+ > C:\Program Files\Git\bin\git.exe branch -D develop # timeout=10
+ > C:\Program Files\Git\bin\git.exe checkout -b develop 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736
+[Pipeline] configFileProvider
+04:57:15 provisioning config files...
+04:57:15 copy managed file [tfsbuild settings] to file:/D:/Jenkins/workspace/MP_mp_develop/maven_config_file_location
+[Pipeline] {
+[Pipeline] bat
+04:57:15 Commit message: "pass nexus iq scan"
+04:57:15 
+04:57:15 D:\Jenkins\workspace\MP_mp_develop>mvn -s D:\Jenkins\workspace\MP_mp_develop\maven_config_file_location deploy 
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+Stage "AppScan" skipped due to when conditional
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+ > C:\Program Files\Git\bin\git.exe checkout -f 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736
+ > C:\Program Files\Git\bin\git.exe branch -a -v --no-abbrev # timeout=10
+ > C:\Program Files\Git\bin\git.exe branch -D develop # timeout=10
+ > C:\Program Files\Git\bin\git.exe checkout -b develop 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736
+04:57:16 [INFO] Scanning for projects...
+04:57:16 [INFO]                                                                         
+04:57:16 [INFO] ------------------------------------------------------------------------
+04:57:16 [INFO] Building MFS App - Message Processor Branch-Production 1.0.0-SNAPSHOT
+04:57:16 [INFO] ------------------------------------------------------------------------
+04:57:16 [INFO] 
+04:57:16 [INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ mp ---
+04:57:17 [INFO] Using 'Cp1252' encoding to copy filtered resources.
+04:57:17 [INFO] skip non existing resourceDirectory D:\Jenkins\workspace\MP_mp_develop\src\main\resources
+04:57:17 [INFO] 
+04:57:17 [INFO] --- maven-compiler-plugin:3.3:compile (default-compile) @ mp ---
+04:57:17 [INFO] Changes detected - recompiling the module!
+04:57:17 [INFO] Compiling 162 source files to D:\Jenkins\workspace\MP_mp_develop\target\classes
+ > C:\Program Files\Git\bin\git.exe config remote.origin.url http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git # timeout=10
+ > C:\Program Files\Git\bin\git.exe config --add remote.origin.fetch +refs/heads/develop:refs/remotes/origin/develop # timeout=10
+ > C:\Program Files\Git\bin\git.exe config remote.origin.url http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git # timeout=10
+04:57:18 Cleaning workspace
+04:57:19 Fetching without tags
+ > C:\Program Files\Git\bin\git.exe rev-parse --verify HEAD # timeout=10
+No valid HEAD. Skipping the resetting
+ > C:\Program Files\Git\bin\git.exe clean -fdx # timeout=10
+Fetching upstream changes from http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git
+using GIT_ASKPASS to set credentials SCM Credential ID
+ > C:\Program Files\Git\bin\git.exe fetch --no-tags --progress http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git +refs/heads/develop:refs/remotes/origin/develop
+04:57:22 Checking out Revision 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736 (develop)
+ > C:\Program Files\Git\bin\git.exe config core.sparsecheckout # timeout=10
+04:57:23 [INFO] /D:/Jenkins/workspace/MP_mp_develop/src/main/java/com/mfs/fi/mp/MQReceiveQueue.java: D:\Jenkins\workspace\MP_mp_develop\src\main\java\com\mfs\fi\mp\MQReceiveQueue.java uses or overrides a deprecated API.
+04:57:23 [INFO] /D:/Jenkins/workspace/MP_mp_develop/src/main/java/com/mfs/fi/mp/MQReceiveQueue.java: Recompile with -Xlint:deprecation for details.
+04:57:23 [INFO] /D:/Jenkins/workspace/MP_mp_develop/src/main/java/com/mfs/fi/mp/MQReceiveQueue.java: Some input files use unchecked or unsafe operations.
+04:57:23 [INFO] /D:/Jenkins/workspace/MP_mp_develop/src/main/java/com/mfs/fi/mp/MQReceiveQueue.java: Recompile with -Xlint:unchecked for details.
+04:57:23 [INFO] 
+04:57:23 [INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ mp ---
+04:57:23 [INFO] Using 'Cp1252' encoding to copy filtered resources.
+04:57:23 [INFO] skip non existing resourceDirectory D:\Jenkins\workspace\MP_mp_develop\src\test\resources
+04:57:23 [INFO] 
+04:57:23 [INFO] --- maven-compiler-plugin:3.3:testCompile (default-testCompile) @ mp ---
+04:57:23 [INFO] Changes detected - recompiling the module!
+04:57:23 [INFO] Compiling 57 source files to D:\Jenkins\workspace\MP_mp_develop\target\test-classes
+ > C:\Program Files\Git\bin\git.exe checkout -f 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736
+ > C:\Program Files\Git\bin\git.exe branch -a -v --no-abbrev # timeout=10
+ > C:\Program Files\Git\bin\git.exe checkout -b develop 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736
+04:57:23 Commit message: "pass nexus iq scan"
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+Stage "NexusIQ" skipped due to when conditional
+04:57:23 [INFO] /D:/Jenkins/workspace/MP_mp_develop/src/test/java/com/mfs/fi/mp/JMSMQReceiveTest.java: D:\Jenkins\workspace\MP_mp_develop\src\test\java\com\mfs\fi\mp\JMSMQReceiveTest.java uses or overrides a deprecated API.
+04:57:23 [INFO] /D:/Jenkins/workspace/MP_mp_develop/src/test/java/com/mfs/fi/mp/JMSMQReceiveTest.java: Recompile with -Xlint:deprecation for details.
+04:57:23 [INFO] 
+04:57:23 [INFO] --- maven-surefire-plugin:2.19:test (default-test) @ mp ---
+04:57:23 [INFO] Tests are skipped.
+04:57:23 [INFO] 
+04:57:23 [INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ mp ---
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+04:57:24 [INFO] Building jar: D:\Jenkins\workspace\MP_mp_develop\target\mp-1.0.0-SNAPSHOT.jar
+04:57:24 [INFO] 
+04:57:24 [INFO] --- maven-install-plugin:2.4:install (default-install) @ mp ---
+04:57:24 [INFO] Installing D:\Jenkins\workspace\MP_mp_develop\target\mp-1.0.0-SNAPSHOT.jar to D:\MavenBuildFiles\.m2\repository\com\mfs\investment\mp\1.0.0-SNAPSHOT\mp-1.0.0-SNAPSHOT.jar
+04:57:24 [INFO] Installing D:\Jenkins\workspace\MP_mp_develop\pom.xml to D:\MavenBuildFiles\.m2\repository\com\mfs\investment\mp\1.0.0-SNAPSHOT\mp-1.0.0-SNAPSHOT.pom
+04:57:24 [INFO] 
+04:57:24 [INFO] --- maven-deploy-plugin:2.7:deploy (default-deploy) @ mp ---
+04:57:24 [INFO] Skipping artifact deployment
+04:57:24 [INFO] 
+04:57:24 [INFO] --- nexus-staging-maven-plugin:1.6.6:deploy (default-deploy) @ mp ---
+04:57:25 [INFO] Performing deferred deploys (gathering into "D:\Jenkins\workspace\MP_mp_develop\target\nexus-staging\deferred")...
+04:57:25 [INFO] Installing D:\Jenkins\workspace\MP_mp_develop\target\mp-1.0.0-SNAPSHOT.jar to D:\Jenkins\workspace\MP_mp_develop\target\nexus-staging\deferred\com\mfs\investment\mp\1.0.0-SNAPSHOT\mp-1.0.0-SNAPSHOT.jar
+04:57:25 [INFO] Installing D:\Jenkins\workspace\MP_mp_develop\pom.xml to D:\Jenkins\workspace\MP_mp_develop\target\nexus-staging\deferred\com\mfs\investment\mp\1.0.0-SNAPSHOT\mp-1.0.0-SNAPSHOT.pom
+04:57:25 [INFO] Deploying remotely...
+04:57:25 [INFO] Bulk deploying locally gathered artifacts from directory: 
+04:57:25 [INFO]  * Bulk deploying locally gathered snapshot artifacts
+04:57:25 Downloading: http://nexus-dev/content/repositories/snapshots/com/mfs/investment/mp/1.0.0-SNAPSHOT/maven-metadata.xml
+04:57:25 776/776 B   
+            
+Downloaded: http://nexus-dev/content/repositories/snapshots/com/mfs/investment/mp/1.0.0-SNAPSHOT/maven-metadata.xml (776 B at 7.1 KB/sec)
+04:57:25 Uploading: http://nexus-dev/content/repositories/snapshots/com/mfs/investment/mp/1.0.0-SNAPSHOT/mp-1.0.0-20190802.085725-217.jar
+04:57:25 2/1051 KB   
+4/1051 KB   
+6/1051 KB   
+8/1051 KB   
+10/1051 KB   
+12/1051 KB   
+14/1051 KB   
+16/1051 KB   
+18/1051 KB   
+20/1051 KB   
+22/1051 KB   
+24/1051 KB   
+26/1051 KB   
+28/1051 KB   
+30/1051 KB   
+32/1051 KB   
+34/1051 KB   
+36/1051 KB   
+38/1051 KB   
+40/1051 KB   
+42/1051 KB   
+44/1051 KB   
+46/1051 KB   
+48/1051 KB   
+50/1051 KB   
+52/1051 KB   
+54/1051 KB   
+56/1051 KB   
+58/1051 KB   
+60/1051 KB   
+62/1051 KB   
+64/1051 KB   
+66/1051 KB   
+68/1051 KB   
+70/1051 KB   
+72/1051 KB   
+74/1051 KB   
+76/1051 KB   
+78/1051 KB   
+80/1051 KB   
+82/1051 KB   
+84/1051 KB   
+86/1051 KB   
+88/1051 KB   
+90/1051 KB   
+92/1051 KB   
+94/1051 KB   
+96/1051 KB   
+98/1051 KB   
+100/1051 KB   
+102/1051 KB   
+104/1051 KB   
+106/1051 KB   
+108/1051 KB   
+110/1051 KB   
+112/1051 KB   
+114/1051 KB   
+116/1051 KB   
+118/1051 KB   
+120/1051 KB   
+122/1051 KB   
+124/1051 KB   
+126/1051 KB   
+128/1051 KB   
+130/1051 KB   
+132/1051 KB   
+134/1051 KB   
+136/1051 KB   
+138/1051 KB   
+140/1051 KB   
+142/1051 KB   
+144/1051 KB   
+146/1051 KB   
+148/1051 KB   
+150/1051 KB   
+152/1051 KB   
+154/1051 KB   
+156/1051 KB   
+158/1051 KB   
+160/1051 KB   
+162/1051 KB   
+164/1051 KB   
+166/1051 KB   
+168/1051 KB   
+170/1051 KB   
+172/1051 KB   
+174/1051 KB   
+176/1051 KB   
+178/1051 KB   
+180/1051 KB   
+182/1051 KB   
+184/1051 KB   
+186/1051 KB   
+188/1051 KB   
+190/1051 KB   
+192/1051 KB   
+194/1051 KB   
+196/1051 KB   
+198/1051 KB   
+200/1051 KB   
+202/1051 KB   
+204/1051 KB   
+206/1051 KB   
+208/1051 KB   
+210/1051 KB   
+212/1051 KB   
+214/1051 KB   
+216/1051 KB   
+218/1051 KB   
+220/1051 KB   
+222/1051 KB   
+224/1051 KB   
+226/1051 KB   
+228/1051 KB   
+230/1051 KB   
+232/1051 KB   
+234/1051 KB   
+236/1051 KB   
+238/1051 KB   
+240/1051 KB   
+242/1051 KB   
+244/1051 KB   
+246/1051 KB   
+248/1051 KB   
+250/1051 KB   
+252/1051 KB   
+254/1051 KB   
+256/1051 KB   
+258/1051 KB   
+260/1051 KB   
+262/1051 KB   
+264/1051 KB   
+266/1051 KB   
+268/1051 KB   
+270/1051 KB   
+272/1051 KB   
+274/1051 KB   
+276/1051 KB   
+278/1051 KB   
+280/1051 KB   
+282/1051 KB   
+284/1051 KB   
+286/1051 KB   
+288/1051 KB   
+290/1051 KB   
+292/1051 KB   
+294/1051 KB   
+296/1051 KB   
+298/1051 KB   
+300/1051 KB   
+302/1051 KB   
+304/1051 KB   
+306/1051 KB   
+308/1051 KB   
+310/1051 KB   
+312/1051 KB   
+314/1051 KB   
+316/1051 KB   
+318/1051 KB   
+320/1051 KB   
+322/1051 KB   
+324/1051 KB   
+326/1051 KB   
+328/1051 KB   
+330/1051 KB   
+332/1051 KB   
+334/1051 KB   
+336/1051 KB   
+338/1051 KB   
+340/1051 KB   
+342/1051 KB   
+344/1051 KB   
+346/1051 KB   
+348/1051 KB   
+350/1051 KB   
+352/1051 KB   
+354/1051 KB   
+356/1051 KB   
+358/1051 KB   
+360/1051 KB   
+362/1051 KB   
+364/1051 KB   
+366/1051 KB   
+368/1051 KB   
+370/1051 KB   
+372/1051 KB   
+374/1051 KB   
+376/1051 KB   
+378/1051 KB   
+380/1051 KB   
+382/1051 KB   
+384/1051 KB   
+386/1051 KB   
+388/1051 KB   
+390/1051 KB   
+392/1051 KB   
+394/1051 KB   
+396/1051 KB   
+398/1051 KB   
+400/1051 KB   
+402/1051 KB   
+404/1051 KB   
+406/1051 KB   
+408/1051 KB   
+410/1051 KB   
+412/1051 KB   
+414/1051 KB   
+416/1051 KB   
+418/1051 KB   
+420/1051 KB   
+422/1051 KB   
+424/1051 KB   
+426/1051 KB   
+428/1051 KB   
+430/1051 KB   
+432/1051 KB   
+434/1051 KB   
+436/1051 KB   
+438/1051 KB   
+440/1051 KB   
+442/1051 KB   
+444/1051 KB   
+446/1051 KB   
+448/1051 KB   
+450/1051 KB   
+452/1051 KB   
+454/1051 KB   
+456/1051 KB   
+458/1051 KB   
+460/1051 KB   
+462/1051 KB   
+464/1051 KB   
+466/1051 KB   
+468/1051 KB   
+470/1051 KB   
+472/1051 KB   
+474/1051 KB   
+476/1051 KB   
+478/1051 KB   
+480/1051 KB   
+482/1051 KB   
+484/1051 KB   
+486/1051 KB   
+488/1051 KB   
+490/1051 KB   
+492/1051 KB   
+494/1051 KB   
+496/1051 KB   
+498/1051 KB   
+500/1051 KB   
+502/1051 KB   
+504/1051 KB   
+506/1051 KB   
+508/1051 KB   
+510/1051 KB   
+512/1051 KB   
+514/1051 KB   
+516/1051 KB   
+518/1051 KB   
+520/1051 KB   
+522/1051 KB   
+524/1051 KB   
+526/1051 KB   
+528/1051 KB   
+530/1051 KB   
+532/1051 KB   
+534/1051 KB   
+536/1051 KB   
+538/1051 KB   
+540/1051 KB   
+542/1051 KB   
+544/1051 KB   
+546/1051 KB   
+548/1051 KB   
+550/1051 KB   
+552/1051 KB   
+554/1051 KB   
+556/1051 KB   
+558/1051 KB   
+560/1051 KB   
+562/1051 KB   
+564/1051 KB   
+566/1051 KB   
+568/1051 KB   
+570/1051 KB   
+572/1051 KB   
+574/1051 KB   
+576/1051 KB   
+578/1051 KB   
+580/1051 KB   
+582/1051 KB   
+584/1051 KB   
+586/1051 KB   
+588/1051 KB   
+590/1051 KB   
+592/1051 KB   
+594/1051 KB   
+596/1051 KB   
+598/1051 KB   
+600/1051 KB   
+602/1051 KB   
+604/1051 KB   
+606/1051 KB   
+608/1051 KB   
+610/1051 KB   
+612/1051 KB   
+614/1051 KB   
+616/1051 KB   
+618/1051 KB   
+620/1051 KB   
+622/1051 KB   
+624/1051 KB   
+626/1051 KB   
+628/1051 KB   
+630/1051 KB   
+632/1051 KB   
+634/1051 KB   
+636/1051 KB   
+638/1051 KB   
+640/1051 KB   
+642/1051 KB   
+644/1051 KB   
+646/1051 KB   
+648/1051 KB   
+650/1051 KB   
+652/1051 KB   
+654/1051 KB   
+656/1051 KB   
+658/1051 KB   
+660/1051 KB   
+662/1051 KB   
+664/1051 KB   
+666/1051 KB   
+668/1051 KB   
+670/1051 KB   
+672/1051 KB   
+674/1051 KB   
+676/1051 KB   
+678/1051 KB   
+680/1051 KB   
+682/1051 KB   
+684/1051 KB   
+686/1051 KB   
+688/1051 KB   
+690/1051 KB   
+692/1051 KB   
+694/1051 KB   
+696/1051 KB   
+698/1051 KB   
+700/1051 KB   
+702/1051 KB   
+704/1051 KB   
+706/1051 KB   
+708/1051 KB   
+710/1051 KB   
+712/1051 KB   
+714/1051 KB   
+716/1051 KB   
+718/1051 KB   
+720/1051 KB   
+722/1051 KB   
+724/1051 KB   
+726/1051 KB   
+728/1051 KB   
+730/1051 KB   
+732/1051 KB   
+734/1051 KB   
+736/1051 KB   
+738/1051 KB   
+740/1051 KB   
+742/1051 KB   
+744/1051 KB   
+746/1051 KB   
+748/1051 KB   
+750/1051 KB   
+752/1051 KB   
+754/1051 KB   
+756/1051 KB   
+758/1051 KB   
+760/1051 KB   
+762/1051 KB   
+764/1051 KB   
+766/1051 KB   
+768/1051 KB   
+770/1051 KB   
+772/1051 KB   
+774/1051 KB   
+776/1051 KB   
+778/1051 KB   
+780/1051 KB   
+782/1051 KB   
+784/1051 KB   
+786/1051 KB   
+788/1051 KB   
+790/1051 KB   
+792/1051 KB   
+794/1051 KB   
+796/1051 KB   
+798/1051 KB   
+800/1051 KB   
+802/1051 KB   
+804/1051 KB   
+806/1051 KB   
+808/1051 KB   
+810/1051 KB   
+812/1051 KB   
+814/1051 KB   
+816/1051 KB   
+818/1051 KB   
+820/1051 KB   
+822/1051 KB   
+824/1051 KB   
+826/1051 KB   
+828/1051 KB   
+830/1051 KB   
+832/1051 KB   
+834/1051 KB   
+836/1051 KB   
+838/1051 KB   
+840/1051 KB   
+842/1051 KB   
+844/1051 KB   
+846/1051 KB   
+848/1051 KB   
+850/1051 KB   
+852/1051 KB   
+854/1051 KB   
+856/1051 KB   
+858/1051 KB   
+860/1051 KB   
+862/1051 KB   
+864/1051 KB   
+866/1051 KB   
+868/1051 KB   
+870/1051 KB   
+872/1051 KB   
+874/1051 KB   
+876/1051 KB   
+878/1051 KB   
+880/1051 KB   
+882/1051 KB   
+884/1051 KB   
+886/1051 KB   
+888/1051 KB   
+890/1051 KB   
+892/1051 KB   
+894/1051 KB   
+896/1051 KB   
+898/1051 KB   
+900/1051 KB   
+902/1051 KB   
+904/1051 KB   
+906/1051 KB   
+908/1051 KB   
+910/1051 KB   
+912/1051 KB   
+914/1051 KB   
+916/1051 KB   
+918/1051 KB   
+920/1051 KB   
+922/1051 KB   
+924/1051 KB   
+926/1051 KB   
+928/1051 KB   
+930/1051 KB   
+932/1051 KB   
+934/1051 KB   
+936/1051 KB   
+938/1051 KB   
+940/1051 KB   
+942/1051 KB   
+944/1051 KB   
+946/1051 KB   
+948/1051 KB   
+950/1051 KB   
+952/1051 KB   
+954/1051 KB   
+956/1051 KB   
+958/1051 KB   
+960/1051 KB   
+962/1051 KB   
+964/1051 KB   
+966/1051 KB   
+968/1051 KB   
+970/1051 KB   
+972/1051 KB   
+974/1051 KB   
+976/1051 KB   
+978/1051 KB   
+980/1051 KB   
+982/1051 KB   
+984/1051 KB   
+986/1051 KB   
+988/1051 KB   
+990/1051 KB   
+992/1051 KB   
+994/1051 KB   
+996/1051 KB   
+998/1051 KB   
+1000/1051 KB   
+1002/1051 KB   
+1004/1051 KB   
+1006/1051 KB   
+1008/1051 KB   
+1010/1051 KB   
+1012/1051 KB   
+1014/1051 KB   
+1016/1051 KB   
+1018/1051 KB   
+1020/1051 KB   
+1022/1051 KB   
+1024/1051 KB   
+1026/1051 KB   
+1028/1051 KB   
+1030/1051 KB   
+1032/1051 KB   
+1034/1051 KB   
+1036/1051 KB   
+1038/1051 KB   
+1040/1051 KB   
+1042/1051 KB   
+1044/1051 KB   
+1046/1051 KB   
+1048/1051 KB   
+1050/1051 KB   
+1051/1051 KB   
+               
+Uploaded: http://nexus-dev/content/repositories/snapshots/com/mfs/investment/mp/1.0.0-SNAPSHOT/mp-1.0.0-20190802.085725-217.jar (1051 KB at 8336.8 KB/sec)
+04:57:25 Uploading: http://nexus-dev/content/repositories/snapshots/com/mfs/investment/mp/1.0.0-SNAPSHOT/mp-1.0.0-20190802.085725-217.pom
+04:57:25 2/6 KB         
+4/6 KB   
+6/6 KB   
+         
+Uploaded: http://nexus-dev/content/repositories/snapshots/com/mfs/investment/mp/1.0.0-SNAPSHOT/mp-1.0.0-20190802.085725-217.pom (6 KB at 59.2 KB/sec)
+04:57:25 Downloading: http://nexus-dev/content/repositories/snapshots/com/mfs/investment/mp/maven-metadata.xml
+04:57:25 280/280 B   
+            
+Downloaded: http://nexus-dev/content/repositories/snapshots/com/mfs/investment/mp/maven-metadata.xml (280 B at 13.0 KB/sec)
+04:57:25 Uploading: http://nexus-dev/content/repositories/snapshots/com/mfs/investment/mp/1.0.0-SNAPSHOT/maven-metadata.xml
+04:57:25 776/776 B   
+            
+Uploaded: http://nexus-dev/content/repositories/snapshots/com/mfs/investment/mp/1.0.0-SNAPSHOT/maven-metadata.xml (776 B at 9.6 KB/sec)
+04:57:25 Uploading: http://nexus-dev/content/repositories/snapshots/com/mfs/investment/mp/maven-metadata.xml
+04:57:25 280/280 B   
+            
+Uploaded: http://nexus-dev/content/repositories/snapshots/com/mfs/investment/mp/maven-metadata.xml (280 B at 3.0 KB/sec)
+04:57:25 [INFO]  * Bulk deploy of locally gathered snapshot artifacts finished.
+04:57:25 [INFO] Remote deploy finished with success.
+04:57:25 [INFO] ------------------------------------------------------------------------
+04:57:25 [INFO] BUILD SUCCESS
+04:57:25 [INFO] ------------------------------------------------------------------------
+04:57:25 [INFO] Total time: 9.301 s
+04:57:25 [INFO] Finished at: 2019-08-02T04:57:25-04:00
+04:57:26 [INFO] Final Memory: 34M/540M
+04:57:26 [INFO] ------------------------------------------------------------------------
+[Pipeline] }
+[Pipeline] // configFileProvider
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Dev Deployment)
+[Pipeline] node
+04:57:26 Running on Windows-BOSJENKSLVD3 in D:\Jenkins\workspace\MP_mp_develop
+[Pipeline] {
+[Pipeline] checkout
+04:57:26 using credential SCM_Credential_ID
+04:57:26 Fetching changes from the remote Git repository
+04:57:26 Cleaning workspace
+04:57:27 Fetching without tags
+ > C:\Program Files\Git\bin\git.exe rev-parse --is-inside-work-tree # timeout=10
+ > C:\Program Files\Git\bin\git.exe config remote.origin.url http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git # timeout=10
+ > C:\Program Files\Git\bin\git.exe rev-parse --verify HEAD # timeout=10
+Resetting working tree
+ > C:\Program Files\Git\bin\git.exe reset --hard # timeout=10
+ > C:\Program Files\Git\bin\git.exe clean -fdx # timeout=10
+Fetching upstream changes from http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git
+ > C:\Program Files\Git\bin\git.exe --version # timeout=10
+using GIT_ASKPASS to set credentials SCM Credential ID
+ > C:\Program Files\Git\bin\git.exe fetch --no-tags --progress http://bitbucket-dev.mfs.com/scm/MFSEGLAPP/mp.git +refs/heads/develop:refs/remotes/origin/develop
+04:57:28 Checking out Revision 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736 (develop)
+ > C:\Program Files\Git\bin\git.exe config core.sparsecheckout # timeout=10
+ > C:\Program Files\Git\bin\git.exe checkout -f 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736
+ > C:\Program Files\Git\bin\git.exe branch -a -v --no-abbrev # timeout=10
+ > C:\Program Files\Git\bin\git.exe branch -D develop # timeout=10
+ > C:\Program Files\Git\bin\git.exe checkout -b develop 14fa05ab72b34110cda2eb2dd2bafc6b9c24e736
+04:57:28 Commit message: "pass nexus iq scan"
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] script
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] bat
+04:57:29 
+04:57:29 D:\Jenkins\workspace\MP_mp_develop>curl -X GET "http://nexus-dev/service/rest/v1/search?sort=version&repository=public&format=maven2&maven.groupId=com.mfs.investment&maven.artifactId=mp&maven.baseVersion=1.0.0-SNAPSHOT"  1>SnapshotVersionSort.json 
+04:57:29   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+04:57:29                                  Dload  Upload   Total   Spent    Left  Speed
+04:57:29 
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+100  166k    0  166k    0     0   827k      0 --:--:-- --:--:-- --:--:--  827k
+[Pipeline] readJSON
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] step
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (QA Tests)
+Stage "QA Tests" skipped due to earlier failure(s)
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+04:57:30 Failed in branch  
+[Pipeline] // parallel
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+Checking the UCD server for an existing component 'MP-App'
+The component already exists on the UCD server with UUID '20988f07-a63b-4fc9-9ff1-9ebc9e9645f6'
+Checking the UCD server for existing component 'MP-App' in application 'MP'
+Component already exists in the application, does not need to be added
+Creating new component version '1.0.0-20190802.085725-217' on component 'MP-App'
+Successfully created component version with UUID '37287955-83b3-4b61-9b98-f53da8030fc7'
+Setting environment variable MP-App_VersionId.
+[Warning] Failed to set version ID as environment variable.
+Uploading files to version '1.0.0-20190802.085725-217' on component 'MP-App'
+[Pipeline] { (Upload Artifact to Release)
+Stage "Upload Artifact to Release" skipped due to earlier failure(s)
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // timestamps
+[Pipeline] End of Pipeline
+[Bitbucket] Notifying commit build result
+[Bitbucket] Build result notified
+Notified JIRA that a build has completed.
+ERROR: Base artifact directory D:\Jenkins\workspace\MP_mp_develop\target does not exist
+Finished: FAILURE

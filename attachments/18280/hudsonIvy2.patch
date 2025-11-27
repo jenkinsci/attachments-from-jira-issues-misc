@@ -1,0 +1,156 @@
+Index: src/main/java/hudson/ivy/IvyBuildTrigger.java
+===================================================================
+--- src/main/java/hudson/ivy/IvyBuildTrigger.java	(révision 10596)
++++ src/main/java/hudson/ivy/IvyBuildTrigger.java	(copie de travail)
+@@ -16,12 +16,6 @@
+  */
+ package hudson.ivy;
+ 
+-import fr.jayasoft.ivy.DependencyDescriptor;
+-import fr.jayasoft.ivy.Ivy;
+-import fr.jayasoft.ivy.ModuleDescriptor;
+-import fr.jayasoft.ivy.ModuleId;
+-import fr.jayasoft.ivy.parser.ModuleDescriptorParserRegistry;
+-import fr.jayasoft.ivy.util.Message;
+ import hudson.CopyOnWrite;
+ import hudson.FilePath;
+ import hudson.Launcher;
+@@ -50,6 +44,11 @@
+ 
+ import javax.servlet.ServletException;
+ 
++import org.apache.ivy.Ivy;
++import org.apache.ivy.core.module.descriptor.DependencyDescriptor;
++import org.apache.ivy.core.module.descriptor.ModuleDescriptor;
++import org.apache.ivy.core.module.id.ModuleId;
++import org.apache.ivy.plugins.parser.ModuleDescriptorParserRegistry;
+ import org.kohsuke.stapler.StaplerRequest;
+ import org.kohsuke.stapler.StaplerResponse;
+ 
+@@ -73,13 +72,6 @@
+     private transient ModuleDescriptor moduleDescriptor;
+ 
+     /**
+-     * Set the Message Implementation for ivy to avoid logging to err
+-     */
+-    static {
+-        Message.init (new IvyMessageImpl());
+-    }
+-
+-    /**
+      * Contructor
+      * 
+      * @param ivyFile
+@@ -87,7 +79,7 @@
+      * @param ivyConfName
+      *            the Ivy configuration name to use
+      */
+-    public IvyBuildTrigger(final String ivyFile, final String ivyConfName) {
++    public IvyBuildTrigger(final String ivyFile, final String ivyConfName) {    	
+         this.ivyFile = ivyFile;
+         this.ivyConfName = ivyConfName;
+     }
+@@ -129,18 +121,17 @@
+      * @throws IOException
+      */
+     public Ivy getIvy() {
+-        Message.init (new IvyMessageImpl());
+         Ivy ivy = new Ivy();
+         IvyConfiguration ivyConf = getIvyConfiguration();
+         if (ivyConf != null) {
+             File conf = new File(ivyConf.getIvyConfPath());
+             try {
+                 ivy.configure(conf);
+-            } catch (ParseException e) {
++            } catch (ParseException e) {            	
+                 LOGGER.log(Level.WARNING, "Parsing error while reading the ivy configuration " + ivyConf.getName()
+                         + " at " + ivyConf.getIvyConfPath(), e);
+                 return null;
+-            } catch (IOException e) {
++            } catch (IOException e) {            	
+                 LOGGER.log(Level.WARNING, "I/O error while reading the ivy configuration " + ivyConf.getName() + " at "
+                         + ivyConf.getIvyConfPath(), e);
+                 return null;
+@@ -179,8 +170,7 @@
+         } else {
+             FilePath ivyF = workspace.child(ivyFile);
+             try {
+-                moduleDescriptor = ModuleDescriptorParserRegistry.getInstance().parseDescriptor(ivy,
+-                        ivyF.toURI().toURL(), ivy.doValidate());
++                moduleDescriptor = ModuleDescriptorParserRegistry.getInstance().parseDescriptor(ivy.getSettings(),ivyF.toURI().toURL(), true);
+                 lastmodified = ivyF.lastModified();
+             } catch (InterruptedException e) {
+                 LOGGER.log(Level.WARNING, "The Ivy module descriptor parsing of " + ivyF + " has been interrupted", e);
+@@ -242,23 +232,27 @@
+     }
+ 
+     @Override
+-    public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
++    public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {    	
+         FilePath workspace = build.getProject().getWorkspace();
+         FilePath f = workspace.child(ivyFile);
+-        try {
+-            if (lastmodified != f.lastModified()) {
+-                recomputeModuleDescriptor(build.getProject().getWorkspace());
++        //try {
++        	//System.out.println("#### "+lastmodified+" "+f.lastModified());
++        	//FIXME check this test
++            //if (lastmodified != f.lastModified()) {
++            	//System.out.println("#### recomputeModuleDescriptor");
++                recomputeModuleDescriptor(build.getProject().getWorkspace());           
+                 Hudson.getInstance().rebuildDependencyGraph();
+-            }
+-        } catch (IOException e) {
+-            e.printStackTrace(listener.error("Failed to read the ivy file " + f));
+-        } catch (InterruptedException e) {
+-            e.printStackTrace(listener.error("Interuption of the read the ivy file " + f));
+-        }
++            //}
++        //} catch (IOException e) {
++        //    e.printStackTrace(listener.error("Failed to read the ivy file " + f));
++        //} catch (InterruptedException e) {
++        //   e.printStackTrace(listener.error("Interuption of the read the ivy file " + f));
++        //}
+         return true;
+     }
+ 
+     public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
++    	//System.out.println("#### IvyBuildTrigger buildDependencyGraph "+owner+" - "+graph);
+         ModuleDescriptor md = getModuleDescriptor(owner.getWorkspace());
+         if (md == null) {
+             return;
+Index: src/main/resources/hudson/ivy/IvyBuildTrigger/config.jelly
+===================================================================
+--- src/main/resources/hudson/ivy/IvyBuildTrigger/config.jelly	(révision 10874)
++++ src/main/resources/hudson/ivy/IvyBuildTrigger/config.jelly	(copie de travail)
+@@ -12,6 +12,6 @@
+   <f:entry title="Ivy file">
+     <input class="setting-input validated" name="ivy_file"
+          type="text" value="${instance.ivyFile}"
+-          checkUrl="'${rootUrl}/publisher/IvyBuildTrigger/checkIvyFile?job=${it.fullName}&amp;value='+escape(this.value)"/>
++          checkUrl="'${rootURL}/publisher/IvyBuildTrigger/checkIvyFile?job=${it.fullName}&amp;value='+escape(this.value)"/>
+   </f:entry>
+ </j:jelly>
+Index: pom.xml
+===================================================================
+--- pom.xml	(révision 10596)
++++ pom.xml	(copie de travail)
+@@ -10,14 +10,15 @@
+   <artifactId>ivy</artifactId>
+   <packaging>hpi</packaging>
+   <name>Hudson Ivy plugin</name>
+-  <version>0.1-SNAPSHOT</version>
++  <version>0.2-SNAPSHOT</version>
+   <url>http://hudson.gotdns.com/wiki/display/HUDSON/Ivy+Plugin</url>
+   
+   <dependencies>
+     <dependency>
+-      <groupId>org.jvnet.hudson</groupId>
++      <groupId>org.apache</groupId>
+       <artifactId>ivy</artifactId>
+-      <version>1.4.1</version>
++      <version>2.0.0-beta2</version>
+     </dependency>
++
+   </dependencies>
+ </project>

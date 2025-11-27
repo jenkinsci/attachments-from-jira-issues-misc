@@ -1,0 +1,43 @@
+P4 Task: establishing connection.
+... server: ...
+... node: ...
+
+P4 Task: reverting all pending and shelved revisions.
+... p4 revert /home/jenkins/workspace/job-b%40lib___ +
+... rm [abandoned files]
+duration: (6ms)
+
+... p4 sync -q /home/jenkins/workspace/job-b%40li___ +
+... rm -rf /home/jenkins/workspace/job-b@libs/pipeline-commons
+
+P4 Task: syncing files at change: 43351112
+... p4 sync -f -q /home/jenkins/workspace/job-b%4___ +
+P4 Task: attempt: 1
+P4 Task: failed: com.perforce.p4java.exception.P4JavaException: com.perforce.p4java.exception.P4JavaException: hudson.AbortException: P4JAVA: Error(s):
+Path '/home/jenkins/workspace/job-b%40libs/pipeline-commons/...' is not under client's root '/home/jenkins/workspace/job-c%40libs/pipeline-commons'.
+
+ERROR: P4 Task: failed: com.perforce.p4java.exception.P4JavaException: com.perforce.p4java.exception.P4JavaException: hudson.AbortException: P4JAVA: Error(s):
+Path '/home/jenkins/workspace/job-b%40libs/pipeline-commons/...' is not under client's root '/home/jenkins/workspace/job-c%40libs/pipeline-commons'.
+
+org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+WorkflowScript: Loading libraries failed
+
+1 error
+
+	at org.codehaus.groovy.control.ErrorCollector.failIfErrors(ErrorCollector.java:310)
+	at org.codehaus.groovy.control.CompilationUnit.applyToPrimaryClassNodes(CompilationUnit.java:1085)
+	at org.codehaus.groovy.control.CompilationUnit.doPhaseOperation(CompilationUnit.java:603)
+	at org.codehaus.groovy.control.CompilationUnit.processPhaseOperations(CompilationUnit.java:581)
+	at org.codehaus.groovy.control.CompilationUnit.compile(CompilationUnit.java:558)
+	at groovy.lang.GroovyClassLoader.doParseClass(GroovyClassLoader.java:298)
+	at groovy.lang.GroovyClassLoader.parseClass(GroovyClassLoader.java:268)
+	at groovy.lang.GroovyShell.parseClass(GroovyShell.java:688)
+	at groovy.lang.GroovyShell.parse(GroovyShell.java:700)
+	at org.jenkinsci.plugins.workflow.cps.CpsGroovyShell.doParse(CpsGroovyShell.java:131)
+	at org.jenkinsci.plugins.workflow.cps.CpsGroovyShell.reparse(CpsGroovyShell.java:125)
+	at org.jenkinsci.plugins.workflow.cps.CpsFlowExecution.parseScript(CpsFlowExecution.java:560)
+	at org.jenkinsci.plugins.workflow.cps.CpsFlowExecution.start(CpsFlowExecution.java:521)
+	at org.jenkinsci.plugins.workflow.job.WorkflowRun.run(WorkflowRun.java:330)
+	at hudson.model.ResourceController.execute(ResourceController.java:97)
+	at hudson.model.Executor.run(Executor.java:429)
+Finished: FAILURE

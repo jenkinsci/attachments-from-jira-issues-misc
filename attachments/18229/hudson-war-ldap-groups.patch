@@ -1,0 +1,42 @@
+Index: resources/WEB-INF/security/LDAPBindSecurityRealm.groovy
+===================================================================
+--- resources/WEB-INF/security/LDAPBindSecurityRealm.groovy	(revision 10457)
++++ resources/WEB-INF/security/LDAPBindSecurityRealm.groovy	(working copy)
+@@ -2,7 +2,6 @@
+ import org.acegisecurity.providers.anonymous.AnonymousAuthenticationProvider
+ import org.acegisecurity.providers.ldap.LdapAuthenticationProvider
+ import org.acegisecurity.providers.ldap.authenticator.BindAuthenticator2
+-import org.acegisecurity.providers.ldap.populator.DefaultLdapAuthoritiesPopulator
+ import org.acegisecurity.ldap.DefaultInitialDirContextFactory
+ import org.acegisecurity.ldap.search.FilterBasedLdapUserSearch
+ import org.acegisecurity.providers.rememberme.RememberMeAuthenticationProvider
+@@ -7,6 +6,7 @@
+ import org.acegisecurity.ldap.search.FilterBasedLdapUserSearch
+ import org.acegisecurity.providers.rememberme.RememberMeAuthenticationProvider
+ import hudson.model.Hudson
++import hudson.security.DeferredCreationLdapAuthoritiesPopulator
+ 
+ /*
+     Configure LDAP as the authentication realm.
+@@ -35,7 +35,7 @@
+     userSearch = ldapUserSearch;
+ }
+ 
+-authoritiesPopulator(DefaultLdapAuthoritiesPopulator,initialDirContextFactory,"ou=groups") {
++authoritiesPopulator(DeferredCreationLdapAuthoritiesPopulator,initialDirContextFactory,"ou=groups") {
+   // groupRoleAttribute = "ou";
+ }
+ 
+Index: resources/help/security/ldap/groupSearchBase.html
+===================================================================
+--- resources/help/security/ldap/groupSearchBase.html	(revision 0)
++++ resources/help/security/ldap/groupSearchBase.html	(revision 0)
+@@ -0,0 +1,8 @@
++<div>
++    One of the searches Hudson does on LDAP is to locate the list of groups for a user.
++
++    <p>
++    This field determines the query to be run to identify the organizational unit that contains groups. The query is
++    almost always <tt>"ou=groups"</tt>, so in most cases you should leave this field empty and let this default kick in.
++
++</div>\ No newline at end of file

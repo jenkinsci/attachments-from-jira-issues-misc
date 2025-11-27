@@ -1,0 +1,102 @@
+pipeline {
+
+agent any
+	
+    stages {
+        stage('Before parallel') {
+			steps{
+				echo '1'
+				sleep 30
+			}
+		}
+		stage('Parallel') {
+            failFast false
+            parallel {
+                stage('Nested B') {
+                    stages {
+                        stage('Nested B-1') {
+                            steps {
+                                echo 'Nested A-1'
+                            }
+                        }
+                        stage('Nested B-2') {
+                            steps {
+                                sleep time: 2, unit: 'MINUTES'
+                            }
+                        }
+                    }
+                }
+                stage('Nested C') {
+                    when {
+                        expression { true == true }
+                    }
+                    stages {
+                        stage('Nested C-1') {
+                            steps {
+                                echo 'Nested C-1'                               
+                            }
+                        }
+                        stage('Nested C-2') {
+                            steps {
+                                echo 'Nested C-2'                               
+                            }
+                        }
+                    }
+                }
+                stage('Nested A') {
+                    steps {
+                        sleep time: 1, unit: 'MINUTES'
+                    }
+                }
+            }
+        }
+        stage('After parallel') {
+			steps{
+				echo '1'
+				sleep 30
+			}
+		}
+		stage('Parallel2') {
+            failFast false
+            parallel {
+                stage('Nested B') {
+                    stages {
+                        stage('Nested B-1') {
+                            steps {
+                                echo 'Nested A-1'
+                            }
+                        }
+                        stage('Nested B-2') {
+                            steps {
+                                sleep time: 2, unit: 'MINUTES'
+                            }
+                        }
+                    }
+                }
+                stage('Nested C') {
+                    when {
+                        expression { true == true }
+                    }
+                    stages {
+                        stage('Nested C-1') {
+                            steps {
+                                echo 'Nested C-1'                               
+                            }
+                        }
+                        stage('Nested C-2') {
+                            steps {
+                                echo 'Nested C-2'                               
+                            }
+                        }
+                    }
+                }
+                stage('Nested A') {
+                    steps {
+                        sleep time: 1, unit: 'MINUTES'
+                    }
+                }
+            }
+        }		
+		
+    }
+}

@@ -1,0 +1,50 @@
+Index: src/main/java/hudson/plugins/perforce/PerforceSCM.java
+===================================================================
+--- src/main/java/hudson/plugins/perforce/PerforceSCM.java	(revision 17570)
++++ src/main/java/hudson/plugins/perforce/PerforceSCM.java	Tue Apr 28 18:15:23 CEST 2009
+@@ -83,7 +83,7 @@
+ 	boolean updateView = true;	
+ 	
+ 	/**
+-	 * If false we add the slave hostname to then end of the client name when 
++	 * If false we add the slave hostname to the end of the client name when 
+ 	 * running on a slave
+ 	 */
+ 	boolean dontRenameClient = false;	
+@@ -280,7 +280,7 @@
+ 			String nodeSuffix = "";
+ 			if ( !dontRenameClient &&
+ 					build.getBuiltOnStr() != null && 
+-					build.getBuiltOnStr() != "") {
++					build.getBuiltOnStr().length() > 0) {
+ 
+ 				//use the 1st part of the hostname as the node suffix
+ 				String host = workspace.act(new GetHostname());
+@@ -323,7 +323,26 @@
+ 			if (dontRenameClient) {			 
+ 				p4workspace.setHost("");
+ 			}	
+-			
++
++                        // Create a master p4 client if it does not exist and we are on a slave.
++			// A master p4 client is required for polling changes later. If missing
++                        // the 'p4 client' command returns a view for the whole perforce repository,
++                        // which causes have perforce server load when requesting changes.
++			if(nodeSuffix.length() > 0 && (updateView || creatingNewWorkspace)) {
++				Workspace p4MasterWorkspace = getDepot(launcher, workspace).getWorkspaces().getWorkspace(p4Client);
++				boolean createMasterWorkspace = p4MasterWorkspace.getAccess() == null || p4MasterWorkspace.getAccess().length() == 0;
++				if (createMasterWorkspace) {
++					p4MasterWorkspace.setName(p4Client); // necessary ?
++					String view = projectPath + " //" + p4MasterWorkspace.getName() + "/...";
++					log.println("Creating Master P4 Client: view=" + view);
++					p4MasterWorkspace.clearViews();
++					p4MasterWorkspace.addView(view);
++					p4MasterWorkspace.setHost("");
++					// create the p4 client
++					depot.getWorkspaces().saveWorkspace(p4MasterWorkspace);
++				}
++			}
++
+ 			//save the client for use when sync'ing in a few...
+ 			depot.getWorkspaces().saveWorkspace(p4workspace);
+ 

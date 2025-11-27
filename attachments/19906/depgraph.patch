@@ -1,0 +1,455 @@
+### Eclipse Workspace Patch 1.0
+#P maven-plugin
+Index: src/main/java/hudson/maven/AbstractMavenBuild.java
+===================================================================
+--- src/main/java/hudson/maven/AbstractMavenBuild.java	(revision 36295)
++++ src/main/java/hudson/maven/AbstractMavenBuild.java	(working copy)
+@@ -23,21 +23,11 @@
+  */
+ package hudson.maven;
+ 
+-import hudson.Util;
+ import hudson.model.AbstractBuild;
+-import hudson.model.AbstractProject;
+-import hudson.model.BuildListener;
+-import hudson.model.DependencyGraph;
+-import hudson.model.Hudson;
+-import hudson.model.Result;
+-import hudson.model.Run;
+-import hudson.model.Cause.UpstreamCause;
+-import hudson.tasks.BuildTrigger;
+ 
+ import java.io.File;
+ import java.io.IOException;
+ import java.util.Calendar;
+-import java.util.Set;
+ 
+ public abstract class AbstractMavenBuild<P extends AbstractMavenProject<P,B>,B extends AbstractMavenBuild<P,B>> extends AbstractBuild<P, B>  {
+ 
+@@ -57,124 +47,7 @@
+     public AbstractMavenBuild(P project, File buildDir) throws IOException {
+         super(project, buildDir);
+     }
++ 
+     
+-    /**
+-     * Schedules all the downstream builds.
+-     * Returns immediately if build result doesn't meet the required level
+-     * (as specified by {@link BuildTrigger}, or {@link Result#SUCCESS} if none).
+-     *
+-     * @param listener
+-     *      Where the progress reports go.
+-     */
+-    protected final void scheduleDownstreamBuilds(BuildListener listener) {
+-        BuildTrigger bt = getParent().getPublishersList().get(BuildTrigger.class);
+-        if (getResult().isWorseThan(bt!=null ? bt.getThreshold() : Result.SUCCESS)) return;
+-
+-        // trigger dependency builds
+-        for( AbstractProject<?,?> down : getParent().getDownstreamProjects()) {
+-            if(debug)
+-                listener.getLogger().println("Considering whether to trigger "+down+" or not");
+-            
+-            // if the downstream module depends on multiple modules,
+-            // only trigger them when all the upstream dependencies are updated.
+-            boolean trigger = true;
+-            
+-            if (down.isInQueue()) {
+-            	if(debug)
+-                    listener.getLogger().println(" -> No, because downstream is already in queue");
+-            	trigger = false;
+-            } 
+-            // Check to see if any of its upstream dependencies are already building or in queue.
+-            else if (areUpstreamsBuilding(down, getParent())) {
+-                if(debug)
+-                    listener.getLogger().println(" -> No, because downstream has dependencies already building or in queue");
+-                trigger = false;
+-            }
+-            // Check to see if any of its upstream dependencies are in this list of downstream projects.
+-            else if (inDownstreamProjects(down)) {
+-                if(debug)
+-                    listener.getLogger().println(" -> No, because downstream has dependencies in the downstream projects list");
+-                trigger = false;
+-            }
+-            else {
+-                AbstractBuild<?,?> dlb = down.getLastBuild(); // can be null.
+-                for (AbstractMavenProject up : Util.filter(down.getUpstreamProjects(),AbstractMavenProject.class)) {
+-                    Run ulb;
+-                    if(up==getParent()) {
+-                        // the current build itself is not registered as lastSuccessfulBuild
+-                        // at this point, so we have to take that into account. ugly.
+-                        if(getResult()==null || !getResult().isWorseThan(Result.UNSTABLE))
+-                            ulb = this;
+-                        else
+-                            ulb = up.getLastSuccessfulBuild();
+-                    } else
+-                        ulb = up.getLastSuccessfulBuild();
+-                    if(ulb==null) {
+-                        // if no usable build is available from the upstream,
+-                        // then we have to wait at least until this build is ready
+-                        if(debug)
+-                            listener.getLogger().println(" -> No, because another upstream "+up+" for "+down+" has no successful build");
+-                        trigger = false;
+-                        break;
+-                    }
+-                    
+-                    // if no record of the relationship in the last build
+-                    // is available, we'll just have to assume that the condition
+-                    // for the new build is met, or else no build will be fired forever.
+-                    if(dlb==null)   continue;
+-                    int n = dlb.getUpstreamRelationship(up);
+-                    if(n==-1)   continue;
+-                    
+-                    assert ulb.getNumber()>=n;
+-                }
+-            }
+-            
+-            if(trigger) {
+-                listener.getLogger().println(Messages.MavenBuild_Triggering(down.getName()));
+-                down.scheduleBuild(new UpstreamCause((Run<?,?>)this));
+-            }
+-        }
+-    }
+     
+-    private boolean inDownstreamProjects(AbstractProject downstreamProject) {
+-        DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
+-        Set<AbstractProject> tups = graph.getTransitiveUpstream(downstreamProject);
+-        
+-        for (AbstractProject tup : tups) {
+-            for (AbstractProject<?,?> dp : getParent().getDownstreamProjects()) {
+-                if(dp!=getParent() && dp!=downstreamProject && dp==tup) 
+-                    return true;
+-            }
+-        }
+-        return false;
+-    }
+-
+-
+-   /**
+-     * Determines whether any of the upstream project are either
+-     * building or in the queue.
+-     *
+-     * This means eventually there will be an automatic triggering of
+-     * the given project (provided that all builds went smoothly.)
+-     *
+-     * @param downstreamProject
+-     *      The AbstractProject we want to build.
+-     * @param excludeProject
+-     *      An AbstractProject to exclude - if we see this in the transitive
+-     *      dependencies, we're not going to bother checking to see if it's
+-     *      building. For example, pass the current parent project to be sure
+-     *      that it will be ignored when looking for building dependencies.
+-     * @return
+-     *      True if any upstream projects are building or in queue, false otherwise.
+-     */
+-    private boolean areUpstreamsBuilding(AbstractProject downstreamProject,
+-                                                   AbstractProject excludeProject) {
+-        DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
+-        Set<AbstractProject> tups = graph.getTransitiveUpstream(downstreamProject);
+-        for (AbstractProject tup : tups) {
+-            if(tup!=excludeProject && (tup.isBuilding() || tup.isInQueue()))
+-                return true;
+-        }
+-        return false;
+-    }
+ }
+Index: src/main/java/hudson/maven/MavenModuleSetBuild.java
+===================================================================
+--- src/main/java/hudson/maven/MavenModuleSetBuild.java	(revision 36295)
++++ src/main/java/hudson/maven/MavenModuleSetBuild.java	(working copy)
+@@ -664,12 +664,6 @@
+ 
+         @Override
+         public void cleanUp(BuildListener listener) throws Exception {
+-            if(project.isAggregatorStyleBuild()) {
+-                // schedule downstream builds. for non aggregator style builds,
+-                // this is done by each module
+-                scheduleDownstreamBuilds(listener);
+-            }
+-
+             MavenMailer mailer = project.getReporters().get(MavenMailer.class);
+             if (mailer != null) {
+                 new MailSender(mailer.recipients,
+@@ -680,7 +674,7 @@
+             // too late to set the build result at this point. so ignore failures.
+             performAllBuildSteps(listener, project.getPublishers(), false);
+             performAllBuildSteps(listener, project.getProperties(), false);
+-            buildEnvironments = null;
++            super.cleanUp(listener);
+         }
+ 
+     }
+Index: src/main/java/hudson/maven/AbstractMavenProject.java
+===================================================================
+--- src/main/java/hudson/maven/AbstractMavenProject.java	(revision 36295)
++++ src/main/java/hudson/maven/AbstractMavenProject.java	(working copy)
+@@ -23,10 +23,17 @@
+  */
+ package hudson.maven;
+ 
++import hudson.Util;
+ import hudson.model.AbstractBuild;
+ import hudson.model.AbstractProject;
+ import hudson.model.Action;
++import hudson.model.DependencyGraph;
++import hudson.model.Hudson;
+ import hudson.model.ItemGroup;
++import hudson.model.Result;
++import hudson.model.Run;
++import hudson.model.TaskListener;
++import hudson.model.DependencyGraph.Dependency;
+ import hudson.tasks.Maven.ProjectWithMaven;
+ import hudson.triggers.Trigger;
+ 
+@@ -41,6 +48,126 @@
+  */
+ public abstract class AbstractMavenProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends AbstractProject<P,R>
+     implements ProjectWithMaven {
++
++	protected static class MavenModuleDependency extends Dependency {
++
++    	public MavenModuleDependency(AbstractMavenProject<?,?> upstream,
++    			AbstractProject<?,?> downstream) {
++    		super(upstream, downstream);
++    	}
++
++    	@Override
++    	public boolean shouldTriggerBuild(AbstractBuild build,
++    			TaskListener listener, List<Action> actions) {
++    		/**
++    		 * Schedules all the downstream builds.
++    		 * Returns immediately if build result doesn't meet the required level
++    		 * (as specified by {@link BuildTrigger}, or {@link Result#SUCCESS} if none).
++    		 *
++    		 * @param listener
++    		 *      Where the progress reports go.
++    		 */
++    		if (build.getResult().isWorseThan(Result.SUCCESS)) return false;
++    		// trigger dependency builds
++    		AbstractProject<?,?> downstreamProject = getDownstreamProject();
++    		if(AbstractMavenBuild.debug)
++    			listener.getLogger().println("Considering whether to trigger "+downstreamProject+" or not");
++
++    		// if the downstream module depends on multiple modules,
++    		// only trigger them when all the upstream dependencies are updated.
++    		boolean trigger = true;
++
++    		// Check to see if any of its upstream dependencies are already building or in queue.
++    		AbstractMavenProject<?,?> parent = (AbstractMavenProject<?,?>) getUpstreamProject();
++    		if (areUpstreamsBuilding(downstreamProject, parent)) {
++    			if(AbstractMavenBuild.debug)
++    				listener.getLogger().println(" -> No, because downstream has dependencies already building or in queue");
++    			trigger = false;
++    		}
++    		// Check to see if any of its upstream dependencies are in this list of downstream projects.
++    		else if (inDownstreamProjects(downstreamProject)) {
++    			if(AbstractMavenBuild.debug)
++    				listener.getLogger().println(" -> No, because downstream has dependencies in the downstream projects list");
++    			trigger = false;
++    		}
++    		else {
++    			AbstractBuild<?,?> dlb = downstreamProject.getLastBuild(); // can be null.
++    			for (AbstractMavenProject up : Util.filter(downstreamProject.getUpstreamProjects(),AbstractMavenProject.class)) {
++    				Run ulb;
++    				if(up==parent) {
++    					// the current build itself is not registered as lastSuccessfulBuild
++    					// at this point, so we have to take that into account. ugly.
++    					if(build.getResult()==null || !build.getResult().isWorseThan(Result.UNSTABLE))
++    						ulb = build;
++    					else
++    						ulb = up.getLastSuccessfulBuild();
++    				} else
++    					ulb = up.getLastSuccessfulBuild();
++    				if(ulb==null) {
++    					// if no usable build is available from the upstream,
++    					// then we have to wait at least until this build is ready
++    					if(AbstractMavenBuild.debug)
++    						listener.getLogger().println(" -> No, because another upstream "+up+" for "+downstreamProject+" has no successful build");
++    					trigger = false;
++    					break;
++    				}
++
++    				// if no record of the relationship in the last build
++    				// is available, we'll just have to assume that the condition
++    				// for the new build is met, or else no build will be fired forever.
++    				if(dlb==null)   continue;
++    				int n = dlb.getUpstreamRelationship(up);
++    				if(n==-1)   continue;
++
++    				assert ulb.getNumber()>=n;
++    			}
++    		}			    
++    		return trigger;
++    	}
++
++		/**
++		 * Determines whether any of the upstream project are either
++		 * building or in the queue.
++		 *
++		 * This means eventually there will be an automatic triggering of
++		 * the given project (provided that all builds went smoothly.)
++		 *
++		 * @param downstreamProject
++		 *      The AbstractProject we want to build.
++		 * @param excludeProject
++		 *      An AbstractProject to exclude - if we see this in the transitive
++		 *      dependencies, we're not going to bother checking to see if it's
++		 *      building. For example, pass the current parent project to be sure
++		 *      that it will be ignored when looking for building dependencies.
++		 * @return
++		 *      True if any upstream projects are building or in queue, false otherwise.
++		 */
++		private boolean areUpstreamsBuilding(AbstractProject<?,?> downstreamProject,
++				AbstractProject<?,?> excludeProject) {
++			DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
++			Set<AbstractProject> tups = graph.getTransitiveUpstream(downstreamProject);
++			for (AbstractProject tup : tups) {
++				if(tup!=excludeProject && (tup.isBuilding() || tup.isInQueue()))
++					return true;
++			}
++			return false;
++		}
++
++		private boolean inDownstreamProjects(AbstractProject<?,?> downstreamProject) {
++			DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
++			Set<AbstractProject> tups = graph.getTransitiveUpstream(downstreamProject);
++		
++			for (AbstractProject tup : tups) {
++				List<AbstractProject<?,?>> downstreamProjects = getUpstreamProject().getDownstreamProjects();
++				for (AbstractProject<?,?> dp : downstreamProjects) {
++					if(dp!=getUpstreamProject() && dp!=downstreamProject && dp==tup) 
++						return true;
++				}
++			}
++			return false;
++		}
++    }
++
+     protected AbstractMavenProject(ItemGroup parent, String name) {
+         super(parent, name);
+     }
+Index: src/main/java/hudson/maven/MavenBuild.java
+===================================================================
+--- src/main/java/hudson/maven/MavenBuild.java	(revision 36295)
++++ src/main/java/hudson/maven/MavenBuild.java	(working copy)
+@@ -565,11 +565,6 @@
+                 reporter.end(MavenBuild.this,launcher,listener);
+         }
+ 
+-        @Override
+-        public void cleanUp(BuildListener listener) throws Exception {
+-            scheduleDownstreamBuilds(listener);
+-            buildEnvironments = null;
+-        }
+     }
+ 
+     private static final int MAX_PROCESS_CACHE = 5;
+Index: src/main/java/hudson/maven/MavenModule.java
+===================================================================
+--- src/main/java/hudson/maven/MavenModule.java	(revision 36295)
++++ src/main/java/hudson/maven/MavenModule.java	(working copy)
+@@ -27,9 +27,11 @@
+ import hudson.Util;
+ import hudson.Functions;
+ import hudson.maven.reporters.MavenMailer;
++import hudson.model.AbstractBuild;
+ import hudson.model.AbstractProject;
+ import hudson.model.Action;
+ import hudson.model.DependencyGraph;
++import hudson.model.DependencyGraph.Dependency;
+ import hudson.model.Descriptor;
+ import hudson.model.Descriptor.FormException;
+ import hudson.model.Hudson;
+@@ -40,7 +42,10 @@
+ import hudson.model.Label;
+ import hudson.model.Node;
+ import hudson.model.Resource;
++import hudson.model.Result;
++import hudson.model.Run;
+ import hudson.model.Saveable;
++import hudson.model.TaskListener;
+ import hudson.tasks.LogRotator;
+ import hudson.tasks.Publisher;
+ import hudson.tasks.Maven.MavenInstallation;
+@@ -71,6 +76,7 @@
+     private DescribableList<MavenReporter,Descriptor<MavenReporter>> reporters =
+         new DescribableList<MavenReporter,Descriptor<MavenReporter>>(this);
+ 
++
+     /**
+      * Name taken from {@link MavenProject#getName()}.
+      */
+@@ -407,7 +413,7 @@
+         for (ModuleDependency d : dependencies) {
+             MavenModule src = modules.get(d);
+             if(src!=null) {
+-                DependencyGraph.Dependency dep = new DependencyGraph.Dependency(
++                DependencyGraph.Dependency dep = new MavenModuleDependency(
+                         src.getParent().isAggregatorStyleBuild() ? src.getParent() : src,dest);
+                 if (!dep.pointsItself())
+                     graph.addDependency(dep);
+#P hudson-core
+Index: src/main/java/hudson/tasks/BuildTrigger.java
+===================================================================
+--- src/main/java/hudson/tasks/BuildTrigger.java	(revision 36295)
++++ src/main/java/hudson/tasks/BuildTrigger.java	(working copy)
+@@ -80,7 +80,7 @@
+  *
+  * @author Kohsuke Kawaguchi
+  */
+-public class BuildTrigger extends Recorder implements DependecyDeclarer, MatrixAggregatable {
++public class BuildTrigger extends Recorder implements DependecyDeclarer {
+ 
+     /**
+      * Comma-separated list of other projects to be scheduled.
+@@ -216,15 +216,6 @@
+         return true;
+     }
+ 
+-    public MatrixAggregator createAggregator(MatrixBuild build, Launcher launcher, BuildListener listener) {
+-        return new MatrixAggregator(build, launcher, listener) {
+-            @Override
+-            public boolean endBuild() throws InterruptedException, IOException {
+-                return execute(build,listener);
+-            }
+-        };
+-    }
+-
+     /**
+      * Called from {@link ItemListenerImpl} when a job is renamed.
+      *
+Index: src/main/java/hudson/model/AbstractBuild.java
+===================================================================
+--- src/main/java/hudson/model/AbstractBuild.java	(revision 36295)
++++ src/main/java/hudson/model/AbstractBuild.java	(working copy)
+@@ -47,6 +47,7 @@
+ import hudson.tasks.Fingerprinter.FingerprintAction;
+ import hudson.tasks.Publisher;
+ import hudson.tasks.BuildStepMonitor;
++import hudson.tasks.BuildTrigger;
+ import hudson.tasks.test.AbstractTestResultAction;
+ import hudson.util.AdaptedIterator;
+ import hudson.util.Iterators;
+@@ -543,7 +544,8 @@
+         }
+ 
+         public void cleanUp(BuildListener listener) throws Exception {
+-            // default is no-op
++            BuildTrigger.execute(AbstractBuild.this, listener);
++            buildEnvironments = null;
+         }
+ 
+         /**
+Index: src/main/java/hudson/model/Build.java
+===================================================================
+--- src/main/java/hudson/model/Build.java	(revision 36295)
++++ src/main/java/hudson/model/Build.java	(working copy)
+@@ -165,8 +165,7 @@
+             // at this point it's too late to mark the build as a failure, so ignore return value.
+             performAllBuildSteps(listener, project.getPublishers(), false);
+             performAllBuildSteps(listener, project.getProperties(), false);
+-            BuildTrigger.execute(Build.this, listener);
+-            buildEnvironments = null;
++            super.cleanUp(listener);
+         }
+ 
+         private boolean build(BuildListener listener, Collection<Builder> steps) throws IOException, InterruptedException {

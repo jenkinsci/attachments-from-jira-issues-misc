@@ -1,0 +1,30 @@
+Index: PerforceSCM.java
+===================================================================
+--- PerforceSCM.java	(revision 16374)
++++ PerforceSCM.java	(working copy)
+@@ -483,19 +483,17 @@
+ 
+         public SCM newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+         	String value = req.getParameter("p4.forceSync");
+-        	boolean force = false;
+-        	if(value != null && !value.equals(""))
+-        		force = new Boolean(value);
++        	boolean force = Boolean.valueOf(value);
+         	
+         	value = req.getParameter("p4.updateView");
+-        	boolean update = false;
+-        	if(value != null && !value.equals(""))
+-        		update = new Boolean(value);
++        	boolean update = Boolean.valueOf(value);
+ 
+         	value = req.getParameter("p4.firstChange");
+         	int firstChange = -1;
+-        	if(value != null && !value.equals(""))
+-        		firstChange = new Integer(value);
++            // trim extra whitespace to avoid NumberFormatExceptions
++        	if(value != null && value.trim().length()>0){
++        		firstChange = new Integer(value.trim());
++            }
+ 
+             return new PerforceSCM(
+                 req.getParameter("p4.user"),

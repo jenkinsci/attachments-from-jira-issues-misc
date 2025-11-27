@@ -1,0 +1,33 @@
+### Eclipse Workspace Patch 1.0
+#P TWITTER
+Index: src/main/java/hudson/plugins/twitter/TwitterPublisher.java
+===================================================================
+--- src/main/java/hudson/plugins/twitter/TwitterPublisher.java	(revision 29684)
++++ src/main/java/hudson/plugins/twitter/TwitterPublisher.java	(working copy)
+@@ -246,9 +246,9 @@
+             // set the booleans to false as defaults
+             includeUrl = false;
+             onlyOnFailureOrRecovery = false;
+-
+-            req.bindParameters(this, "twitter.");
+             hudsonUrl = Mailer.descriptor().getUrl();
++            
++            req.bindParameters(this, "twitter.");
+             save();
+             return super.configure(req, formData);
+         }
+Index: src/main/resources/hudson/plugins/twitter/TwitterPublisher/global.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/twitter/TwitterPublisher/global.jelly	(revision 29684)
++++ src/main/resources/hudson/plugins/twitter/TwitterPublisher/global.jelly	(working copy)
+@@ -19,5 +19,9 @@
+ 		    <f:checkbox name="twitter.includeUrl" checked="${descriptor.includeUrl}" />
+ 		</f:entry>
+ 		
++		<f:entry title="Hudson URL">
++			<input class="setting-input" name="twitter.hudsonUrl" type="text" value="${descriptor.hudsonUrl}" />
++		</f:entry>
++		
+ 	</f:section>
+ </j:jelly>
+\ No newline at end of file

@@ -1,0 +1,48 @@
+20:16:16  Fetching upstream changes from ssh://git@[REDACTED]:7999/[REDACTED].git
+20:16:16   > git --version # timeout=10
+20:16:16  using GIT_SSH to set credentials [REDACTED]
+20:16:16   > git fetch --tags --progress ssh://git@[REDACTED]:7999/[REDACTED].git +refs/heads/*:refs/remotes/origin/* # timeout=10
+20:16:16  ERROR: Error fetching remote repo 'origin'
+20:16:16  hudson.plugins.git.GitException: Failed to fetch from ssh://git@[REDACTED]:7999/[REDACTED].git
+20:16:16  	at hudson.plugins.git.GitSCM.fetchFrom(GitSCM.java:909)
+20:16:16  	at hudson.plugins.git.GitSCM.retrieveChanges(GitSCM.java:1131)
+20:16:16  	at hudson.plugins.git.GitSCM.checkout(GitSCM.java:1167)
+20:16:16  	at org.jenkinsci.plugins.workflow.steps.scm.SCMStep.checkout(SCMStep.java:125)
+20:16:16  	at org.jenkinsci.plugins.workflow.libs.SCMSourceRetriever.lambda$doRetrieve$1(SCMSourceRetriever.java:157)
+20:16:16  	at org.jenkinsci.plugins.workflow.libs.SCMSourceRetriever.retrySCMOperation(SCMSourceRetriever.java:107)
+20:16:16  	at org.jenkinsci.plugins.workflow.libs.SCMSourceRetriever.doRetrieve(SCMSourceRetriever.java:156)
+20:16:16  	at org.jenkinsci.plugins.workflow.libs.SCMRetriever.retrieve(SCMRetriever.java:65)
+20:16:16  	at org.jenkinsci.plugins.workflow.libs.LibraryAdder.retrieve(LibraryAdder.java:157)
+20:16:16  	at org.jenkinsci.plugins.workflow.libs.LibraryAdder.add(LibraryAdder.java:138)
+20:16:16  	at org.jenkinsci.plugins.workflow.libs.LibraryDecorator$1.call(LibraryDecorator.java:125)
+20:16:16  	at org.codehaus.groovy.control.CompilationUnit.applyToPrimaryClassNodes(CompilationUnit.java:1065)
+20:16:16  	at org.codehaus.groovy.control.CompilationUnit.doPhaseOperation(CompilationUnit.java:603)
+20:16:16  	at org.codehaus.groovy.control.CompilationUnit.processPhaseOperations(CompilationUnit.java:581)
+20:16:16  	at org.codehaus.groovy.control.CompilationUnit.compile(CompilationUnit.java:558)
+20:16:16  	at groovy.lang.GroovyClassLoader.doParseClass(GroovyClassLoader.java:298)
+20:16:16  	at groovy.lang.GroovyClassLoader.parseClass(GroovyClassLoader.java:268)
+20:16:16  	at groovy.lang.GroovyShell.parseClass(GroovyShell.java:688)
+20:16:16  	at groovy.lang.GroovyShell.parse(GroovyShell.java:700)
+20:16:16  	at org.jenkinsci.plugins.workflow.cps.CpsGroovyShell.doParse(CpsGroovyShell.java:142)
+20:16:16  	at org.jenkinsci.plugins.workflow.cps.CpsGroovyShell.reparse(CpsGroovyShell.java:127)
+20:16:16  	at org.jenkinsci.plugins.workflow.cps.CpsFlowExecution.parseScript(CpsFlowExecution.java:561)
+20:16:16  	at org.jenkinsci.plugins.workflow.cps.CpsFlowExecution.start(CpsFlowExecution.java:522)
+20:16:16  	at org.jenkinsci.plugins.workflow.job.WorkflowRun.run(WorkflowRun.java:337)
+20:16:16  	at hudson.model.ResourceController.execute(ResourceController.java:97)
+20:16:16  	at hudson.model.Executor.run(Executor.java:428)
+20:16:16  Caused by: hudson.plugins.git.GitException: Command "git fetch --tags --progress ssh://git@[REDACTED]:7999/[REDACTED].git +refs/heads/*:refs/remotes/origin/*" returned status code 128:
+20:16:16  stdout: 
+20:16:16  stderr: getaddrinfo: atch: Name or service not known
+20:16:16  ssh: connect to host 7999 port 22: Success
+20:16:16  fatal: Could not read from remote repository.
+20:16:16  
+20:16:16  Please make sure you have the correct access rights
+20:16:16  and the repository exists.
+20:16:16  
+20:16:16  	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandIn(CliGitAPIImpl.java:2430)
+20:16:16  	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandWithCredentials(CliGitAPIImpl.java:2044)
+20:16:16  	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.access$500(CliGitAPIImpl.java:81)
+20:16:16  	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl$1.execute(CliGitAPIImpl.java:569)
+20:16:16  	at hudson.plugins.git.GitSCM.fetchFrom(GitSCM.java:907)
+20:16:16  	... 25 more
+20:16:16  ERROR: Error fetching remote repo 'origin'

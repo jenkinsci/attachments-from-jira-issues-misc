@@ -1,0 +1,21 @@
+pipelineJob(BRANCH) {
+  logRotator {
+    numToKeep(5)
+  }
+  definition {
+    cpsScm {
+      scm {
+        svn {
+          location("http://svn.mycompany.com/proj/branches/${BRANCH}") {
+            depth(SvnDepth.FILES)
+            ignoreExternals(true)
+          }
+        }
+      }
+      scriptPath('Jenkinsfile')
+    }
+  }
+  configure { project ->
+    project / definition / lightweight('true')
+  }
+}

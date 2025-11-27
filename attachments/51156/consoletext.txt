@@ -1,0 +1,39 @@
+Started by user craig
+Running in Durability level: MAX_SURVIVABILITY
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/lib/jenkins/workspace/testscp
+[Pipeline] {
+[Pipeline] withCredentials
+Masking supported pattern matches of $USER_ID or $USER_PASSWORD
+[Pipeline] {
+[Pipeline] echo
+test.txt
+[Pipeline] stage
+[Pipeline] { (Run log gather script on localhost)
+[Pipeline] sshCommand
+Executing command on SOC[localhost]: ls -ltr /tmp/test/test.txt sudo: false
+-rw-rw-r-- 1 ****webster375 ****webster375 92 May  8 01:14 /tmp/test/test.txt
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Download logs from localhost)
+[Pipeline] dir
+Running in /tmp
+[Pipeline] {
+[Pipeline] sshGet
+Receiving a file/directory from SOC[localhost]: from: /tmp/test/test.txt into: /tmp/test.txt
+C0664 92 test.txt
+testing contents of the file here - first line of file being copied
+second line of file....
+�
+[Pipeline] }
+[Pipeline] // dir
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS

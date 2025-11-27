@@ -1,0 +1,46 @@
+"Computer.threadPoolForRemoting [#4827]" daemon prio=10 tid=139986690007040 nid=18795
+   java.lang.Thread.State: BLOCKED (on object monitor)
+	at jenkins.plugins.jclouds.compute.JCloudsRetentionStrategy.check(JCloudsRetentionStrategy.java:22)
+	- waiting to lock <0x78b039950> (a jenkins.plugins.jclouds.compute.JCloudsRetentionStrategy)
+	at jenkins.plugins.jclouds.compute.JCloudsRetentionStrategy.check(JCloudsRetentionStrategy.java:15)
+	at hudson.slaves.SlaveComputer.setNode(SlaveComputer.java:633)
+	at hudson.model.AbstractCIBase.updateComputer(AbstractCIBase.java:120)
+	at hudson.model.AbstractCIBase.updateComputerList(AbstractCIBase.java:179)
+	- locked <0x785548608> (a java.lang.Object)
+	at jenkins.model.Jenkins.updateComputerList(Jenkins.java:1219)
+	at jenkins.model.Jenkins.setNodes(Jenkins.java:1716)
+	at jenkins.model.Jenkins.addNode(Jenkins.java:1698)
+	- locked <0x7855484f0> (a hudson.model.Hudson)
+	at jenkins.plugins.jclouds.compute.JCloudsCloud$2.call(JCloudsCloud.java:205)
+	at jenkins.plugins.jclouds.compute.JCloudsCloud$2.call(JCloudsCloud.java:201)
+	at jenkins.util.ContextResettingExecutorService$2.call(ContextResettingExecutorService.java:46)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:262)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+	at java.lang.Thread.run(Thread.java:745)
+
+   Locked ownable synchronizers:
+	- <0x78bad2d00> (a java.util.concurrent.ThreadPoolExecutor$Worker)
+
+
+"jenkins.util.Timer [#5]" daemon prio=10 tid=139987086028800 nid=28288
+   java.lang.Thread.State: BLOCKED (on object monitor)
+	at jenkins.model.Jenkins.save(Jenkins.java:2674)
+	- waiting to lock <0x7855484f0> (a hudson.model.Hudson)
+	at hudson.model.Node.setTemporaryOfflineCause(Node.java:221)
+	at hudson.model.Computer.setTemporarilyOffline(Computer.java:592)
+	at jenkins.plugins.jclouds.compute.JCloudsRetentionStrategy.check(JCloudsRetentionStrategy.java:31)
+	- locked <0x78b039950> (a jenkins.plugins.jclouds.compute.JCloudsRetentionStrategy)
+	at jenkins.plugins.jclouds.compute.JCloudsRetentionStrategy.check(JCloudsRetentionStrategy.java:15)
+	at hudson.slaves.ComputerRetentionWork.doRun(ComputerRetentionWork.java:66)
+	at hudson.triggers.SafeTimerTask.run(SafeTimerTask.java:54)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)
+	at java.util.concurrent.FutureTask.runAndReset(FutureTask.java:304)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$301(ScheduledThreadPoolExecutor.java:178)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:293)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+	at java.lang.Thread.run(Thread.java:745)
+
+   Locked ownable synchronizers:
+	- <0x785e29890> (a java.util.concurrent.ThreadPoolExecutor$Worker)

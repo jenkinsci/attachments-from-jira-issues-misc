@@ -1,0 +1,194 @@
+From af3b45dbe6b0e7bc5b76d10d6f78e58b86bd1859 Mon Sep 17 00:00:00 2001
+From: Sergio Ahumada <sahumada@gmail.com>
+Date: Thu, 20 Feb 2014 00:40:30 +0100
+Subject: [PATCH] Fix JENKINS-21883
+
+Also update qtestlib-to-junit-4.xsl while we are it.
+---
+ .../plugins/xunit/types/QTestLibInputMetric.java   |   2 +-
+ .../plugins/xunit/types/qtestlib-to-junit-4.xsl    | 132 +++++++++++++++------
+ 2 files changed, 97 insertions(+), 37 deletions(-)
+
+diff --git a/src/main/java/org/jenkinsci/plugins/xunit/types/QTestLibInputMetric.java b/src/main/java/org/jenkinsci/plugins/xunit/types/QTestLibInputMetric.java
+index dc7ae4e..0627215 100644
+--- a/src/main/java/org/jenkinsci/plugins/xunit/types/QTestLibInputMetric.java
++++ b/src/main/java/org/jenkinsci/plugins/xunit/types/QTestLibInputMetric.java
+@@ -42,6 +42,6 @@ public class QTestLibInputMetric extends InputMetricXSL {
+ 
+     @Override
+     public OutputMetric getOutputFormatType() {
+-        return JUnitModel.OUTPUT_JUNIT_4;
++        return JUnitModel.OUTPUT_JUNIT_5;
+     }
+ }
+diff --git a/src/main/resources/org/jenkinsci/plugins/xunit/types/qtestlib-to-junit-4.xsl b/src/main/resources/org/jenkinsci/plugins/xunit/types/qtestlib-to-junit-4.xsl
+index 5c25ef8..d384f68 100644
+--- a/src/main/resources/org/jenkinsci/plugins/xunit/types/qtestlib-to-junit-4.xsl
++++ b/src/main/resources/org/jenkinsci/plugins/xunit/types/qtestlib-to-junit-4.xsl
+@@ -1,12 +1,13 @@
++<?xml version="1.0" encoding="utf-8"?>
+ <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+-
++  <!-- for details interpreting unit test results http://qt-project.org/wiki/Writing_Unit_Tests -->
+   <xsl:output method="xml" indent="yes" />
+   <xsl:decimal-format decimal-separator="." grouping-separator="," />
+ 
+   <!-- misc variables -->
+   <xsl:variable name="classname" select="/TestCase/@name" />
+   <xsl:variable name="total-tests" select="count(/TestCase/TestFunction)" />
+-  <xsl:variable name="total-failures" select="count(/TestCase/TestFunction/Incident[@type='fail'])" />
++  <xsl:variable name="total-failures" select="count(/TestCase/TestFunction/Incident[@type='fail'])+count(/TestCase/TestFunction/Incident[@type='xpass'])" />
+ 
+   <!-- main template call -->
+   <xsl:template match="/">
+@@ -44,39 +45,46 @@
+       </xsl:choose>
+     </xsl:variable>
+     <testcase classname="{$classname}" name="{@name}" time="{format-number($msecsFunction div 1000,'0.000')}">
+-
+-      <!-- handle skip -->
+-      <xsl:if test="Message/@type = 'skip'">
+-        <!-- will be used to generate "nice" error message -->
+-        <xsl:variable name="file" select="Message[@type='skip']/@file" />
+-        <xsl:variable name="line" select="Message[@type='skip']/@line" />
+-        <xsl:variable name="description">
+-          <xsl:value-of select="Message[@type='skip']/Description" />
+-        </xsl:variable>
+-
+-        <!-- display a reasonable skipped message -->
+-        <xsl:element name="skipped">
+-            <xsl:value-of select="concat($file,':',$line,' :: ',$description)" />
+-        </xsl:element>
+-      </xsl:if>
+-
+-      <!-- handle fail -->
+-      <xsl:if test="Incident/@type = 'fail'">
+-        <!-- will be used to generate "nice" error message -->
+-        <xsl:variable name="file" select="Incident[@type='fail']/@file" />
+-        <xsl:variable name="line" select="Incident[@type='fail']/@line" />
+-        <xsl:variable name="description">
+-          <xsl:value-of select="Incident[@type='fail']/Description" />
+-        </xsl:variable>
+-
+-        <!-- display a reasonable error message -->
+-        <xsl:element name="failure">
+-          <xsl:attribute name="type">failure</xsl:attribute>
+-          <xsl:attribute name="message">
+-            <xsl:value-of select="concat($file,':',$line,' :: ',$description)" />
+-          </xsl:attribute>
+-        </xsl:element>
+-      </xsl:if>
++      <!-- we need to use choose here, because jenkins cannot not handle fail and afterwards skip -->
++      <xsl:choose>
++        <!-- handle fail -->
++        <xsl:when test="Incident/@type = 'fail'">
++          <!-- will be used to generate "nice" error message -->
++          <xsl:variable name="file" select="Incident[@type='fail']/@file" />
++          <xsl:variable name="line" select="Incident[@type='fail']/@line" />
++          <xsl:variable name="description">
++            <xsl:value-of select="Incident[@type='fail']/Description" />
++          </xsl:variable>
++          <xsl:variable name="datatag">
++            <xsl:value-of select="Incident[@type='fail']/DataTag" />
++          </xsl:variable>
++          <!-- display a reasonable error message -->
++          <xsl:element name="failure">
++            <xsl:attribute name="type">failure</xsl:attribute>
++            <xsl:attribute name="message">
++              <xsl:value-of select="concat($file,':',$line,' :: [',$datatag,'] ',$description)" />
++            </xsl:attribute>
++          </xsl:element>
++        </xsl:when>
++        <!-- handle skip -->
++        <xsl:when test="Message/@type = 'skip'">
++          <!-- will be used to generate "nice" error message -->
++          <xsl:variable name="file" select="Message[@type='skip']/@file"/>
++          <xsl:variable name="line" select="Message[@type='skip']/@line"/>
++          <xsl:variable name="description">
++            <xsl:value-of select="Message[@type='skip']/Description"/>
++          </xsl:variable>
++          <xsl:variable name="datatag">
++            <xsl:value-of select="Message[@type='skip']/DataTag"/>
++          </xsl:variable>
++          <!-- display a reasonable skipped message -->
++          <xsl:element name="skipped">
++            <xsl:attribute name="message">
++              <xsl:value-of select="concat($file,':',$line,' :: [',$datatag,'] ',$description)"/>
++            </xsl:attribute>
++          </xsl:element>
++        </xsl:when>
++      </xsl:choose>
+ 
+       <!-- handle xfail -->
+       <xsl:if test="Incident/@type = 'xfail'">
+@@ -98,6 +106,26 @@
+         </system-out>
+       </xsl:if>
+ 
++      <!-- handle xpass -->
++      <xsl:if test="Incident/@type = 'xpass'">
++        <system-out>
++          <xsl:for-each select="Incident[@type='xpass']">
++            <!-- will be used to generate "nice" error message -->
++            <xsl:variable name="file" select="@file" />
++            <xsl:variable name="line" select="@line" />
++            <xsl:variable name="description">
++              <xsl:value-of select="Description" />
++            </xsl:variable>
++
++            <!-- display a reasonable error message -->
++            <xsl:text>&#10;</xsl:text>
++            <xsl:text disable-output-escaping="yes">&lt;![CDATA[XPASS : </xsl:text>
++            <xsl:value-of select="concat($file,':',$line,' :: ',$description)" disable-output-escaping="yes"/>
++            <xsl:text disable-output-escaping="yes">]]&gt;</xsl:text>
++          </xsl:for-each>
++        </system-out>
++      </xsl:if>
++
+       <!-- handle pass -->
+       <xsl:if test="Incident/@type = 'pass'">
+         <xsl:if test="Message[@type='qdebug'] | Message[@type='qwarn'] | Message[@type='warn']">
+@@ -127,7 +155,39 @@
+           </system-err>
+         </xsl:if>
+       </xsl:if>
+-
++      <!-- handle qdebug, qwarn and warn -->
++      <xsl:if test="Message[@type='qdebug'] | Message[@type='qwarn'] | Message[@type='warn']">
++        <system-err>
++          <xsl:for-each select="Message[@type='qdebug'] | Message[@type='qwarn'] | Message[@type='warn']">
++            <xsl:choose>
++              <xsl:when test="@type='qdebug'">
++                <xsl:variable name="file" select="Message[@type='qdebug']/@file"/>
++                <xsl:variable name="line" select="Message[@type='qdebug']/@line"/>
++                <xsl:text>&#10;</xsl:text>
++                <xsl:text disable-output-escaping="yes">&lt;![CDATA[QDEBUG : </xsl:text>
++                <xsl:value-of select="Description" disable-output-escaping="yes"/>
++                <xsl:text disable-output-escaping="yes">]]&gt;</xsl:text>
++              </xsl:when>
++              <xsl:when test="@type='qwarn'">
++                <xsl:variable name="file" select="Message[@type='qwarn']/@file"/>
++                <xsl:variable name="line" select="Message[@type='qwarn']/@line"/>
++                <xsl:text>&#10;</xsl:text>
++                <xsl:text disable-output-escaping="yes">&lt;![CDATA[QWARN : </xsl:text>
++                <xsl:value-of select="Description" disable-output-escaping="yes"/>
++                <xsl:text disable-output-escaping="yes">]]&gt;</xsl:text>
++              </xsl:when>
++              <xsl:when test="@type='warn'">
++                <xsl:variable name="file" select="Message[@type='warn']/@file"/>
++                <xsl:variable name="line" select="Message[@type='warn']/@line"/>
++                <xsl:text>&#10;</xsl:text>
++                <xsl:text disable-output-escaping="yes">&lt;![CDATA[WARNING : </xsl:text>
++                <xsl:value-of select="Description" disable-output-escaping="yes"/>
++                <xsl:text disable-output-escaping="yes">]]&gt;</xsl:text>
++              </xsl:when>
++            </xsl:choose>
++          </xsl:for-each>
++        </system-err>
++      </xsl:if>
+     </testcase>
+ 
+   </xsl:template>
+-- 
+1.8.5.3
+

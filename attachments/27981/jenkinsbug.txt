@@ -1,0 +1,101 @@
+[11/12/14 19:49:37] [SSH] Opening SSH connection to UVTEST002CNC:22.
+[11/12/14 19:49:37] [SSH] Authentication successful.
+[11/12/14 19:49:37] [SSH] The remote users environment is:
+BASH=/bin/bash
+BASHOPTS=cmdhist:complete_fullquote:extquote:force_fignore:hostcomplete:interactive_comments:progcomp:promptvars:sourcepath
+BASH_ALIASES=()
+BASH_ARGC=()
+BASH_ARGV=()
+BASH_CMDS=()
+BASH_EXECUTION_STRING=set
+BASH_LINENO=()
+BASH_SOURCE=()
+BASH_VERSINFO=([0]="4" [1]="3" [2]="11" [3]="1" [4]="release" [5]="x86_64-pc-linux-gnu")
+BASH_VERSION='4.3.11(1)-release'
+DIRSTACK=()
+EUID=1000
+GROUPS=()
+HOME=/home/jenkins
+HOSTNAME=uvtest002cnc
+HOSTTYPE=x86_64
+IFS=$' \t\n'
+LANG=en_CA.UTF-8
+LANGUAGE=en_CA:en
+LOGNAME=jenkins
+MACHTYPE=x86_64-pc-linux-gnu
+MAIL=/var/mail/jenkins
+OPTERR=1
+OPTIND=1
+OSTYPE=linux-gnu
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib:/usr/local/java/jre1.7.0_45:/usr/local/java/jdk1.7.0_71:/var/lib/chromedriver:/var/lib/selenium
+PIPESTATUS=([0]="0")
+PPID=21814
+PS4='+ '
+PWD=/home/jenkins
+SHELL=/bin/bash
+SHELLOPTS=braceexpand:hashall:interactive-comments
+SHLVL=1
+TERM=dumb
+UID=1000
+USER=jenkins
+XDG_RUNTIME_DIR=/run/user/1000
+XDG_SESSION_ID=97
+_=']'
+[11/12/14 19:49:37] [SSH] Checking java version of java
+[11/12/14 19:49:37] [SSH] java -version returned 1.7.0_65.
+[11/12/14 19:49:37] [SSH] Starting sftp client.
+[11/12/14 19:49:37] [SSH] Copying latest slave.jar...
+[11/12/14 19:49:37] [SSH] Copied 439,117 bytes.
+Expanded the channel window size to 4MB
+[11/12/14 19:49:37] [SSH] Starting slave process: cd "/uv/uvjenkinsstor001/test002/jobs" && java  -jar slave.jar
+<===[JENKINS REMOTING CAPACITY]===>channel started
+Slave.jar version: 2.47
+This is a Unix slave
+Starting Selenium nodes on UVTEST002CNC
+$ /usr/lib/jvm/java-7-openjdk-amd64/jre/bin/java -Dwebdriver.chrome.driver=-Dwebdriver.chrome.driver=/var/lib/chromedriver/chromedriver -cp /uv/uvjenkinsstor001/test002/jobs/slave.jar hudson.remoting.Launcher -cp /uv/uvjenkinsstor001/test002/jobs/selenium-server-standalone-2.41.0.jar -connectTo localhost:42656
+ERROR: Unexpected error in launching a slave. This is probably a bug in Jenkins.
+java.lang.NullPointerException
+	at hudson.plugins.selenium.callables.SeleniumCallable.invoke(SeleniumCallable.java:98)
+	at hudson.plugins.selenium.callables.SeleniumCallable.invoke(SeleniumCallable.java:24)
+	at hudson.FilePath$FileCallableWrapper.call(FilePath.java:2665)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:121)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:49)
+	at hudson.remoting.Request$2.run(Request.java:324)
+	at hudson.remoting.InterceptingExecutorService$1.call(InterceptingExecutorService.java:68)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:262)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+	at java.lang.Thread.run(Thread.java:745)
+	at ......remote call to UVTEST002CNC(Native Method)
+	at hudson.remoting.Channel.attachCallSiteStackTrace(Channel.java:1356)
+	at hudson.remoting.UserResponse.retrieve(UserRequest.java:221)
+	at hudson.remoting.Channel.call(Channel.java:752)
+	at hudson.FilePath.act(FilePath.java:970)
+	at hudson.FilePath.act(FilePath.java:959)
+	at hudson.plugins.selenium.process.SeleniumJarRunner.start(SeleniumJarRunner.java:46)
+	at hudson.plugins.selenium.configuration.global.SeleniumGlobalConfiguration.start(SeleniumGlobalConfiguration.java:55)
+	at hudson.plugins.selenium.PluginImpl.startSeleniumNode(PluginImpl.java:444)
+	at hudson.plugins.selenium.ComputerListenerImpl.onOnline(ComputerListenerImpl.java:26)
+	at hudson.slaves.SlaveComputer.setChannel(SlaveComputer.java:529)
+	at hudson.slaves.SlaveComputer.setChannel(SlaveComputer.java:366)
+	at hudson.plugins.sshslaves.SSHLauncher.startSlave(SSHLauncher.java:945)
+	at hudson.plugins.sshslaves.SSHLauncher.access$400(SSHLauncher.java:133)
+	at hudson.plugins.sshslaves.SSHLauncher$2.call(SSHLauncher.java:711)
+	at hudson.plugins.sshslaves.SSHLauncher$2.call(SSHLauncher.java:696)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:262)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+	at java.lang.Thread.run(Thread.java:745)
+[11/12/14 19:49:41] Launch failed - cleaning up connection
+[11/12/14 19:49:41] [SSH] Connection closed.
+ERROR: Connection terminated
+java.io.IOException: Unexpected termination of the channel
+	at hudson.remoting.SynchronousCommandTransport$ReaderThread.run(SynchronousCommandTransport.java:50)
+Caused by: java.io.EOFException
+	at java.io.ObjectInputStream$PeekInputStream.readFully(ObjectInputStream.java:2325)
+	at java.io.ObjectInputStream$BlockDataInputStream.readShort(ObjectInputStream.java:2794)
+	at java.io.ObjectInputStream.readStreamHeader(ObjectInputStream.java:801)
+	at java.io.ObjectInputStream.<init>(ObjectInputStream.java:299)
+	at hudson.remoting.ObjectInputStreamEx.<init>(ObjectInputStreamEx.java:40)
+	at hudson.remoting.AbstractSynchronousByteArrayCommandTransport.read(AbstractSynchronousByteArrayCommandTransport.java:34)
+	at hudson.remoting.SynchronousCommandTransport$ReaderThread.run(SynchronousCommandTransport.java:48)

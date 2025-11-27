@@ -1,0 +1,90 @@
+pipeline {
+    agent none
+
+    options {
+        timestamps()
+    }
+
+    stages {
+
+         stage('Run Initial Tests') {
+            parallel {
+
+                stage('Run Unit Test') {
+                    steps {
+                        sh 'mvn install -Dsurefire.rerunFailingTestsCount=2'
+                    }
+                }
+
+                stage('Checkstyles') {
+                    steps {
+                        sh 'mvn -e -U -V validate -Pcheckstyle -DskipTests -fae -T 1C'
+                    }
+                }
+
+                stage('Run Integration Test') {
+                    steps {
+                        sh 'mvn -e -U -V test -Pitest -T 1C -Dsurefire.rerunFailingTestsCount=2'
+                    }
+                }
+
+                stage('Sonar Analysis') {
+                      steps {
+                            withSonarQubeEnv('SonarQube') {
+                                  sh 'mvn -V package -DskipTests org.sonarsource.scanner.maven:sonar-maven-plugin:3.2:sonar \
+                                   -Dsonar.java.binaries=target/classes \
+                                   -Dsonar.analysis.mode=preview \
+                                   -Dsonar.report.export.path=sonar-report.json \
+                                   -Dsonar.issuesReport.html.enable=true \
+                                   -Dsonar.issuesReport.lightModeOnly'
+                                   publishHTML target: [
+                                               allowMissing: false,
+                                               alwaysLinkToLastBuild: false,
+                                               keepAll: true,
+                                               reportDir: 'target\\sonar\\issues-report',
+                                               reportFiles: 'issues-report-light.html',
+                                               reportName: 'Sonar Report'
+                                             ]
+                            }
+                      }
+                }
+            }
+         }
+
+        stage('Create Docker Image SNAPSHOT') {
+            steps {
+                sh 'echo "Create docker container not implemented"'
+            }
+        }
+
+        stage('Deploy To Test Environment') {
+            steps {
+                sh 'echo "Deploy to Docker not implemented"'
+            }
+        }
+
+        stage('Run Health Checks') {
+            steps {
+                sh 'echo "Run Health Checks not implemented"'
+            }
+        }
+
+        stage('Run Acceptance Tests') {
+            steps {
+                sh 'echo "Run Acceptance tests not implemented"'
+            }
+        }
+
+        stage('Run Backward Compatibility Tests') {
+            steps {
+                sh 'echo "Run Backward Compatibility tests not implemented"'
+            }
+        }
+
+         stage('Remove Environment') {
+             steps {
+                 sh 'echo "Remove Environment not implemented"'
+             }
+         }
+    }
+}

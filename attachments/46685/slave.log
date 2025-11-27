@@ -1,0 +1,26 @@
+SSHLauncher{host='172.31.26.109', port=22, credentialsId='slave-key', jvmOptions='', javaPath='', prefixStartSlaveCmd='', suffixStartSlaveCmd='', launchTimeoutSeconds=210, maxNumRetries=10, retryWaitTime=15, sshHostKeyVerificationStrategy=hudson.plugins.sshslaves.verifiers.ManuallyTrustedKeyVerificationStrategy, tcpNoDelay=true, trackCredentials=true}
+[04/11/19 10:30:59] [SSH] Opening SSH connection to 172.31.26.109:22.
+[04/11/19 10:30:59] [SSH] SSH host key matches key seen previously for this host. Connection will be allowed.
+ERROR: Server rejected the 1 private key(s) for ubuntu (credentialId:slave-key/method:publickey)
+ERROR: Failed to authenticate as ubuntu with credential=slave-key
+java.io.IOException: Publickey authentication failed.
+	at com.trilead.ssh2.auth.AuthenticationManager.authenticatePublicKey(AuthenticationManager.java:302)
+	at com.trilead.ssh2.Connection.authenticateWithPublicKey(Connection.java:451)
+	at com.cloudbees.jenkins.plugins.sshcredentials.impl.TrileadSSHPublicKeyAuthenticator.doAuthenticate(TrileadSSHPublicKeyAuthenticator.java:109)
+	at com.cloudbees.jenkins.plugins.sshcredentials.SSHAuthenticator.authenticate(SSHAuthenticator.java:436)
+	at com.cloudbees.jenkins.plugins.sshcredentials.SSHAuthenticator.authenticate(SSHAuthenticator.java:473)
+	at hudson.plugins.sshslaves.SSHLauncher.openConnection(SSHLauncher.java:1213)
+	at hudson.plugins.sshslaves.SSHLauncher$2.call(SSHLauncher.java:846)
+	at hudson.plugins.sshslaves.SSHLauncher$2.call(SSHLauncher.java:833)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+Caused by: java.io.IOException: PEM problem: it is of unknown type
+	at com.trilead.ssh2.crypto.PEMDecoder.decodeKeyPair(PEMDecoder.java:500)
+	at com.trilead.ssh2.auth.AuthenticationManager.authenticatePublicKey(AuthenticationManager.java:236)
+	... 11 more
+[04/11/19 10:30:59] [SSH] Authentication failed.
+Authentication failed.
+[04/11/19 10:30:59] Launch failed - cleaning up connection
+[04/11/19 10:30:59] [SSH] Connection closed.

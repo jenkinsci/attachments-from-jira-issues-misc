@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<BugCollection version="1.2.1" sequence="0" timestamp="1192997192289" analysisTimestamp="1192997194835" release="">
+  <Project filename="&lt;&lt;unnamed project&gt;&gt;" projectName="">
+    <Jar>C:\Dokumente und Einstellungen\Administrator\.hudson\jobs\JavaAppllikation\workspace\JavaApplication5\build</Jar>
+    <AuxClasspathEntry>E:\Programme\netbeans-5.5.1\ide7\modules\ext\junit-3.8.1.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>E:\glassfish\lib\javaee.jar</AuxClasspathEntry>
+    <SrcDir>C:\Dokumente und Einstellungen\Administrator\.hudson\jobs\JavaAppllikation\workspace\JavaApplication5\src</SrcDir>
+    <SrcDir>C:\Dokumente und Einstellungen\Administrator\.hudson\jobs\JavaAppllikation\workspace\JavaApplication5\test</SrcDir>
+  </Project>
+  <BugInstance type="WMI_WRONG_MAP_ITERATOR" priority="2" abbrev="WMI" category="PERFORMANCE" instanceHash="f7961066127769264c200594138b534c" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Inefficient use of keySet iterator instead of entrySet iterator</ShortMessage>
+    <LongMessage>Method de.jiai.demo.Main.main(String[]) makes inefficient use of keySet iterator instead of entrySet iterator</LongMessage>
+    <Class classname="de.jiai.demo.Main">
+      <SourceLine classname="de.jiai.demo.Main" start="25" end="78" sourcefile="Main.java" sourcepath="de/jiai/demo/Main.java">
+        <Message>At Main.java:[lines 25-78]</Message>
+      </SourceLine>
+      <Message>In class de.jiai.demo.Main</Message>
+    </Class>
+    <Method classname="de.jiai.demo.Main" name="main" signature="([Ljava/lang/String;)V" isStatic="true">
+      <SourceLine classname="de.jiai.demo.Main" start="35" end="53" startBytecode="0" endBytecode="357" sourcefile="Main.java" sourcepath="de/jiai/demo/Main.java"/>
+      <Message>In method de.jiai.demo.Main.main(String[])</Message>
+    </Method>
+    <SourceLine classname="de.jiai.demo.Main" start="38" end="38" startBytecode="61" endBytecode="61" sourcefile="Main.java" sourcepath="de/jiai/demo/Main.java">
+      <Message>At Main.java:[line 38]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="WMI_WRONG_MAP_ITERATOR" priority="2" abbrev="WMI" category="PERFORMANCE" instanceHash="332eab284567aeb1c939612cf98b7b07" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Inefficient use of keySet iterator instead of entrySet iterator</ShortMessage>
+    <LongMessage>Method de.jiai.demo.Main.main2(String[]) makes inefficient use of keySet iterator instead of entrySet iterator</LongMessage>
+    <Class classname="de.jiai.demo.Main">
+      <SourceLine classname="de.jiai.demo.Main" start="25" end="78" sourcefile="Main.java" sourcepath="de/jiai/demo/Main.java">
+        <Message>At Main.java:[lines 25-78]</Message>
+      </SourceLine>
+      <Message>In class de.jiai.demo.Main</Message>
+    </Class>
+    <Method classname="de.jiai.demo.Main" name="main2" signature="([Ljava/lang/String;)V" isStatic="true">
+      <SourceLine classname="de.jiai.demo.Main" start="61" end="78" startBytecode="0" endBytecode="323" sourcefile="Main.java" sourcepath="de/jiai/demo/Main.java"/>
+      <Message>In method de.jiai.demo.Main.main2(String[])</Message>
+    </Method>
+    <SourceLine classname="de.jiai.demo.Main" start="64" end="64" startBytecode="61" endBytecode="61" sourcefile="Main.java" sourcepath="de/jiai/demo/Main.java">
+      <Message>At Main.java:[line 64]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="WMI_WRONG_MAP_ITERATOR" priority="2" abbrev="WMI" category="PERFORMANCE" instanceHash="ce0571ed02694c26fcfa0b0be5ee72bf" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Inefficient use of keySet iterator instead of entrySet iterator</ShortMessage>
+    <LongMessage>Method de.jiai.demo.beans.NewBean.main2(String[]) makes inefficient use of keySet iterator instead of entrySet iterator</LongMessage>
+    <Class classname="de.jiai.demo.beans.NewBean">
+      <SourceLine classname="de.jiai.demo.beans.NewBean" start="27" end="96" sourcefile="NewBean.java" sourcepath="de/jiai/demo/beans/NewBean.java">
+        <Message>At NewBean.java:[lines 27-96]</Message>
+      </SourceLine>
+      <Message>In class de.jiai.demo.beans.NewBean</Message>
+    </Class>
+    <Method classname="de.jiai.demo.beans.NewBean" name="main2" signature="([Ljava/lang/String;)V" isStatic="true">
+      <SourceLine classname="de.jiai.demo.beans.NewBean" start="79" end="96" startBytecode="0" endBytecode="323" sourcefile="NewBean.java" sourcepath="de/jiai/demo/beans/NewBean.java"/>
+      <Message>In method de.jiai.demo.beans.NewBean.main2(String[])</Message>
+    </Method>
+    <SourceLine classname="de.jiai.demo.beans.NewBean" start="82" end="82" startBytecode="61" endBytecode="61" sourcefile="NewBean.java" sourcepath="de/jiai/demo/beans/NewBean.java">
+      <Message>At NewBean.java:[line 82]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugCategory category="PERFORMANCE">
+    <Description>Performance</Description>
+  </BugCategory>
+  <BugPattern type="WMI_WRONG_MAP_ITERATOR" abbrev="WMI" category="PERFORMANCE">
+    <ShortDescription>Inefficient use of keySet iterator instead of entrySet iterator</ShortDescription>
+    <Details><![CDATA[
+
+<p> This method accesses the value of a Map entry, using a key that was retrieved from
+a keySet iterator. It is more efficient to use an iterator on the entrySet of the map, to avoid the
+Map.get(key) lookup.</p>
+
+        ]]></Details>
+  </BugPattern>
+  <BugCode abbrev="WMI">
+    <Description>Wrong Map Iterator</Description>
+  </BugCode>
+  <Errors></Errors>
+  <FindBugsSummary timestamp="Sun, 21 Oct 2007 22:06:32 +0200" total_classes="4" total_bugs="3" total_size="99" num_packages="2" cpu_seconds="3.19" clock_seconds="3.30" peak_mbytes="30.57" gc_seconds="0.76" priority_2="3">
+    <PackageStats package="de.jiai.demo" total_bugs="2" total_types="2" total_size="38" priority_2="2">
+      <ClassStats class="de.jiai.demo.Main" sourceFile="Main.java" interface="false" size="29" bugs="2" priority_2="2"/>
+      <ClassStats class="de.jiai.demo.MainTest" sourceFile="MainTest.java" interface="false" size="9" bugs="0"/>
+    </PackageStats>
+    <PackageStats package="de.jiai.demo.beans" total_bugs="1" total_types="2" total_size="61" priority_2="1">
+      <ClassStats class="de.jiai.demo.beans.NewBean" sourceFile="NewBean.java" interface="false" size="28" bugs="1" priority_2="1"/>
+      <ClassStats class="de.jiai.demo.beans.NewBeanTest" sourceFile="NewBeanTest.java" interface="false" size="33" bugs="0"/>
+    </PackageStats>
+  </FindBugsSummary>
+  <ClassFeatures></ClassFeatures>
+  <History></History>
+</BugCollection>

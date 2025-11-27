@@ -1,0 +1,42 @@
+stage("example stage") 
+{
+    node(windows_node)
+    {
+        ws("E:/workspace/directory")
+        {
+            String _ws_jenkins = workspace.replace("\\", "/") + "/"
+            String _ws_container = "C:/workspace/within/container"
+            String _wd_container = "C:/workdir/within/container"
+            
+            // current behavior
+            def _img = docker.image("mcr.microsoft.com/windows/servercore:ltsc2016")
+            _img.pull()
+            echo "expected command: 'docker run -d -t -w ${_ws_jenkins} -v ${_ws_jenkins}:${_ws_jenkins} -v ${_ws_jenkins}@tmp:${_ws_jenkins}@tmp'"
+            _img.inside()
+            {
+                echo bat("dir")
+            }
+            
+            // proposal A) - set the path as property
+            _img.SetContainerWorkspace(${_ws_container})
+            _img.SetWorkDir(${_wd_container})
+            echo "wanted command: 'docker run -t -d -w ${_wd_container} -v ${_ws_jenkins}:${_ws_container} -v ${_ws_jenkins}@tmp:${_ws_container}@tmp'"
+            _img.inside()
+            {
+                echo bat("dir")
+                // wanted behavior:
+                // docker run -t -d -w ${_wd_container} -v ${_ws_jenkins}:${_ws_container} -v ${_ws_jenkins}@tmp:${_ws_container}@tmp
+            }
+            // proposal B) - remove all starting params so the user can add all he wants to
+            _img.RemoveAllParams()
+            echo "wanted command: 'docker run -t -d -w ${_wd_container} -v ${_ws_jenkins}:${_ws_container} -v ${_ws_jenkins}@tmp:${_ws_container}@tmp'"
+            _img.inside("-t -d -w ${_wd_container} -v ${_ws_jenkins}:${_ws_container} -v ${_ws_jenkins}@tmp:${_ws_container}@tmp")
+            {
+                echo bat("dir")
+                // wanted behavior (same like probosal A):
+                // docker run -t -d -w ${_wd_container} -v ${_ws_jenkins}:${_ws_container} -v ${_ws_jenkins}@tmp:${_ws_container}@tmp
+            }
+        }
+    }
+}
+

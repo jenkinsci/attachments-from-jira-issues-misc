@@ -1,0 +1,115 @@
+diff --git a/src/main/java/hudson/plugins/mercurial/HgExe.java b/src/main/java/hudson/plugins/mercurial/HgExe.java
+index 2c375dc..3165fde 100644
+--- a/src/main/java/hudson/plugins/mercurial/HgExe.java
++++ b/src/main/java/hudson/plugins/mercurial/HgExe.java
+@@ -176,6 +176,16 @@ public class HgExe {
+         return id;
+     }
+ 
++    public @CheckForNull String tip_revid(FilePath repository) throws IOException, InterruptedException {
++        String id = popen(repository, listener, false, new ArgumentListBuilder("log", "--rev", ".", "--template", "{rev}"));
++        if (!REVISIONREVID_PATTERN.matcher(id).matches()) {
++            listener.error("Expected to get an integer revid but got '" + id + "' instead.");
++            return null; 
++        }
++        return id;
++    } 
++    
++    
+     public List<String> toArgList() {
+         return base.toList();
+     }
+@@ -227,4 +237,5 @@ public class HgExe {
+      * Pattern that matches revision ID.
+      */
+     private static final Pattern REVISIONID_PATTERN = Pattern.compile("[0-9a-f]{40}");
++    private static final Pattern REVISIONREVID_PATTERN = Pattern.compile("[0-9]*");
+ }
+diff --git a/src/main/java/hudson/plugins/mercurial/MercurialSCM.java b/src/main/java/hudson/plugins/mercurial/MercurialSCM.java
+index 8727483..1d20184 100644
+--- a/src/main/java/hudson/plugins/mercurial/MercurialSCM.java
++++ b/src/main/java/hudson/plugins/mercurial/MercurialSCM.java
+@@ -253,7 +253,7 @@ public class MercurialSCM extends SCM implements Serializable {
+         // tag action is added during checkout, so this shouldn't be called, but just in case.
+         HgExe hg = new HgExe(this, launcher, build, listener, build.getEnvironment(listener));
+         String tip = hg.tip(workspace2Repo(build.getWorkspace()));
+-        return tip != null ? new MercurialTagAction(tip) : null;
++        return tip != null ? new MercurialTagAction(tip) : null;     
+     }
+ 
+     private static final String FILES_STYLE = "changeset = 'id:{node}\\nfiles:{files}\\n'\n" + "file = '{file}:'";
+@@ -544,7 +544,11 @@ public class MercurialSCM extends SCM implements Serializable {
+         if (tip != null) {
+             build.addAction(new MercurialTagAction(tip));
+         }
+-
++        String tip_revid = hg.tip_revid(repository);
++        if (tip_revid != null) {
++            build.addAction(new MercurialTagAction_REVID(tip_revid));
++        }
++        
+         return true;
+     }
+ 
+@@ -602,7 +606,12 @@ public class MercurialSCM extends SCM implements Serializable {
+         if (tip != null) {
+             build.addAction(new MercurialTagAction(tip));
+         }
+-
++        
++        String tip_revid = hg.tip_revid(repository);
++        if (tip_revid != null) {
++            build.addAction(new MercurialTagAction_REVID(tip_revid));
++        }
++        
+         return createEmptyChangeLog(changelogFile, listener, "changelog");
+     }
+ 
+@@ -612,6 +621,12 @@ public class MercurialSCM extends SCM implements Serializable {
+         if (a != null) {
+             env.put("MERCURIAL_REVISION", a.id);
+         }
++        MercurialTagAction_REVID b = build.getAction(MercurialTagAction_REVID.class);
++        if (b != null) {
++            env.put("MERCURIAL_REVISIONID", b.revid);
++        }
++
++
+     }
+ 
+     @Override
+diff --git a/src/main/java/hudson/plugins/mercurial/MercurialTagAction_REVID.java b/src/main/java/hudson/plugins/mercurial/MercurialTagAction_REVID.java
+new file mode 100644
+index 0000000..45b1382
+--- /dev/null
++++ b/src/main/java/hudson/plugins/mercurial/MercurialTagAction_REVID.java
+@@ -0,0 +1,31 @@
++package hudson.plugins.mercurial;
++
++import edu.umd.cs.findbugs.annotations.NonNull;
++import hudson.model.AbstractBuild;
++import hudson.scm.SCMRevisionState;
++import org.kohsuke.stapler.export.Exported;
++import org.kohsuke.stapler.export.ExportedBean;
++
++/**
++ * Action contributed to {@link AbstractBuild} from Mercurial.
++ *
++ * <p>  
++ * Currently it just remembers the revision ID, but we want to extend this to cover tagging.
++ */
++@ExportedBean(defaultVisibility = 999)
++public class MercurialTagAction_REVID extends SCMRevisionState {
++
++	/**
++	 * integer revision name, e.g. {@code 2234} from {@code hg log -r . --template '{rev}'}
++	 */
++	public final String revid;
++
++	public MercurialTagAction_REVID(@NonNull String revid) {
++
++		this.revid = revid;	
++		
++	}
++
++}

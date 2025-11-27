@@ -1,0 +1,395 @@
+Index: C:/docs/hudson/project/plugins/email-ext/src/main/java/hudson/plugins/emailext/plugins/content/ChangesSinceLastSuccessfulBuildContent.java
+===================================================================
+--- C:/docs/hudson/project/plugins/email-ext/src/main/java/hudson/plugins/emailext/plugins/content/ChangesSinceLastSuccessfulBuildContent.java	(revision 11045)
++++ C:/docs/hudson/project/plugins/email-ext/src/main/java/hudson/plugins/emailext/plugins/content/ChangesSinceLastSuccessfulBuildContent.java	(working copy)
+@@ -20,6 +20,10 @@
+ 		
+ 		AbstractBuild<P,B> lastSuccessfulBuild = build.getPreviousNotFailedBuild();
+ 		
++		//Hack for now need to think about it
++		if(lastSuccessfulBuild == null){
++			return "";
++		}
+ 		StringBuffer sb = new StringBuffer();
+ 		
+ 		while(lastSuccessfulBuild!=build){
+Index: C:/docs/hudson/project/plugins/email-ext/src/main/java/hudson/plugins/emailext/EmailExtHelp.java
+===================================================================
+--- C:/docs/hudson/project/plugins/email-ext/src/main/java/hudson/plugins/emailext/EmailExtHelp.java	(revision 11045)
++++ C:/docs/hudson/project/plugins/email-ext/src/main/java/hudson/plugins/emailext/EmailExtHelp.java	(working copy)
+@@ -20,8 +20,17 @@
+     			"will be used for each email that is sent. NOTE: this can be overridden " +
+     			"in for each email trigger type in the Advanced section.</p>\n" +
+     			
++    			"<p><b>Default Content is Script - </b>Specifies whether the mail's content " +
++    			"should be interpreted as Groovy <a href=\"http://groovy.codehaus.org/Groovy+Templates\">SimpleTemplate</a>" +
++    			"</p>\n" +
++    			
++    			"<p><b>Default Content Type is HTML - </b>Specifies that mail content type " +
++    			"should be set to HTML</p>\n" +
++    			
+     			"<p><b>Default Content - </b>This is the default email content that " +
+-    			"will be used for each email that is sent. NOTE: this can be overridden " +
++    			"will be used for each email that is sent. If the <i>Content is Script</i>" +
++    			"is checked then the content is interpreted as a groovy template." +
++    			"NOTE: this can be overridden " +
+     			"in for each email trigger type in the Advanced section.</p>\n" +
+     			"</td></tr>");
+     	
+@@ -67,7 +76,13 @@
+     			
+     			"<p><b>Subject - </b>This is email subject that " +
+     			"will be used for the selected email trigger.</p>\n" +
++
++       			"<p><b>Content is Script - </b>Specifies whether the mail's content " +
++    			"should be interpreted as Groovy script</p>\n" +
+     			
++    			"<p><b>Content Type is HTML - </b>Specifies that mail content type " +
++    			"should be set to HTML</p>\n" +
++    			
+     			"<p><b>Content - </b>This is the default email content that " +
+     			"will be used for the selected email trigger.</p>\n" +
+     			"</td></tr>");
+@@ -103,6 +118,8 @@
+     			.append("</li>\n");
+     	}
+     	sb.append("</ul>\n");
++    	sb.append("<p>In case the content is of type script then it can access the <code>AbstractBuild</code>" +
++    			" object using the <code>build</code> bind variable");
+     	sb.append("</td></tr>");
+     	sb.append("</table>\n");
+     	
+Index: C:/docs/hudson/project/plugins/email-ext/src/main/java/hudson/plugins/emailext/ExtendedEmailPublisher.java
+===================================================================
+--- C:/docs/hudson/project/plugins/email-ext/src/main/java/hudson/plugins/emailext/ExtendedEmailPublisher.java	(revision 11045)
++++ C:/docs/hudson/project/plugins/email-ext/src/main/java/hudson/plugins/emailext/ExtendedEmailPublisher.java	(working copy)
+@@ -1,5 +1,7 @@
+ package hudson.plugins.emailext;
+ 
++import groovy.text.SimpleTemplateEngine;
++import groovy.text.Template;
+ import hudson.Launcher;
+ import hudson.model.AbstractBuild;
+ import hudson.model.AbstractProject;
+@@ -18,6 +20,7 @@
+ import hudson.tasks.Publisher;
+ import hudson.util.FormFieldValidator;
+ 
++import java.io.FileNotFoundException;
+ import java.io.IOException;
+ import java.util.ArrayList;
+ import java.util.Collection;
+@@ -44,6 +47,7 @@
+ import javax.mail.internet.MimeMessage;
+ import javax.servlet.ServletException;
+ 
++import org.codehaus.groovy.control.CompilationFailedException;
+ import org.kohsuke.stapler.QueryParameter;
+ import org.kohsuke.stapler.StaplerRequest;
+ import org.kohsuke.stapler.StaplerResponse;
+@@ -170,6 +174,10 @@
+ 
+ 	public String defaultContent;
+ 	
++    public boolean defaultContentTypeHTML;
++    
++    public boolean defaultContentIsScript;
++	
+ 	/**
+ 	 * Get the list of configured email triggers for this project.
+ 	 */
+@@ -286,16 +294,22 @@
+ 
+     private <P extends AbstractProject<P,B>,B extends AbstractBuild<P,B>> MimeMessage createMail(EmailType type,B build,BuildListener listener) throws MessagingException {
+         MimeMessage msg = new MimeMessage(ExtendedEmailPublisher.DESCRIPTOR.createSession());
+-
+-        //Set the contents of the email
+-        msg.setContent("", "text/plain");
++        
+         msg.setFrom(new InternetAddress(ExtendedEmailPublisher.DESCRIPTOR.getAdminAddress()));
+         msg.setSentDate(new Date());
+         String subject = transformText(type,type.getSubject(),build);
+         msg.setSubject(subject);
+         String text = transformText(type,type.getBody(),build);
+-        msg.setText(text);
+ 
++        //Set the contents of the email
++        if(type.isContentTypeHTML()){
++        	msg.setContent(text, "text/html");
++        }else{
++        	msg.setContent("", "text/plain");
++        	msg.setText(text);
++        }
++       
++
+         //Get the recipients from the global list of addresses
+         List<InternetAddress> rcp = new ArrayList<InternetAddress>();
+         if (type.getSendToRecipientList()){
+@@ -332,15 +346,45 @@
+     }
+     
+     private <P extends AbstractProject<P,B>,B extends AbstractBuild<P,B>> String transformText(EmailType type,String origText,B build){
+-
+     	String newText = origText.replaceAll(PROJECT_DEFAULT_BODY, Matcher.quoteReplacement(defaultContent))
+ 		 						 .replaceAll(PROJECT_DEFAULT_SUBJECT, Matcher.quoteReplacement(defaultSubject))
+     							 .replaceAll(DEFAULT_BODY, Matcher.quoteReplacement(DESCRIPTOR.getDefaultBody()))
+     							 .replaceAll(DEFAULT_SUBJECT, Matcher.quoteReplacement(DESCRIPTOR.getDefaultSubject()));
+-    					
+-    	newText = replaceTokensWithContent(newText, type, build);
++    	
++    	if(type.isScript()){
++    		newText =  transformUsingScript(type,newText,build);
++    	}else{
++    		newText = replaceTokensWithContent(newText, type, build);
++    	}
+     	return newText;
+     }
++    private <P extends AbstractProject<P,B>,B extends AbstractBuild<P,B>> String transformUsingScript(EmailType type,String origText,B build){
++    	SimpleTemplateEngine engine = new SimpleTemplateEngine();
++    	Template template = null;
++		try {
++			template = engine.createTemplate(origText);
++	    	Map binding = new HashMap();
++	    	//Setting the AbstractBuild as a bind variable
++	    	binding.put("build", build);
++	    	
++	    	//Set all the EmailContent as bind variables to be directly used in the script 
++	    	for(Map.Entry<String, EmailContent> contentEntry : EMAIL_CONTENT_TYPE_MAP.entrySet()){
++	    		EmailContent content = contentEntry.getValue();
++	    		String contentText = content.getContent(build, type);
++    			if(content.hasNestedContent()){
++    				contentText = replaceTokensWithContent(contentText, type, build);
++    			}
++	    		binding.put(contentEntry.getKey(), contentText);
++	    	}
++	    	
++	    	return template.make(binding).toString();
++		} catch (Exception e) {
++			LOGGER.log(Level.WARNING, "Error creating GroovyTemplate from text ["+origText+"]",e);
++			//Throwing the exception as Runtime as any exception here would mostly (?) be due to incorrect script
++			//and not an expected reason
++			throw new RuntimeException("Error using the template",e);
++		} 
++    }
+     
+     public <P extends AbstractProject<P,B>,B extends AbstractBuild<P,B>> String replaceTokensWithContent(String origText,EmailType type,AbstractBuild<P,B> build){
+     	StringBuffer sb = new StringBuffer();
+@@ -435,6 +479,7 @@
+          * This is a global default body for sending emails.
+          */
+         private String defaultBody;
++        
+ 
+ 		@Override
+ 		public String getDisplayName() {
+@@ -522,6 +567,7 @@
+ 		public String getDefaultSubject() {
+ 			return defaultSubject;
+ 		}
++		
+ 
+ 		@Override
+ 		public Publisher newInstance(StaplerRequest req) throws hudson.model.Descriptor.FormException {
+@@ -533,12 +579,20 @@
+ 			m.recipientList = listRecipients;
+ 			m.defaultSubject = req.getParameter("project_default_subject");
+ 			m.defaultContent = req.getParameter("project_default_content");
++			m.defaultContentTypeHTML = req.getParameter("project_default_content_type_html") != null;
++			m.defaultContentIsScript = req.getParameter("project_default_content_is_script") != null;
+ 			m.configuredTriggers = new ArrayList<EmailTrigger>();
+ 			
+ 			//Create a new email trigger for each one that is configured
+ 			for(String mailerId : EMAIL_TRIGGER_TYPE_MAP.keySet()){
+ 				EmailType type = createMailType(req,mailerId);
+ 				if(type!=null){
++					if(!type.isContentTypeHTML()){
++						type.setContentTypeHTML(m.defaultContentTypeHTML);
++					}
++					if(!type.isScript()){
++						type.setScript(m.defaultContentIsScript);
++					}
+ 					EmailTrigger trigger = EMAIL_TRIGGER_TYPE_MAP.get(mailerId).getNewInstance(type);
+ 					m.configuredTriggers.add(trigger);
+ 				}
+@@ -561,6 +615,8 @@
+ 			m.setRecipientList(req.getParameter(prefix + "recipientList"));
+ 			m.setSendToRecipientList(req.getParameter(prefix + "sendToRecipientList")!=null);
+ 			m.setSendToDevelopers(req.getParameter(prefix + "sendToDevelopers")!=null);
++			m.setContentTypeHTML(req.getParameter(prefix + "contentTypeHTML")!=null);
++			m.setScript(req.getParameter(prefix + "script")!=null);
+ 			return m;
+ 		}
+ 		
+@@ -660,6 +716,32 @@
+             }.process();
+         }
+ 		
++		/**
++		 * Checks the mail content by just compiling it. Runtime problem may still be there
++		 * TODO Not sure about sending the whole mail content as parameter in GET 
++		 */
++		public void doMailContentCheck(StaplerRequest req, StaplerResponse rsp,
++				@QueryParameter("value") final String value,@QueryParameter("script") final String isScript) throws IOException, ServletException {
++			new FormFieldValidator(req,rsp,false) {
++				protected void check() throws IOException, ServletException {
++					boolean script = isScript != null; 
++					if(value != null && value.trim().length() > 0 && script){
++						SimpleTemplateEngine engine = new SimpleTemplateEngine();
++						try {
++							Template template = engine.createTemplate(value);
++							ok();
++						} catch (CompilationFailedException e) {
++							error(e.getMessage());
++						} catch (ClassNotFoundException e) {
++							error(e.getMessage());
++						} 
++					}
++					else
++						ok();
++				}
++			}.process();
++		}
++
+ 	}
+ 
+ 
+Index: C:/docs/hudson/project/plugins/email-ext/src/main/java/hudson/plugins/emailext/EmailType.java
+===================================================================
+--- C:/docs/hudson/project/plugins/email-ext/src/main/java/hudson/plugins/emailext/EmailType.java	(revision 11045)
++++ C:/docs/hudson/project/plugins/email-ext/src/main/java/hudson/plugins/emailext/EmailType.java	(working copy)
+@@ -33,6 +33,16 @@
+ 	 */
+ 	private boolean sendToRecipientList;
+ 	
++	/**
++	 * Specifies whether the mail's content type should be set to text/html
++	 */
++	private boolean contentTypeHTML;
++	
++	/**
++	 * Specifies whether the mail's content should be interpreted as Groovy script
++	 */
++	private boolean script;
++	
+ 	public EmailType(){
+ 		subject = "";
+ 		body = "";
+@@ -84,4 +94,20 @@
+ 	public void setRecipientList(String recipientList) {
+ 		this.recipientList = recipientList;
+ 	}
++	
++	public boolean isScript() {
++		return script;
++	}
++
++	public void setScript(boolean script) {
++		this.script = script;
++	}
++
++	public boolean isContentTypeHTML() {
++		return contentTypeHTML;
++	}
++
++	public void setContentTypeHTML(boolean contentTypeHTML) {
++		this.contentTypeHTML = contentTypeHTML;
++	}
+ }
+Index: C:/docs/hudson/project/plugins/email-ext/src/main/resources/hudson/plugins/emailext/ExtendedEmailPublisher/config.jelly
+===================================================================
+--- C:/docs/hudson/project/plugins/email-ext/src/main/resources/hudson/plugins/emailext/ExtendedEmailPublisher/config.jelly	(revision 11045)
++++ C:/docs/hudson/project/plugins/email-ext/src/main/resources/hudson/plugins/emailext/ExtendedEmailPublisher/config.jelly	(working copy)
+@@ -49,15 +49,47 @@
+             </j:otherwise>
+         </j:choose>
+     </f:entry>
++    
++    <f:entry
++		title="Default Content is Script">
++		<j:choose>
++			<j:when test="${instance.configured}">
++	    		<f:checkbox
++					name="project_default_content_is_script"
++					checked="${instance.defaultContentIsScript}" />
++            </j:when>
++            <j:otherwise>
++            	<f:checkbox
++					name="project_default_content_is_script"
++					checked="false" />
++            </j:otherwise>
++         </j:choose>
++	</f:entry>
++	
++    <f:entry
++		title="Default Content Type is HTML">
++		<j:choose>
++			<j:when test="${instance.configured}">
++	    		<f:checkbox
++					name="project_default_content_type_html"
++					checked="${instance.defaultContentTypeHTML}" />
++            </j:when>
++            <j:otherwise>
++            	<f:checkbox
++					name="project_default_content_type_html"
++					checked="false" />
++            </j:otherwise>
++         </j:choose>
++	</f:entry>
+ 
+ 	<!-- This is the default content for the project. -->
+     <f:entry title="Default Content">
+      	<j:choose>
+      		<j:when test="${instance.configured}">
+-			    <textarea class="setting-input"	name="project_default_content">${instance.defaultContent}</textarea>
++			    <f:textarea class="setting-input"	name="project_default_content" value="${instance.defaultContent}">${instance.defaultContent}</f:textarea>
+ 			</j:when>
+ 			<j:otherwise>
+-				<textarea class="setting-input"	name="project_default_content">$DEFAULT_CONTENT</textarea>
++				<f:textarea class="setting-input"	name="project_default_content">$DEFAULT_CONTENT</f:textarea>
+ 			</j:otherwise>
+ 		</j:choose>
+     </f:entry>
+Index: C:/docs/hudson/project/plugins/email-ext/src/main/resources/hudson/plugins/emailext/tags/mailtype.jelly
+===================================================================
+--- C:/docs/hudson/project/plugins/email-ext/src/main/resources/hudson/plugins/emailext/tags/mailtype.jelly	(revision 11045)
++++ C:/docs/hudson/project/plugins/email-ext/src/main/resources/hudson/plugins/emailext/tags/mailtype.jelly	(working copy)
+@@ -103,9 +103,21 @@
+ 				</f:entry>
+ 				<f:entry
+ 					title="Content">
+-					<textarea class="setting-input"
+-						name="mailer.${mailType}.body">${mailTypeObj.body}</textarea>
++					<f:textarea class="setting-input"
++						name="mailer.${mailType}.body" value="${mailTypeObj.body}">${mailTypeObj.body}</f:textarea>
+ 				</f:entry>
++				<f:entry
++					title="Content Type is HTML">
++					<f:checkbox
++						name="mailer.${mailType}.contentTypeHTML"
++						checked="${mailTypeObj.contentTypeHTML}" />
++				</f:entry>
++				<f:entry
++					title="Content is Script">
++					<f:checkbox
++						name="mailer.${mailType}.script"
++						checked="${mailTypeObj.script}" />
++				</f:entry>
+ 			</table>
+ 		</td>
+ 	</tr>
+Index: C:/docs/hudson/project/plugins/email-ext/pom.xml
+===================================================================
+--- C:/docs/hudson/project/plugins/email-ext/pom.xml	(revision 11045)
++++ C:/docs/hudson/project/plugins/email-ext/pom.xml	(working copy)
+@@ -27,5 +27,11 @@
+       <version>2.4</version>
+       <scope>provided</scope>
+     </dependency> 
++    
++    <dependency>
++      <groupId>org.codehaus.groovy</groupId>
++      <artifactId>groovy-all</artifactId>
++      <version>1.5.6</version>
++    </dependency>
+   </dependencies>
+ </project>

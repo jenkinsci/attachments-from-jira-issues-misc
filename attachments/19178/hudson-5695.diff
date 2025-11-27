@@ -1,0 +1,103 @@
+Index: maven-plugin/src/main/java/hudson/maven/MavenModuleSet.java
+===================================================================
+--- maven-plugin/src/main/java/hudson/maven/MavenModuleSet.java	(revision 27932)
++++ maven-plugin/src/main/java/hudson/maven/MavenModuleSet.java	(working copy)
+@@ -134,6 +134,14 @@
+     private boolean usePrivateRepository = false;
+ 
+     /**
++     * If true, the build will send a failure e-mail for each failing maven module.
++     *
++     * <p>
++     * SEE HUDSON-5695.
++     */
++    private boolean perModuleEmail = true;
++
++    /**
+      * If true, do not automatically schedule a build when one of the project dependencies is built.
+      * <p>
+      * See HUDSON-1714.
+@@ -284,6 +292,10 @@
+     public boolean usesPrivateRepository() {
+         return usePrivateRepository;
+     }
++    
++    public boolean isPerModuleEmail() {
++        return perModuleEmail;
++    }
+ 
+     public boolean ignoreUpstremChanges() {
+         return ignoreUpstremChanges;
+@@ -305,6 +317,10 @@
+         this.usePrivateRepository = usePrivateRepository;
+     }
+ 
++    public void setPerModuleEmail(boolean perModuleEmail) {
++        this.perModuleEmail = perModuleEmail;
++    }
++
+     public void setIgnoreUpstremChanges(boolean ignoreUpstremChanges) {
+         this.ignoreUpstremChanges = ignoreUpstremChanges;
+     }
+@@ -711,6 +727,7 @@
+         mavenName = req.getParameter("maven_version");
+         aggregatorStyleBuild = !req.hasParameter("maven.perModuleBuild");
+         usePrivateRepository = req.hasParameter("maven.usePrivateRepository");
++        perModuleEmail = req.hasParameter("maven.perModuleEmail");
+         ignoreUpstremChanges = !json.has("triggerByDependency");
+         incrementalBuild = req.hasParameter("maven.incrementalBuild");
+         archivingDisabled = req.hasParameter("maven.archivingDisabled");
+Index: maven-plugin/src/main/java/hudson/maven/reporters/MavenMailer.java
+===================================================================
+--- maven-plugin/src/main/java/hudson/maven/reporters/MavenMailer.java	(revision 27932)
++++ maven-plugin/src/main/java/hudson/maven/reporters/MavenMailer.java	(working copy)
+@@ -49,9 +49,12 @@
+     public String recipients;
+     public boolean dontNotifyEveryUnstableBuild;
+     public boolean sendToIndividuals;
++    public boolean perModuleEmail;
+ 
+     public boolean end(MavenBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+-        new MailSender(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals).execute(build,listener);
++        if(perModuleEmail) {
++            new MailSender(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals).execute(build,listener);
++        }
+         return true;
+     }
+ 
+@@ -75,6 +78,7 @@
+             MavenMailer m = new MavenMailer();
+             req.bindParameters(m,"mailer_");
+             m.dontNotifyEveryUnstableBuild = req.getParameter("mailer_notifyEveryUnstableBuild")==null;
++            m.perModuleEmail = req.hasParameter("maven.perModuleEmail");
+             return m;
+         }
+     }
+Index: maven-plugin/src/main/resources/hudson/maven/MavenModuleSet/configure-entries.jelly
+===================================================================
+--- maven-plugin/src/main/resources/hudson/maven/MavenModuleSet/configure-entries.jelly	(revision 27932)
++++ maven-plugin/src/main/resources/hudson/maven/MavenModuleSet/configure-entries.jelly	(working copy)
+@@ -88,6 +88,8 @@
+         checked="${!it.aggregatorStyleBuild}" />
+       <f:optionalBlock name="maven.usePrivateRepository" title="${%Use private Maven repository}" help="/plugin/maven-plugin/private-repository.html"
+         checked="${it.usesPrivateRepository()}" />
++      <f:optionalBlock name="maven.perModuleEmail" title="${%Send e-mail for each failed module}" help="/plugin/maven-plugin/per-module-email.html"
++        checked="${it.perModuleEmail}" />
+     </f:advanced>
+   </f:section>
+ 
+@@ -100,4 +102,4 @@
+ 
+   <p:config-buildWrappers />
+   <p:config-publishers />
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>
+Index: maven-plugin/src/main/webapp/per-module-email.html
+===================================================================
+--- maven-plugin/src/main/webapp/per-module-email.html	(revision 0)
++++ maven-plugin/src/main/webapp/per-module-email.html	(revision 0)
+@@ -0,0 +1,3 @@
++<div>
++  If checked, hudson will send an e-mail for each module which fails.
++</div>

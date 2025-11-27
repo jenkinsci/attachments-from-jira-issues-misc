@@ -1,0 +1,42 @@
+diff -Nbaur jenkinsci-doxygen-plugin-bf7f689/src/main/java/hudson/plugins/doxygen/DoxygenDirectoryParser.java jenkinsci-doxygen-plugin-9205/src/main/java/hudson/plugins/doxygen/DoxygenDirectoryParser.java
+--- jenkinsci-doxygen-plugin-bf7f689/src/main/java/hudson/plugins/doxygen/DoxygenDirectoryParser.java	2011-03-13 18:27:33.000000000 +0200
++++ jenkinsci-doxygen-plugin-9205/src/main/java/hudson/plugins/doxygen/DoxygenDirectoryParser.java	2011-04-07 19:44:30.205519000 +0300
+@@ -123,7 +123,7 @@
+     	    	
+     	String outputDirectory = doxyfileInfos.get(DOXYGEN_KEY_OUTPUT_DIRECTORY);    	
+     	String doxyGenDir = null;
+-    	if (outputDirectory!= null && outputDirectory.trim().length() != 0){
++    	if (outputDirectory != null && outputDirectory.trim().length() != 0){
+     		
+     		// Check if need to append the path from where doxygen is run 
+     		if ((null != this.folderWhereYouRunDoxygen) && (!this.folderWhereYouRunDoxygen.isEmpty())){
+@@ -131,25 +131,17 @@
+     		}else{
+     			doxyGenDir = outputDirectory;
+     		}
+-    		    		
+     	}
+     	
+     	String outputHTML      = doxyfileInfos.get(DOXYGEN_KEY_HTML_OUTPUT);
+-    	if (outputHTML== null || outputHTML.trim().length() == 0){
++    	if (outputHTML == null || outputHTML.trim().length() == 0){
+     		outputHTML = "html";
+     		LOGGER.log(Level.INFO,"The "+DOXYGEN_KEY_HTML_OUTPUT+" tag is not present or is left blank." + DOXYGEN_DEFAULT_HTML_OUTPUT+ " will be used as the default path.");
+     	}
+-    	else {
+-    		// Check if folderWhereYouRunDoxygen is specified, because then the gen dir is calculated relative to it 
+-    		if ((null != this.folderWhereYouRunDoxygen) && (!this.folderWhereYouRunDoxygen.isEmpty())){
+-    			doxyGenDir = (folderWhereYouRunDoxygen+ File.separator + outputHTML);
+-    		}else{
+-    			doxyGenDir = (doxyGenDir!=null)?(doxyGenDir+ File.separator + outputHTML):outputHTML;
+-    		}
+-    		return new FilePath(base, doxyGenDir);
+-    	}    	
+     	
+-    	return null;
++    	doxyGenDir = (doxyGenDir != null) ? (doxyGenDir + File.separator + outputHTML) : outputHTML;
++
++    	return new FilePath(base, doxyGenDir);
+     }  
+     
+     /**

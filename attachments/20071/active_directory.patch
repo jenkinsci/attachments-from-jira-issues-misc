@@ -1,0 +1,76 @@
+Index: src/main/java/hudson/plugins/active_directory/ActiveDirectoryUnixAuthenticationProvider.java
+===================================================================
+--- src/main/java/hudson/plugins/active_directory/ActiveDirectoryUnixAuthenticationProvider.java	(revision 37296)
++++ src/main/java/hudson/plugins/active_directory/ActiveDirectoryUnixAuthenticationProvider.java	(working copy)
+@@ -14,6 +14,7 @@
+ import org.acegisecurity.userdetails.UserDetails;
+ import org.acegisecurity.userdetails.UserDetailsService;
+ import org.acegisecurity.userdetails.UsernameNotFoundException;
++import org.apache.commons.lang.StringUtils;
+ import org.springframework.dao.DataAccessException;
+ 
+ import javax.naming.NamingEnumeration;
+@@ -87,7 +88,7 @@
+         }
+         return userDetails;
+     }
+-    
++
+     private UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication, String domainName) throws AuthenticationException {
+         // when we use custom socket factory below, every LDAP operations result in a classloading via context classloader,
+         // so we need it to resolve.
+@@ -120,17 +121,19 @@
+     public UserDetails retrieveUser(String username, String password, String domainName, List<SocketInfo> ldapServers) {
+         DirContext context;
+         String id;
++        String principalName;
+         if (bindName!=null) {
+             // two step approach. Use a special credential to obtain DN for the user trying to login,
+             // then authenticate.
+             try {
+                 id = username;
++                principalName = id;
+                 context = descriptor.bind(bindName, bindPassword, ldapServers);
+             } catch (BadCredentialsException e) {
+                 throw new AuthenticationServiceException("Failed to bind to LDAP server with the bind name/password",e);
+             }
+         } else {
+-            String principalName = getPrincipalName(username, domainName);
++            principalName = getPrincipalName(username, domainName);
+             id = principalName.substring(0, principalName.indexOf('@'));
+             context = descriptor.bind(principalName, password, ldapServers);
+         }
+@@ -169,7 +172,7 @@
+             context.close();
+ 
+             return new ActiveDirectoryUserDetail(
+-                id, password,
++                principalName, password,
+                 true, true, true, true,
+                 groups.toArray(new GrantedAuthority[groups.size()])
+             );
+@@ -181,11 +184,14 @@
+ 
+     /**
+      * Returns the full user principal name of the form "joe@europe.contoso.com".
+-     * 
++     *
+      * If people type in 'foo@bar' or 'bar\\foo', it should be treated as 'foo@bar.acme.org'
+      */
+     private String getPrincipalName(String username, String domainName) {
+         String principalName;
++        if (StringUtils.endsWithIgnoreCase(username, "@" + domainName))
++            username = username.substring(0, username.lastIndexOf('@'));
++
+         int slash = username.indexOf('\\');
+         if (slash>0) {
+             principalName = username.substring(slash+1)+'@'+username.substring(0,slash)+'.'+domainName;
+@@ -227,7 +233,7 @@
+         }
+         return groups;
+     }
+-    
++
+     private static String toDC(String domainName) {
+         StringBuilder buf = new StringBuilder();
+         for (String token : domainName.split("\\.")) {

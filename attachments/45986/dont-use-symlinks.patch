@@ -1,0 +1,21 @@
+diff --git a/src/main/java/io/jenkins/plugins/analysis/core/util/FileFinder.java b/src/main/java/io/jenkins/plugins/analysis/core/util/FileFinder.java
+index d4f4a614..ef3a60b4 100644
+--- a/src/main/java/io/jenkins/plugins/analysis/core/util/FileFinder.java
++++ b/src/main/java/io/jenkins/plugins/analysis/core/util/FileFinder.java
+@@ -5,6 +5,7 @@ import java.io.IOException;
+ 
+ import org.apache.commons.lang3.StringUtils;
+ import org.apache.tools.ant.BuildException;
++import org.apache.tools.ant.DirectoryScanner;
+ import org.apache.tools.ant.Project;
+ import org.apache.tools.ant.types.FileSet;
+ import org.apache.tools.ant.types.selectors.TypeSelector;
+@@ -90,6 +91,7 @@ public class FileFinder extends MasterToSlaveFileCallable<String[]> {
+                 fileSet.setExcludes(excludesPattern);
+             }
+ 
++            fileSet.setFollowSymlinks(false);
+             return fileSet.getDirectoryScanner(antProject).getIncludedFiles();
+         }
+         catch (BuildException ignored) {
+

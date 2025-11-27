@@ -1,0 +1,191 @@
+Index: src/main/java/hudson/scm/SubversionSCM.java
+===================================================================
+--- src/main/java/hudson/scm/SubversionSCM.java	(revision 27605)
++++ src/main/java/hudson/scm/SubversionSCM.java	(working copy)
+@@ -102,6 +102,7 @@
+ import org.tmatesoft.svn.core.io.SVNCapability;
+ import org.tmatesoft.svn.core.io.SVNRepository;
+ import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
++import org.tmatesoft.svn.core.wc.ISVNStatusHandler;
+ import org.tmatesoft.svn.core.wc.SVNClientManager;
+ import org.tmatesoft.svn.core.wc.SVNInfo;
+ import org.tmatesoft.svn.core.wc.SVNRevision;
+@@ -109,6 +110,9 @@
+ import org.tmatesoft.svn.core.wc.SVNWCClient;
+ import org.tmatesoft.svn.core.wc.SVNWCUtil;
+ import org.tmatesoft.svn.core.wc.SVNLogClient;
++import org.tmatesoft.svn.core.wc.SVNStatus;
++import org.tmatesoft.svn.core.wc.SVNStatusClient;
++import org.tmatesoft.svn.core.wc.SVNStatusType;
+ 
+ import javax.servlet.ServletException;
+ import javax.xml.transform.stream.StreamResult;
+@@ -182,6 +186,8 @@
+ 
+     private boolean useUpdate;
+     private boolean doRevert;
++    private boolean doClearIgnored;
++    private boolean doClearUnversioned;
+     private final SubversionRepositoryBrowser browser;
+     private String excludedRegions;
+     private String excludedUsers;
+@@ -241,10 +247,18 @@
+     }
+ 
+     
++    /**
++     * @deprecated as of 1.xxx
++     */
++    public SubversionSCM(List<ModuleLocation> locations,
++                         boolean useUpdate, boolean doRevert, SubversionRepositoryBrowser browser, String excludedRegions, String excludedUsers, String excludedRevprop, String excludedCommitMessages) {
++    	this(locations, useUpdate, doRevert, false, false, browser, excludedRegions, excludedUsers, excludedRevprop, excludedCommitMessages);
++    }
++
+     
+     @DataBoundConstructor
+     public SubversionSCM(List<ModuleLocation> locations,
+-                         boolean useUpdate, boolean doRevert, SubversionRepositoryBrowser browser, String excludedRegions, String excludedUsers, String excludedRevprop, String excludedCommitMessages) {
++                         boolean useUpdate, boolean doRevert, boolean doClearIgnored, boolean doClearUnversioned, SubversionRepositoryBrowser browser, String excludedRegions, String excludedUsers, String excludedRevprop, String excludedCommitMessages) {
+ 
+         for (Iterator<ModuleLocation> itr = locations.iterator(); itr.hasNext();) {
+             ModuleLocation ml = itr.next();
+@@ -254,6 +268,8 @@
+ 
+         this.useUpdate = useUpdate;
+         this.doRevert = doRevert;
++        this.doClearIgnored = doClearIgnored;
++        this.doClearUnversioned = doClearUnversioned;
+         this.browser = browser;
+         this.excludedRegions = excludedRegions;
+         this.excludedUsers = excludedUsers;
+@@ -339,6 +355,14 @@
+     	return doRevert;
+     }
+ 
++    public boolean isDoClearIgnored() {
++    	return doClearIgnored;
++    }
++
++    public boolean isDoClearUnversioned() {
++    	return doClearUnversioned;
++    }
++
+     @Override
+     public SubversionRepositoryBrowser getBrowser() {
+         return browser;
+@@ -583,7 +607,7 @@
+         }
+ 
+         Boolean isUpdatable = useUpdate && workspace.act(new IsUpdatableTask(build, this, listener));
+-        return workspace.act(new CheckOutTask(build, this, build.getTimestamp().getTime(), isUpdatable, doRevert, listener));
++        return workspace.act(new CheckOutTask(build, this, build.getTimestamp().getTime(), isUpdatable, doRevert, doClearIgnored, doClearUnversioned, listener));
+     }
+ 
+ 
+@@ -596,15 +620,19 @@
+         // true to "svn update", false to "svn checkout".
+         private boolean update;
+         private boolean revert;
++        private boolean clearIgnored;
++        private boolean clearUnversioned;
+         private final TaskListener listener;
+         private final ModuleLocation[] locations;
+         private final RevisionParameterAction revisions;
+ 
+-        public CheckOutTask(AbstractBuild<?, ?> build, SubversionSCM parent, Date timestamp, boolean update, boolean revert, TaskListener listener) {
++        public CheckOutTask(AbstractBuild<?, ?> build, SubversionSCM parent, Date timestamp, boolean update, boolean revert, boolean clearIgnored, boolean clearUnversioned, TaskListener listener) {
+             this.authProvider = parent.getDescriptor().createAuthenticationProvider();
+             this.timestamp = timestamp;
+             this.update = update;
+             this.revert = revert;
++            this.clearIgnored = clearIgnored;
++            this.clearUnversioned = clearUnversioned;
+             this.listener = listener;
+             this.locations = parent.getLocations(build);
+             revisions = build.getAction(RevisionParameterAction.class);
+@@ -628,6 +656,40 @@
+                                 listener.getLogger().println("Reverting "+ l.remote);
+                             	svnwc.doRevert(new File [] { local.getCanonicalFile()}, SVNDepth.INFINITY, null);
+                             }
++                            if(clearIgnored || clearUnversioned) {
++                                listener.getLogger().println("Scanning working copy for changes: "+ local.getCanonicalFile().getPath());
++                                final SVNStatusClient svnStatusClient = manager.getStatusClient();
++                                svnStatusClient.doStatus(
++                                    local.getCanonicalFile(),
++                                    true,
++                                    false,
++                                    false,
++                                    clearIgnored,
++                                    new ISVNStatusHandler() {
++                                        public void handleStatus(SVNStatus status) {
++                                        boolean success = true;
++                                        String deleteType = "";
++                                            if(status.getContentsStatus() == SVNStatusType.STATUS_IGNORED) {
++                                                deleteType = "ignored: ";
++                                    	        success = status.getFile().delete();
++                                    	    }
++                                    	    else if(clearUnversioned && status.getContentsStatus() == SVNStatusType.STATUS_UNVERSIONED) {
++                                    	        deleteType = "unversioned: ";
++                                    	        success = status.getFile().delete();
++                                    	    }
++                                    	    else {
++                                    	        return;
++                                    	    }
++                                    	    if(success) {
++                                                listener.getLogger().println("Deleted "+deleteType + status.getFile().getPath());
++                                            }
++                                            else {
++                                                listener.getLogger().println("Failed to delete "+deleteType +status.getFile().getPath());
++                                            }
++                                        }
++                                    }
++                                );
++                            }
+                             listener.getLogger().println("Updating "+ l.remote);                            
+                             svnuc.doUpdate(local.getCanonicalFile(), r, SVNDepth.INFINITY, true, false);
+ 
+Index: src/main/resources/hudson/scm/SubversionSCM/config.properties
+===================================================================
+--- src/main/resources/hudson/scm/SubversionSCM/config.properties	(revision 27605)
++++ src/main/resources/hudson/scm/SubversionSCM/config.properties	(working copy)
+@@ -22,8 +22,19 @@
+ 
+ updateDescription=\
+   If checked, Hudson will use ''svn update'' whenever possible, making the build faster. \
+-  But this causes the artifacts from the previous build to remain when a new build starts.
++  If clearing of ignored and unversioned files is not also checked ,this causes the \
++  artifacts from the previous build to remain when a new build starts.
+ 
+ revertDescription=\
+   If checked, Hudson will do ''svn revert'' before doing ''svn update''.  This slows it \
+-  down, but will prevent files being modified from build to build.
+\ No newline at end of file
++  down, but will prevent files being modified from build to build.
++  
++clearIgnoredDescription=\
++  If checked, Hudson will use ''svn status --noignores'' to discover locally-created files \
++  which are configured to be ignored by SVN, and will delete them. This helps in starting \
++  the build in a cleaner state.
++
++clearUnversionedDescription=\
++  If checked, Hudson will use ''svn status'' to discover locally-created files which are \
++  not recognized by SVN, and will delete them. This helps in starting the build in a \
++  cleaner state.
+\ No newline at end of file
+Index: src/main/resources/hudson/scm/SubversionSCM/config.jelly
+===================================================================
+--- src/main/resources/hudson/scm/SubversionSCM/config.jelly	(revision 27605)
++++ src/main/resources/hudson/scm/SubversionSCM/config.jelly	(working copy)
+@@ -47,6 +47,12 @@
+   <f:entry title="${%Revert}" description="${%revertDescription}" field="doRevert">
+     <f:checkbox default="false"/>
+   </f:entry>
++  <f:entry title="${%Clear ignored}" description="${%clearIgnored}" field="doClearIgnored">
++    <f:checkbox default="false"/>
++  </f:entry>
++  <f:entry title="${%Clear unversioned}" description="${%clearUnversionedDescription}" field="doClearUnversioned">
++    <f:checkbox default="false"/>
++  </f:entry>
+ 
+ 
+   <t:listScmBrowsers name="svn.browser" />

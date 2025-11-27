@@ -1,0 +1,305 @@
+diff --git a/pom.xml b/pom.xml
+index b32eca3..4bc3743 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -4,7 +4,7 @@
+   <parent>
+     <groupId>org.jvnet.hudson.plugins</groupId>
+     <artifactId>plugin</artifactId>
+-    <version>1.355</version>
++    <version>1.389</version>
+     <relativePath>../pom.xml</relativePath>
+   </parent>
+   
+@@ -147,6 +147,11 @@
+       <scope>test</scope>
+     </dependency>
+     <dependency>
++      <groupId>${project.groupId}</groupId>
++      <artifactId>subversion</artifactId>
++      <version>[1.3,)</version>
++    </dependency>
++    <dependency>
+ 	  <groupId>com.google.collections</groupId>
+ 	  <artifactId>google-collections</artifactId>
+ 	  <version>1.0</version>
+diff --git a/src/main/java/hudson/plugins/jira/JiraProjectProperty.java b/src/main/java/hudson/plugins/jira/JiraProjectProperty.java
+index b95b562..76e412a 100644
+--- a/src/main/java/hudson/plugins/jira/JiraProjectProperty.java
++++ b/src/main/java/hudson/plugins/jira/JiraProjectProperty.java
+@@ -168,7 +168,7 @@ public class JiraProjectProperty extends JobProperty<AbstractProject<?, ?>> {
+ 			}
+ 			JiraSite site = new JiraSite(new URL(url), request
+ 					.getParameter("user"), request.getParameter("pass"), false,
+-					false, null, false, request.getParameter("groupVisibility"));
++					false, false, null, false, request.getParameter("groupVisibility"));
+ 			try {
+ 				site.createSession();
+ 				return FormValidation.ok();
+diff --git a/src/main/java/hudson/plugins/jira/JiraSite.java b/src/main/java/hudson/plugins/jira/JiraSite.java
+index f9ddaed..5c4dce1 100644
+--- a/src/main/java/hudson/plugins/jira/JiraSite.java
++++ b/src/main/java/hudson/plugins/jira/JiraSite.java
+@@ -66,7 +66,12 @@ public class JiraSite {
+      * to record scm changes in jira issue
+      * @since 1.21
+      */
+-    public final boolean recordScmChanges;   
++    public final boolean recordScmChanges;
++
++    /**
++     * True to show changed files when recording scm changes
++     */
++    public final boolean showScmFiles;
+     
+     /**
+      * user defined pattern
+@@ -95,7 +100,7 @@ public class JiraSite {
+      * @stapler-constructor
+      */
+     @DataBoundConstructor
+-    public JiraSite(URL url, String userName, String password, boolean supportsWikiStyleComment, boolean recordScmChanges, String userPattern, 
++    public JiraSite(URL url, String userName, String password, boolean supportsWikiStyleComment, boolean recordScmChanges, boolean showScmFiles, String userPattern,
+                     boolean updateJiraIssueForAllStatus, String groupVisibility) {
+         if(!url.toExternalForm().endsWith("/"))
+             try {
+@@ -108,6 +113,7 @@ public class JiraSite {
+         this.password = Util.fixEmpty(password);
+         this.supportsWikiStyleComment = supportsWikiStyleComment;
+         this.recordScmChanges = recordScmChanges;
++        this.showScmFiles = showScmFiles;
+         this.userPattern = Util.fixEmpty(userPattern);
+         if (this.userPattern != null) {
+         	this.userPat = Pattern.compile(this.userPattern);
+diff --git a/src/main/java/hudson/plugins/jira/Updater.java b/src/main/java/hudson/plugins/jira/Updater.java
+index 6a8c6a9..5a708b1 100644
+--- a/src/main/java/hudson/plugins/jira/Updater.java
++++ b/src/main/java/hudson/plugins/jira/Updater.java
+@@ -9,6 +9,8 @@ import hudson.model.Run;
+ import hudson.model.AbstractBuild.DependencyChange;
+ import hudson.plugins.jira.soap.RemotePermissionException;
+ import hudson.scm.RepositoryBrowser;
++import hudson.scm.SubversionChangeLogSet.Path;
++import hudson.scm.SubversionRepositoryBrowser;
+ import hudson.scm.ChangeLogSet.AffectedFile;
+ import hudson.scm.ChangeLogSet.Entry;
+ 
+@@ -82,14 +84,13 @@ class Updater {
+             } else {
+               doUpdate = build.getResult().isBetterOrEqualTo(Result.UNSTABLE);
+             }
+-            boolean useWikiStyleComments = site.supportsWikiStyleComment;
+             
+             issues = getJiraIssues(ids, session, logger);
+             build.getActions().add(new JiraBuildAction(build,issues));
+             
+             if (doUpdate) {
+                 submitComments(build, logger, rootUrl, issues,
+-                        session, useWikiStyleComments, site.recordScmChanges, site.groupVisibility);
++                        session, site.supportsWikiStyleComment, site.recordScmChanges, site.showScmFiles, site.groupVisibility);
+             } else {
+                 // this build didn't work, so carry forward the issues to the next build
+                 build.addAction(new JiraCarryOverAction(issues));
+@@ -122,25 +123,31 @@ class Updater {
+     static void submitComments(
+ 	            AbstractBuild<?, ?> build, PrintStream logger, String hudsonRootUrl,
+ 	            List<JiraIssue> issues, JiraSession session,
+-	            boolean useWikiStyleComments, boolean recordScmChanges, String groupVisibility) throws RemoteException {
++	            boolean useWikiStyleComments, boolean recordScmChanges, boolean showScmFiles, String groupVisibility) throws RemoteException {
+ 	    // copy to prevent ConcurrentModificationException
+ 	    List<JiraIssue> copy = new ArrayList<JiraIssue>(issues);
++      boolean [] validChangeSets = new boolean[ build.getChangeSet().getItems().length ];
+         for (JiraIssue issue : copy) {
++            for( int i = 0 ; i < validChangeSets.length ; ++i )
++              validChangeSets[ i ] = false;
+             try {
+                 logger.println(Messages.Updater_Updating(issue.id));
+                 StringBuilder aggregateComment = new StringBuilder();
++                int i = 0;
+                 for(Entry e :build.getChangeSet()){
+                     if(e.getMsg().toUpperCase().contains(issue.id)){
+-                        aggregateComment.append(e.getMsg()).append("\n");
+-                        // kutzi: don't know why the issue id was removed in previous versions:
+-                        //aggregateComment = aggregateComment.replaceAll(id, "");
+-
++                        //only append if not done yet: get rid of noise when using svn:externals
++                        if( aggregateComment.indexOf( e.getMsg() ) == -1 ){
++                            aggregateComment.append(e.getMsg()).append("\n");
++                            validChangeSets[ i ] = true;
++                        }
+                     }
++                    ++i;
+                 }
+ 
+                 session.addComment(issue.id,
+-                    createComment(build, useWikiStyleComments,
+-                            hudsonRootUrl, aggregateComment.toString(), recordScmChanges, issue), groupVisibility);
++                    createComment(build, validChangeSets, useWikiStyleComments,
++                            hudsonRootUrl, aggregateComment.toString(), recordScmChanges, showScmFiles, issue), groupVisibility);
+             } catch (RemotePermissionException e) {
+                 // Seems like RemotePermissionException can mean 'no permission' as well as
+                 // 'issue doesn't exist'.
+@@ -171,19 +178,19 @@ class Updater {
+     /**
+      * Creates a comment to be used in JIRA for the build.
+      */
+-	private static String createComment(AbstractBuild<?, ?> build,
+-			boolean wikiStyle, String hudsonRootUrl, String scmComments, boolean recordScmChanges, JiraIssue jiraIssue) {
++	private static String createComment(AbstractBuild<?, ?> build, boolean[] validChangeSets,
++			boolean wikiStyle, String hudsonRootUrl, String scmComments, boolean recordScmChanges, boolean showScmFiles, JiraIssue jiraIssue) {
+ 		String comment = String.format(
+ 		    wikiStyle ?
+-		    "Integrated in !%1$simages/16x16/%3$s! [%2$s|%4$s]\n     %5$s":
+-		    "Integrated in %2$s (See [%4$s])\n    %5$s",
++		    "Integrated in !%1$simages/16x16/%3$s! [%2$s|%4$s]\n%5$s":
++		    "Integrated in %2$s (See [%4$s])\n%5$s",
+ 		    hudsonRootUrl,
+ 		    build,
+ 		    build.getResult().color.getImage(),
+ 		    Util.encode(hudsonRootUrl+build.getUrl()),
+ 		    scmComments);
+ 		if (recordScmChanges) {
+-		    List<String> scmChanges = getScmComments(wikiStyle, build, jiraIssue );
++		    List<String> scmChanges = getScmComments( wikiStyle, showScmFiles, build, validChangeSets, jiraIssue );
+ 		    StringBuilder sb = new StringBuilder(comment);
+ 		    for (String scmChange : scmChanges)
+ 		    {
+@@ -194,17 +201,20 @@ class Updater {
+ 		return comment;
+ 	}
+ 	
+-	private static List<String> getScmComments(boolean wikiStyle, AbstractBuild<?, ?> build, JiraIssue jiraIssue)
++	private static List<String> getScmComments( boolean wikiStyle, boolean showScmFiles, AbstractBuild<?, ?> build, boolean[] validChangeSets, JiraIssue jiraIssue )
+ 	{
+ 	    RepositoryBrowser repoBrowser = null;
++      SubversionRepositoryBrowser svnRepoBrowser = null;
+ 	    if (build.getProject().getScm() != null) {
+ 	        repoBrowser = build.getProject().getScm().getEffectiveBrowser();
++          if( repoBrowser != null && "hudson.scm.SubversionSCM".equals( build.getProject().getScm().getType() ) )
++              svnRepoBrowser = ( SubversionRepositoryBrowser ) repoBrowser;
+ 	    }
+         List<String> scmChanges = new ArrayList<String>();
+-	    for (Entry change : build.getChangeSet()) {
+-	        if (jiraIssue != null  && !StringUtils.contains( change.getMsg(), jiraIssue.id )) {
+-	            continue;
+-	        }
++	    for( int i = 0; i < validChangeSets.length;  ++ i ){
++          if( !validChangeSets[i] )
++              continue;
++          Entry change = ( Entry ) build.getChangeSet().getItems()[i];
+ 	        try {
+     	        String uid = change.getAuthor().getId();
+     	        URL url = repoBrowser == null ? null : repoBrowser.getChangeSetLink( change );
+@@ -217,7 +227,7 @@ class Updater {
+     	                String revision = getRevision( change );
+     	                if (revision != null)
+     	                {
+-    	                    scmChange.append( "[" ).append( revision );
++    	                    scmChange.append( "[rev " ).append( revision );
+     	                    scmChange.append( "|" );
+     	                    scmChange.append( url.toExternalForm() ).append( "]" );
+     	                }
+@@ -229,10 +239,24 @@ class Updater {
+     	                scmChange.append( url.toExternalForm() );
+     	            }
+     	        }
+-    	        scmChange.append( "\nFiles : " ).append( "\n" );
+-    	        for (AffectedFile affectedFile : change.getAffectedFiles()) {
+-    	            scmChange.append( "* " ).append( affectedFile.getPath() ).append( "\n" );
+-    	        }
++              if( showScmFiles ) {
++                  scmChange.append( "\nFiles : " ).append( "\n" );
++                  if( svnRepoBrowser == null )
++                  {
++                      for( AffectedFile affectedFile : change.getAffectedFiles() )
++                          scmChange.append( "* " ).append( affectedFile.getPath() ).append( "\n" );
++                  }
++                  else
++                  {
++                      for( AffectedFile affectedFile : change.getAffectedFiles() ){
++                          URL lnk = svnRepoBrowser.getFileLink( ( Path ) affectedFile );
++                          if( wikiStyle )
++                              scmChange.append( "* [" ).append( affectedFile.getPath() ).append( "|" ).append( lnk ).append( "]\n" );
++                          else
++                              scmChange.append( "* " ).append( affectedFile.getPath() ).append( ": " ).append( lnk ).append( "\n" );
++                      }
++                  }
++              }
+     	        if (scmChange.length()>0) {
+     	            scmChanges.add( scmChange.toString() );
+     	        }
+diff --git a/src/main/resources/hudson/plugins/jira/JiraProjectProperty/global.jelly b/src/main/resources/hudson/plugins/jira/JiraProjectProperty/global.jelly
+index 1545e0c..f4e3db1 100644
+--- a/src/main/resources/hudson/plugins/jira/JiraProjectProperty/global.jelly
++++ b/src/main/resources/hudson/plugins/jira/JiraProjectProperty/global.jelly
+@@ -13,7 +13,10 @@
+           </f:entry>
+           <f:entry title="${%Record Scm changes}" help="/plugin/jira/help-scm-changes.html">
+             <f:checkbox name="jira.recordScmChanges" checked="${site.recordScmChanges}"/>
+-          </f:entry>       
++          </f:entry>
++          <f:entry title="${%Show Scm files}" help="/plugin/jira/help-scm-files.html">
++            <f:checkbox name="jira.showScmFiles" checked="${site.showScmFiles}"/>
++          </f:entry>
+           <f:entry title="${%Issue Pattern}" help="/plugin/jira/help-issue-pattern.html">
+             <f:textbox name="jira.userPattern" value="${site.userPattern}"
+                 checkMethod="post"
+diff --git a/src/test/java/hudson/plugins/jira/MockJiraSite.java b/src/test/java/hudson/plugins/jira/MockJiraSite.java
+index 255ab95..d5ef675 100644
+--- a/src/test/java/hudson/plugins/jira/MockJiraSite.java
++++ b/src/test/java/hudson/plugins/jira/MockJiraSite.java
+@@ -8,7 +8,7 @@ import java.net.MalformedURLException;
+  */
+ public class MockJiraSite extends JiraSite {
+     public MockJiraSite() throws MalformedURLException {
+-        super(new URL("http://www.sun.com/"),null,null,false, false, null, false,"");
++        super(new URL("http://www.sun.com/"),null,null,false, false, false, null, false,"");
+     }
+ 
+     @Override
+diff --git a/src/test/java/hudson/plugins/jira/UpdaterTest.java b/src/test/java/hudson/plugins/jira/UpdaterTest.java
+index a454a05..6980203 100644
+--- a/src/test/java/hudson/plugins/jira/UpdaterTest.java
++++ b/src/test/java/hudson/plugins/jira/UpdaterTest.java
+@@ -201,28 +201,31 @@ public class UpdaterTest {
+ 		when(build.getChangeSet()).thenReturn(changeLogSet);
+ 		when(build.getResult()).thenReturn(Result.SUCCESS);
+ 		
+-		Set<? extends Entry> entries = Sets.newHashSet(new MockEntry("Fixed FOOBAR-4711"));
+-		when(changeLogSet.iterator()).thenReturn(entries.iterator());
+-		
++		Set<? extends Entry> entries = Sets.newHashSet(new MockEntry("Fixed FOOBAR-4711"),new MockEntry("Fixed FOOBAR-4711"),new MockEntry("Fixed FOOBAR-4712"));
++		when(changeLogSet.iterator()).thenReturn(entries.iterator()).thenReturn(entries.iterator()).thenReturn(entries.iterator());
++
+ 		// test:
+-		List<JiraIssue> ids = Lists.newArrayList(new JiraIssue("FOOBAR-4711", "Title"));
++		List<JiraIssue> ids = Lists.newArrayList(new JiraIssue("FOOBAR-4711", "Title"),new JiraIssue("FOOBAR-4712", "Title"));
+ 		Updater.submitComments(build,
+-				System.out, "http://hudson" , ids, session, false, false, "");
+-		
+-		Assert.assertEquals(1, comments.size());
++				System.out, "http://hudson" , ids, session, false, false, false, "");
++
++		Assert.assertEquals(2, comments.size());
++
+ 		RemoteComment comment = comments.get(0);
+-		
+ 		Assert.assertTrue(comment.getBody().contains("FOOBAR-4711"));
+ 		Assert.assertTrue(comment.getGroupLevel().equals(""));
++
++		comment = comments.get(1);
++		Assert.assertTrue(comment.getBody().contains("FOOBAR-4712"));
+ 		
+ 		
+ 		// must also work case-insensitively (HUDSON-4132)
+ 		comments.clear();
+ 		entries = Sets.newHashSet(new MockEntry("Fixed Foobar-4711"));
+-		when(changeLogSet.iterator()).thenReturn(entries.iterator());
++		when(changeLogSet.iterator()).thenReturn(entries.iterator()).thenReturn(entries.iterator());
+ 		ids = Lists.newArrayList(new JiraIssue("FOOBAR-4711", "Title"));
+ 		Updater.submitComments(build,
+-				System.out, "http://hudson" , ids, session, false, false,"");
++				System.out, "http://hudson" , ids, session, false, false, false, "");
+ 		
+ 		Assert.assertEquals(1, comments.size());
+ 		comment = comments.get(0);

@@ -1,0 +1,24 @@
+### Eclipse Workspace Patch 1.0
+#P CLOVER-PLUGIN
+Index: src/main/java/hudson/plugins/clover/CloverProjectAction.java
+===================================================================
+--- src/main/java/hudson/plugins/clover/CloverProjectAction.java	(revision 35930)
++++ src/main/java/hudson/plugins/clover/CloverProjectAction.java	(working copy)
+@@ -7,6 +7,8 @@
+ import hudson.model.Result;
+ import hudson.model.DirectoryBrowserSupport;
+ import hudson.model.Actionable;
++
++import org.kohsuke.stapler.Stapler;
+ import org.kohsuke.stapler.StaplerRequest;
+ import org.kohsuke.stapler.StaplerResponse;
+ 
+@@ -23,7 +25,7 @@
+  */
+ public class CloverProjectAction extends Actionable implements ProminentProjectAction {
+ 
+-    static final String ICON = "/plugin/clover/clover_48x48.png";
++    static final String ICON = Stapler.getCurrentRequest().getContextPath() + "/plugin/clover/clover_48x48.png";
+     
+     private final Project<?, ?> project;
+ 

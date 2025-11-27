@@ -1,0 +1,90 @@
+From a6396e58f32a24038b772ee75a8866abc17ea237 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel (Good Data) <lubo.rintel@gooddata.com>
+Date: Mon, 27 Jul 2009 18:40:24 +0200
+Subject: [PATCH 2/2] Add Executor Limit
+
+Make it possible to limit number of executors configured on slaves.
+---
+ .../java/hudson/plugins/ec2/SlaveTemplate.java     |   17 +++++++++++++++--
+ .../hudson/plugins/ec2/EC2Cloud/config.jelly       |    3 +++
+ .../system-config/master-slave/maxExecutors.html   |    7 +++++++
+ 3 files changed, 25 insertions(+), 2 deletions(-)
+ create mode 100644 target/hudson-for-test/help/system-config/master-slave/maxExecutors.html
+
+diff --git a/src/main/java/hudson/plugins/ec2/SlaveTemplate.java b/src/main/java/hudson/plugins/ec2/SlaveTemplate.java
+index 9380a25..4917b8b 100644
+--- a/src/main/java/hudson/plugins/ec2/SlaveTemplate.java
++++ b/src/main/java/hudson/plugins/ec2/SlaveTemplate.java
+@@ -41,12 +41,13 @@ public class SlaveTemplate implements Describable<SlaveTemplate> {
+     public final String labels;
+     public final String initScript;
+     public final String userData;
++    public final String maxExecutors;
+     protected transient EC2Cloud parent;
+ 
+     private transient /*almost final*/ Set<Label> labelSet;
+ 
+     @DataBoundConstructor
+-    public SlaveTemplate(String ami, String remoteFS, InstanceType type, String labels, String description, String initScript, String userData) {
++    public SlaveTemplate(String ami, String remoteFS, InstanceType type, String labels, String description, String initScript, String userData, String maxExecutors) {
+         this.ami = ami;
+         this.remoteFS = remoteFS;
+         this.type = type;
+@@ -54,6 +55,7 @@ public class SlaveTemplate implements Describable<SlaveTemplate> {
+         this.description = description;
+         this.initScript = initScript;
+         this.userData = userData;
++        this.maxExecutors = maxExecutors;
+         readResolve(); // initialize
+     }
+     
+@@ -66,7 +68,18 @@ public class SlaveTemplate implements Describable<SlaveTemplate> {
+     }
+ 
+     public int getNumExecutors() {
+-        return EC2Slave.toNumExecutors(type);
++        int executors;
++        try {
++            executors = Integer.parseInt (maxExecutors);
++        } catch (NumberFormatException e) {
++            executors = 0;
++        }
++
++        if (executors == 0) {
++            return EC2Slave.toNumExecutors(type);
++        } else {
++            return executors;
++        }
+     }
+ 
+     /**
+diff --git a/src/main/resources/hudson/plugins/ec2/EC2Cloud/config.jelly b/src/main/resources/hudson/plugins/ec2/EC2Cloud/config.jelly
+index 2ea4d2f..b453b4b 100644
+--- a/src/main/resources/hudson/plugins/ec2/EC2Cloud/config.jelly
++++ b/src/main/resources/hudson/plugins/ec2/EC2Cloud/config.jelly
+@@ -27,6 +27,9 @@
+         <f:entry title="${%User Data}" help="/help/system-config/master-slave/userData.html" field="userData">
+           <f:textbox />
+         </f:entry>
++        <f:entry title="${%Maximum Number of Executors}" help="/help/system-config/master-slave/maxExecutors.html" field="maxExecutors">
++          <f:textbox />
++        </f:entry>
+         <f:entry title="${%Description}" help="/help/system-config/master-slave/description.html" field="description">
+           <f:textbox />
+         </f:entry>
+diff --git a/target/hudson-for-test/help/system-config/master-slave/maxExecutors.html b/target/hudson-for-test/help/system-config/master-slave/maxExecutors.html
+new file mode 100644
+index 0000000..5119df1
+--- /dev/null
++++ b/target/hudson-for-test/help/system-config/master-slave/maxExecutors.html
+@@ -0,0 +1,7 @@
++<div>
++  Maximum number of executors to launch on the machine.
++
++  <p>
++  Will be auto-configured according to how powerful the instance type
++  is if omited.
++</div>
+-- 
+1.6.2.5
+

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  
+  <modelVersion>4.0.0</modelVersion>
+	<parent>
+        <groupId>com.oracle.soa</groupId>
+        <artifactId>sar-common</artifactId>
+        <version>12.2.1-0-0</version>
+        <relativePath></relativePath>
+    </parent>
+	
+    <groupId>org.my.test</groupId>
+    <artifactId>test-soa-application</artifactId>
+    <version>1.0-SNAPSHOT</version>
+	
+    <packaging>pom</packaging>
+	
+    <modules>
+        <!-- Add project modules -->
+    	<module>test-soa-project</module>
+    </modules>
+	
+	<properties>
+        <!-- these parameters are used by the compile goal -->
+        <scac.input.dir>${project.basedir}/SOA/</scac.input.dir>
+        <scac.output.dir>${project.basedir}/target</scac.output.dir>
+        <scac.input>${scac.input.dir}/composite.xml</scac.input>
+        <scac.output>${scac.output.dir}/out.xml</scac.output>
+        <scac.error>${scac.output.dir}/error.txt</scac.error>
+        <scac.displayLevel>1</scac.displayLevel>
+        <!-- if you are using a config plan, uncomment the following line and update to point 
+             to your config plan -->
+        <!--<configplan>${scac.input.dir}/configplan.xml</configplan>-->
+
+        <!-- these parameters are used by the deploy and undeploy goals -->
+        <composite.name>${project.artifactId}</composite.name>
+        <composite.revision>${project.version}</composite.revision>
+        <composite.partition>default</composite.partition>
+        <serverUrl>http://localhost:7071</serverUrl>
+        <user>atulgupt</user>
+        <password>july@2016</password>
+        <overwrite>true</overwrite>
+        <forceDefault>true</forceDefault>
+        <regenerateRulebase>false</regenerateRulebase>
+        <keepInstancesOnRedeploy>false</keepInstancesOnRedeploy>
+
+        <!-- these parameters are used by the test goal -->
+        <!-- if you are using the sca-test (test) goal, you need to uncomment the following
+             line and point it to your jndi.properties file. -->
+        <!--<jndi.properties.input>${basedir}/jndi.properties</jndi.properties.input>-->
+        <scatest.result>${scac.output.dir}/testResult</scatest.result>
+        <!--  input is the name of the composite to run test suties against -->
+        <input>test-soa-project</input>
+        <oracleHome>
+            ${env.ORACLE_HOME}
+        </oracleHome>
+    </properties>
+	
+	<build>
+        <plugins>
+            <plugin>
+                <groupId>com.oracle.soa.plugin</groupId>
+                <artifactId>oracle-soa-plugin</artifactId>
+                <version>12.2.1-0-0</version>
+                <configuration>
+                    <compositeName>test-soa-project</compositeName>
+                    <composite>${scac.input}</composite>
+                    <sarLocation>${scac.output.dir}/sca_${project.artifactId}_rev${version}.jar</sarLocation>
+                    <serverUrl>${serverUrl}</serverUrl>
+                    <!-- note: compositeRevision is needed to package, revision is needed to undeploy -->
+                    <compositeRevision>${composite.revision}</compositeRevision>
+                    <revision>${composite.revision}</revision>
+                    <scacInputDir>${scac.input.dir}</scacInputDir>
+                    <!-- Uncomment the appHome property if your composite 
+                         depends on MDS. -->
+                    <!--<appHome>${project.basedir}/..</appHome>-->
+                    <!--  If you have a composite which contains a component that 
+                          depends on MDS (eg. Human Task, Business Rule) AND you 
+                          want to use a file-based MDS repository, then you 
+                          need to do either:
+                          1. update the .adf/META-INF/adf-config.xml to point to
+                             the correct location of the file based repository, i.e.
+                             remove the reference to ${soa.oracle.home} in that file, or
+                          2. define oracleHome and soaOracleHome here and leave the adf-config.xml file
+                             as is.  Note that the correct value for soaOracleHome is the path to 
+                             your SOA Quickstart or JDeveloper install directory, 
+                             with "/soa" appended to it.
+                    -->
+                    <!--<oracleHome>JDEV_HOME</oracleHome>-->
+                    <!--<soaOracleHome>JDEV_HOME/soa</soaOracleHome>-->
+                    <input>${input}</input>
+                </configuration>
+                <!-- extensions=true is needed to use the custom sar packaging type -->
+                <extensions>true</extensions>
+            </plugin>
+            <plugin>
+                <groupId>com.oracle.adf.plugin</groupId>
+                <artifactId>ojdeploy</artifactId>
+                <version>12.2.1-0-0</version>
+                <configuration>
+                    <ojdeploy>
+                        ${oracleHome}/jdeveloper/jdev/bin/ojdeploy.exe
+                    </ojdeploy>
+                    <workspace>
+                        ${basedir}/../test-soa-application.jws
+                    </workspace>
+                    <project>
+                        test-soa-project
+                    </project>
+                    <profile>
+                        test-soa-project
+                    </profile>
+                    <outputfile>
+                        ${project.build.directory}/${project.build.finalName}.jar
+                    </outputfile>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>deploy</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+	
+	
+</project>

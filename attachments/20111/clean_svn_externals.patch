@@ -1,0 +1,43 @@
+Index: SubversionChangeLogSet.java
+===================================================================
+--- SubversionChangeLogSet.java	(revision 37630)
++++ SubversionChangeLogSet.java	(working copy)
+@@ -54,6 +54,29 @@
+      */
+     private Map<String,Long> revisionMap;
+ 
++      /**
++       * Returns true if Logentries a and b have the same message and revision.
++       */
++    private boolean IsSameRevisionLog( LogEntry a, LogEntry b )
++    {
++      return  a.getRevision() == b.getRevision() && a.getMsg().equals( b.getMsg() );
++    }
++
++      /**
++       * Given a LogEntry List that is already sorted, removes those entries
++       * for which IsSameRevisionLog() returns true, ie those coming form svn:externals.
++       */
++    private List<LogEntry> RemoveDuplicateEntries( List<LogEntry> items )
++    {
++      boolean[] dupSet = new boolean[ items.size() ];
++      for( int i = 0 ; i < items.size() - 1 ; )
++        dupSet[ i ] = IsSameRevisionLog( items.get(  i++ ), items.get(  i ) );
++      for( int i = dupSet.length - 1 ; i >= 0 ;  --i )
++        if( dupSet[ i ] )
++          items.remove( i );
++      return items;
++    }
++
+     /*package*/ SubversionChangeLogSet(AbstractBuild build, List<LogEntry> logs) {
+         super(build);
+         // we want recent changes first
+@@ -62,7 +85,7 @@
+                 return b.getRevision()-a.getRevision();
+             }
+         });
+-        this.logs = Collections.unmodifiableList(logs);
++        this.logs = Collections.unmodifiableList( RemoveDuplicateEntries( logs ) );
+         for (LogEntry log : logs)
+             log.setParent(this);
+     }

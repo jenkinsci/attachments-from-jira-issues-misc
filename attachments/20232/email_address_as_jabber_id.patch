@@ -1,0 +1,88 @@
+Index: src/main/webapp/help-email-address-as-jabberid.html
+===================================================================
+--- src/main/webapp/help-email-address-as-jabberid.html	(revision )
++++ src/main/webapp/help-email-address-as-jabberid.html	(revision )
+@@ -0,0 +1,1 @@
++Use email address as Jabber ID (eg. resolved via LDAP integration).
+Index: src/main/resources/hudson/plugins/jabber/im/transport/JabberPublisher/global.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/jabber/im/transport/JabberPublisher/global.jelly	(revision 29198)
++++ src/main/resources/hudson/plugins/jabber/im/transport/JabberPublisher/global.jelly	(revision )
+@@ -32,6 +32,9 @@
+ 			<f:textbox name="${descriptor.PARAMETERNAME_DEFAULT_ID_SUFFIX}"
+ 				value="${descriptor.defaultIdSuffix}" />
+ 	  </f:entry>
++      <f:entry title="Email address as Jabber ID" help="${base}/help-email-address-as-jabberid.html">
++        <f:checkbox name="${descriptor.PARAMETERNAME_EMAIL_ADDRESS_AS_JABBERID}" checked="${descriptor.emailAddressAsJabberId}"/>
++      </f:entry>
+          <f:entry title="Enable SASL authentication" help="${base}/help-sasl.html">
+ 			  <f:checkbox name="${descriptor.PARAMETERNAME_SASL}" checked="${descriptor.enableSASL}"/>
+ 		</f:entry>
+Index: src/main/java/hudson/plugins/jabber/im/transport/JabberPublisherDescriptor.java
+===================================================================
+--- src/main/java/hudson/plugins/jabber/im/transport/JabberPublisherDescriptor.java	(revision 37438)
++++ src/main/java/hudson/plugins/jabber/im/transport/JabberPublisherDescriptor.java	(revision )
+@@ -66,6 +66,7 @@
+     public static final String PARAMETERNAME_HUDSON_LOGIN = JabberPublisherDescriptor.PREFIX + "hudsonLogin";
+     public static final String PARAMETERNAME_HUDSON_PASSWORD = JabberPublisherDescriptor.PREFIX + "hudsonPassword";
+     public static final String PARAMETERNAME_SUBSCRIPTION_MODE = JabberPublisherDescriptor.PREFIX + "subscriptionMode";
++    public static final String PARAMETERNAME_EMAIL_ADDRESS_AS_JABBERID = JabberPublisherDescriptor.PREFIX + "emailAddressAsJabberId";
+     public static final String[] PARAMETERVALUE_SUBSCRIPTION_MODE;
+     static {
+     	SubscriptionMode[] modes = SubscriptionMode.values();
+@@ -106,6 +107,7 @@
+     private String hudsonCiLogin;
+     private String hudsonCiPassword;
+     private String subscriptionMode = SubscriptionMode.accept_all.name();
++    private boolean emailAddressAsJabberId;
+ 
+     public JabberPublisherDescriptor()
+     {
+@@ -355,6 +357,10 @@
+     	return Util.fixEmptyAndTrim(this.initialGroupChats);
+     }
+ 
++    public boolean getEmailAddressAsJabberId() {
++        return emailAddressAsJabberId;
++    }
++
+     @Override
+     public String getDefaultIdSuffix() {
+         return this.defaultIdSuffix;
+@@ -435,6 +441,7 @@
+ 		this.exposePresence = req.getParameter(JabberPublisherDescriptor.PARAMETERNAME_PRESENCE) != null;
+         this.enableSASL = req.getParameter(JabberPublisherDescriptor.PARAMETERNAME_SASL) != null;
+ 		this.subscriptionMode = Util.fixEmptyAndTrim(req.getParameter(JabberPublisherDescriptor.PARAMETERNAME_SUBSCRIPTION_MODE));
++		this.emailAddressAsJabberId = req.getParameter(JabberPublisherDescriptor.PARAMETERNAME_EMAIL_ADDRESS_AS_JABBERID) != null;
+         applyHostname(req, this.enabled);
+         applyPort(req, this.enabled);
+         applyNickname(req, this.enabled);
+Index: src/main/java/hudson/plugins/jabber/im/transport/JabberPublisher.java
+===================================================================
+--- src/main/java/hudson/plugins/jabber/im/transport/JabberPublisher.java	(revision 37438)
++++ src/main/java/hudson/plugins/jabber/im/transport/JabberPublisher.java	(revision )
+@@ -14,6 +14,7 @@
+ import hudson.plugins.jabber.user.JabberUserProperty;
+ import hudson.tasks.BuildStepDescriptor;
+ import hudson.tasks.BuildStepMonitor;
++import hudson.tasks.Mailer;
+ import hudson.tasks.Publisher;
+ 
+ import java.util.List;
+@@ -120,6 +121,16 @@
+ 
+ 	@Override
+ 	protected String getConfiguredIMId(User user) {
++		boolean emailAddressAsJabberId = JabberPublisher.DESCRIPTOR.getEmailAddressAsJabberId();
++		if (emailAddressAsJabberId) {
++			Mailer.UserProperty mailProperty = user.getProperty(Mailer.UserProperty.class);
++			if (mailProperty != null) {
++				String emailAddress = mailProperty.getAddress();
++				if (emailAddress != null) {
++					return emailAddress;
++				}
++			}
++		}
+ 		JabberUserProperty jabberUserProperty = (JabberUserProperty) user.getProperties().get(JabberUserProperty.DESCRIPTOR);
+ 		if (jabberUserProperty != null) {
+ 			return jabberUserProperty.getJid();

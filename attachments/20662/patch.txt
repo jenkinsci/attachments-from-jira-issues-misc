@@ -1,0 +1,11 @@
+--- AuditTrailFilter.java	2011-02-24 17:31:48.000000000 -0500
++++ NewAuditTrailFilter.java	2011-08-02 13:39:02.995415900 -0400
+@@ -53,7 +53,7 @@
+         String uri = ((HttpServletRequest)req).getRequestURI();
+         if (uriPattern != null && uriPattern.matcher(uri).matches()) {
+             User user = User.current();
+-            String username = user != null ? user.getId() : "?", extra = "";
++            String username = user != null ? user.getId() : req.getRemoteAddr(), extra = "";
+             // For queue items, show what task is in the queue:
+             if (uri.startsWith("/queue/item/")) try {
+                 extra = " (" + Hudson.getInstance().getQueue().getItem(Integer.parseInt(

@@ -1,0 +1,60 @@
+Sep 10, 2010 3:59:23 PM hudson.model.Run run
+INFO: Enterprise_Review #166 main build action completed: SUCCESS
+Sep 10, 2010 3:59:24 PM com.sonyericsson.hudson.plugins.gerrit.trigger.gerritnotifier.ToGerritRunListener onCompleted
+INFO: Completed. Build: Enterprise_Review #166 Cause: GerritCause: PatchsetCreated: Change: 220 PatchSet: 1 silent: false
+Sep 10, 2010 3:59:24 PM hudson.model.Executor run
+SEVERE: Executor throw an exception unexpectedly
+java.lang.RuntimeException: Failed to serialize hudson.model.Actionable#actions for class hudson.model.FreeStyleBuild
+	at hudson.util.RobustReflectionConverter$2.writeField(RobustReflectionConverter.java:167)
+	at hudson.util.RobustReflectionConverter$2.visit(RobustReflectionConverter.java:135)
+	at com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider.visitSerializableFields(PureJavaReflectionProvider.java:130)
+	at hudson.util.RobustReflectionConverter.doMarshal(RobustReflectionConverter.java:120)
+	at hudson.util.RobustReflectionConverter.marshal(RobustReflectionConverter.java:94)
+	at com.thoughtworks.xstream.core.AbstractReferenceMarshaller.convert(AbstractReferenceMarshaller.java:68)
+	at com.thoughtworks.xstream.core.TreeMarshaller.convertAnother(TreeMarshaller.java:78)
+	at com.thoughtworks.xstream.core.TreeMarshaller.convertAnother(TreeMarshaller.java:63)
+	at com.thoughtworks.xstream.core.TreeMarshaller.start(TreeMarshaller.java:98)
+	at com.thoughtworks.xstream.core.AbstractTreeMarshallingStrategy.marshal(AbstractTreeMarshallingStrategy.java:38)
+	at com.thoughtworks.xstream.XStream.marshal(XStream.java:840)
+	at com.thoughtworks.xstream.XStream.marshal(XStream.java:829)
+	at com.thoughtworks.xstream.XStream.toXML(XStream.java:804)
+	at hudson.XmlFile.write(XmlFile.java:165)
+	at hudson.model.Run.save(Run.java:1403)
+	at com.sonyericsson.hudson.plugins.gerrit.trigger.gerritnotifier.model.BuildMemory.updateTriggerContext(BuildMemory.java:265)
+	at com.sonyericsson.hudson.plugins.gerrit.trigger.gerritnotifier.ToGerritRunListener.onCompleted(ToGerritRunListener.java:86)
+	at com.sonyericsson.hudson.plugins.gerrit.trigger.gerritnotifier.ToGerritRunListener.onCompleted(ToGerritRunListener.java:47)
+	at hudson.model.listeners.RunListener.fireCompleted(RunListener.java:126)
+	at hudson.model.Run.run(Run.java:1321)
+	at hudson.model.FreeStyleBuild.run(FreeStyleBuild.java:46)
+	at hudson.model.ResourceController.execute(ResourceController.java:88)
+	at hudson.model.Executor.run(Executor.java:129)
+Caused by: java.lang.RuntimeException: Failed to serialize hudson.plugins.git.util.BuildData#buildsByBranchName for class hudson.plugins.git.util.BuildData
+	at hudson.util.RobustReflectionConverter$2.writeField(RobustReflectionConverter.java:167)
+	at hudson.util.RobustReflectionConverter$2.visit(RobustReflectionConverter.java:135)
+	at com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider.visitSerializableFields(PureJavaReflectionProvider.java:130)
+	at hudson.util.RobustReflectionConverter.doMarshal(RobustReflectionConverter.java:120)
+	at hudson.util.RobustReflectionConverter.marshal(RobustReflectionConverter.java:94)
+	at com.thoughtworks.xstream.core.AbstractReferenceMarshaller.convert(AbstractReferenceMarshaller.java:68)
+	at com.thoughtworks.xstream.core.TreeMarshaller.convertAnother(TreeMarshaller.java:78)
+	at com.thoughtworks.xstream.core.TreeMarshaller.convertAnother(TreeMarshaller.java:63)
+	at com.thoughtworks.xstream.converters.collections.AbstractCollectionConverter.writeItem(AbstractCollectionConverter.java:64)
+	at com.thoughtworks.xstream.converters.collections.CollectionConverter.marshal(CollectionConverter.java:55)
+	at com.thoughtworks.xstream.core.AbstractReferenceMarshaller.convert(AbstractReferenceMarshaller.java:68)
+	at com.thoughtworks.xstream.core.TreeMarshaller.convertAnother(TreeMarshaller.java:78)
+	at com.thoughtworks.xstream.core.TreeMarshaller.convertAnother(TreeMarshaller.java:63)
+	at hudson.util.RobustReflectionConverter.marshallField(RobustReflectionConverter.java:175)
+	at hudson.util.RobustReflectionConverter$2.writeField(RobustReflectionConverter.java:163)
+	... 22 more
+Caused by: java.lang.NullPointerException
+	at java.lang.Class.isAssignableFrom(Native Method)
+	at hudson.util.XStream2$1.serializedClass(XStream2.java:115)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.serializedClass(MapperWrapper.java:34)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.serializedClass(MapperWrapper.java:34)
+	at com.thoughtworks.xstream.converters.collections.AbstractCollectionConverter.writeItem(AbstractCollectionConverter.java:58)
+	at com.thoughtworks.xstream.converters.collections.MapConverter.marshal(MapConverter.java:57)
+	at com.thoughtworks.xstream.core.AbstractReferenceMarshaller.convert(AbstractReferenceMarshaller.java:68)
+	at com.thoughtworks.xstream.core.TreeMarshaller.convertAnother(TreeMarshaller.java:78)
+	at com.thoughtworks.xstream.core.TreeMarshaller.convertAnother(TreeMarshaller.java:63)
+	at hudson.util.RobustReflectionConverter.marshallField(RobustReflectionConverter.java:175)
+	at hudson.util.RobustReflectionConverter$2.writeField(RobustReflectionConverter.java:163)
+	... 36 more

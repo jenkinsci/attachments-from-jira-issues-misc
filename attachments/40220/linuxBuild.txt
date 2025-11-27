@@ -1,0 +1,37 @@
+Started by user admin
+Building in workspace REDACTED
+[WS-CLEANUP] Deleting project workspace...
+[WS-CLEANUP] Done
+Cloning the remote Git repository
+Cloning repository ssh://git@github.com/ACCOUNT/Parent_test_repo.git
+ > git init /var/lib/jenkins/workspace/Test submodule build # timeout=10
+Fetching upstream changes from ssh://git@github.com/ACCOUNT/Parent_test_repo.git
+ > git --version # timeout=10
+using GIT_SSH to set credentials 
+ > git fetch --tags --progress ssh://git@github.com/ACCOUNT/Parent_test_repo.git +refs/heads/*:refs/remotes/origin/*
+ > git config remote.origin.url ssh://git@github.com/ACCOUNT/Parent_test_repo.git # timeout=10
+ > git config --add remote.origin.fetch +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git config remote.origin.url ssh://git@github.com/ACCOUNT/Parent_test_repo.git # timeout=10
+Fetching upstream changes from ssh://git@github.com/ACCOUNT/Parent_test_repo.git
+using GIT_SSH to set credentials 
+ > git fetch --tags --progress ssh://git@github.com/ACCOUNT/Parent_test_repo.git +refs/heads/*:refs/remotes/origin/*
+ > git rev-parse refs/remotes/origin/master^{commit} # timeout=10
+ > git rev-parse refs/remotes/origin/origin/master^{commit} # timeout=10
+Checking out Revision c70c65913309ba989cd26729b857338dc03ec2b0 (refs/remotes/origin/master)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f c70c65913309ba989cd26729b857338dc03ec2b0
+Commit message: "Added submodule"
+ > git rev-list c70c65913309ba989cd26729b857338dc03ec2b0 # timeout=10
+ > git remote # timeout=10
+ > git submodule init # timeout=10
+ > git submodule sync # timeout=10
+ > git config --get remote.origin.url # timeout=10
+ > git submodule init # timeout=10
+ > git config -f .gitmodules --get-regexp ^submodule\.(.*)\.url # timeout=10
+ > git config --get submodule.Child_test_repo.url # timeout=10
+ > git remote # timeout=10
+ > git config --get remote.origin.url # timeout=10
+ > git config -f .gitmodules --get submodule.Child_test_repo.path # timeout=10
+using GIT_SSH to set credentials 
+ > git submodule update --init --recursive Child_test_repo
+Finished: SUCCESS

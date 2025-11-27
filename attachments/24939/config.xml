@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><matrix-project>
+  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+    <runSequentially>false</runSequentially>
+  </executionStrategy>
+  <combinationFilter/>
+  <axes>
+    <hudson.matrix.LabelAxis>
+      <name>label</name>
+      <values>
+        <string>unit-large</string>
+      </values>
+    </hudson.matrix.LabelAxis>
+    <hudson.matrix.TextAxis>
+      <name>suite</name>
+      <values>
+        <string>suite1</string>
+        <string>suite2</string>
+        <string>suite3</string>
+      </values>
+    </hudson.matrix.TextAxis>
+  </axes>
+  <actions/>
+  <keepDependencies>false</keepDependencies>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <concurrentBuild>true</concurrentBuild>
+  <assignedNode>master</assignedNode>
+  <canRoam>false</canRoam>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>CUSTOM_BUILD_SCRIPT_HERE</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Ant>
+      <buildFile>build.xml</buildFile>
+      <targets>run-suite</targets>
+      <properties>suite=$group
+app=$app
+group=$group,master
+builddir=$WORKSPACE</properties>
+      <antName>default</antName>
+    </hudson.tasks.Ant>
+  </builders>
+  <publishers>
+    <hudson.plugins.claim.ClaimPublisher/>
+    <com.michelin.cio.hudson.plugins.copytoslave.CopyToMasterNotifier>
+      <includes>/etc/jenkins/workspace/my-job</includes>
+      <excludes/>
+      <destinationFolder/>
+      <runAfterResultFinalised>true</runAfterResultFinalised>
+    </com.michelin.cio.hudson.plugins.copytoslave.CopyToMasterNotifier>
+    <hudson.tasks.junit.JUnitResultArchiver>
+      <testResults>*.xml</testResults>
+      <keepLongStdio>true</keepLongStdio>
+      <testDataPublishers/>
+    </hudson.tasks.junit.JUnitResultArchiver>
+    <hudson.plugins.performance.PerformancePublisher>
+      <errorFailedThreshold>-1</errorFailedThreshold>
+      <errorUnstableThreshold>-1</errorUnstableThreshold>
+      <parsers>
+        <hudson.plugins.performance.JUnitParser>
+          <glob>*.xml</glob>
+        </hudson.plugins.performance.JUnitParser>
+      </parsers>
+    </hudson.plugins.performance.PerformancePublisher>
+  </publishers>
+  <buildWrappers>
+    <EnvInjectBuildWrapper>
+      <info>
+        <propertiesContent>app=network
+branch=master</propertiesContent>
+        <loadFilesFromMaster>false</loadFilesFromMaster>
+      </info>
+    </EnvInjectBuildWrapper>
+  </buildWrappers>
+</matrix-project>

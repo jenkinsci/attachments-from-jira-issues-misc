@@ -1,0 +1,140 @@
+Index: src/main/java/hudson/plugins/emailext/ExtendedEmailPublisher.java
+===================================================================
+--- src/main/java/hudson/plugins/emailext/ExtendedEmailPublisher.java   (revision 23634)
++++ src/main/java/hudson/plugins/emailext/ExtendedEmailPublisher.java   (working copy)
+@@ -377,8 +377,13 @@
+                 * If true use SSL on port 465 (standard SMTPS) unless <code>smtpPort</code> is set.
+                 */
+                private boolean useSsl;
+-
++
+                /**
++                * If true use TLS handshake
++                */
++               private boolean useTls;
++
++               /**
+                 * The SMTP port to use for sending e-mail. Null for default to the environment,
+                 * which is usually <tt>25</tt>.
+                 */
+@@ -429,6 +434,7 @@
+                                smtpAuthUsername = desc.getSmtpAuthUserName();
+                                smtpAuthPassword = desc.getSmtpAuthPassword();
+                                useSsl = desc.getUseSsl();
++                               useTls = desc.getUseTls();
+                                smtpPort = desc.getSmtpPort();
+                         */
+                        Properties props = new Properties(System.getProperties());
+@@ -444,16 +450,17 @@
+                                 * and thats done in mail sender, and it would be a bit of a hack to get it all to
+                                 * coordinate, and we can make it work through setting mail.smtp properties.
+                                 */
+-                               props.put("mail.smtp.auth","true");
++                                String protocols = "SSLv3";
++                               if (useTls) {
++                                  protocols = protocols + " TLSv1";
++                                  props.put("mail.smtp.starttls.enable","true");
++                               }
++                               props.put("mail.smtp.ssl.protocols",protocols);
++                               props.put("mail.smtp.auth",getAuthenticator() == null ? "false" : "true");
+                                if (props.getProperty("mail.smtp.socketFactory.port") == null) {
+                                        String port = smtpPort==null?"465":smtpPort;
+                                        props.put("mail.smtp.port", port);
+-                                       props.put("mail.smtp.socketFactory.port", port);
+                                }
+-                               if (props.getProperty("mail.smtp.socketFactory.class") == null) {
+-                                       props.put("mail.smtp.socketFactory.class","javax.net.ssl.SSLSocketFactory");
+-                               }
+-                               props.put("mail.smtp.socketFactory.fallback", "false");
+                        }
+                        return Session.getInstance(props,getAuthenticator());
+                }
+@@ -491,7 +498,11 @@
+                public boolean getUseSsl() {
+                        return useSsl;
+                }
+-
++
++               public boolean getUseTls() {
++                       return useTls;
++               }
++
+                public String getSmtpPort() {
+                        return smtpPort;
+                }
+@@ -598,6 +609,8 @@
+                        // specify if the mail server uses ssl for authentication
+                        useSsl = req.getParameter("ext_mailer_smtp_use_ssl") != null;
+
++                       useTls = req.getParameter("ext_mailer_smtp_use_tls") != null;
++
+                        // specify custom smtp port
+                        smtpPort = nullify(req.getParameter("ext_mailer_smtp_port"));
+
+@@ -607,7 +620,7 @@
+                        defaultSubject = nullify(req.getParameter("ext_mailer_default_subject"));
+                        defaultBody = nullify(req.getParameter("ext_mailer_default_body"));
+
+-                       overrideGlobalSettings = req.getParameter("ext_mailer_use_global_settings") != null;
++                       overrideGlobalSettings = req.getParameter("ext_mailer_override_global_settings") != null;
+
+                        save();
+                        return super.configure(req, formData);
+Index: src/main/resources/hudson/plugins/emailext/ExtendedEmailPublisher/global.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/emailext/ExtendedEmailPublisher/global.jelly      (revision 23634)
++++ src/main/resources/hudson/plugins/emailext/ExtendedEmailPublisher/global.jelly      (working copy)
+@@ -1,6 +1,6 @@
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+   <f:section title="Extended E-mail Notification">
+-    <script type="text/javascript" src="${rootURL}/plugin/email-ext/scripts/emailext-behavior.js"></script>
++    <script type="text/javascript" src="${rootURL}/plugins/email-ext/scripts/emailext-behavior.js"></script>
+     <style type="text/css">
+         .mailHelp{
+             border: solid #bbb 1px;
+@@ -9,7 +9,7 @@
+             margin-bottom: 1em;
+         }
+     </style>
+-    <f:optionalBlock name="ext_mailer_override_global_settings" checked="${descriptor.overrideGlobalSettings}" title="Override Global Settings" help="${rootURL}/plugin/email-ext/help/globalConfig/override-global-settings.html">
++    <f:optionalBlock name="ext_mailer_override_global_settings" checked="${descriptor.overrideGlobalSettings}" title="Override Global Settings" help="${rootURL}/plugins/email-ext/help/globalConfig/override-global-settings.html">
+            <f:entry title="SMTP server"
+                     help="/descriptor/hudson.tasks.Mailer/help/smtpServer">
+              <input class="setting-input" name="ext_mailer_smtp_server"
+@@ -46,7 +46,11 @@
+                       help="/descriptor/hudson.tasks.Mailer/help/useSsl">
+                <f:checkbox name="ext_mailer_smtp_use_ssl" checked="${descriptor.useSsl}" />
+              </f:entry>
+-             <f:entry title="SMTP port"
++             <f:entry title="Use TLS"
++                      help="/descriptor/hudson.tasks.Mailer/help/useTls">
++               <f:checkbox name="ext_mailer_smtp_use_tls" checked="${descriptor.useTls}" />
++             </f:entry>
++             <f:entry title="SMTP port"
+                       help="/descriptor/hudson.tasks.Mailer/help/smtpPort">
+                <input class="setting-input" name="ext_mailer_smtp_port"
+                  type="text" value="${descriptor.smtpPort}"/>
+@@ -54,7 +58,7 @@
+                </f:advanced>
+          </f:optionalBlock>
+       <f:entry title="Default Content Type"
+-                      help="${rootURL}/plugin/email-ext/help/globalConfig/contentType.html">
++                      help="${rootURL}/plugins/email-ext/help/globalConfig/contentType.html">
+         <select class="setting-input"
+                 name="ext_mailer_default_content_type">
+           <f:option value="text/plain"
+@@ -66,12 +70,12 @@
+         </select>
+       </f:entry>
+       <f:entry title="Default Subject"
+-               help="${rootURL}/plugin/email-ext/help/globalConfig/defaultSubject.html">
++               help="${rootURL}/plugins/email-ext/help/globalConfig/defaultSubject.html">
+         <input class="setting-input" name="ext_mailer_default_subject"
+                type="text" value="${descriptor.defaultSubject}"/>
+       </f:entry>
+       <f:entry title="Default Content"
+-               help="${rootURL}/plugin/email-ext/help/globalConfig/defaultBody.html">
++               help="${rootURL}/plugins/email-ext/help/globalConfig/defaultBody.html">
+         <f:textarea class="setting-input"
+                     name="ext_mailer_default_body"
+                     value="${descriptor.defaultBody}"/>

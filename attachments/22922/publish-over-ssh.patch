@@ -1,0 +1,658 @@
+diff --git a/src/main/java/jenkins/plugins/publish_over_ssh/BapSshClient.java b/src/main/java/jenkins/plugins/publish_over_ssh/BapSshClient.java
+index 885ae20..0f5870e 100644
+--- a/src/main/java/jenkins/plugins/publish_over_ssh/BapSshClient.java
++++ b/src/main/java/jenkins/plugins/publish_over_ssh/BapSshClient.java
+@@ -24,20 +24,27 @@
+ 
+ package jenkins.plugins.publish_over_ssh;
+ 
++import hudson.FilePath;
++import hudson.Util;
++
++import java.io.File;
++import java.io.InputStream;
++import java.util.Vector;
++
++import jenkins.plugins.publish_over.BPBuildInfo;
++import jenkins.plugins.publish_over.BPDefaultClient;
++import jenkins.plugins.publish_over.BapPublisherException;
++import jenkins.plugins.publish_over.BapTransferException;
++
++import org.apache.commons.lang.StringUtils;
++import org.apache.commons.logging.Log;
++import org.apache.commons.logging.LogFactory;
++
+ import com.jcraft.jsch.ChannelExec;
+ import com.jcraft.jsch.ChannelSftp;
+ import com.jcraft.jsch.JSchException;
+ import com.jcraft.jsch.Session;
+ import com.jcraft.jsch.SftpException;
+-import hudson.FilePath;
+-import hudson.Util;
+-import jenkins.plugins.publish_over.BPBuildInfo;
+-import jenkins.plugins.publish_over.BPDefaultClient;
+-import jenkins.plugins.publish_over.BapPublisherException;
+-import org.apache.commons.logging.Log;
+-import org.apache.commons.logging.LogFactory;
+-
+-import java.io.InputStream;
+ 
+ @SuppressWarnings("PMD.TooManyMethods")
+ public class BapSshClient extends BPDefaultClient<BapSshTransfer> {
+@@ -58,7 +65,7 @@
+         this.session = session;
+         this.disableExec = disableExec;
+     }
+-
++    
+     public boolean isDisableExec() {
+         return disableExec;
+     }
+@@ -85,6 +92,18 @@
+         }
+     }
+ 
++    public boolean isDirectory(final String directory) {
++        try {
++            if (!sftp.stat(directory).isDir()) return false;
++        } catch (SftpException sftpe) {
++            if (LOG.isDebugEnabled()) {
++                LOG.debug(Messages.log_sftp_stat(directory, sftpe.getLocalizedMessage()));
++            }
++            return false;
++        }
++        return true;
++    }
++    
+     public boolean changeDirectory(final String directory) {
+         try {
+             if (!sftp.stat(directory).isDir()) return false;
+@@ -117,7 +136,35 @@
+         }
+     }
+ 
++    public VectorLsWrapper ls(final String path) {
++    	VectorLsWrapper lsReturn = null;
++        try {
++            buildInfo.printIfVerbose(Messages.console_ls(path));
++            lsReturn = new VectorLsWrapper((Vector<ChannelSftp.LsEntry>) sftp.ls(path));
++            success();
++        } catch (SftpException sftpe) {
++            buildInfo.printIfVerbose(Messages.console_failure(sftpe.getLocalizedMessage()));
++        }
++        return lsReturn;
++    }
++    
+     public void transferFile(final BapSshTransfer bapSshTransfer, final FilePath filePath,
++            final InputStream inputStream) throws SftpException {
++    	if(bapSshTransfer.isUseGet()) {
++    		transferFileGet(bapSshTransfer, filePath, inputStream);
++    	} else {
++    		transferFilePut(bapSshTransfer, filePath, inputStream);
++    	}
++    }
++
++    public void transferFileGet(final BapSshTransfer bapSshTransfer, final FilePath filePath,
++            final InputStream inputStream) throws SftpException {
++    	buildInfo.printIfVerbose(Messages.console_get(filePath.getRemote()));
++		sftp.get(filePath.getRemote(), buildInfo.getBaseDirectory().getRemote());
++		success();
++    }
++    
++    public void transferFilePut(final BapSshTransfer bapSshTransfer, final FilePath filePath,
+                              final InputStream inputStream) throws SftpException {
+         buildInfo.printIfVerbose(Messages.console_put(filePath.getName()));
+         sftp.put(inputStream, filePath.getName());
+@@ -257,5 +304,47 @@
+             } catch (InterruptedException ie) { }
+         }
+     }
++    
++    public final class VectorLsWrapper  {
++        private static final long serialVersionUID = 1L;
++        private Vector<ChannelSftp.LsEntry> lsVector;
++        
++        public VectorLsWrapper(Vector<ChannelSftp.LsEntry> lsVector) {
++        	this.lsVector = lsVector;
++        }
++        
++        public String getFilename(int index){
++        	return lsVector.get(index).getFilename();
++        }
++        
++        public String getLongname(int index){
++        	return lsVector.get(index).getLongname();
++        }
+ 
+-}
++        public FilePath getAsFilePath(int index){
++        	return new FilePath(new File(lsVector.get(index).getFilename()));
++        }
++        
++        public boolean isDir(int index){
++        	return lsVector.get(index).getAttrs().isDir();
++        }
++        
++    	public boolean match(int index, String excludes) {
++        	if(StringUtils.isBlank(excludes))
++        		return false;
++        	
++    		String excludesArray [] = excludes.split(",");
++    		boolean returnMatch = false;
++    		for (String verifyExclude : excludesArray) {
++    			if(lsVector.get(index).getFilename().matches(verifyExclude)) {
++    				returnMatch = true;
++    			}
++    		}
++    		return returnMatch;
++    	}  
++        
++		public int size() {
++			return lsVector.size();
++		}
++    }
++}
+\ No newline at end of file
+diff --git a/src/main/java/jenkins/plugins/publish_over_ssh/BapSshTransfer.java b/src/main/java/jenkins/plugins/publish_over_ssh/BapSshTransfer.java
+index fd1138f..30a4cc7 100644
+--- a/src/main/java/jenkins/plugins/publish_over_ssh/BapSshTransfer.java
++++ b/src/main/java/jenkins/plugins/publish_over_ssh/BapSshTransfer.java
+@@ -24,38 +24,53 @@
+ 
+ package jenkins.plugins.publish_over_ssh;
+ 
++import hudson.FilePath;
+ import hudson.Util;
+ import hudson.model.Describable;
+ import hudson.model.Hudson;
++
++import java.io.File;
++
++import jenkins.plugins.publish_over.BPBuildInfo;
++import jenkins.plugins.publish_over.BPClient;
+ import jenkins.plugins.publish_over.BPTransfer;
++import jenkins.plugins.publish_over.BapPublisherException;
++import jenkins.plugins.publish_over.BapTransferException;
++import jenkins.plugins.publish_over_ssh.BapSshClient.VectorLsWrapper;
+ import jenkins.plugins.publish_over_ssh.descriptor.BapSshTransferDescriptor;
++
+ import org.apache.commons.lang.builder.EqualsBuilder;
+ import org.apache.commons.lang.builder.HashCodeBuilder;
+ import org.apache.commons.lang.builder.ToStringBuilder;
+ import org.apache.commons.lang.builder.ToStringStyle;
++import org.apache.commons.logging.Log;
++import org.apache.commons.logging.LogFactory;
+ import org.kohsuke.stapler.DataBoundConstructor;
+ 
+ public class BapSshTransfer extends BPTransfer implements Describable<BapSshTransfer> {
+ 
+     private static final long serialVersionUID = 1L;
+-
++    private static final Log LOG = LogFactory.getLog(BapSshTransfer.class);
++    
+     private String execCommand;
+     private int execTimeout;
+     private boolean usePty;
++    private boolean useGet;
+ 
+     BapSshTransfer(final String sourceFiles, final String remoteDirectory, final String removePrefix,
+                    final boolean remoteDirectorySDF, final boolean flatten, final String execCommand, final int execTimeout) {
+-        this(sourceFiles, null, remoteDirectory, removePrefix, remoteDirectorySDF, flatten, execCommand, execTimeout, false, false, false);
++        this(sourceFiles, null, remoteDirectory, removePrefix, remoteDirectorySDF, flatten, execCommand, execTimeout, false, false, false, false);
+     }
+ 
+     @DataBoundConstructor
+     public BapSshTransfer(final String sourceFiles, final String excludes, final String remoteDirectory, final String removePrefix,
+                           final boolean remoteDirectorySDF, final boolean flatten, final String execCommand, final int execTimeout,
+-                          final boolean usePty, final boolean noDefaultExcludes, final boolean makeEmptyDirs) {
++                          final boolean useGet, final boolean usePty, final boolean noDefaultExcludes, final boolean makeEmptyDirs) {
+         super(sourceFiles, excludes, remoteDirectory, removePrefix, remoteDirectorySDF, flatten, false, noDefaultExcludes, makeEmptyDirs);
+         this.execCommand = execCommand;
+         this.execTimeout = execTimeout;
+         this.usePty = usePty;
++        this.useGet = useGet;
+     }
+ 
+     public String getExecCommand() { return execCommand; }
+@@ -70,26 +85,32 @@
+         return usePty;
+     }
+ 
++    public boolean isUseGet() {
++        return useGet;
++    }
++    
+     public BapSshTransferDescriptor getDescriptor() {
+         return Hudson.getInstance().getDescriptorByType(BapSshTransferDescriptor.class);
+     }
+ 
+     protected HashCodeBuilder addToHashCode(final HashCodeBuilder builder) {
+-        return super.addToHashCode(builder).append(execCommand).append(execTimeout).append(usePty);
++        return super.addToHashCode(builder).append(execCommand).append(execTimeout).append(usePty).append(useGet);
+     }
+ 
+     protected EqualsBuilder addToEquals(final EqualsBuilder builder, final BapSshTransfer that) {
+         return super.addToEquals(builder, that)
+                 .append(execCommand, that.execCommand)
+                 .append(execTimeout, that.execTimeout)
+-                .append(usePty, that.usePty);
++                .append(usePty, that.usePty)
++                .append(useGet, that.useGet);
+     }
+ 
+     protected ToStringBuilder addToToString(final ToStringBuilder builder) {
+         return super.addToToString(builder)
+                 .append("execCommand", execCommand)
+                 .append("execTimeout", execTimeout)
+-                .append("pseudoTty", usePty);
++                .append("pseudoTty", usePty)
++                .append("useGet", useGet);
+     }
+ 
+     public boolean equals(final Object that) {
+@@ -106,5 +127,62 @@
+     public String toString() {
+         return addToToString(new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)).toString();
+     }
+-
++    
++    @Override
++    public int transfer(final BPBuildInfo buildInfo, final BPClient client, final TransferState state) {
++    	if(isUseGet()) {
++    		return transferGet(buildInfo, client);
++    	} else {
++    		return super.transfer(buildInfo, client, state);
++    	}
++    }
++    
++    public int transferGet(final BPBuildInfo buildInfo, final BPClient client) {
++    	BapSshClient sshClient = (BapSshClient) client;
++        final String expanded = Util.replaceMacro(getSourceFiles(), buildInfo.getEnvVars());
++        final String expandedExcludes = Util.fixEmptyAndTrim(Util.replaceMacro(getExcludes(), buildInfo.getEnvVars()));    	
++        if (LOG.isDebugEnabled()) {
++            LOG.debug(Messages.log_sourceFiles(getSourceFiles(), expanded));
++            if (expandedExcludes != null)
++                LOG.debug(Messages.log_excludes(getExcludes(), expandedExcludes));
++        }
++        
++    	VectorLsWrapper sourceFiles = sshClient.ls(expanded);
++    	FilePath baseDir = resolveBaseDir(expanded, sshClient);
++    	int indexSource = 0;
++    	int transferredSource = 0;
++        try {
++        	FilePath transferPath = new FilePath(baseDir, sourceFiles.getFilename(indexSource));
++            while (indexSource < sourceFiles.size()) {
++        		transferPath = new FilePath(baseDir, sourceFiles.getFilename(indexSource));
++        		if(!sourceFiles.match(indexSource, expandedExcludes)) {
++	            	if(!sourceFiles.isDir(indexSource)) {
++	            		transferFile(client, transferPath);
++	                	transferredSource ++;
++	            	} else {
++	            		new File(buildInfo.getBaseDirectory().getRemote(), transferPath.getName()).mkdirs();
++	            		sshClient.changeDirectory(transferPath.getRemote());
++	            	}
++	                indexSource++;
++	            } else {
++	            	buildInfo.printIfVerbose(Messages.log_excludeFile(sourceFiles.getFilename(indexSource)));
++	            }
++            }
++        } catch (Exception e) {
++            throw new BapTransferException(e);
++        }
++        return transferredSource;
++    }    
++    
++	private FilePath resolveBaseDir(String pathSearched, BapSshClient sshClient) {
++    	File baseDir = new File(pathSearched);    	
++		while(!sshClient.isDirectory(baseDir.getAbsolutePath())){
++			baseDir = baseDir.getParentFile();
++		}
++		
++		if(baseDir == null)
++			throw new BapPublisherException(Messages.exception_baseTransferDir_notFound(pathSearched));
++		
++		return new FilePath(baseDir);
++	}	
+ }
+diff --git a/src/main/java/jenkins/plugins/publish_over_ssh/options/SshOverrideTransferDefaults.java b/src/main/java/jenkins/plugins/publish_over_ssh/options/SshOverrideTransferDefaults.java
+index 0bdb204..fa83de5 100644
+--- a/src/main/java/jenkins/plugins/publish_over_ssh/options/SshOverrideTransferDefaults.java
++++ b/src/main/java/jenkins/plugins/publish_over_ssh/options/SshOverrideTransferDefaults.java
+@@ -45,6 +45,7 @@
+     private final boolean flatten;
+     private final boolean cleanRemote;
+     private final boolean usePty;
++    private final boolean useGet;
+     private final boolean noDefaultExcludes;
+     private final boolean makeEmptyDirs;
+ 
+@@ -52,7 +53,7 @@
+     public SshOverrideTransferDefaults(final String sourceFiles, final String excludes, final String removePrefix,
+                                        final String remoteDirectory, final boolean flatten, final boolean remoteDirectorySDF,
+                                        final boolean cleanRemote, final String execCommand, final int execTimeout, final boolean usePty,
+-                                       final boolean noDefaultExcludes, final boolean makeEmptyDirs) {
++                                       final boolean useGet, final boolean noDefaultExcludes, final boolean makeEmptyDirs) {
+         this.cleanRemote = cleanRemote;
+         this.excludes = excludes;
+         this.execCommand = execCommand;
+@@ -63,6 +64,7 @@
+         this.removePrefix = removePrefix;
+         this.sourceFiles = sourceFiles;
+         this.usePty = usePty;
++        this.useGet = useGet;
+         this.noDefaultExcludes = noDefaultExcludes;
+         this.makeEmptyDirs = makeEmptyDirs;
+     }
+@@ -111,6 +113,10 @@
+         return usePty;
+     }
+ 
++    public boolean isUseGet() {
++        return useGet;
++    }
++    
+     public boolean isNoDefaultExcludes() {
+         return noDefaultExcludes;
+     }
+diff --git a/src/main/java/jenkins/plugins/publish_over_ssh/options/SshPluginDefaultsHandler.java b/src/main/java/jenkins/plugins/publish_over_ssh/options/SshPluginDefaultsHandler.java
+index 45fbbd0..e25f6b2 100644
+--- a/src/main/java/jenkins/plugins/publish_over_ssh/options/SshPluginDefaultsHandler.java
++++ b/src/main/java/jenkins/plugins/publish_over_ssh/options/SshPluginDefaultsHandler.java
+@@ -32,6 +32,7 @@
+     private static final String GET_EXEC_COMMAND = "getExecCommand";
+     private static final String GET_EXEC_TIMEOUT = "getExecTimeout";
+     private static final String IS_USE_PTY = "isUsePty";
++    private static final String IS_USE_GET = "isUseGet";
+ 
+     public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
+         if (method.getName().equals(GET_EXEC_COMMAND))
+@@ -40,6 +41,8 @@
+             return getExecTimeout();
+         else if (method.getName().equals(IS_USE_PTY))
+             return isPseudoTty();
++        else if (method.getName().equals(IS_USE_GET))
++            return isUseGet();        
+         return method.invoke(SshPluginDefaults.GLOBAL_DEFAULTS, args);
+     }
+ 
+@@ -55,4 +58,7 @@
+         return SshTransferOptions.DEFAULT_USE_PTY;
+     }
+ 
++    public boolean isUseGet() {
++        return SshTransferOptions.DEFAULT_USE_GET;
++    }
+ }
+diff --git a/src/main/java/jenkins/plugins/publish_over_ssh/options/SshTransferOptions.java b/src/main/java/jenkins/plugins/publish_over_ssh/options/SshTransferOptions.java
+index 09a3c27..944d321 100644
+--- a/src/main/java/jenkins/plugins/publish_over_ssh/options/SshTransferOptions.java
++++ b/src/main/java/jenkins/plugins/publish_over_ssh/options/SshTransferOptions.java
+@@ -30,11 +30,14 @@
+ 
+     int DEFAULT_EXEC_TIMEOUT = 120000;
+     boolean DEFAULT_USE_PTY = false;
++    boolean DEFAULT_USE_GET = false;
+ 
+     String getExecCommand();
+ 
+     int getExecTimeout();
+ 
+     boolean isUsePty();
++    
++    boolean isUseGet();
+ 
+ }
+diff --git a/src/main/resources/jenkins/plugins/publish_over_ssh/BapSshTransfer/config.jelly b/src/main/resources/jenkins/plugins/publish_over_ssh/BapSshTransfer/config.jelly
+index ce49411..2da8696 100644
+--- a/src/main/resources/jenkins/plugins/publish_over_ssh/BapSshTransfer/config.jelly
++++ b/src/main/resources/jenkins/plugins/publish_over_ssh/BapSshTransfer/config.jelly
+@@ -78,6 +78,9 @@
+             <f:checkbox default="${defaults.transfer.usePty}"/>
+         </f:entry>
+ 
++        <f:entry title="${%useGet}" field="useGet">
++            <f:checkbox default="${defaults.transfer.useGet}"/>
++        </f:entry>
+     </f:advanced>
+ 
+ </j:jelly>
+diff --git a/src/main/resources/jenkins/plugins/publish_over_ssh/BapSshTransfer/config.properties b/src/main/resources/jenkins/plugins/publish_over_ssh/BapSshTransfer/config.properties
+index 086501c..832c4c1 100644
+--- a/src/main/resources/jenkins/plugins/publish_over_ssh/BapSshTransfer/config.properties
++++ b/src/main/resources/jenkins/plugins/publish_over_ssh/BapSshTransfer/config.properties
+@@ -27,3 +27,4 @@
+    <a href="{0}/env-vars.html" target="_blank">Jenkins environment variables</a>
+ execTimeout=Exec timeout (ms)
+ usePty=Exec in pty
++useGet=Use Get Transfer
+diff --git a/src/main/resources/jenkins/plugins/publish_over_ssh/BapSshTransfer/config_no_BV.properties b/src/main/resources/jenkins/plugins/publish_over_ssh/BapSshTransfer/config_no_BV.properties
+index 718ee00..97acfd7 100644
+--- a/src/main/resources/jenkins/plugins/publish_over_ssh/BapSshTransfer/config_no_BV.properties
++++ b/src/main/resources/jenkins/plugins/publish_over_ssh/BapSshTransfer/config_no_BV.properties
+@@ -26,4 +26,5 @@
+ transfers.envVars=A*l o* t*e t*a*s*e* f*e*d* (e*c*p* f*r E*e* t*m*o*t) s*p*o*t s*b*t*t*t*o* o* \
+    <a href="{0}/env-vars.html" target="_blank">J*n*i*s e*v*r*n*e*t v*r*a*l*s</a>
+ execTimeout=E*e* t*m*o*t (m*)
+-usePty=C*e*t* * *s*u*o*t*y
+\ No newline at end of file
++usePty=C*e*t* * *s*u*o*t*y
++useGet=W*h*a*t * H*e*l*l
+\ No newline at end of file
+diff --git a/src/main/resources/jenkins/plugins/publish_over_ssh/BapSshTransfer/help-useGet.html b/src/main/resources/jenkins/plugins/publish_over_ssh/BapSshTransfer/help-useGet.html
+new file mode 100644
+index 0000000..5f1acc3
+--- /dev/null
++++ b/src/main/resources/jenkins/plugins/publish_over_ssh/BapSshTransfer/help-useGet.html
+@@ -0,0 +1,30 @@
++<!--
++  ~ The MIT License
++  ~
++  ~ Copyright (C) 2010-2011 by Anthony Robinson
++  ~
++  ~ Permission is hereby granted, free of charge, to any person obtaining a copy
++  ~ of this software and associated documentation files (the "Software"), to deal
++  ~ in the Software without restriction, including without limitation the rights
++  ~ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++  ~ copies of the Software, and to permit persons to whom the Software is
++  ~ furnished to do so, subject to the following conditions:
++  ~
++  ~ The above copyright notice and this permission notice shall be included in
++  ~ all copies or substantial portions of the Software.
++  ~
++  ~ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++  ~ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++  ~ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++  ~ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++  ~ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++  ~ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++  ~ THE SOFTWARE.
++  -->
++
++<div>
++    <p>Exec the command in as a SFTP GET Transfer</p>
++    <p>This will execute sftp get bringing the source files from the SSH Server to the workspace enable the execution of sudo commands that require a tty (and possibly help in other scenarios too.)<br />
++       The default behavior of this plugin (checkbox unchecked) is to use SFTP PUT sending the source files to the SSH Server. 
++    </p>
++</div>
+diff --git a/src/main/resources/jenkins/plugins/publish_over_ssh/Messages.properties b/src/main/resources/jenkins/plugins/publish_over_ssh/Messages.properties
+index b11e900..d6e1e8e 100644
+--- a/src/main/resources/jenkins/plugins/publish_over_ssh/Messages.properties
++++ b/src/main/resources/jenkins/plugins/publish_over_ssh/Messages.properties
+@@ -59,12 +59,15 @@
+ 
+ console.cd=cd [{0}]
+ console.mkdir=mkdir [{0}]
++console.ls=ls [{0}]
++console.get=get [{0}]
+ console.put=put [{0}]
+ console.success=OK
+ console.failure=FAILED: Message [{0}]
+ 
+ exception.badTransferConfig=An SSH Transfer Set must not have an empty Source files and an empty Exec command - the transfer set should transfer files, execute a command or do both
+ exception.badTransferConfig.noExec=An SSH Transfer Set must contain Source files - if you really want to include everything, set Source files to **
++exception.baseTransferDir.notFound=Base directory not found in source files configuration [{0}]
+ exception.sftp.open=Failed to open SFTP channel. Message [{0}]
+ exception.sftp.connect=Failed to connect SFTP channel. Message [{0}]
+ exception.exec.open=Failed to open exec channel. Message [{0}]
+@@ -83,3 +86,6 @@
+ exception.addIdentity=Failed to add SSH key. Message [{0}]
+ 
+ log.sftp.stat=Failed to stat directory [{0}]. Message [{1}]
++log.sourceFiles=Source files: configured [{0}], actual [{1}]
++log.excludes=Excludes: configured [{0}], actual [{1}]
++log.excludeFile=Exclude pattern match file [{0}]
+diff --git a/src/main/resources/jenkins/plugins/publish_over_ssh/Messages_no_BV.properties b/src/main/resources/jenkins/plugins/publish_over_ssh/Messages_no_BV.properties
+index cbc23b5..5927003 100644
+--- a/src/main/resources/jenkins/plugins/publish_over_ssh/Messages_no_BV.properties
++++ b/src/main/resources/jenkins/plugins/publish_over_ssh/Messages_no_BV.properties
+@@ -59,6 +59,7 @@
+ 
+ console.cd=cd [{0}]
+ console.mkdir=mkdir [{0}]
++console.get=get [{0}]
+ console.put=put [{0}]
+ console.success=O*
+ console.failure=F*I*E*: M*s*a*e [{0}]
+diff --git a/src/main/resources/jenkins/plugins/publish_over_ssh/options/SshOverrideTransferDefaults/config.jelly b/src/main/resources/jenkins/plugins/publish_over_ssh/options/SshOverrideTransferDefaults/config.jelly
+index aad8003..7e0e43b 100644
+--- a/src/main/resources/jenkins/plugins/publish_over_ssh/options/SshOverrideTransferDefaults/config.jelly
++++ b/src/main/resources/jenkins/plugins/publish_over_ssh/options/SshOverrideTransferDefaults/config.jelly
+@@ -63,5 +63,7 @@
+         <f:checkbox default="${defaults.transfer.usePty}"/>
+     </f:entry>
+     
+-
++    <f:entry title="${%useGet}" field="useGet">
++        <f:checkbox default="${defaults.transfer.useGet}"/>
++    </f:entry>
+ </j:jelly>
+diff --git a/src/main/resources/jenkins/plugins/publish_over_ssh/options/SshOverrideTransferDefaults/config.properties b/src/main/resources/jenkins/plugins/publish_over_ssh/options/SshOverrideTransferDefaults/config.properties
+index a4a3b38..9e14907 100644
+--- a/src/main/resources/jenkins/plugins/publish_over_ssh/options/SshOverrideTransferDefaults/config.properties
++++ b/src/main/resources/jenkins/plugins/publish_over_ssh/options/SshOverrideTransferDefaults/config.properties
+@@ -24,4 +24,5 @@
+ 
+ execCommand=Exec command
+ execTimeout=Exec timeout (ms)
+-usePty=Exec in pty
+\ No newline at end of file
++usePty=Exec in pty
++useGet=Use Get Transfer
+\ No newline at end of file
+diff --git a/src/main/webapp/js/pos.js b/src/main/webapp/js/pos.js
+index f3a9060..e09b00d 100644
+--- a/src/main/webapp/js/pos.js
++++ b/src/main/webapp/js/pos.js
+@@ -60,6 +60,11 @@
+         var row = sshControl.ancestors()[1];
+         show_or_hide_row(row);
+     });
++    // hack for useGet as can't get class onto a checkbox
++    $(container).getElementsBySelector('input[name="_.useGet"]').each(function(sshControl) {
++        var row = sshControl.ancestors()[1];
++        show_or_hide_row(row);
++    });    
+ }
+ 
+ function bap_show_exec_controls(container) {
+diff --git a/src/test/java/jenkins/plugins/publish_over_ssh/BapSshClientTest.java b/src/test/java/jenkins/plugins/publish_over_ssh/BapSshClientTest.java
+index 4645e35..d1b9494 100644
+--- a/src/test/java/jenkins/plugins/publish_over_ssh/BapSshClientTest.java
++++ b/src/test/java/jenkins/plugins/publish_over_ssh/BapSshClientTest.java
+@@ -294,7 +294,7 @@
+         expect(mockSession.openChannel("exec")).andReturn(exec);
+         expect(mockSession.getTimeout()).andReturn(timeout);
+         mockControl.replay();
+-        bapSshClient.endTransfers(new BapSshTransfer("", "", "", "", false, false, command, timeout, true, false, false));
++        bapSshClient.endTransfers(new BapSshTransfer("", "", "", "", false, false, command, timeout, false, true, false, false));
+         assertTrue(exec.isUsePty());
+     }
+ 
+diff --git a/src/test/java/jenkins/plugins/publish_over_ssh/BapSshHostConfigurationTest.java b/src/test/java/jenkins/plugins/publish_over_ssh/BapSshHostConfigurationTest.java
+index a218c63..5b78a1b 100644
+--- a/src/test/java/jenkins/plugins/publish_over_ssh/BapSshHostConfigurationTest.java
++++ b/src/test/java/jenkins/plugins/publish_over_ssh/BapSshHostConfigurationTest.java
+@@ -287,8 +287,8 @@
+     @Test public void testDontConnectSftpIfNoSourceFilesInAnyTransfers() throws Exception {
+         final BapSshCommonConfiguration defaultKeyInfo = new BapSshCommonConfiguration(TEST_PASSPHRASE, null, null, false);
+         hostConfig = createWithDefaultKeyInfo(mockJSch, defaultKeyInfo);
+-        final BapSshTransfer transfer1 = new BapSshTransfer("", "", "", "", false, false, "ls -la", 10000, false, false, false);
+-        final BapSshTransfer transfer2 = new BapSshTransfer("", "", "", "", false, false, "pwd", 10000, false, false, false);
++        final BapSshTransfer transfer1 = new BapSshTransfer("", "", "", "", false, false, "ls -la", 10000, false, false, false, false);
++        final BapSshTransfer transfer2 = new BapSshTransfer("", "", "", "", false, false, "pwd", 10000, false, false, false, false);
+         final ArrayList<BapSshTransfer> transfers = new ArrayList<BapSshTransfer>();
+         transfers.addAll(Arrays.asList(transfer1, transfer2));
+         final BapSshPublisher publisher = new BapSshPublisher(hostConfig.getName(), false, transfers, false, false, null, null, null);
+diff --git a/src/test/java/jenkins/plugins/publish_over_ssh/jenkins/IntegrationTest.java b/src/test/java/jenkins/plugins/publish_over_ssh/jenkins/IntegrationTest.java
+index 886ff2b..b01a26d 100644
+--- a/src/test/java/jenkins/plugins/publish_over_ssh/jenkins/IntegrationTest.java
++++ b/src/test/java/jenkins/plugins/publish_over_ssh/jenkins/IntegrationTest.java
+@@ -79,7 +79,7 @@
+         new JenkinsTestHelper().setGlobalConfig(commonConfig, testHostConfig);
+         final String dirToIgnore = "target";
+         final int execTimeout = 10000;
+-        final BapSshTransfer transfer = new BapSshTransfer("**/*", null, "sub-home", dirToIgnore, false, false, "", execTimeout, false, false, false);
++        final BapSshTransfer transfer = new BapSshTransfer("**/*", null, "sub-home", dirToIgnore, false, false, "", execTimeout, false, false, false, false);
+         final BapSshPublisher publisher = new BapSshPublisher(testHostConfig.getName(), false,
+                         new ArrayList<BapSshTransfer>(Collections.singletonList(transfer)), false, false, null, null, null);
+         final BapSshPublisherPlugin plugin = new BapSshPublisherPlugin(
+diff --git a/src/test/java/jenkins/plugins/publish_over_ssh/jenkins/LegacyConfigurationTest.java b/src/test/java/jenkins/plugins/publish_over_ssh/jenkins/LegacyConfigurationTest.java
+index 428974c..cca457a 100644
+--- a/src/test/java/jenkins/plugins/publish_over_ssh/jenkins/LegacyConfigurationTest.java
++++ b/src/test/java/jenkins/plugins/publish_over_ssh/jenkins/LegacyConfigurationTest.java
+@@ -64,7 +64,7 @@
+ 
+         final int expectedExecTimeout = 120000;
+         final List<BapSshTransfer> transfers = Collections.singletonList(
+-                    new BapSshTransfer("**/*", null, "", "", false, false, "", expectedExecTimeout, false, false, false));
++                    new BapSshTransfer("**/*", null, "", "", false, false, "", expectedExecTimeout, false, false, false, false));
+         final BapSshPublisher publisher = newPublisher("default", false, new ArrayList<BapSshTransfer>(transfers));
+         final ArrayList<BapSshPublisher> publishers = new ArrayList<BapSshPublisher>();
+         publishers.add(publisher);
+@@ -87,7 +87,7 @@
+         assertPublisherPluginConfiguration(DEFAULT_EXEC_TIMEOUT);
+ 
+         final List<BapSshTransfer> builderTransfers = Collections.singletonList(
+-                                        new BapSshTransfer("builderC/", null, "", "", false, false, "", DEFAULT_EXEC_TIMEOUT, false, false, false));
++                                        new BapSshTransfer("builderC/", null, "", "", false, false, "", DEFAULT_EXEC_TIMEOUT, false, false, false, false));
+         final List<BapSshPublisher> builderPublishers = Collections.singletonList(
+                                         newPublisher(configName('c'), false, new ArrayList<BapSshTransfer>(builderTransfers)));
+         final BapSshBuilderPlugin expectedBuilderPlugin = new BapSshBuilderPlugin(new ArrayList<BapSshPublisher>(builderPublishers),
+@@ -95,7 +95,7 @@
+         assertEquals(expectedBuilderPlugin, getConfiguredBuilderPlugin());
+ 
+         final List<BapSshTransfer> preTransfers = Collections.singletonList(
+-                                        new BapSshTransfer("beforeA/", null, "", "", false, false, "", DEFAULT_EXEC_TIMEOUT, false, false, false));
++                                        new BapSshTransfer("beforeA/", null, "", "", false, false, "", DEFAULT_EXEC_TIMEOUT, false, false, false, false));
+         final List<BapSshPublisher> prePublishers = Collections.singletonList(
+                                         newPublisher(configName('a'), false, new ArrayList<BapSshTransfer>(preTransfers)));
+         final BapSshPreBuildWrapper expectedPreBuildPlugin = new BapSshPreBuildWrapper(new ArrayList<BapSshPublisher>(prePublishers),
+@@ -103,7 +103,7 @@
+         assertEquals(expectedPreBuildPlugin, getConfiguredBuildWrapper(BapSshPreBuildWrapper.class));
+ 
+         final List<BapSshTransfer> postTransfers = Collections.singletonList(
+-                                        new BapSshTransfer("afterD/", null, "", "", false, false, "", DEFAULT_EXEC_TIMEOUT, false, false, false));
++                                        new BapSshTransfer("afterD/", null, "", "", false, false, "", DEFAULT_EXEC_TIMEOUT, false, false, false, false));
+         final List<BapSshPublisher> postPublishers = Collections.singletonList(
+                                         newPublisher(configName('d'), false, new ArrayList<BapSshTransfer>(postTransfers)));
+         final BapSshPostBuildWrapper expectedPostBuildPlugin = new BapSshPostBuildWrapper(new ArrayList<BapSshPublisher>(postPublishers),
+@@ -132,16 +132,16 @@
+ 
+     private void assertPublisherPluginConfiguration(final int transfer11Timeout) {
+         final int transfer12Timeout = 15000;
+-        final BapSshTransfer transfer11 = new BapSshTransfer("", null, "", "", false, false, "date", transfer11Timeout, false, false, false);
++        final BapSshTransfer transfer11 = new BapSshTransfer("", null, "", "", false, false, "date", transfer11Timeout, false, false, false, false);
+         final BapSshTransfer transfer12 = new BapSshTransfer("target/*.jar", null, "'builds/'yyyy_MM_dd/'build-${BUILD_NUMBER}'", "target",
+-                                                       true, true, "ls -la /tmp", transfer12Timeout, false, false, false);
++                                                       true, true, "ls -la /tmp", transfer12Timeout, false, false, false, false);
+         final ArrayList<BapSshTransfer> transfers1 = new ArrayList<BapSshTransfer>();
+         transfers1.add(transfer11);
+         transfers1.add(transfer12);
+         final BapSshPublisher publisher1 = newPublisher(configName('a'), true, transfers1);
+         final int transfer21Timeout = 10000;
+         final BapSshTransfer transfer21 = new BapSshTransfer("out\\dist\\**\\*", null, "", "out\\dist", false, false, "",
+-                                                             transfer21Timeout, false, false, false);
++                                                             transfer21Timeout, false, false, false, false);
+         final ArrayList<BapSshTransfer> transfers2 = new ArrayList<BapSshTransfer>();
+         transfers2.add(transfer21);
+         final BapSshPublisher publisher2 = newPublisher(configName('c'), false, transfers2);

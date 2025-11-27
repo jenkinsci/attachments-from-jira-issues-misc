@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow-definition plugin="workflow-job@2.10">
+	<actions/>
+	<definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@2.30">
+		<lightweight>
+			false
+		</lightweight>
+		<scm class="hudson.plugins.git.GitSCM" plugin="git@3.3.0">
+			<branches>
+				<hudson.plugins.git.BranchSpec>
+					<name>
+						${SCRIPT_BRANCH}
+					</name>
+				</hudson.plugins.git.BranchSpec>
+			</branches>
+			<configVersion>
+				2
+			</configVersion>
+			<doGenerateSubmoduleConfigurations>
+				false
+			</doGenerateSubmoduleConfigurations>
+			<extensions>
+				<hudson.plugins.git.extensions.impl.CleanBeforeCheckout/>
+				<hudson.plugins.git.extensions.impl.CleanCheckout/>
+				<hudson.plugins.git.extensions.impl.IgnoreNotifyCommit/>
+				<hudson.plugins.git.extensions.impl.WipeWorkspace/>
+			</extensions>
+			<gitTool>
+				Linux Git
+			</gitTool>
+			<submoduleCfg class="list"/>
+			<userRemoteConfigs>
+				<hudson.plugins.git.UserRemoteConfig>
+					<credentialsId>
+						xxxxxxxx-319d-4e3a-8dce-xxxxxxxxxxxx
+					</credentialsId>
+					<url>
+						ssh://...........jenkins-pipeline-scripts.git
+					</url>
+				</hudson.plugins.git.UserRemoteConfig>
+			</userRemoteConfigs>
+		</scm>
+		<scriptPath>
+			Workflow_PJ-IF.groovy
+		</scriptPath>
+	</definition>
+	<description>
+		Pipeline for test purposes
+	</description>
+	<keepDependencies>
+		false
+	</keepDependencies>
+	<properties>
+		<hudson.model.ParametersDefinitionProperty>
+			<parameterDefinitions>
+				<hudson.model.StringParameterDefinition>
+					<defaultValue>
+						*/temp-Pipeline-for--INT-structure-only-build
+					</defaultValue>
+					<description>
+						Branch with pipeline scripts to be used &lt;br> &lt;b>ACTIVE: */master (default)&lt;/b>&lt;br> &lt;i>development: */develop (for pipeline development only!!! -- highly unstable!!!)&lt;/i>
+					</description>
+					<name>
+						SCRIPT_BRANCH
+					</name>
+				</hudson.model.StringParameterDefinition>
+				<hudson.model.StringParameterDefinition>
+					<defaultValue/>
+					<description>
+						String with the variants that will be executing the smoke test. The list elements is separated by ONE space Currently supported variants: radar_int:radar_int_default
+					</description>
+					<name>
+						SMOKE_TEST_VARIANT_LIST
+					</name>
+				</hudson.model.StringParameterDefinition>
+				<hudson.model.StringParameterDefinition>
+					<defaultValue>
+						Medium
+					</defaultValue>
+					<description>
+						String with the different variants to be build. The list elements are separated by ONE space
+					</description>
+					<name>
+						CMAKE_VARIANT_LIST
+					</name>
+				</hudson.model.StringParameterDefinition>
+				<hudson.model.StringParameterDefinition>
+					<defaultValue>
+						ACB@xyz.com
+					</defaultValue>
+					<description>
+						The list of developers that will get a notification if there is an error while executing the pipeline Example: email1,email2,email3
+					</description>
+					<name>
+						STREAM_DEVELOPERS
+					</name>
+				</hudson.model.StringParameterDefinition>
+				<hudson.model.StringParameterDefinition>
+					<defaultValue>
+						onChange
+					</defaultValue>
+					<description>
+						PIPELINE_SCHEDULE = [ onChange | daily | weekly | development ]
+					</description>
+					<name>
+						PIPELINE_SCHEDULE
+					</name>
+				</hudson.model.StringParameterDefinition>
+				<hudson.model.StringParameterDefinition>
+					<defaultValue>
+						aaaa:bbbb cccc:dddd
+					</defaultValue>
+					<description>
+						String with the different variants to be build. The list elements is separated by ONE space&lt;br> &lt;br> The Syntax for one variant to build is:&lt;br> &lt;b>&amp;nbsp&amp;nbsp&amp;nbsp&amp;nbsp [*_apl_*]:[name of bmk]&lt;/b>&lt;br> 
+					</description>
+					<name>
+						VARIANT_LIST
+					</name>
+				</hudson.model.StringParameterDefinition>
+				<hudson.model.StringParameterDefinition>
+					<defaultValue>
+						ssh://git@yyyyyy.xxxxxxx.com:7999/ABCD/12345.git
+					</defaultValue>
+					<description>
+						URL of the Repository which is Built by this Job
+					</description>
+					<name>
+						REPO_URL
+					</name>
+				</hudson.model.StringParameterDefinition>
+			</parameterDefinitions>
+		</hudson.model.ParametersDefinitionProperty>
+		<jenkins.model.BuildDiscarderProperty>
+			<strategy class="hudson.tasks.LogRotator">
+				<artifactDaysToKeep>
+					-1
+				</artifactDaysToKeep>
+				<artifactNumToKeep>
+					5
+				</artifactNumToKeep>
+				<daysToKeep>
+					-1
+				</daysToKeep>
+				<numToKeep>
+					15
+				</numToKeep>
+			</strategy>
+		</jenkins.model.BuildDiscarderProperty>
+		<org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+			<triggers/>
+		</org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+	</properties>
+</flow-definition>

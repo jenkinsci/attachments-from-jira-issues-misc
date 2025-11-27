@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>Generation</name>
+          <description></description>
+          <defaultValue>monaco</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>Component</name>
+          <description></description>
+          <defaultValue>your_component_here</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>Stream</name>
+          <description></description>
+          <defaultValue>component_main</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>BuildNumber</name>
+          <description></description>
+          <defaultValue>10.3.x.x</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>IB</name>
+          <description></description>
+          <defaultValue>pm_10.3</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>Promote</name>
+          <description></description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>promote</string>
+              <string>unpromote</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <assignedNode>winx64_sottpmbld1</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.BatchFile>
+      <command>echo hi 1 from .bat.  Do a set to look at path.&#xd;
+set&#xd;
+echo hi 2 from .bat after set command showing Cygwin is in the path.  Now call Cygwin sh.&#xd;
+sh -c &quot;echo hi 3 from a Cygwin shell under .bat&quot;&#xd;
+echo bye, sh call is over</command>
+    </hudson.tasks.BatchFile>
+    <hudson.tasks.Shell>
+      <command>echo //builds/pm/development/tools/scripts/$Promote //builds/pm/development/$Generation/daily/$Component/$Stream/$Component-*-$BuildNumber.rfl //builds/pm/development/monaco/integration/$IB</command>
+    </hudson.tasks.Shell>
+    <hudson.plugins.xshell.XShellBuilder plugin="xshell@0.9">
+      <commandLine>echo hi from xshell attempt</commandLine>
+      <executeFromWorkingDir>false</executeFromWorkingDir>
+      <regexToKill></regexToKill>
+      <timeAllocated></timeAllocated>
+    </hudson.plugins.xshell.XShellBuilder>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

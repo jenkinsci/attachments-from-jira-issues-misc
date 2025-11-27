@@ -1,0 +1,90 @@
+node {
+
+def jobOutput;
+def u_deployment_status;
+def u_deployment_message;
+def deploymentLogURL = "${env.snDevUrl}/api/now/table/u_deployment_log";
+def taskURL = "${env.snDevUrl}/api/now/table/rm_task/${TaskSysID}";
+def u_state;
+def myRequestBodyTask;
+def myRequestBodyDL;
+
+  try {
+      if  (ComponentType == "SOABPM") { 
+     
+        echo "The build value is $Deployment for SOABPM" 
+		if (Deployment == "PROD")  { 
+ 	       jobOutput = build job: 'SOA-PROD-Stage-Clean-Build-And-Deploy', parameters: [string(name: 'project', value: Component), string(name: 'projectType', value: 'SOABPM'), string(name: 'projectComponent', value: ProjectComponent), string(name: 'partition', value: Partition), string(name: 'SVNTag', value: SVNTag)]
+           echo "JobOutput : $jobOutput"    
+        }
+        else  (Deployment == "UAT") {  
+    	   jobOutput = build job: 'SOA-UAT-Stage-Clean-Build-And-Deploy', parameters: [string(name: 'project', value: Component), string(name: 'projectType', value: 'SOABPM'), string(name: 'projectComponent', value: ProjectComponent), string(name: 'partition', value: Partition), string(name: 'SVNTag', value: SVNTag)]
+    	   echo "JobOutput : $jobOutput"
+	    }
+      }
+      else if (ComponentType == "OSB") {
+
+	   echo "The build value is $Deployment for OSB"
+		if (Deployment == "PROD")  { 
+		   jobOutput = build job: 'OSB-PROD-Stage-Deploy', parameters: [string(name: 'project', value: Component), string(name: 'projectComponent', value: ProjectComponent), string(name: 'SVNTag', value: SVNTag)]
+           echo "JobOutput : $jobOutput"    
+        }
+        else  (Deployment == "UAT") {  
+		   jobOutput = build job: 'OSB-UAT-Stage-Build-Deploy', parameters: [string(name: 'project', value: Component), string(name: 'projectComponent', value: ProjectComponent), string(name: 'SVNTag', value: SVNTag)]
+    	   echo "JobOutput : $jobOutput"
+	    }
+     }
+     else if (ComponentType == "ADF") {
+
+	   echo "The build value is $Deployment for ADF"
+		if (Deployment == "PROD")  { 
+            jobOutput = build job: 'ADF-PROD-Stage-Build-Deploy', parameters: [string(name: 'project', value: Component), string(name: 'SVNTag', value: SVNTag), string(name: 'projectComponent', value: ProjectComponent)]
+            echo "JobOutput : $jobOutput"    
+        }
+        else  (Deployment == "UAT") {  
+           jobOutput = build job: 'ADF-UAT-Stage-Build-Deploy', parameters: [string(name: 'project', value: Component), string(name: 'SVNTag', value: SVNTag), string(name: 'projectComponent', value: ProjectComponent)]
+	   	   echo "JobOutput : $jobOutput"
+	    }
+     }
+	 else
+     { 
+        echo "The component type value : $ComponentType is null or not in (SOA, OSB)"
+     }
+  
+    echo "Setting deployment status to OK  for task ${TaskSysID}" 
+    u_deployment_status  = 'Deployed OK'
+	u_deployment_message = 'Deployed sucessfully'
+	u_state = '104'
+ 
+  } 
+  catch (e) {
+      
+    echo "Deployment failed ${e}" 
+	echo "Setting deployment status to Deploy Failed  for task ${TaskSysID}" 
+    u_deployment_status = 'Deploy Failed'
+	u_deployment_message = "${e}"
+	u_state = '105'
+
+
+	   } finally {
+            // perform workspace cleanup only if the build have passed
+            // if the build has failed, the workspace will be kept
+            echo "finally"
+			step([$class: 'WsCleanup', cleanWhenFailure: true])
+  }
+  
+	echo "Service Now Write Backs initiating"
+	
+	myRequestBodyTask = "{u_state: ${u_state}}"
+    echo "Updating RM Task record : $myRequestBodyTask" 	
+	
+	httpRequest acceptType: 'APPLICATION_JSON', authentication: 'ServiceNow', 
+                contentType: 'APPLICATION_JSON', httpMode: 'PUT', requestBody: myRequestBodyTask, url: taskURL
+				
+	myRequestBodyDL = "{u_deployment_object: \'${Component}\',u_deployment_status: \'${u_deployment_status}\' ,u_deployment_target: \'${Deployment}\',u_deployed_by: \'${SNUser}\',u_deployment_message: \'${u_deployment_message}\', u_task_number: \'${TaskNumber}\',u_task_sys_id: \'${TaskSysID}\',u_deployment_tool: \'Jenkins\',u_deployment_job_id: \'${BUILD_NUMBER}\',u_deployment_job_name: \'${JOB_NAME}\'}"
+    echo "Creating Deployment Log Task record : $myRequestBodyDL" 
+	
+	httpRequest acceptType: 'APPLICATION_JSON', authentication: 'ServiceNow', 
+                contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: myRequestBodyDL, url: deploymentLogURL
+
+}

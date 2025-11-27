@@ -1,0 +1,28 @@
+if ! sudo yum upgrade -y; then
+  sleep 30
+  yum upgrade -y || true
+fi
+
+set -x
+
+mkdir -m700 -p /media/ephemeral0/jenkins/workspace
+chown -R ec2-user:ec2-user /media/ephemeral0/jenkins/
+
+curl -o /usr/local/bin/lein https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
+chmod 755 /usr/local/bin/lein
+
+curl -sL https://rpm.nodesource.com/setup > /tmp/node-setup.sh
+/bin/bash /tmp/node-setup.sh
+
+yum install -y java-1.7.0-openjdk git nodejs gcc gcc-c++ make screen
+npm install --global bower gulp phantomjs
+
+curl -o /tmp/selenium-server-standalone.jar http://selenium-release.storage.googleapis.com/2.46/selenium-server-standalone-2.46.0.jar
+
+## would rather just run: screen -d -m -L -S selenium java -jar /tmp/selenium-server-standalone.jar
+
+cat > /etc/cron.d/selenium-hack << _END_
+* * * * * ec2-user test -n "\`ls -1 /var/run/screen/S-ec2-user\`" || screen -d -m -L -S selenium java -jar /tmp/selenium-server-standalone.jar
+_END_
+
+sleep 60

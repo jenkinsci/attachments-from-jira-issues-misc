@@ -1,0 +1,81 @@
+Started by user anonymous
+Building in workspace /Users/Shared/Jenkins/Home/jobs/Puzzle/workspace
+Checkout:workspace / /Users/Shared/Jenkins/Home/jobs/Puzzle/workspace - hudson.remoting.LocalChannel@2f620d92
+Using strategy: Default
+Last Built Revision: Revision b77637e17f1a114fbd769f4284064f9021501abc (origin/HEAD, origin/master)
+Fetching changes from 1 remote Git repository
+Fetching upstream changes from git@mocava.de:mocava/puzzle.git
+Seen branch in repository origin/HEAD
+Seen branch in repository origin/master
+Commencing build of Revision b77637e17f1a114fbd769f4284064f9021501abc (origin/HEAD, origin/master)
+Checking out Revision b77637e17f1a114fbd769f4284064f9021501abc (origin/HEAD, origin/master)
+Warning : There are multiple branch changesets here
+Working directory is /Users/Shared/Jenkins/Home/jobs/Puzzle/workspace/Puzzle.
+[Puzzle] $ /usr/bin/xcodebuild -version
+Xcode 4.3.2
+Build version 4E2002
+Fetching marketing version number (CFBundleShortVersionString) from project.
+[Puzzle] $ /usr/bin/agvtool mvers -terse1
+Found marketing version (CFBundleShortVersionString): 1.0.
+Marketing version (CFBundleShortVersionString) found in project configuration: 1.0.
+Fetching technical version number (CFBundleVersion) from project.
+[Puzzle] $ /usr/bin/agvtool vers -terse
+No marketing version found (CFBundleVersion)
+Technical version (CFBundleVersion) found in project configuration: .
+Updating technical version (CFBundleVersion) to: 34
+[Puzzle] $ /usr/bin/agvtool new-version -all 34
+Setting version of project Puzzle to: 
+    34.
+
+Also setting CFBundleVersion key (assuming it exists)
+
+Updating CFBundleVersion in Info.plist(s)...
+
+Updated CFBundleVersion in "Puzzle.xcodeproj/../Puzzle/Puzzle-Info.plist" to 34
+
+
+Marketing version (CFBundleShortVersionString) used by Jenkins to produce the IPA: 1.0
+Technical version (CFBundleVersion) used by Jenkins to produce the IPA: 34
+Cleaning build directory: /Users/Shared/Jenkins/Home/jobs/Puzzle/workspace/build
+[Puzzle] $ /usr/bin/security list-keychains -s ${HOME}/Library/Keychains/jenkins.keychain
+[Puzzle] $ /usr/bin/security default-keychain -d user -s ${HOME}/Library/Keychains/jenkins.keychain
+[Puzzle] $ /usr/bin/security unlock-keychain -p ******** ${HOME}/Library/Keychains/jenkins.keychain
+Going to invoke xcodebuild:target: ALL, sdk: DEFAULT, project: DEFAULT, configuration: Release, clean: YES, symRoot: DEFAULT, configurationBuildDir: /Users/Shared/Jenkins/Home/jobs/Puzzle/workspace/build
+[Puzzle] $ /usr/bin/xcodebuild -alltargets -configuration Release clean build CONFIGURATION_BUILD_DIR=/Users/Shared/Jenkins/Home/jobs/Puzzle/workspace/build
+Build settings from command line:
+    CONFIGURATION_BUILD_DIR = /Users/Shared/Jenkins/Home/jobs/Puzzle/workspace/build
+
+=== CLEAN NATIVE TARGET Puzzle OF PROJECT Puzzle WITH CONFIGURATION Release ===
+Check dependencies
+[BEROR]Code Sign error: The identity 'iPhone Distribution: Frank Schiller' doesn't match any valid, non-expired certificate/private key pair in the default keychain
+
+Clean.Remove clean /Users/Shared/Jenkins/Home/jobs/Puzzle/workspace/build/Puzzle.app.dSYM
+    builtin-rm -rf /Users/Shared/Jenkins/Home/jobs/Puzzle/workspace/build/Puzzle.app.dSYM
+
+Clean.Remove clean /Users/Shared/Jenkins/Home/jobs/Puzzle/workspace/build/Puzzle.app
+    builtin-rm -rf /Users/Shared/Jenkins/Home/jobs/Puzzle/workspace/build/Puzzle.app
+
+Clean.Remove clean build/Puzzle.build/Release-iphoneos/Puzzle.build
+    builtin-rm -rf /Users/Shared/Jenkins/Home/jobs/Puzzle/workspace/Puzzle/build/Puzzle.build/Release-iphoneos/Puzzle.build
+
+Clean.Remove clean /var/folders/n0/t42h9z4x1xnfbkm8n2dlyst800009c/C/com.apple.Xcode.300/SharedPrecompiledHeaders/Puzzle-Prefix-dspuiuiqbnlbvyfkpymkwbmbikgi/Puzzle-Prefix.pch.pth
+    builtin-rm -rf /var/folders/n0/t42h9z4x1xnfbkm8n2dlyst800009c/C/com.apple.Xcode.300/SharedPrecompiledHeaders/Puzzle-Prefix-dspuiuiqbnlbvyfkpymkwbmbikgi/Puzzle-Prefix.pch.pth
+
+
+** CLEAN SUCCEEDED **
+
+
+=== BUILD NATIVE TARGET Puzzle OF PROJECT Puzzle WITH CONFIGURATION Release ===
+Check dependencies
+Code Sign error: The identity 'iPhone Distribution: Frank Schiller' doesn't match any valid, non-expired certificate/private key pair in the default keychain
+
+
+** BUILD FAILED **
+
+
+The following build commands failed:
+	Check dependencies
+(1 failure)
+Build step 'XCode' marked build as failure
+Build step 'Upload to Testflight' marked build as failure
+Finished: FAILURE

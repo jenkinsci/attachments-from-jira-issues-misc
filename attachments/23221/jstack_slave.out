@@ -1,0 +1,263 @@
+2013-02-22 10:37:25
+Full thread dump OpenJDK 64-Bit Server VM (14.0-b16 mixed mode):
+
+"Attach Listener" daemon prio=10 tid=0x0000000001470000 nid=0x6e94 waiting on condition [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+   Locked ownable synchronizers:
+	- None
+
+"pool-1-thread-147" prio=10 tid=0x00007fe604e06000 nid=0x6d51 waiting for monitor entry [0x0000000042d46000]
+   java.lang.Thread.State: BLOCKED (on object monitor)
+	at hudson.remoting.Request$2.run(Request.java:339)
+	- waiting to lock <0x00007fe622638ab0> (a hudson.remoting.Channel)
+	at hudson.remoting.InterceptingExecutorService$1.call(InterceptingExecutorService.java:72)
+	at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:334)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:166)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1110)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:603)
+	at java.lang.Thread.run(Thread.java:636)
+
+   Locked ownable synchronizers:
+	- <0x00007fe9b789b338> (a java.util.concurrent.ThreadPoolExecutor$Worker)
+
+"pool-1-thread-145 / waiting for hudson.remoting.Channel@63238bd2:channel" prio=10 tid=0x00007fe60505c000 nid=0x366b in Object.wait() [0x000000004233c000]
+   java.lang.Thread.State: TIMED_WAITING (on object monitor)
+	at java.lang.Object.wait(Native Method)
+	- waiting on <0x00007fe9b7b53938> (a hudson.remoting.UserRequest)
+	at hudson.remoting.Request.call(Request.java:146)
+	- locked <0x00007fe9b7b53938> (a hudson.remoting.UserRequest)
+	at hudson.remoting.Channel.call(Channel.java:672)
+	at hudson.util.io.ParserConfigurator.applyConfiguration(ParserConfigurator.java:81)
+	at hudson.tasks.junit.SuiteResult.parse(SuiteResult.java:127)
+	at hudson.tasks.junit.TestResult.parse(TestResult.java:267)
+	at hudson.tasks.junit.TestResult.parsePossiblyEmpty(TestResult.java:223)
+	at hudson.tasks.junit.TestResult.parse(TestResult.java:158)
+	at hudson.tasks.junit.TestResult.parse(TestResult.java:141)
+	at hudson.tasks.junit.TestResult.<init>(TestResult.java:117)
+	at org.jenkinsci.plugins.xunit.XUnitPublisher$4.invoke(XUnitPublisher.java:314)
+	at org.jenkinsci.plugins.xunit.XUnitPublisher$4.invoke(XUnitPublisher.java:291)
+	at hudson.FilePath$FileCallableWrapper.call(FilePath.java:2348)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:118)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:48)
+	at hudson.remoting.Request$2.run(Request.java:326)
+	at hudson.remoting.InterceptingExecutorService$1.call(InterceptingExecutorService.java:72)
+	at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:334)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:166)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1110)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:603)
+	at java.lang.Thread.run(Thread.java:636)
+
+   Locked ownable synchronizers:
+	- <0x00007fe9a7325738> (a java.util.concurrent.ThreadPoolExecutor$Worker)
+
+"pool-1-svnkit-thread-1" daemon prio=10 tid=0x00007fe60414c000 nid=0x6928 waiting on condition [0x0000000042942000]
+   java.lang.Thread.State: WAITING (parking)
+	at sun.misc.Unsafe.park(Native Method)
+	- parking to wait for  <0x00007fe6229000c8> (a java.util.concurrent.SynchronousQueue$TransferStack)
+	at java.util.concurrent.locks.LockSupport.park(LockSupport.java:186)
+	at java.util.concurrent.SynchronousQueue$TransferStack.awaitFulfill(SynchronousQueue.java:451)
+	at java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:352)
+	at java.util.concurrent.SynchronousQueue.take(SynchronousQueue.java:886)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1043)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1103)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:603)
+	at java.lang.Thread.run(Thread.java:636)
+
+   Locked ownable synchronizers:
+	- None
+
+"Ping thread for channel hudson.remoting.Channel@63238bd2:channel" daemon prio=10 tid=0x0000000000818000 nid=0x785 waiting for monitor entry [0x000000004213a000]
+   java.lang.Thread.State: BLOCKED (on object monitor)
+	at hudson.remoting.Channel.send(Channel.java:493)
+	- waiting to lock <0x00007fe622638ab0> (a hudson.remoting.Channel)
+	at hudson.remoting.Request.callAsync(Request.java:208)
+	at hudson.remoting.Channel.callAsync(Channel.java:699)
+	at hudson.remoting.PingThread.ping(PingThread.java:99)
+	at hudson.remoting.PingThread.run(PingThread.java:81)
+
+   Locked ownable synchronizers:
+	- None
+
+"Pipe writer thread: channel" prio=10 tid=0x00007fe604009800 nid=0x766 waiting on condition [0x0000000041309000]
+   java.lang.Thread.State: WAITING (parking)
+	at sun.misc.Unsafe.park(Native Method)
+	- parking to wait for  <0x00007fe6226500d8> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+	at java.util.concurrent.locks.LockSupport.park(LockSupport.java:186)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2043)
+	at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:386)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1043)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1103)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:603)
+	at java.lang.Thread.run(Thread.java:636)
+
+   Locked ownable synchronizers:
+	- None
+
+"pool-1-thread-1" prio=10 tid=0x00007fe60400e800 nid=0x761 runnable [0x0000000042039000]
+   java.lang.Thread.State: RUNNABLE
+	at java.net.PlainSocketImpl.socketAccept(Native Method)
+	at java.net.AbstractPlainSocketImpl.accept(AbstractPlainSocketImpl.java:358)
+	at java.net.ServerSocket.implAccept(ServerSocket.java:470)
+	at java.net.ServerSocket.accept(ServerSocket.java:438)
+	at com.youdevise.hudson.slavestatus.SocketHTTPListener.waitForConnection(SlaveListener.java:132)
+	at com.youdevise.hudson.slavestatus.SlaveListener$1.run(SlaveListener.java:63)
+	at com.youdevise.hudson.slavestatus.Daemon.go(Daemon.java:16)
+	at com.youdevise.hudson.slavestatus.SlaveListener.call(SlaveListener.java:83)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:118)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:48)
+	at hudson.remoting.Request$2.run(Request.java:326)
+	at hudson.remoting.InterceptingExecutorService$1.call(InterceptingExecutorService.java:72)
+	at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:334)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:166)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1110)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:603)
+	at java.lang.Thread.run(Thread.java:636)
+
+   Locked ownable synchronizers:
+	- <0x00007fe6226505f8> (a java.util.concurrent.ThreadPoolExecutor$Worker)
+
+"Ping thread for channel hudson.remoting.Channel@63238bd2:channel" daemon prio=10 tid=0x00007fe604001800 nid=0x760 runnable [0x0000000041f37000]
+   java.lang.Thread.State: RUNNABLE
+	at java.io.FileOutputStream.writeBytes(Native Method)
+	at java.io.FileOutputStream.write(FileOutputStream.java:297)
+	at hudson.remoting.StandardOutputStream.write(StandardOutputStream.java:84)
+	- locked <0x00007fe62264ecd0> (a hudson.remoting.StandardOutputStream)
+	at java.io.ObjectOutputStream$BlockDataOutputStream.write(ObjectOutputStream.java:1822)
+	at java.io.ObjectOutputStream.defaultWriteFields(ObjectOutputStream.java:1514)
+	at java.io.ObjectOutputStream.writeSerialData(ObjectOutputStream.java:1493)
+	at java.io.ObjectOutputStream.writeOrdinaryObject(ObjectOutputStream.java:1416)
+	at java.io.ObjectOutputStream.writeObject0(ObjectOutputStream.java:1174)
+	at java.io.ObjectOutputStream.writeArray(ObjectOutputStream.java:1362)
+	at java.io.ObjectOutputStream.writeObject0(ObjectOutputStream.java:1170)
+	at java.io.ObjectOutputStream.defaultWriteFields(ObjectOutputStream.java:1528)
+	at java.io.ObjectOutputStream.defaultWriteObject(ObjectOutputStream.java:438)
+	at java.lang.Throwable.writeObject(Throwable.java:664)
+	- locked <0x00007fe97dc040d8> (a hudson.remoting.Command$Source)
+	at sun.reflect.GeneratedMethodAccessor3.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:616)
+	at java.io.ObjectStreamClass.invokeWriteObject(ObjectStreamClass.java:962)
+	at java.io.ObjectOutputStream.writeSerialData(ObjectOutputStream.java:1480)
+	at java.io.ObjectOutputStream.writeOrdinaryObject(ObjectOutputStream.java:1416)
+	at java.io.ObjectOutputStream.writeObject0(ObjectOutputStream.java:1174)
+	at java.io.ObjectOutputStream.defaultWriteFields(ObjectOutputStream.java:1528)
+	at java.io.ObjectOutputStream.writeSerialData(ObjectOutputStream.java:1493)
+	at java.io.ObjectOutputStream.writeOrdinaryObject(ObjectOutputStream.java:1416)
+	at java.io.ObjectOutputStream.writeObject0(ObjectOutputStream.java:1174)
+	at java.io.ObjectOutputStream.writeObject(ObjectOutputStream.java:346)
+	at hudson.remoting.Command.writeTo(Command.java:83)
+	at hudson.remoting.ClassicCommandTransport.write(ClassicCommandTransport.java:41)
+	at hudson.remoting.Channel.send(Channel.java:498)
+	- locked <0x00007fe622638ab0> (a hudson.remoting.Channel)
+	at hudson.remoting.Request.callAsync(Request.java:208)
+	at hudson.remoting.Channel.callAsync(Channel.java:699)
+	at hudson.remoting.PingThread.ping(PingThread.java:99)
+	at hudson.remoting.PingThread.run(PingThread.java:81)
+
+   Locked ownable synchronizers:
+	- None
+
+"Channel reader thread: channel" prio=10 tid=0x00007fe604001000 nid=0x75f waiting for monitor entry [0x0000000041b54000]
+   java.lang.Thread.State: BLOCKED (on object monitor)
+	at hudson.remoting.Channel.close(Channel.java:892)
+	- waiting to lock <0x00007fe622638ab0> (a hudson.remoting.Channel)
+	at hudson.remoting.Channel$CloseCommand.execute(Channel.java:849)
+	at hudson.remoting.Channel$2.handle(Channel.java:435)
+	at hudson.remoting.SynchronousCommandTransport$ReaderThread.run(SynchronousCommandTransport.java:60)
+
+   Locked ownable synchronizers:
+	- None
+
+"Low Memory Detector" daemon prio=10 tid=0x00007fe60c004000 nid=0x75d runnable [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+   Locked ownable synchronizers:
+	- None
+
+"CompilerThread1" daemon prio=10 tid=0x00000000006ba800 nid=0x75c waiting on condition [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+   Locked ownable synchronizers:
+	- None
+
+"CompilerThread0" daemon prio=10 tid=0x00000000006b8800 nid=0x75b waiting on condition [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+   Locked ownable synchronizers:
+	- None
+
+"Signal Dispatcher" daemon prio=10 tid=0x00000000006b6000 nid=0x75a runnable [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+   Locked ownable synchronizers:
+	- None
+
+"Finalizer" daemon prio=10 tid=0x000000000068f800 nid=0x759 in Object.wait() [0x0000000041952000]
+   java.lang.Thread.State: WAITING (on object monitor)
+	at java.lang.Object.wait(Native Method)
+	- waiting on <0x00007fe6226523d0> (a java.lang.ref.ReferenceQueue$Lock)
+	at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:133)
+	- locked <0x00007fe6226523d0> (a java.lang.ref.ReferenceQueue$Lock)
+	at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:149)
+	at java.lang.ref.Finalizer$FinalizerThread.run(Finalizer.java:177)
+
+   Locked ownable synchronizers:
+	- None
+
+"Reference Handler" daemon prio=10 tid=0x000000000068d800 nid=0x758 in Object.wait() [0x0000000041685000]
+   java.lang.Thread.State: WAITING (on object monitor)
+	at java.lang.Object.wait(Native Method)
+	- waiting on <0x00007fe622648018> (a java.lang.ref.Reference$Lock)
+	at java.lang.Object.wait(Object.java:502)
+	at java.lang.ref.Reference$ReferenceHandler.run(Reference.java:133)
+	- locked <0x00007fe622648018> (a java.lang.ref.Reference$Lock)
+
+   Locked ownable synchronizers:
+	- None
+
+"main" prio=10 tid=0x0000000000611000 nid=0x74a in Object.wait() [0x000000004079c000]
+   java.lang.Thread.State: WAITING (on object monitor)
+	at java.lang.Object.wait(Native Method)
+	- waiting on <0x00007fe622638ab0> (a hudson.remoting.Channel)
+	at java.lang.Object.wait(Object.java:502)
+	at hudson.remoting.Channel.join(Channel.java:800)
+	- locked <0x00007fe622638ab0> (a hudson.remoting.Channel)
+	at hudson.remoting.Launcher.main(Launcher.java:432)
+	at hudson.remoting.Launcher.runWithStdinStdout(Launcher.java:378)
+	at hudson.remoting.Launcher.run(Launcher.java:212)
+	at hudson.remoting.Launcher.main(Launcher.java:171)
+
+   Locked ownable synchronizers:
+	- None
+
+"VM Thread" prio=10 tid=0x0000000000689000 nid=0x757 runnable 
+
+"GC task thread#0 (ParallelGC)" prio=10 tid=0x000000000061b000 nid=0x74b runnable 
+
+"GC task thread#1 (ParallelGC)" prio=10 tid=0x000000000061d000 nid=0x74c runnable 
+
+"GC task thread#2 (ParallelGC)" prio=10 tid=0x000000000061f000 nid=0x74d runnable 
+
+"GC task thread#3 (ParallelGC)" prio=10 tid=0x0000000000620800 nid=0x74e runnable 
+
+"GC task thread#4 (ParallelGC)" prio=10 tid=0x0000000000622800 nid=0x74f runnable 
+
+"GC task thread#5 (ParallelGC)" prio=10 tid=0x0000000000624800 nid=0x750 runnable 
+
+"GC task thread#6 (ParallelGC)" prio=10 tid=0x0000000000626000 nid=0x751 runnable 
+
+"GC task thread#7 (ParallelGC)" prio=10 tid=0x0000000000628000 nid=0x752 runnable 
+
+"GC task thread#8 (ParallelGC)" prio=10 tid=0x000000000062a000 nid=0x753 runnable 
+
+"GC task thread#9 (ParallelGC)" prio=10 tid=0x000000000062b800 nid=0x754 runnable 
+
+"GC task thread#10 (ParallelGC)" prio=10 tid=0x000000000062d800 nid=0x755 runnable 
+
+"GC task thread#11 (ParallelGC)" prio=10 tid=0x000000000062f800 nid=0x756 runnable 
+
+"VM Periodic Task Thread" prio=10 tid=0x00007fe60c006800 nid=0x75e waiting on condition 
+
+JNI global references: 901
+

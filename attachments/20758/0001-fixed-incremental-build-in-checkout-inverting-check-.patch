@@ -1,0 +1,26 @@
+From 448123b702b9c998d1e7d399071ae5a5106edca0 Mon Sep 17 00:00:00 2001
+From: Michael Fink <michael.fink@asamnet.de>
+Date: Mon, 22 Aug 2011 13:50:09 +0200
+Subject: [PATCH] fixed incremental build: in checkout(), inverting check if
+ all changes have to be fetched, or only updates
+
+---
+ src/main/java/scm/vss/VSSSCM.java |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/src/main/java/scm/vss/VSSSCM.java b/src/main/java/scm/vss/VSSSCM.java
+index 00a064f..01ad6b8 100644
+--- a/src/main/java/scm/vss/VSSSCM.java
++++ b/src/main/java/scm/vss/VSSSCM.java
+@@ -745,7 +745,7 @@ public class VSSSCM extends SCM
+     {
+         //If this is the build then it deserves a build.
+ 		AbstractBuild<?, ?> lastBuild = (AbstractBuild<?,?>)project.getLastBuild();
+-		if(lastBuild == null)
++		if(lastBuild != null)
+ 		{
+ 			tl.getLogger().println("[poll] Last Build : #" + lastBuild.getNumber());
+ 		}
+-- 
+1.7.6.msysgit.0
+

@@ -1,0 +1,167 @@
+diff --git a/src/main/java/au/com/centrumsystems/hudson/plugin/buildpipeline/BuildForm.java b/src/main/java/au/com/centrumsystems/hudson/plugin/buildpipeline/BuildForm.java
+index ab35231..33960c7 100644
+--- a/src/main/java/au/com/centrumsystems/hudson/plugin/buildpipeline/BuildForm.java
++++ b/src/main/java/au/com/centrumsystems/hudson/plugin/buildpipeline/BuildForm.java
+@@ -6,6 +6,9 @@ import hudson.model.ItemGroup;
+ import hudson.model.ParametersDefinitionProperty;
+ 
+ import java.util.ArrayList;
++import java.util.Arrays;
++import java.util.Collection;
++import java.util.LinkedHashSet;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.logging.Logger;
+@@ -68,12 +71,27 @@ public class BuildForm {
+      *            item group pipeline view belongs to, used to compute relative item names
+      */
+     public BuildForm(ItemGroup context, final PipelineBuild pipelineBuild) {
++        this(context, pipelineBuild, new LinkedHashSet<AbstractProject<?, ?>>(Arrays.asList(pipelineBuild.getProject())));
++    }
++
++    /**
++     * @param pipelineBuild
++     *            pipeline build domain used to see the form
++     * @param context
++     *            item group pipeline view belongs to, used to compute relative item names
++     * @param parentPath
++     *            already traversed projects
++     */
++    private BuildForm(ItemGroup context, final PipelineBuild pipelineBuild, final Collection<AbstractProject<?, ?>> parentPath) {
+         this.context = context;
+         this.pipelineBuild = pipelineBuild;
+         status = pipelineBuild.getCurrentBuildResult();
+         dependencies = new ArrayList<BuildForm>();
+         for (final PipelineBuild downstream : pipelineBuild.getDownstreamPipeline()) {
+-            dependencies.add(new BuildForm(context, downstream));
++            final Collection<AbstractProject<?, ?>> forkedPath = new LinkedHashSet<AbstractProject<?, ?>>(parentPath);
++            if (forkedPath.add(downstream.getProject())) {
++                dependencies.add(new BuildForm(context, downstream, forkedPath));
++            }
+         }
+         id = hashCode();
+         final AbstractProject<?, ?> project = pipelineBuild.getProject();
+diff --git a/src/main/java/au/com/centrumsystems/hudson/plugin/buildpipeline/ProjectForm.java b/src/main/java/au/com/centrumsystems/hudson/plugin/buildpipeline/ProjectForm.java
+index 1f3e5a0..99996b7 100644
+--- a/src/main/java/au/com/centrumsystems/hudson/plugin/buildpipeline/ProjectForm.java
++++ b/src/main/java/au/com/centrumsystems/hudson/plugin/buildpipeline/ProjectForm.java
+@@ -7,7 +7,10 @@ import hudson.model.AbstractProject;
+ import hudson.model.Hudson;
+ 
+ import java.util.ArrayList;
++import java.util.Arrays;
++import java.util.Collection;
+ import java.util.HashMap;
++import java.util.LinkedHashSet;
+ import java.util.List;
+ import java.util.Map;
+ 
+@@ -82,7 +85,16 @@ public class ProjectForm {
+      *            project
+      */
+     public ProjectForm(final AbstractProject<?, ?> project) {
++        this(project, new LinkedHashSet<AbstractProject<?, ?>>(Arrays.asList(project)));
++    }
+ 
++    /**
++     * @param project
++     *            project
++     * @param parentPath
++     *            already traversed projects
++     */
++    private ProjectForm(final AbstractProject<?, ?> project, final Collection<AbstractProject<?, ?>> parentPath) {
+         final PipelineBuild pipelineBuild = new PipelineBuild(project.getLastBuild(), project, null);
+ 
+         name = pipelineBuild.getProject().getFullName();
+@@ -91,16 +103,22 @@ public class ProjectForm {
+         url = pipelineBuild.getProjectURL();
+         dependencies = new ArrayList<ProjectForm>();
+         for (final AbstractProject<?, ?> dependency : project.getDownstreamProjects()) {
+-            dependencies.add(new ProjectForm(dependency));
++            final Collection<AbstractProject<?, ?>> forkedPath = new LinkedHashSet<AbstractProject<?, ?>>(parentPath);
++            if (forkedPath.add(dependency)) {
++                dependencies.add(new ProjectForm(dependency, forkedPath));
++            }
+         }
+         if (Hudson.getInstance().getPlugin("parameterized-trigger") != null) {
+             for (SubProjectsAction action : Util.filter(project.getActions(), SubProjectsAction.class)) {
+                 for (hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig config : action.getConfigs()) {
+                     for (final AbstractProject<?, ?> dependency : config.getProjectList(project.getParent(), null)) {
+-                        final ProjectForm candidate = new ProjectForm(dependency);
+-                        // if subprojects come back as downstreams someday, no duplicates wanted
+-                        if (!dependencies.contains(candidate)) {
+-                            dependencies.add(candidate);
++                        final Collection<AbstractProject<?, ?>> forkedPath = new LinkedHashSet<AbstractProject<?, ?>>(parentPath);
++                        if (forkedPath.add(dependency)) {
++                            final ProjectForm candidate = new ProjectForm(dependency, forkedPath);
++                            // if subprojects come back as downstreams someday, no duplicates wanted
++                            if (!dependencies.contains(candidate)) {
++                                dependencies.add(candidate);
++                            }
+                         }
+                     }
+                 }
+diff --git a/src/test/java/au/com/centrumsystems/hudson/plugin/buildpipeline/BuildFormTest.java b/src/test/java/au/com/centrumsystems/hudson/plugin/buildpipeline/BuildFormTest.java
+index 28a86df..09229e0 100644
+--- a/src/test/java/au/com/centrumsystems/hudson/plugin/buildpipeline/BuildFormTest.java
++++ b/src/test/java/au/com/centrumsystems/hudson/plugin/buildpipeline/BuildFormTest.java
+@@ -1,6 +1,7 @@
+ package au.com.centrumsystems.hudson.plugin.buildpipeline;
+ 
+ import static org.hamcrest.CoreMatchers.is;
++import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+ import static org.junit.Assert.assertThat;
+ 
+ import java.util.ArrayList;
+@@ -67,4 +68,19 @@ public class BuildFormTest extends HudsonTestCase {
+ 
+         assertEquals(paramList, bf.getParameterList());
+     }
++
++    @Test
++    public void testNoInfiniteRecursion() throws Exception {
++        final String proj1 = "Project1";
++        final String proj2 = "Project2";
++        final FreeStyleProject project1 = createFreeStyleProject(proj1);
++        final FreeStyleProject project2 = createFreeStyleProject(proj2);
++        project1.getPublishersList().add(new BuildTrigger(proj2, false));
++        project2.getPublishersList().add(new BuildTrigger(proj1, false));
++        hudson.rebuildDependencyGraph();
++
++        final BuildForm form1 = new BuildForm(jenkins, new PipelineBuild(null, project1, null));
++        assertThat(form1.getDependencies(), hasSize(1));
++        assertThat(form1.getDependencies().get(0).getDependencies(), hasSize(0));
++    }
+ }
+diff --git a/src/test/java/au/com/centrumsystems/hudson/plugin/buildpipeline/ProjectFormTest.java b/src/test/java/au/com/centrumsystems/hudson/plugin/buildpipeline/ProjectFormTest.java
+index 585ec08..953407a 100644
+--- a/src/test/java/au/com/centrumsystems/hudson/plugin/buildpipeline/ProjectFormTest.java
++++ b/src/test/java/au/com/centrumsystems/hudson/plugin/buildpipeline/ProjectFormTest.java
+@@ -1,6 +1,7 @@
+ package au.com.centrumsystems.hudson.plugin.buildpipeline;
+ 
+ import static org.hamcrest.CoreMatchers.is;
++import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+ import static org.junit.Assert.assertThat;
+ import hudson.model.FreeStyleBuild;
+ import hudson.model.FreeStyleProject;
+@@ -60,4 +61,19 @@ public class ProjectFormTest extends HudsonTestCase {
+         assertFalse(pf.equals(pf3));
+ 
+     }
++
++    @Test
++    public void testNoInfiniteRecursion() throws IOException {
++        final String proj1 = "Project1";
++        final String proj2 = "Project2";
++        final FreeStyleProject project1 = createFreeStyleProject(proj1);
++        final FreeStyleProject project2 = createFreeStyleProject(proj2);
++        project1.getPublishersList().add(new BuildTrigger(proj2, false));
++        project2.getPublishersList().add(new BuildTrigger(proj1, false));
++        hudson.rebuildDependencyGraph();
++
++        final ProjectForm form1 = new ProjectForm(project1);
++        assertThat(form1.getDependencies(), hasSize(1));
++        assertThat(form1.getDependencies().get(0).getDependencies(), hasSize(0));
++    }
+ }

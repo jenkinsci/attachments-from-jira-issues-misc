@@ -1,0 +1,26 @@
+Index: src/main/java/hudson/plugins/nunit/NUnitPublisher.java
+===================================================================
+--- src/main/java/hudson/plugins/nunit/NUnitPublisher.java	(revision 16864)
++++ src/main/java/hudson/plugins/nunit/NUnitPublisher.java	(working copy)
+@@ -1,9 +1,9 @@
+ package hudson.plugins.nunit;
+ 
++import hudson.AbortException;
+ import hudson.Launcher;
+ import hudson.Util;
+ import hudson.FilePath.FileCallable;
+-import hudson.maven.agent.AbortException;
+ import hudson.model.AbstractBuild;
+ import hudson.model.Action;
+ import hudson.model.BuildListener;
+@@ -107,8 +107,8 @@
+             }
+             
+         } catch (TransformerException te) {
+-            throw new AbortException("Could not read the XSL XML file. Please report this issue to the plugin author",
+-                    te);
++            throw new AbortException("Could not read the XSL XML file. Please report this issue to the plugin author");
++                    
+         }
+ 
+         return result;

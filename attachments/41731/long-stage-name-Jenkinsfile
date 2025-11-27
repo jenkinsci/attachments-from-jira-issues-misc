@@ -1,0 +1,30 @@
+node{
+  def myJson = '[{"subPriorityGroup":100,"deploymentGroup":[{"instance":"dc1-d-mockwb-11.contoso.com","applications":["MOCKIIS"]}]},{"subPriorityGroup":101,"deploymentGroup":[{"instance":"dc1-d-mockwb-12.contoso.com","applications":["MOCKIIS"]}]},{"subPriorityGroup":102,"deploymentGroup":[{"instance":"dc1-d-mockwb-13.contoso.com","applications":["MOCKIIS"]}]},{"subPriorityGroup":103,"deploymentGroup":[{"instance":"dc1-d-mockwb-14.contoso.com","applications":["MOCKIIS"]}]},{"subPriorityGroup":104,"deploymentGroup":[{"instance":"dc1-d-mockwb-15.contoso.com","applications":["MOCKIIS"]}]},{"subPriorityGroup":105,"deploymentGroup":[{"instance":"dc1-d-mockwb-16.contoso.com","applications":["MOCKIIS"]}]},{"subPriorityGroup":106,"deploymentGroup":[{"instance":"dc1-d-mockwb-17.contoso.com","applications":["MOCKIIS"]}]},{"subPriorityGroup":200,"deploymentGroup":[{"instance":"dc1-d-mocksv-01.contoso.com","applications":["MOCKSERVICE"]},{"instance":"dc1-d-mockwb-10.contoso.com","applications":["MOCKTOMCAT","MOCKTOMCAT2"]},{"instance":"dc1-d-mockwb-20.contoso.com","applications":["MOCKTOMCAT","MOCKTOMCAT2"]},{"instance":"dc1-d-mockwb-21.contoso.com","applications":["MOCKTOMCAT","MOCKTOMCAT2"]}]},{"subPriorityGroup":201,"deploymentGroup":[{"instance":"dc1-d-mocksv-02.contoso.com","applications":["MOCKSERVICE"]}]},{"subPriorityGroup":202,"deploymentGroup":[{"instance":"dc1-d-mocksv-03.contoso.com","applications":["MOCKSERVICE"]}]},{"subPriorityGroup":203,"deploymentGroup":[{"instance":"dc1-d-mocksv-04.contoso.com","applications":["MOCKSERVICE"]}]}]'
+
+  def deploymentObject = readJSON(text:myJson)
+
+  def stageParallel = [:]
+
+  for (int i=0; i < deploymentObject.size(); i++) {
+
+    def stepsParallel = [:]
+    
+    def subPriorityGroup = deploymentObject[i]
+
+    // Define the dynamic stage
+    stage("Deploy Stage '" + subPriorityGroup.subPriorityGroup + "'. " + (i + 1) + " of " + deploymentObject.size()) {
+
+      echo "Within priority group '" + subPriorityGroup.subPriorityGroup + "'."
+      
+      for (int x=0; x < subPriorityGroup.deploymentGroup.size(); x++) {
+        def currentDeploymentGroup = subPriorityGroup.deploymentGroup[x]
+
+        stepsParallel[currentDeploymentGroup.instance] = {
+          echo "To instance '" + currentDeploymentGroup.instance + "' we will deploy: " + currentDeploymentGroup.applications
+        }
+      }
+
+      parallel stepsParallel
+    }
+  }
+}

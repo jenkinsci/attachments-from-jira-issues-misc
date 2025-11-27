@@ -1,0 +1,143 @@
+From 48efaa0ead0b7bb41560403cf745e75119afd169 Mon Sep 17 00:00:00 2001
+From: Per Sandberg <per.sandberg@bredband.net>
+Date: Tue, 14 Feb 2012 02:37:50 +0100
+Subject: [PATCH] * Ignore output files. * Dont install the expect package *
+ Split jenkins i two package one for the application and one
+ for the   remote repository making it possible to use the
+ package in networks   witout internet connection.
+
+---
+ opensuse/.gitignore         |    2 ++
+ opensuse/SPECS/jenkins.spec |   12 ++++++++++--
+ rpm/.gitignore              |    2 ++
+ rpm/SPECS/jenkins.spec      |   13 +++++++++++--
+ rpm/build.sh                |    2 +-
+ 5 files changed, 26 insertions(+), 5 deletions(-)
+ create mode 100644 opensuse/.gitignore
+ create mode 100644 rpm/.gitignore
+
+diff --git a/opensuse/.gitignore b/opensuse/.gitignore
+new file mode 100644
+index 0000000..5fbc232
+--- /dev/null
++++ b/opensuse/.gitignore
+@@ -0,0 +1,2 @@
++BUILD
++SOURCES/jenkins.repo
+diff --git a/opensuse/SPECS/jenkins.spec b/opensuse/SPECS/jenkins.spec
+index ced81a5..5fef3b4 100644
+--- a/opensuse/SPECS/jenkins.spec
++++ b/opensuse/SPECS/jenkins.spec
+@@ -6,7 +6,7 @@
+ 
+ Name:		jenkins
+ Version:	%{ver}
+-Release:	1.2
++Release:	1.3
+ Summary:	Continous Build Server
+ Source:		jenkins.war
+ Source1:	jenkins.init.in
+@@ -57,6 +57,11 @@ Authors:
+ --------
+     Kohsuke Kawaguchi <Kohsuke.Kawaguchi@sun.com>
+ 
++%package repos
++Summary:	Reoository location for Continous Build Server
++%description repos
++The jenkins yum repositor 
++
+ %prep
+ %setup -q -T -c
+ 
+@@ -122,6 +127,10 @@ exit 0
+ %clean
+ %__rm -rf "%{buildroot}"
+ 
++%files repos
++%config(noreplace) /etc/zypp/repos.d/jenkins.repo
++
++
+ %files
+ %defattr(-,root,root)
+ %dir %{_prefix}
+@@ -131,7 +140,6 @@ exit 0
+ %config(noreplace) /etc/logrotate.d/%{name}
+ %config /etc/init.d/%{name}
+ %config(noreplace) /etc/sysconfig/%{name}
+-%config(noreplace) /etc/zypp/repos.d/jenkins.repo
+ /usr/sbin/rc%{name}
+ 
+ %changelog
+diff --git a/rpm/.gitignore b/rpm/.gitignore
+new file mode 100644
+index 0000000..5fbc232
+--- /dev/null
++++ b/rpm/.gitignore
+@@ -0,0 +1,2 @@
++BUILD
++SOURCES/jenkins.repo
+diff --git a/rpm/SPECS/jenkins.spec b/rpm/SPECS/jenkins.spec
+index d26587c..ed83520 100644
+--- a/rpm/SPECS/jenkins.spec
++++ b/rpm/SPECS/jenkins.spec
+@@ -6,7 +6,7 @@
+ 
+ Name:		jenkins
+ Version:	%{ver}
+-Release:	1.1
++Release:	1.2
+ Summary:	Continous Build Server
+ Source:		jenkins.war
+ Source1:	jenkins.init.in
+@@ -61,6 +61,12 @@ Authors:
+ --------
+     Kohsuke Kawaguchi <Kohsuke.Kawaguchi@sun.com>
+ 
++%package repos
++Summary:	Reoository location for Continous Build Server
++Group:		Development/Tools/Building
++%description repos
++The jenkins yum repositor 
++
+ %prep
+ %setup -q -T -c
+ 
+@@ -127,6 +133,10 @@ exit 0
+ %clean
+ %__rm -rf "%{buildroot}"
+ 
++%files repos
++%config(noreplace) /etc/yum.repos.d/jenkins.repo
++
++
+ %files
+ %defattr(-,root,root)
+ %dir %{_prefix}
+@@ -136,7 +146,6 @@ exit 0
+ %config /etc/logrotate.d/%{name}
+ %config(noreplace) /etc/init.d/%{name}
+ %config(noreplace) /etc/sysconfig/%{name}
+-%config(noreplace) /etc/yum.repos.d/jenkins.repo
+ /usr/sbin/rc%{name}
+ 
+ %changelog
+diff --git a/rpm/build.sh b/rpm/build.sh
+index 8e6133b..cf5c8ae 100755
+--- a/rpm/build.sh
++++ b/rpm/build.sh
+@@ -4,7 +4,6 @@ if [ -z "$1" ]; then
+   exit 1
+ fi
+ 
+-sudo apt-get install -y rpm expect || true
+ 
+ # figure out the version to package
+ cp "$1" $(dirname $0)/SOURCES/jenkins.war
+@@ -24,3 +23,4 @@ cat SOURCES/jenkins.repo.in | sed -e "s#@URL@#${RPM_URL}/#g" > SOURCES/jenkins.r
+ 
+ # real action happens here
+ rpmbuild -ba --define="_topdir $PWD" --define="_tmppath $PWD/tmp" --define="ver $version" SPECS/jenkins.spec
++
+-- 
+1.7.7.6
+

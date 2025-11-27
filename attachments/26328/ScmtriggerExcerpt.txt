@@ -1,0 +1,59 @@
+      private boolean runPolling() {
+            try {
+                // to make sure that the log file contains up-to-date text,
+                // don't do buffering.
+                StreamTaskListener listener = new StreamTaskListener(getLogFile());
+
+                try {
+                    PrintStream logger = listener.getLogger();
+                    long start = System.currentTimeMillis();
+                    logger.println("Started on "+ DateFormat.getDateTimeInstance().format(new Date()));
+                    boolean result = job.poll(listener).hasChanges();                             <=== check if job duplicated before starting a needless poll (A)
+                    logger.println("Done. Took "+ Util.getTimeSpanString(System.currentTimeMillis()-start));                                           
+                    if(result.)                                                                                                                        
+                        logger.println("Changes found");                                                                                               
+                    else                                                          
+                        logger.println("No changes");
+                    return result;
+                } catch (Error e) {
+                    e.printStackTrace(listener.error("Failed to record SCM polling for "+job));
+                    LOGGER.log(Level.SEVERE,"Failed to record SCM polling for "+job,e);
+                    throw e;
+                } catch (RuntimeException e) {
+                    e.printStackTrace(listener.error("Failed to record SCM polling for "+job));
+                    LOGGER.log(Level.SEVERE,"Failed to record SCM polling for "+job,e);
+                    throw e;
+                } finally {
+                    listener.close();
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE,"Failed to record SCM polling for "+job,e);
+                return false;
+            }
+        }
+
+        public void run() {
+            String threadName = Thread.currentThread().getName();
+            Thread.currentThread().setName("SCM polling for "+job);
+            try {
+                startTime = System.currentTimeMillis();
+                if(runPolling()) {
+                    AbstractProject p = job.asProject();
+                    String name = " #"+p.getNextBuildNumber();
+                    SCMTriggerCause cause;
+                    try {
+                        cause = new SCMTriggerCause(getLogFile());
+                    } catch (IOException e) {
+                        LOGGER.log(WARNING, "Failed to parse the polling log",e);
+                        cause = new SCMTriggerCause();
+                    }
+                    if(p.scheduleBuild(p.getQuietPeriod(), cause, additionalActions)) {      <==== checks if a duplicate job is already queued here... it should really check up at A above
+                        LOGGER.info("SCM changes detected in "+ job.getName()+". Triggering "+name);
+                    } else {
+                        LOGGER.info("SCM changes detected in "+ job.getName()+". Job is already in the queue");
+                    }
+                }
+            } finally {
+                Thread.currentThread().setName(threadName);
+            }
+        }

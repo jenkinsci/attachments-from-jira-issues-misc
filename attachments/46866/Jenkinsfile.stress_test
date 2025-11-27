@@ -1,0 +1,24 @@
+#!groovy
+def runs = (1..100)
+
+// Mapping of parallel stages to run
+def stepsForParallel = runs.collectEntries { runIndex ->
+  ["Parallel Stage ${runIndex}" : transformIntoStep(runIndex)]
+}
+
+node('ec2-worker') {
+  stage('Root') {
+    parallel stepsForParallel
+  }
+}
+
+def transformIntoStep(runIndex) {
+  return {
+    node('ec2-worker') {
+      stage("Run ${runIndex}") {
+        echo "test string"
+        sleep 360
+      }
+    }
+  }
+}

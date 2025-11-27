@@ -1,0 +1,74 @@
+? src/main/webapp/help-baseDisplayNumber.html
+Index: src/main/java/hudson/plugins/xvnc/DisplayAllocator.java
+===================================================================
+RCS file: /cvs/hudson/hudson/plugins/xvnc/src/main/java/hudson/plugins/xvnc/DisplayAllocator.java,v
+retrieving revision 1.2
+diff -u -r1.2 DisplayAllocator.java
+--- src/main/java/hudson/plugins/xvnc/DisplayAllocator.java	23 Nov 2006 01:03:35 -0000	1.2
++++ src/main/java/hudson/plugins/xvnc/DisplayAllocator.java	16 Oct 2007 17:59:57 -0000
+@@ -14,8 +14,8 @@
+      */
+     private final Set<Integer> numbers = new HashSet<Integer>();
+ 
+-    public synchronized int allocate() {
+-        int i = 10;
++    public synchronized int allocate(int baseDisplayNumber) {
++        int i = baseDisplayNumber; 
+         while(numbers.contains(i))
+             i++;
+         numbers.add(i);
+Index: src/main/java/hudson/plugins/xvnc/Xvnc.java
+===================================================================
+RCS file: /cvs/hudson/hudson/plugins/xvnc/src/main/java/hudson/plugins/xvnc/Xvnc.java,v
+retrieving revision 1.9
+diff -u -r1.9 Xvnc.java
+--- src/main/java/hudson/plugins/xvnc/Xvnc.java	22 Jun 2007 01:12:56 -0000	1.9
++++ src/main/java/hudson/plugins/xvnc/Xvnc.java	16 Oct 2007 17:59:57 -0000
+@@ -26,10 +26,11 @@
+         final PrintStream logger = listener.getLogger();
+ 
+         String cmd = Util.nullify(DESCRIPTOR.xvnc);
++        int baseDisplayNumber = DESCRIPTOR.baseDisplayNumber; 
+         if(cmd==null)
+             cmd = "vncserver :$DISPLAY_NUMBER";
+ 
+-        final int displayNumber = allocator.allocate();
++        final int displayNumber = allocator.allocate(baseDisplayNumber);
+         final String actualCmd = Util.replaceMacro(cmd, Collections.singletonMap("DISPLAY_NUMBER",String.valueOf(displayNumber)));
+ 
+         logger.println("Starting xvnc");
+@@ -92,6 +93,11 @@
+          */
+         public String xvnc;
+ 
++        /*
++         * Base X display number. 
++         */
++        public int baseDisplayNumber = 10;
++
+         DescriptorImpl() {
+             super(Xvnc.class);
+             load();
+Index: src/main/resources/hudson/plugins/xvnc/Xvnc/global.jelly
+===================================================================
+RCS file: /cvs/hudson/hudson/plugins/xvnc/src/main/resources/hudson/plugins/xvnc/Xvnc/global.jelly,v
+retrieving revision 1.2
+diff -u -r1.2 global.jelly
+--- src/main/resources/hudson/plugins/xvnc/Xvnc/global.jelly	20 Nov 2006 00:07:43 -0000	1.2
++++ src/main/resources/hudson/plugins/xvnc/Xvnc/global.jelly	16 Oct 2007 17:59:57 -0000
+@@ -1,8 +1,12 @@
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+   <f:section title="Xvnc">
+-    <f:entry title="command line" help="/plugin/xvnc/help-commandline.html">
++    <f:entry title="Command line" help="/plugin/xvnc/help-commandline.html">
+       <input class="setting-input" name="xvnc.xvnc"
+         type="text" value="${descriptor.xvnc}"/>
+     </f:entry>
++    <f:entry title="Base display number" help="/plugin/xvnc/help-baseDisplayNumber.html">
++      <input class="setting-input" name="xvnc.baseDisplayNumber"
++        type="text" value="${descriptor.baseDisplayNumber}"/>
++    </f:entry>
+   </f:section>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>

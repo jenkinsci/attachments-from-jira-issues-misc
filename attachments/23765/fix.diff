@@ -1,0 +1,99 @@
+Index: auth/pom.xml
+===================================================================
+--- auth/pom.xml	(revision 40905)
++++ auth/pom.xml	(working copy)
+@@ -31,8 +31,8 @@
+ 	<dependencies>
+ 		<dependency>
+ 			<groupId>org.twitter4j</groupId>
+-			<artifactId>twitter4j-core</artifactId>
+-			<version>2.1.4</version>
++			<artifactId>twitter4j-async</artifactId>
++			<version>3.0.3</version>
+ 		</dependency>
+ 		<dependency>
+ 			<groupId>junit</groupId>
+Index: auth/src/main/java/org/jvnet/hudson/plugins/twitter/Main.java
+===================================================================
+--- auth/src/main/java/org/jvnet/hudson/plugins/twitter/Main.java	(revision 40905)
++++ auth/src/main/java/org/jvnet/hudson/plugins/twitter/Main.java	(working copy)
+@@ -6,13 +6,14 @@
+ import twitter4j.Twitter;
+ import twitter4j.TwitterException;
+ import twitter4j.TwitterFactory;
+-import twitter4j.http.AccessToken;
+-import twitter4j.http.RequestToken;
++import twitter4j.auth.AccessToken;
++import twitter4j.auth.RequestToken;
+ 
+ public class Main {
+ 	private static final String CONSUMER_KEY = "8B6nAb0a5QScWxROd5oWA";;
+ 	private static final String CONSUMER_SECRET = "pXO0lgCZYUvix7Ay7YLdsIep38VBiH2cTldOeMj1J5s";
+ 	
++
+ 	public static void main(String[] args) throws Exception {
+ 		Twitter twitter = new TwitterFactory().getInstance();
+ 		twitter.setOAuthConsumer(CONSUMER_KEY, CONSUMER_SECRET);
+@@ -42,7 +43,7 @@
+ 		storeAccessToken(twitter.verifyCredentials().getId() , accessToken);
+ 		System.exit(0);
+ 	}
+-	private static void storeAccessToken(int useId, AccessToken accessToken){
++	private static void storeAccessToken(long useId, AccessToken accessToken){
+ 		System.out.println("access token:" + accessToken.getToken());
+ 		System.out.println("access token secret:" + accessToken.getTokenSecret());
+ 	}
+Index: pom.xml
+===================================================================
+--- pom.xml	(revision 40905)
++++ pom.xml	(working copy)
+@@ -33,8 +33,8 @@
+ 	<dependencies>
+ 		<dependency>
+ 			<groupId>org.twitter4j</groupId>
+-			<artifactId>twitter4j-core</artifactId>
+-			<version>2.1.4</version>
++			<artifactId>twitter4j-async</artifactId>
++			<version>3.0.3</version>
+ 		</dependency>
+ 		<dependency>
+ 			<groupId>mockobjects</groupId>
+Index: src/main/java/hudson/plugins/twitter/TwitterPublisher.java
+===================================================================
+--- src/main/java/hudson/plugins/twitter/TwitterPublisher.java	(revision 40905)
++++ src/main/java/hudson/plugins/twitter/TwitterPublisher.java	(working copy)
+@@ -37,11 +37,12 @@
+ import twitter4j.TwitterAdapter;
+ import twitter4j.TwitterException;
+ import twitter4j.TwitterMethod;
+-import twitter4j.http.AccessToken;
++import twitter4j.auth.AccessToken;
+ 
+ /**
+  * @author cactusman
+  * @author justinedelson
++ * @author mikesir87
+  */
+ public class TwitterPublisher extends Notifier {
+ 	private static final List<String> VALUES_REPLACED_WITH_NULL = Arrays.asList("", "(Default)", "(System Default)");
+@@ -288,7 +289,10 @@
+ 		public void updateTwit(String message) throws Exception {
+ 			LOGGER.info("Attempting to update Twitter status to: " + message);
+ 
+-			AsyncTwitterFactory factory = new AsyncTwitterFactory(new TwitterAdapter() {
++			AsyncTwitterFactory factory = new AsyncTwitterFactory();
++			AccessToken accessToken = new AccessToken(token, tokenSecret);
++			AsyncTwitter twitter =  factory.getInstance(accessToken);
++			twitter.addListener(new TwitterAdapter() {
+ 				@Override
+ 				public void onException(TwitterException e, TwitterMethod method) {
+ 					LOGGER.warning("Exception updating Twitter status: " + e.toString());
+@@ -299,8 +303,6 @@
+ 					LOGGER.info("Updated Twitter status: " + statuses.getText());
+ 				}
+ 			});
+-			AccessToken accessToken = new AccessToken(token, tokenSecret);
+-			AsyncTwitter twitter =  factory.getOAuthAuthorizedInstance(CONSUMER_KEY, CONSUMER_SECRET, accessToken);
+ 			twitter.updateStatus(message);
+ 		}
+ 		

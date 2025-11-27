@@ -1,0 +1,131 @@
+import java.text.MessageFormat
+
+pipeline {
+    agent any
+    tools {
+        jdk 'jdk-11.0.7'
+    }
+
+    stages {
+        stage ('Clean project') {
+            steps {
+                script {
+                    echo "Build is offline ${isOffline}"
+
+                    def argument = ""
+                    if (env.isOffline == 'true') {
+                        argument = "--offline "
+                    }
+                    if (env.printStacktrace == 'true') {
+                        argument += "--stacktrace "
+                    }
+
+                    argument += "-Dandroid.forceJacocoOutOfProcess=true -PkeyStr=${keyStr} "
+                    argument += "-Partifactory_repoUrl=${artifactory_repoUrl} -Partifactory_user=${artifactory_user} -Partifactory_password=${artifactory_password} "
+                    argument += "-Djava.io.tmpdir=/softwares/jenkins/tmpDir"
+
+                    /*dir ('Android') {
+                        sh 'java -version'
+                        sh 'javac -version'                        
+                        sh "chmod a+x ./gradlew"
+                        sh "./gradlew clean ${argument}"
+                    }*/
+                    sh '''#!/bin/bash                        
+                        cd ${WORKSPACE}/Android/
+                        ./gradlew clean '''+argument+'''
+                        '''
+                }
+            }
+        }
+        stage ('Build project') {
+            steps {
+                script {
+                    echo "Build is offline ${isOffline}"
+
+                    def argument = ""
+                    if (env.isOffline == 'true') {
+                        argument = "--offline "
+                    }
+                    if (env.printStacktrace == 'true') {
+                        argument += "--stacktrace "
+                    }
+
+                    if (env.uploadCrashlyticsMappingFile == 'true') {
+                        argument += "-PuploadMapping "
+                    }
+
+                    argument += "-PfeatureControlOverride=${featureControlOverride} "
+                    argument += "-Dandroid.forceJacocoOutOfProcess=true -PkeyStr=${keyStr} "
+                    argument += "-Partifactory_repoUrl=${artifactory_repoUrl} -Partifactory_user=${artifactory_user} -Partifactory_password=${artifactory_password} "
+                    argument += "-Djava.io.tmpdir=/softwares/jenkins/tmpDir"
+
+                    /*dir ('Android') {
+                        sh "./gradlew assemble${release_type}${target}${buildType} ${argument}"
+                    }*/
+
+                    sh '''#!/bin/bash                        
+                        cd ${WORKSPACE}/Android/
+                        ./gradlew assemble${release_type}${target}${buildType} '''+argument+'''
+                        '''
+                }
+            }
+        }
+        stage ('Prepare build to deploy') {
+            steps {
+                echo "Build Environment is ${appExplorer_Env}"
+                echo "Deployment folder is ${appExplorer_Folder}"
+                echo "Workspace is ${WORKSPACE}"
+
+                script {
+                    def data = ""
+                    def apkType = ""
+                    def rlTypeFolder = "${release_type.toLowerCase()}${target}"
+                    echo "Release type is ${rlTypeFolder}"
+                    def apkBuildPath = "${WORKSPACE}/Android/app/build/outputs/apk/${rlTypeFolder}/${buildType.toLowerCase()}"
+                    def apkDeploymentFolder = "${WORKSPACE}/$appExplorer_Folder/ANDROID"
+                    dir ('Android') {
+                        data = readFile(file: 'deployment_descriptor_template.properties')
+                        println(data)
+                        data = MessageFormat.format(data, "${appExplorer_Env}", "${appExplorer_Folder}", "${appExplorer_Folder}")
+                        println(data)
+                    }
+                    echo "Deploy obfuscated apk is ${deployObfuscatedApk}"
+                    if (env.deployObfuscatedApk == 'true') {
+                        apkType = "-protected"
+                    }
+                    dir ("${appExplorer_Folder}/ANDROID") {
+                        echo "APK build path is ${apkBuildPath}"
+                        echo "APK deployment folder is ${apkDeploymentFolder}"
+                        writeFile file:'descriptor.xml', text:data
+                       sh "cp -f  ${apkBuildPath}/app-${release_type.toLowerCase()}-${target.toLowerCase()}-${buildType.toLowerCase()}${apkType}.apk ${apkDeploymentFolder}"
+                       sh "mv app-${release_type.toLowerCase()}-${target.toLowerCase()}-${buildType.toLowerCase()}${apkType}.apk ${appExplorer_Folder}.apk"
+                    }
+                }
+            }
+        }
+
+        stage ('Deploy build to AppExplorer') {
+            steps {
+                script {
+                   def apkDeployFolder = "${WORKSPACE}/$appExplorer_Folder"
+                   def deployScript = "/softwares/jenkins/scripts/android-deploy.sh"
+                   def appExplorerPath = "/jboss/applications/mbe/appExplorer-1.0.0.war/applications"
+                    echo "Deployment folder is ${apkDeployFolder}"
+                    sh "${deployScript} ${appExplorer_Env} ${apkDeployFolder} ${appExplorerPath}/${appExplorer_Env}/${appExplorer_Folder}"
+                }
+            }
+        }
+    }
+    /*post {
+        failure {
+            emailext attachLog: false,
+            body: '${SCRIPT, template="groovy-html.template"}',
+            compressLog: true,
+            mimeType: 'text/html',
+            recipientProviders: [culprits(), brokenBuildSuspects()],
+            replyTo: '$DEFAULT_REPLYTO',
+            subject: 'Android - Build fail',
+            to: 'jibythomas, srunnikrishnan, mbadminton, prabakarantk@virtusa.com, Tripatykumar.Sahu@itcinfotech.com, cc:anpillai, cc:sureshbabu'
+        }
+    }*/
+}

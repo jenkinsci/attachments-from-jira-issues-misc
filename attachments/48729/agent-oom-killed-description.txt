@@ -1,0 +1,80 @@
+Name:               dse-team-apac-aburdajewicz-testscenario-4-10xd4-558nc-5khzj
+Namespace:          cje-support-general
+Priority:           0
+PriorityClassName:  <none>
+Node:               gke-cluster-support-gener-core-agents-72d7a1ad-jjh1/10.132.15.232
+Start Time:         Fri, 13 Sep 2019 10:44:57 +1000
+Labels:             cloudbees.com/master=dse-team-apac
+                    jenkins=slave
+                    jenkins/dse-team-apac_aburdajewicz_testScenario_4-10xd4=true
+                    jenkins/stress=true
+Annotations:        com.cloudbees.sidecar-injector/status: injected
+Status:             Failed
+IP:                 10.52.2.22
+Containers:
+  jnlp:
+    Container ID:   docker://31d9ea55e8f03f8d71b0733c40eb0240c1e636051fc8d03b2c1149d58371e2cc
+    Image:          dohbedoh/jnlp-stress-agent:alpine
+    Image ID:       docker-pullable://dohbedoh/jnlp-stress-agent@sha256:9e9ea85d8519fee1648891c490ef22ae0a03b3921c46396921d659b190c6aa05
+    Port:           <none>
+    Host Port:      <none>
+    State:          Terminated
+      Reason:       OOMKilled
+      Exit Code:    137
+      Started:      Fri, 13 Sep 2019 10:45:02 +1000
+      Finished:     Fri, 13 Sep 2019 10:46:04 +1000
+    Ready:          False
+    Restart Count:  0
+    Limits:
+      cpu:     200m
+      memory:  128Mi
+    Requests:
+      cpu:     200m
+      memory:  100Mi
+    Environment:
+      JENKINS_SECRET:      db264599058af06f0e5433931e0b5c3407b93a51cb396c8c9494b9f31e770b5b
+      JENKINS_AGENT_NAME:  dse-team-apac-aburdajewicz-testscenario-4-10xd4-558nc-5khzj
+      JENKINS_NAME:        dse-team-apac-aburdajewicz-testscenario-4-10xd4-558nc-5khzj
+      JENKINS_URL:         http://teams-dse-team-apac.cje-support-general.svc.cluster.local/teams-dse-team-apac/
+    Mounts:
+      /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem from ca-bundles (rw,path="ca-certificates.crt")
+      /etc/pki/java/cacerts from ca-bundles (rw,path="cacerts")
+      /etc/pki/tls/cacert.pem from ca-bundles (rw,path="ca-certificates.crt")
+      /etc/pki/tls/certs/ca-bundle.crt from ca-bundles (rw,path="ca-certificates.crt")
+      /etc/ssl/ca-bundle.pem from ca-bundles (rw,path="ca-certificates.crt")
+      /etc/ssl/certs/ca-certificates.crt from ca-bundles (rw,path="ca-certificates.crt")
+      /etc/ssl/certs/java/cacerts from ca-bundles (rw,path="cacerts")
+      /home/jenkins from workspace-volume (rw)
+      /var/lib/ca-certificates/java-cacerts from ca-bundles (rw,path="cacerts")
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-r6qqp (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             False 
+  ContainersReady   False 
+  PodScheduled      True 
+Volumes:
+  workspace-volume:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  <unset>
+  default-token-r6qqp:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-r6qqp
+    Optional:    false
+  ca-bundles:
+    Type:        ConfigMap (a volume populated by a ConfigMap)
+    Name:        ca-bundles
+    Optional:    false
+QoS Class:       Burstable
+Node-Selectors:  <none>
+Tolerations:     node.kubernetes.io/not-ready:NoExecute for 300s
+                 node.kubernetes.io/unreachable:NoExecute for 300s
+Events:
+  Type    Reason     Age   From                                                          Message
+  ----    ------     ----  ----                                                          -------
+  Normal  Scheduled  119s  default-scheduler                                             Successfully assigned cje-support-general/dse-team-apac-aburdajewicz-testscenario-4-10xd4-558nc-5khzj to gke-cluster-support-gener-core-agents-72d7a1ad-jjh1
+  Normal  Pulling    118s  kubelet, gke-cluster-support-gener-core-agents-72d7a1ad-jjh1  Pulling image "dohbedoh/jnlp-stress-agent:alpine"
+  Normal  Pulled     115s  kubelet, gke-cluster-support-gener-core-agents-72d7a1ad-jjh1  Successfully pulled image "dohbedoh/jnlp-stress-agent:alpine"
+  Normal  Created    114s  kubelet, gke-cluster-support-gener-core-agents-72d7a1ad-jjh1  Created container jnlp
+  Normal  Started    114s  kubelet, gke-cluster-support-gener-core-agents-72d7a1ad-jjh1  Started container jnlp

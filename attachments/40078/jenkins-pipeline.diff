@@ -1,0 +1,36 @@
+
+--- /home/tretout/stageview.js	2017-10-19 22:54:45.544880065 +0100
++++ plugins/pipeline-stage-view/jsmodules/stageview.js	2017-10-21 23:02:34.220963619 +0100
+@@ -4857,6 +4857,14 @@
+ 
+     var clickNSEvent = 'click.cbwf-stage-logs';
+ 
++    $(onElement).data("stagelogs", stageLogsDom);
++    $.event.special.stageLogsCleanup = {
++        teardown: function() {
++            $(this).data("stagelogs").empty();
++        }
++    };
++    onElement.on("stageLogsCleanup", $.noop);
++
+     onElement.off(clickNSEvent);
+     onElement.on(clickNSEvent, function() {
+         dialog.show('Stage Logs (' + stageDescription.name + ')', stageLogsDom, {
+@@ -5937,6 +5945,16 @@
+         options.placement = 'top';
+     }
+ 
++    var $ = jqProxy.getJQuery();
++    $(onElement).data("popover", this);
++    $.event.special.popoverCleanup = {
++        teardown: function() {
++            var thePopover = $(this).data("popover");
++            $(thePopover.popover).empty();
++        }
++    };
++    onElement.on("popoverCleanup", $.noop);
++
+     popover.attr('popover-name', name);
+     popover.addClass(name);
+ 
+

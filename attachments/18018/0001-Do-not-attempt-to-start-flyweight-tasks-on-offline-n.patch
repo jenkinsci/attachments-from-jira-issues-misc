@@ -1,0 +1,25 @@
+From 054705e479708dadc16d7ce6987088b0e2b0aedd Mon Sep 17 00:00:00 2001
+From: Peter Collingbourne <collingbourne2@llnl.gov>
+Date: Mon, 23 Nov 2009 15:22:27 -0800
+Subject: [PATCH] Do not attempt to start flyweight tasks on offline nodes
+
+---
+ core/src/main/java/hudson/model/Queue.java |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/core/src/main/java/hudson/model/Queue.java b/core/src/main/java/hudson/model/Queue.java
+index 4585a02..dc4ecd0 100644
+--- a/core/src/main/java/hudson/model/Queue.java
++++ b/core/src/main/java/hudson/model/Queue.java
+@@ -900,7 +900,7 @@ public class Queue extends ResourceController implements Saveable {
+             
+             for (Node n : hash.list(p.task.getFullDisplayName())) {
+                 Computer c = n.toComputer();
+-                if (c==null)    continue;
++                if (c==null || c.isOffline())    continue;
+                 c.startFlyWeightTask(p);
+                 return;
+             }
+-- 
+1.6.3.3
+

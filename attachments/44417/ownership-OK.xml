@@ -1,0 +1,43 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<com.synopsys.arc.jenkins.plugins.ownership.OwnershipPlugin plugin="ownership@0.12.1">
+  <requiresConfigureRights>false</requiresConfigureRights>
+  <pluginActions/>
+  <defaultJobsSecurity>
+    <permissionsMatrix>
+      <inheritanceStrategy class="org.jenkinsci.plugins.matrixauth.inheritance.InheritGlobalStrategy"/>
+    </permissionsMatrix>
+  </defaultJobsSecurity>
+  <configuration>
+    <itemOwnershipPolicy class="com.synopsys.arc.jenkins.plugins.ownership.extensions.item_ownership_policy.DropOwnershipPolicy"/>
+    <mailOptions>
+      <contactOwnersSubjectTemplate>[Jenkins] - TODO: Describe the issue with ${ITEM_TYPE_NAME} ${ITEM_DISPLAY_NAME}</contactOwnersSubjectTemplate>
+      <contactOwnersBodyTemplate>Dear owners of ${ITEM_TYPE_NAME} ${ITEM_DISPLAY_NAME},
+
+TODO: Add text
+URL: ${ITEM_URL}
+
+Best regards,
+${USER_FULL_NAME} </contactOwnersBodyTemplate>
+      <contactOwnersLinkDisabled>false</contactOwnersLinkDisabled>
+      <contactAdminsSubjectTemplate>[Jenkins] - TODO: Describe the issue with ${ITEM_TYPE_NAME} ${ITEM_DISPLAY_NAME}</contactAdminsSubjectTemplate>
+      <contactAdminsBodyTemplate>Dear Jenkins admins,
+
+TODO: Describe the issue
+URL: ${ITEM_URL}
+
+Best regards,
+${USER_FULL_NAME}</contactAdminsBodyTemplate>
+      <contactAdminsLinkDisabled>false</contactAdminsLinkDisabled>
+      <emailListSeparator>;</emailListSeparator>
+      <adminsContactEmail></adminsContactEmail>
+      <hideOwnerAndCoOwnerEmails>false</hideOwnerAndCoOwnerEmails>
+    </mailOptions>
+    <displayOptions>
+      <hideRunOwnership>false</hideRunOwnership>
+      <hideOwnershipIfNoData>false</hideOwnershipIfNoData>
+    </displayOptions>
+    <inheritanceOptions>
+      <blockInheritanceFromItemGroups>false</blockInheritanceFromItemGroups>
+    </inheritanceOptions>
+  </configuration>
+</com.synopsys.arc.jenkins.plugins.ownership.OwnershipPlugin>

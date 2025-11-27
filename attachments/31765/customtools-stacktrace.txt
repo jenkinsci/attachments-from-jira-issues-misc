@@ -1,0 +1,39 @@
+[CustomTools] - firefox-44: Starting installation
+Unpacking https://ftp.mozilla.org/pub/mozilla.org/firefox/releases/44.0/linux-x86_64/en-US/firefox-44.0.tar.bz2 to /foobar/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/firefox-44 on Jenkins
+FATAL: Failed to install https://ftp.mozilla.org/pub/mozilla.org/firefox/releases/44.0/linux-x86_64/en-US/firefox-44.0.tar.bz2 to /foobar/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/firefox-44
+java.io.IOException: Failed to install https://ftp.mozilla.org/pub/mozilla.org/firefox/releases/44.0/linux-x86_64/en-US/firefox-44.0.tar.bz2 to /apps/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/firefox-44
+	at hudson.FilePath.installIfNecessaryFrom(FilePath.java:832)
+	at hudson.tools.ZipExtractionInstaller.performInstallation(ZipExtractionInstaller.java:79)
+	at hudson.tools.InstallerTranslator.getToolHome(InstallerTranslator.java:68)
+	at hudson.tools.ToolLocationNodeProperty.getToolHome(ToolLocationNodeProperty.java:108)
+	at hudson.tools.ToolInstallation.translateFor(ToolInstallation.java:206)
+	at com.cloudbees.jenkins.plugins.customtools.CustomTool.forNode(CustomTool.java:154)
+	at com.cloudbees.jenkins.plugins.customtools.CustomToolInstallWrapper.decorateLauncher(CustomToolInstallWrapper.java:184)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.createLauncher(AbstractBuild.java:566)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.run(AbstractBuild.java:492)
+	at hudson.model.Run.execute(Run.java:1738)
+	at hudson.model.FreeStyleBuild.run(FreeStyleBuild.java:43)
+	at hudson.model.ResourceController.execute(ResourceController.java:98)
+	at hudson.model.Executor.run(Executor.java:410)
+Caused by: java.io.IOException: Failed to unpack https://ftp.mozilla.org/pub/mozilla.org/firefox/releases/44.0/linux-x86_64/en-US/firefox-44.0.tar.bz2 (2242 bytes read of total 50126803)
+	at hudson.FilePath.installIfNecessaryFrom(FilePath.java:826)
+	... 12 more
+Caused by: java.io.IOException: Failed to extract input stream
+	at hudson.FilePath.readFromTar(FilePath.java:2300)
+	at hudson.FilePath.access$400(FilePath.java:190)
+	at hudson.FilePath$10.invoke(FilePath.java:720)
+	at hudson.FilePath$10.invoke(FilePath.java:718)
+	at hudson.FilePath.act(FilePath.java:990)
+	at hudson.FilePath.act(FilePath.java:968)
+	at hudson.FilePath.untarFrom(FilePath.java:718)
+	at hudson.FilePath.installIfNecessaryFrom(FilePath.java:824)
+	... 12 more
+Caused by: java.io.IOException: incorrect header check
+	at com.jcraft.jzlib.InflaterInputStream.read(InflaterInputStream.java:112)
+	at org.apache.commons.compress.utils.IOUtils.readFully(IOUtils.java:160)
+	at org.apache.commons.compress.utils.IOUtils.readFully(IOUtils.java:134)
+	at org.apache.commons.compress.archivers.tar.TarArchiveInputStream.readRecord(TarArchiveInputStream.java:419)
+	at org.apache.commons.compress.archivers.tar.TarArchiveInputStream.getRecord(TarArchiveInputStream.java:388)
+	at org.apache.commons.compress.archivers.tar.TarArchiveInputStream.getNextTarEntry(TarArchiveInputStream.java:269)
+	at hudson.FilePath.readFromTar(FilePath.java:2278)
+	... 19 more

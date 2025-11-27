@@ -1,0 +1,24 @@
+  stages {
+    stage('Test') {
+        steps {
+            script{
+                writeFile file: 'result.junit.xml', text: '''<?xml version="1.0" ?>
+<testsuites errors="0" failures="0" tests="9" time="182.512000322">
+	<testsuite errors="0" failures="0" hostname="hostname" name="SchedulingRunner" package="SchedulingRunner" skipped="0" tests="9" time="182.512000322" timestamp="2020-08-07 17:47:58.806000">
+		<testcase classname="SchedulingRunner.__init__" name="__init__"/>
+		<testcase classname="SchedulingRunner.__init__" name="_check_granularity"/>
+		<testcase classname="SchedulingRunner.__init__" name="_check_test_case_name"/>
+		<testcase classname="SchedulingRunner.print_configuration_table" name="print_configuration_table" time="0.004000"/>
+		<testcase classname="SchedulingRunner.print_configuration_table" name="print_configuration_table_hook"/>
+		<testcase classname="SchedulingRunner.run" name="run" time="91.136000"/>
+		<testcase classname="SchedulingRunner.run" name="P_code_parsing" time="9.060000"/>
+		<testcase classname="SchedulingRunner.run.P_code_parsing" name="Creating_a_grain_metadata_registry" time="0.236000"/>
+		<testcase classname="SchedulingRunner.run" name="scheduling" time="82.076000"/>
+	</testsuite>
+</testsuites>
+'''
+                junit allowEmptyResults: false, keepLongStdio: true, testResults: "*.junit.xml"
+            }
+        }
+    }
+  }

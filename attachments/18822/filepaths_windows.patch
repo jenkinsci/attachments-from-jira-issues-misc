@@ -1,0 +1,223 @@
+Index: src/main/java/hudson/plugins/buckminster/scrap.jpage
+===================================================================
+--- src/main/java/hudson/plugins/buckminster/scrap.jpage	(revision 0)
++++ src/main/java/hudson/plugins/buckminster/scrap.jpage	(revision 0)
+@@ -0,0 +1,6 @@
++String path = "D:\\Data\\JavaBuilds\\stuff\\and\\nonsense";
++String path1 = path.replace("\\\\","wank");
++String path2 = path.replace("(\\)","\\\\");
++System.out.println("path:" + path);
++System.out.println("path1:" + path1);
++System.out.println("path2:" + path2);
+\ No newline at end of file
+Index: src/main/java/hudson/plugins/buckminster/targetPlatform/TargetPlatformPublisher.java
+===================================================================
+--- src/main/java/hudson/plugins/buckminster/targetPlatform/TargetPlatformPublisher.java	(revision 21994)
++++ src/main/java/hudson/plugins/buckminster/targetPlatform/TargetPlatformPublisher.java	(working copy)
+@@ -43,7 +43,7 @@
+ public class TargetPlatformPublisher extends ArtifactArchiver implements
+ 		DependecyDeclarer {
+ 
+-	private static final String TARGET_PLATFORM_DIRECTORY = "/targetPlatform";
++	private static final String TARGET_PLATFORM_DIRECTORY = "targetPlatform";
+ 
+ 	@DataBoundConstructor
+ 	public TargetPlatformPublisher(String artifacts, String excludes,
+@@ -116,11 +116,10 @@
+ 			AbstractProject project) {
+ 		TargetPlatformReference reference = new TargetPlatformReference();
+ 		reference.setName(targetPlatformName);
+-		reference.setFullName(project.getFullName() + "/" + targetPlatformName);
++		reference.setFullName(project.getFullName() + File.separator + targetPlatformName);
+ 		if (project.getLastSuccessfulBuild() != null) {
+-			String fullPath = project.getLastSuccessfulBuild()
+-					.getArtifactsDir().getAbsolutePath()
+-					+ TARGET_PLATFORM_DIRECTORY;
++			File fullPath = new File(project.getLastSuccessfulBuild()
++					.getArtifactsDir(),TARGET_PLATFORM_DIRECTORY);
+ 			reference.setPath(fullPath);
+ 		}
+ 		return reference;
+Index: src/main/java/hudson/plugins/buckminster/targetPlatform/TargetPlatformReference.java
+===================================================================
+--- src/main/java/hudson/plugins/buckminster/targetPlatform/TargetPlatformReference.java	(revision 21994)
++++ src/main/java/hudson/plugins/buckminster/targetPlatform/TargetPlatformReference.java	(working copy)
+@@ -1,5 +1,7 @@
+ package hudson.plugins.buckminster.targetPlatform;
+ 
++import java.io.File;
++
+ /**
+  * A reference to a target platform built by another job
+  * 
+@@ -9,7 +11,7 @@
+ public class TargetPlatformReference {
+ 	
+ 	private String name;
+-	private String path;
++	private File   path;
+ 	private String fullName;
+ 	
+ 	/**
+@@ -38,10 +40,10 @@
+ 	 * 
+ 	 * @return the absolute path to this target platform
+ 	 */
+-	public String getPath() {
++	public File getPath() {
+ 		return path;
+ 	}
+-	public void setPath(String path) {
++	public void setPath(File path) {
+ 		this.path = path;
+ 	}
+ 	
+Index: src/main/java/hudson/plugins/buckminster/EclipseBuckminsterBuilder.java
+===================================================================
+--- src/main/java/hudson/plugins/buckminster/EclipseBuckminsterBuilder.java	(revision 21994)
++++ src/main/java/hudson/plugins/buckminster/EclipseBuckminsterBuilder.java	(working copy)
+@@ -1,6 +1,7 @@
+ package hudson.plugins.buckminster;
+ 
+ import hudson.CopyOnWrite;
++import hudson.FilePath;
+ import hudson.Launcher;
+ import hudson.matrix.MatrixProject;
+ import hudson.model.AbstractProject;
+@@ -102,13 +103,14 @@
+ 	}
+ 	
+ 	public TargetPlatformReference getTargetPlatform() {
+-		for (TargetPlatformReference reference : DESCRIPTOR.getTargetPlatforms()) {
++		for (TargetPlatformReference reference : DESCRIPTOR.getTargetPlatforms()) 
++		{
+ 			if (targetPlatformName != null
+-					&& reference.getName().equals(targetPlatformName)) {
+-				return reference;
++					&& reference.getName().equals(targetPlatformName)) 
++			{
++			    return reference;
+ 			}
+ 		}
+-
+ 		return null;
+ 	}
+ 
+@@ -119,8 +121,11 @@
+ 		try {
+ 			String modifiedCommands = getCommands();
+ 			TargetPlatformReference targetPlatform = getTargetPlatform();
+-			if(targetPlatform!=null && targetPlatform.getPath()!=null){
+-				modifiedCommands = "setpref targetPlatformPath=\""+targetPlatform.getPath()+"\"" +"\n" + modifiedCommands;
++			if(targetPlatform!=null && targetPlatform.getPath()!=null)
++			{
++			    String path = targetPlatform.getPath().getAbsolutePath();
++			    path = path.replace("\\","\\\\");
++				modifiedCommands = "setpref targetPlatformPath=\"" + path + "\"" +"\n" + modifiedCommands;
+ 			}
+ 			CommandLineBuilder cmdBuilder = new CommandLineBuilder(getInstallation(),modifiedCommands,getLogLevel(),getParams());
+ 			List<String> buildCommands = cmdBuilder.buildCommands(build,listener);
+Index: src/main/java/hudson/plugins/buckminster/command/CommandLineBuilder.java
+===================================================================
+--- src/main/java/hudson/plugins/buckminster/command/CommandLineBuilder.java	(revision 21994)
++++ src/main/java/hudson/plugins/buckminster/command/CommandLineBuilder.java	(working copy)
+@@ -1,5 +1,6 @@
+ package hudson.plugins.buckminster.command;
+ 
++import hudson.FilePath;
+ import hudson.model.Build;
+ import hudson.model.BuildListener;
+ import hudson.plugins.buckminster.EclipseBuckminsterBuilder;
+@@ -53,8 +54,7 @@
+ 
+ 		// the file listing all the commands since buckminster doesn't accept
+ 		// several commands as programm arguments
+-		String commandsPath = build.getRootDir().getAbsolutePath()
+-				+ "/commands.txt";
++		File commandsPath = new File(build.getRootDir().getAbsolutePath(),"commands.txt");
+ 		List<String> commandList = new ArrayList<String>();
+ 
+ 		// VM Options
+@@ -71,7 +71,7 @@
+ 
+ 		// Tell Buckminster about the command file
+ 		commandList.add("-S");
+-		commandList.add(commandsPath);
++		commandList.add(commandsPath.getAbsolutePath());
+ 
+ 
+ 		writeCommandFile(commandsPath, properties);
+@@ -95,7 +95,7 @@
+ 		return additionalParams;
+ 	}
+ 
+-	private void writeCommandFile(String commandsPath, Map properties)
++	private void writeCommandFile(File commandsPath, Map properties)
+ 			throws IOException {
+ 		PrintWriter writer = null;
+ 		try {
+@@ -103,8 +103,8 @@
+ 
+ 			String[] commands = getCommands().split("[\n\r]+");
+ 			for (int i = 0; i < commands.length; i++) {
+-
+-					writer.println(expandProperties(commands[i],properties));
++			    
++			    writer.println(expandProperties(commands[i],properties));
+ 			}
+ 		} finally {
+ 			if (writer != null)
+@@ -125,17 +125,18 @@
+ 		commandList.add("-data");
+ 		String workspace = null;
+ 	
+-		workspace = build.getProject().getWorkspace().toURI().getPath();
+-
++		workspace = getWorkspaceString(build);
+ 		commandList.add(workspace);
+ 	}
+ 
+ 	private Map addJVMProperties(Build build, BuildListener listener,
+ 			List<String> commandList) throws IOException, InterruptedException {
+ 		//temp and output root
+-		commandList.add("-Dbuckminster.output.root="+ build.getProject().getWorkspace().absolutize().toURI().getPath()+"/buckminster.output");
+-		commandList.add("-Dbuckminster.temp.root="+ build.getProject().getWorkspace().absolutize().toURI().getPath()+"/buckminster.temp");
+-		String params = getInstallation().getParams();
++	    String workspace = getWorkspaceString(build);
++	    commandList.add("-Dbuckminster.output.root=" + workspace + File.separator + "buckminster.output");
++        commandList.add("-Dbuckminster.temp.root="+ workspace + File.separator + "buckminster.temp");
++        
++	    String params = getInstallation().getParams();
+ 		String[] globalVMParams = params.split("[\n\r]+");
+ 		Map properties = new HashMap(build.getEnvironment(listener));
+ 		properties.putAll(build.getBuildVariables());
+@@ -189,15 +190,26 @@
+ 	 */
+ 	private String findEquinoxLauncher() {
+ 		//TODO: make this behave in master/slave scenario
+-		File pluginDir = new File(getInstallation().getHome() + "/plugins");
++		File pluginDir = new File(getInstallation().getHome(), "plugins");
+ 		File[] plugins = pluginDir.listFiles();
+ 		for (int i = 0; i < plugins.length; i++) {
+ 			if (plugins[i].getName()
+ 					.startsWith("org.eclipse.equinox.launcher_")) {
+-				return "plugins/" + plugins[i].getName();
++				return "plugins" + File.separator + plugins[i].getName();
+ 
+ 			}
+ 		}
+ 		return null;
+ 	}
++
++	/**
++     * Attempts to resolve the workspace in a platform-agnostic way, but return a 
++     * platform specific file-path rather than a URI.
++	 */	
++	private String getWorkspaceString(Build build) throws IOException, InterruptedException
++	{
++	    FilePath workspace = build.getProject().getWorkspace();
++	    File resolvedFile = new File(workspace.toURI());
++	    return resolvedFile.getAbsolutePath();
++	}
+ }
+\ No newline at end of file

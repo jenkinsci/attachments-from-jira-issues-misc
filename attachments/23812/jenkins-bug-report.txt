@@ -1,0 +1,179 @@
+[9e708532] $ hg log --template "<changeset node='{node}' author='{author|xmlescape}' rev='{rev}' date='{date}'><msg>{desc|xmlescape}</msg><added>{file_adds|stringify|xmlescape}</added><deleted>{file_dels|stringify|xmlescape}</deleted><files>{files|stringify|xmlescape}</files><parents>{parents}</parents></changeset>\n" --rev 2121714952000325aa645e4ac57935cfd34220d3:0 --follow --prune 2121714952000325aa645e4ac57935cfd34220d3 --encoding UTF-8 --encodingmode replace
+ERROR: Failed to copy artifacts from jl-core with filter: shade/target/jrebel.jar
+hudson.util.IOException2: Failed to copy /opt/jenkins/jobs/jl-core/builds/2013-06-28_17-01-01/archive/shade/target/jrebel.jar to /home/zeroturnaround/jenkins/workspace/servlettest-glassfish311/9e708532/jrebel.jar
+	at hudson.plugins.copyartifact.FingerprintingCopyMethod.copyOne(FingerprintingCopyMethod.java:105)
+	at hudson.plugins.copyartifact.CopyArtifact.perform(CopyArtifact.java:266)
+	at hudson.plugins.copyartifact.CopyArtifact.perform(CopyArtifact.java:223)
+	at hudson.tasks.BuildStepMonitor$1.perform(BuildStepMonitor.java:19)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.perform(AbstractBuild.java:802)
+	at hudson.model.Build$BuildExecution.build(Build.java:199)
+	at hudson.model.Build$BuildExecution.doRun(Build.java:160)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.run(AbstractBuild.java:584)
+	at hudson.model.Run.execute(Run.java:1575)
+	at hudson.matrix.MatrixRun.run(MatrixRun.java:146)
+	at hudson.model.ResourceController.execute(ResourceController.java:88)
+	at hudson.model.Executor.run(Executor.java:237)
+Caused by: hudson.util.IOException2: Unable to read /opt/jenkins/fingerprints/ea/43/3cb05760977ff8a04743f411ebc2.xml
+	at hudson.XmlFile.read(XmlFile.java:147)
+	at hudson.model.Fingerprint.load(Fingerprint.java:910)
+	at hudson.model.Fingerprint.load(Fingerprint.java:898)
+	at hudson.model.FingerprintMap.load(FingerprintMap.java:94)
+	at hudson.model.FingerprintMap.load(FingerprintMap.java:45)
+	at hudson.util.KeyedDataStorage.get(KeyedDataStorage.java:154)
+	at hudson.model.FingerprintMap.get(FingerprintMap.java:79)
+	at hudson.model.FingerprintMap.get(FingerprintMap.java:45)
+	at hudson.util.KeyedDataStorage.getOrCreate(KeyedDataStorage.java:108)
+	at hudson.model.FingerprintMap.getOrCreate(FingerprintMap.java:65)
+	at hudson.plugins.copyartifact.FingerprintingCopyMethod.copyOne(FingerprintingCopyMethod.java:98)
+	... 11 more
+Caused by: com.thoughtworks.xstream.converters.ConversionException:  : entity reference names can not start with character '&' (position: START_TAG seen ...<string>servlettest-jetty7e/label_exp=jetty-test &&... @12:67)  :  : entity reference names can not start with character '&' (position: START_TAG seen ...<string>servlettest-jetty7e/label_exp=jetty-test &&... @12:67) 
+---- Debugging information ----
+message             :  : entity reference names can not start with character '&' (position: START_TAG seen ...<string>servlettest-jetty7e/label_exp=jetty-test &&... @12:67) 
+cause-exception     : com.thoughtworks.xstream.io.StreamException
+cause-message       :  : entity reference names can not start with character '&' (position: START_TAG seen ...<string>servlettest-jetty7e/label_exp=jetty-test &&... @12:67) 
+class               : java.lang.String
+required-type       : java.lang.String
+converter-type      : com.thoughtworks.xstream.converters.SingleValueConverterWrapper
+wrapped-converter   : com.thoughtworks.xstream.converters.basic.StringConverter
+path                : /fingerprint/usages/entry/string
+line number         : 12
+class[1]            : java.util.Hashtable
+converter-type[1]   : com.thoughtworks.xstream.converters.collections.MapConverter
+class[2]            : hudson.model.Fingerprint
+converter-type[2]   : hudson.util.RobustReflectionConverter
+version             : null
+-------------------------------
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:79)
+	at com.thoughtworks.xstream.core.AbstractReferenceUnmarshaller.convert(AbstractReferenceUnmarshaller.java:65)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:66)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:50)
+	at com.thoughtworks.xstream.converters.collections.AbstractCollectionConverter.readItem(AbstractCollectionConverter.java:71)
+	at com.thoughtworks.xstream.converters.collections.MapConverter.putCurrentEntryIntoMap(MapConverter.java:86)
+	at com.thoughtworks.xstream.converters.collections.MapConverter.populateMap(MapConverter.java:78)
+	at com.thoughtworks.xstream.converters.collections.MapConverter.populateMap(MapConverter.java:72)
+	at com.thoughtworks.xstream.converters.collections.MapConverter.unmarshal(MapConverter.java:67)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:72)
+	at com.thoughtworks.xstream.core.AbstractReferenceUnmarshaller.convert(AbstractReferenceUnmarshaller.java:65)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:66)
+	at hudson.util.RobustReflectionConverter.unmarshalField(RobustReflectionConverter.java:333)
+	at hudson.util.RobustReflectionConverter.doUnmarshal(RobustReflectionConverter.java:275)
+	at hudson.util.RobustReflectionConverter.unmarshal(RobustReflectionConverter.java:222)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:72)
+	at com.thoughtworks.xstream.core.AbstractReferenceUnmarshaller.convert(AbstractReferenceUnmarshaller.java:65)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:66)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:50)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.start(TreeUnmarshaller.java:134)
+	at com.thoughtworks.xstream.core.AbstractTreeMarshallingStrategy.unmarshal(AbstractTreeMarshallingStrategy.java:32)
+	at com.thoughtworks.xstream.XStream.unmarshal(XStream.java:1061)
+	at hudson.util.XStream2.unmarshal(XStream2.java:109)
+	at com.thoughtworks.xstream.XStream.unmarshal(XStream.java:1045)
+	at com.thoughtworks.xstream.XStream.fromXML(XStream.java:925)
+	at hudson.XmlFile.read(XmlFile.java:143)
+	... 21 more
+Caused by: com.thoughtworks.xstream.io.StreamException:  : entity reference names can not start with character '&' (position: START_TAG seen ...<string>servlettest-jetty7e/label_exp=jetty-test &&... @12:67) 
+	at com.thoughtworks.xstream.io.xml.XppReader.pullNextEvent(XppReader.java:124)
+	at com.thoughtworks.xstream.io.xml.AbstractPullReader.readRealEvent(AbstractPullReader.java:148)
+	at com.thoughtworks.xstream.io.xml.AbstractPullReader.readEvent(AbstractPullReader.java:135)
+	at com.thoughtworks.xstream.io.xml.AbstractPullReader.getValue(AbstractPullReader.java:180)
+	at com.thoughtworks.xstream.io.ReaderWrapper.getValue(ReaderWrapper.java:48)
+	at com.thoughtworks.xstream.converters.SingleValueConverterWrapper.unmarshal(SingleValueConverterWrapper.java:49)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:72)
+	... 46 more
+Caused by: org.xmlpull.v1.XmlPullParserException: entity reference names can not start with character '&' (position: START_TAG seen ...<string>servlettest-jetty7e/label_exp=jetty-test &&... @12:67) 
+	at org.xmlpull.mxp1.MXParser.parseEntityRef(MXParser.java:2212)
+	at org.xmlpull.mxp1.MXParser.nextImpl(MXParser.java:1275)
+	at org.xmlpull.mxp1.MXParser.next(MXParser.java:1093)
+	at com.thoughtworks.xstream.io.xml.XppReader.pullNextEvent(XppReader.java:109)
+	... 52 more
+Build step 'Copy artifacts from another project' marked build as failure
+Archiving artifacts
+[htmlpublisher] Archiving HTML reports...
+[htmlpublisher] Archiving at PROJECT level /home/zeroturnaround/jenkins/workspace/servlettest-glassfish311/9e708532/log to /opt/jenkins/jobs/servlettest-glassfish311/configurations/axis-label_exp/glassfish-test%20&&%20ubuntu/axis-pack/exploded/axis-server/glassfish311/axis-suites/suiteQaSpringBean/htmlreports/Log
+ERROR: Specified HTML directory '/home/zeroturnaround/jenkins/workspace/servlettest-glassfish311/9e708532/log' does not exist.
+Recording test results
+Recording fingerprints
+ERROR: Failed to record fingerprints
+hudson.util.IOException2: Unable to read /opt/jenkins/fingerprints/ea/43/3cb05760977ff8a04743f411ebc2.xml
+	at hudson.XmlFile.read(XmlFile.java:147)
+	at hudson.model.Fingerprint.load(Fingerprint.java:910)
+	at hudson.model.Fingerprint.load(Fingerprint.java:898)
+	at hudson.model.FingerprintMap.load(FingerprintMap.java:94)
+	at hudson.model.FingerprintMap.load(FingerprintMap.java:45)
+	at hudson.util.KeyedDataStorage.get(KeyedDataStorage.java:154)
+	at hudson.model.FingerprintMap.get(FingerprintMap.java:79)
+	at hudson.model.FingerprintMap.get(FingerprintMap.java:45)
+	at hudson.util.KeyedDataStorage.getOrCreate(KeyedDataStorage.java:108)
+	at hudson.model.FingerprintMap.getOrCreate(FingerprintMap.java:65)
+	at hudson.tasks.Fingerprinter$1Record.addRecord(Fingerprinter.java:210)
+	at hudson.tasks.Fingerprinter.record(Fingerprinter.java:254)
+	at hudson.tasks.Fingerprinter.perform(Fingerprinter.java:121)
+	at hudson.tasks.BuildStepMonitor$1.perform(BuildStepMonitor.java:19)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.perform(AbstractBuild.java:802)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.performAllBuildSteps(AbstractBuild.java:774)
+	at hudson.model.Build$BuildExecution.post2(Build.java:183)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.post(AbstractBuild.java:724)
+	at hudson.model.Run.execute(Run.java:1600)
+	at hudson.matrix.MatrixRun.run(MatrixRun.java:146)
+	at hudson.model.ResourceController.execute(ResourceController.java:88)
+	at hudson.model.Executor.run(Executor.java:237)
+Caused by: com.thoughtworks.xstream.converters.ConversionException:  : entity reference names can not start with character '&' (position: START_TAG seen ...<string>servlettest-jetty7e/label_exp=jetty-test &&... @12:67)  :  : entity reference names can not start with character '&' (position: START_TAG seen ...<string>servlettest-jetty7e/label_exp=jetty-test &&... @12:67) 
+---- Debugging information ----
+message             :  : entity reference names can not start with character '&' (position: START_TAG seen ...<string>servlettest-jetty7e/label_exp=jetty-test &&... @12:67) 
+cause-exception     : com.thoughtworks.xstream.io.StreamException
+cause-message       :  : entity reference names can not start with character '&' (position: START_TAG seen ...<string>servlettest-jetty7e/label_exp=jetty-test &&... @12:67) 
+class               : java.lang.String
+required-type       : java.lang.String
+converter-type      : com.thoughtworks.xstream.converters.SingleValueConverterWrapper
+wrapped-converter   : com.thoughtworks.xstream.converters.basic.StringConverter
+path                : /fingerprint/usages/entry/string
+line number         : 12
+class[1]            : java.util.Hashtable
+converter-type[1]   : com.thoughtworks.xstream.converters.collections.MapConverter
+class[2]            : hudson.model.Fingerprint
+converter-type[2]   : hudson.util.RobustReflectionConverter
+version             : null
+-------------------------------
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:79)
+	at com.thoughtworks.xstream.core.AbstractReferenceUnmarshaller.convert(AbstractReferenceUnmarshaller.java:65)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:66)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:50)
+	at com.thoughtworks.xstream.converters.collections.AbstractCollectionConverter.readItem(AbstractCollectionConverter.java:71)
+	at com.thoughtworks.xstream.converters.collections.MapConverter.putCurrentEntryIntoMap(MapConverter.java:86)
+	at com.thoughtworks.xstream.converters.collections.MapConverter.populateMap(MapConverter.java:78)
+	at com.thoughtworks.xstream.converters.collections.MapConverter.populateMap(MapConverter.java:72)
+	at com.thoughtworks.xstream.converters.collections.MapConverter.unmarshal(MapConverter.java:67)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:72)
+	at com.thoughtworks.xstream.core.AbstractReferenceUnmarshaller.convert(AbstractReferenceUnmarshaller.java:65)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:66)
+	at hudson.util.RobustReflectionConverter.unmarshalField(RobustReflectionConverter.java:333)
+	at hudson.util.RobustReflectionConverter.doUnmarshal(RobustReflectionConverter.java:275)
+	at hudson.util.RobustReflectionConverter.unmarshal(RobustReflectionConverter.java:222)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:72)
+	at com.thoughtworks.xstream.core.AbstractReferenceUnmarshaller.convert(AbstractReferenceUnmarshaller.java:65)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:66)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:50)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.start(TreeUnmarshaller.java:134)
+	at com.thoughtworks.xstream.core.AbstractTreeMarshallingStrategy.unmarshal(AbstractTreeMarshallingStrategy.java:32)
+	at com.thoughtworks.xstream.XStream.unmarshal(XStream.java:1061)
+	at hudson.util.XStream2.unmarshal(XStream2.java:109)
+	at com.thoughtworks.xstream.XStream.unmarshal(XStream.java:1045)
+	at com.thoughtworks.xstream.XStream.fromXML(XStream.java:925)
+	at hudson.XmlFile.read(XmlFile.java:143)
+	... 21 more
+Caused by: com.thoughtworks.xstream.io.StreamException:  : entity reference names can not start with character '&' (position: START_TAG seen ...<string>servlettest-jetty7e/label_exp=jetty-test &&... @12:67) 
+	at com.thoughtworks.xstream.io.xml.XppReader.pullNextEvent(XppReader.java:124)
+	at com.thoughtworks.xstream.io.xml.AbstractPullReader.readRealEvent(AbstractPullReader.java:148)
+	at com.thoughtworks.xstream.io.xml.AbstractPullReader.readEvent(AbstractPullReader.java:135)
+	at com.thoughtworks.xstream.io.xml.AbstractPullReader.getValue(AbstractPullReader.java:180)
+	at com.thoughtworks.xstream.io.ReaderWrapper.getValue(ReaderWrapper.java:48)
+	at com.thoughtworks.xstream.converters.SingleValueConverterWrapper.unmarshal(SingleValueConverterWrapper.java:49)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:72)
+	... 46 more
+Caused by: org.xmlpull.v1.XmlPullParserException: entity reference names can not start with character '&' (position: START_TAG seen ...<string>servlettest-jetty7e/label_exp=jetty-test &&... @12:67) 
+	at org.xmlpull.mxp1.MXParser.parseEntityRef(MXParser.java:2212)
+	at org.xmlpull.mxp1.MXParser.nextImpl(MXParser.java:1275)
+	at org.xmlpull.mxp1.MXParser.next(MXParser.java:1093)
+	at com.thoughtworks.xstream.io.xml.XppReader.pullNextEvent(XppReader.java:109)
+	... 52 more
+
+Deleting project workspace... 

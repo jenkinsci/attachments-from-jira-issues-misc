@@ -1,0 +1,12 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Hello') {
+            steps {
+                writeFile file: 'DSL Vertragsverlängerung.Designer.vb', text: "Dies ist ein Test für deutsche Texte DSL Vertragsverlängerung.Designer.vb ${env.BUILD_NUMBER}"
+                archiveArtifacts artifacts: 'DSL Vertragsverlängerung.Designer.vb', followSymlinks: false
+            }
+        }
+    }
+}

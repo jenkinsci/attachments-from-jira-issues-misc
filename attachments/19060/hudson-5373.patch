@@ -1,0 +1,27 @@
+Index: src/main/java/hudson/plugins/selenium/ComputerListenerImpl.java
+===================================================================
+--- src/main/java/hudson/plugins/selenium/ComputerListenerImpl.java	(revision 26353)
++++ src/main/java/hudson/plugins/selenium/ComputerListenerImpl.java	(working copy)
+@@ -58,11 +58,18 @@
+             listener.getLogger().println("Unable to determine the host name of the master. Skipping Selenium execution.");
+             return;
+         }
+-        final String hostName = c.getHostName();
+-        if(hostName==null) {
+-            listener.getLogger().println("Unable to determine the host name. Skipping Selenium execution.");
+-            return;
++        String host = c.getHostName();
++        if(host==null) {
++            listener.getLogger().println("Unable to determine the host name. We start to guess now.");
++            host = System.getProperty("host.name");
++            if (host != null) {
++                listener.getLogger().println("Use host.name system.property value: " + host);
++            } else {
++                host = c.getName();
++                listener.getLogger().println("Use Hudson node name: " + host);
++            }
+         }
++        final String hostName = host;
+         final int masterPort = Hudson.getInstance().getPlugin(PluginImpl.class).getPort();
+         final int nrc = c.getNumExecutors();
+         final StringBuilder labelList = new StringBuilder();

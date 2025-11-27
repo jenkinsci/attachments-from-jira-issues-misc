@@ -1,0 +1,117 @@
+From 71afc5fe0c49da753081d97d9ab008cfaf8578fe Mon Sep 17 00:00:00 2001
+From: Marc Branchaud <marcnarc@xiplink.com>
+Date: Mon, 12 Apr 2010 16:16:35 -0400
+Subject: [PATCH] Add option to ignore submodules.
+
+---
+ src/main/java/hudson/plugins/git/GitSCM.java       |   17 ++++++++++++++---
+ .../hudson/plugins/git/GitSCM/config.jelly         |    5 +++++
+ src/main/webapp/ignoreSubmodules.html              |    3 +++
+ 3 files changed, 22 insertions(+), 3 deletions(-)
+ create mode 100644 src/main/webapp/ignoreSubmodules.html
+
+diff --git a/src/main/java/hudson/plugins/git/GitSCM.java b/src/main/java/hudson/plugins/git/GitSCM.java
+index 2e129c1..20e68ba 100644
+--- a/src/main/java/hudson/plugins/git/GitSCM.java
++++ b/src/main/java/hudson/plugins/git/GitSCM.java
+@@ -91,6 +91,7 @@ public class GitSCM extends SCM implements Serializable {
+     public static final String GERRIT = "Gerrit";
+ 
+     private GitWeb browser;
++    private boolean ignoreSubmodules;
+ 
+ 	private Collection<SubmoduleConfig> submoduleCfg;
+ 
+@@ -113,6 +114,7 @@ public class GitSCM extends SCM implements Serializable {
+             boolean doGenerateSubmoduleConfigurations,
+             Collection<SubmoduleConfig> submoduleCfg,
+             boolean clean,
++	    boolean ignoreSubmodules,
+             String choosingStrategy, GitWeb browser) {
+ 
+ 		// normalization
+@@ -128,6 +130,9 @@ public class GitSCM extends SCM implements Serializable {
+ 
+ 		this.clean = clean;
+         this.choosingStrategy = choosingStrategy;
++
++		this.ignoreSubmodules = ignoreSubmodules;
++
+ 		this.configVersion = 1L;
+ 	}
+ 
+@@ -191,6 +196,11 @@ public class GitSCM extends SCM implements Serializable {
+     public String getChoosingStrategy() {
+         return choosingStrategy;
+     }
++
++	public boolean getIgnoreSubmodules() {
++		return this.ignoreSubmodules;
++	}
++
+ 	public List<RemoteConfig> getRepositories() {
+ 		// Handle null-value to ensure backwards-compatibility, ie project configuration missing the <repositories/> XML element
+ 		if (remoteRepositories == null)
+@@ -499,7 +509,7 @@ public class GitSCM extends SCM implements Serializable {
+                        fetchFrom(git,localWorkspace,listener,remoteRepository);
+                     }
+ 
+-					if (git.hasGitModules()) {
++					if (git.hasGitModules() && !getIgnoreSubmodules()) {
+ 						git.submoduleInit();
+ 						git.submoduleUpdate();
+ 					}
+@@ -576,7 +586,7 @@ public class GitSCM extends SCM implements Serializable {
+ 							return new Object[]{null, buildChooser.getData()};
+ 						}
+ 
+-						if (git.hasGitModules()) {
++						if (git.hasGitModules() && !getIgnoreSubmodules()) {
+ 							git.submoduleUpdate();
+ 						}
+ 
+@@ -634,7 +644,7 @@ public class GitSCM extends SCM implements Serializable {
+ 					combinator.createSubmoduleCombinations();
+ 				}
+ 
+-				if (git.hasGitModules()) {
++				if (git.hasGitModules() && !getIgnoreSubmodules()) {
+ 					git.submoduleInit();
+ 					git.submoduleSync();
+ 
+@@ -868,6 +878,7 @@ public class GitSCM extends SCM implements Serializable {
+ 					submoduleCfg,
+ 					req.getParameter("git.clean") != null,
+                     req.getParameter("git.choosing_strategy"),
++					req.getParameter("git.ignoreSubmodules") != null,
+ 					gitWeb);
+ 		}
+ 
+diff --git a/src/main/resources/hudson/plugins/git/GitSCM/config.jelly b/src/main/resources/hudson/plugins/git/GitSCM/config.jelly
+index d1b49e6..a45f369 100644
+--- a/src/main/resources/hudson/plugins/git/GitSCM/config.jelly
++++ b/src/main/resources/hudson/plugins/git/GitSCM/config.jelly
+@@ -139,6 +139,11 @@
+             </j:choose>
+         </select>
+     </f:entry>
++
++    <f:entry title="Ignore submodules" help="/plugin/git/ignoreSubmodules.html">
++      <f:checkbox name="git.ignoreSubmodules" checked="${scm.ignoreSubmodules}" />
++    </f:entry>
++
+   </f:advanced>
+   
+   <t:listScmBrowsers name="git.browser" />
+diff --git a/src/main/webapp/ignoreSubmodules.html b/src/main/webapp/ignoreSubmodules.html
+new file mode 100644
+index 0000000..472a3e8
+--- /dev/null
++++ b/src/main/webapp/ignoreSubmodules.html
+@@ -0,0 +1,3 @@
++<div>
++  Do not automatically update any submodules in the main git repository.
++</div>
+-- 
+1.7.2.1
+

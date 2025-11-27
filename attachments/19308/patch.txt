@@ -1,0 +1,45 @@
+Index: src/main/java/hudson/plugins/clearcase/AbstractClearCaseScm.java
+===================================================================
+--- src/main/java/hudson/plugins/clearcase/AbstractClearCaseScm.java	(revision 29887)
++++ src/main/java/hudson/plugins/clearcase/AbstractClearCaseScm.java	(working copy)
+@@ -455,6 +455,14 @@
+             buildTime = new Date(lastBuildMilliSecs - (1000 * 60 * getMultiSitePollBuffer()));
+         }
+ 
++        // get last build where computer is online HUDSON-6184
++        lastBuild = getLastBuild(project.getBuilds());
++
++        // no computer is online
++        if(lastBuild == null){
++            return true;
++        }
++        
+         VariableResolver<String> variableResolver = new BuildVariableResolver((AbstractBuild<?, ?>) lastBuild,
+                 getBuildComputer((AbstractBuild<?, ?>) lastBuild));
+ 
+@@ -466,6 +474,25 @@
+     }
+ 
+     /**
++     * Get last build where computer is online
++     * 
++     * @param all builds of project
++     * 
++     * @return build where computer ran on is online
++     */
++    private Run<?,?> getLastBuild(List<AbstractBuild<?, ?>> builds){
++        
++        for (AbstractBuild<?, ?> build : builds) {
++            
++            if(build.getBuiltOn().toComputer().isOnline()){
++                return build;
++            }
++        }
++        
++        return null;
++    }
++    
++    /**
+      * Creates a Hudson clear tool launcher.
+      * 
+      * @param listener listener to write command output to

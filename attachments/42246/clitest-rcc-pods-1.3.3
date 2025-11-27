@@ -1,0 +1,379 @@
+Name:         clitest-rcc-30792-zmmcp-gnb1r
+Namespace:    default
+Node:         ip-10-0-1-139.us-west-2.compute.internal/10.0.1.139
+Start Time:   Mon, 23 Apr 2018 09:55:58 +0300
+Labels:       jenkins=slave
+              jenkins/clitest-rcc-30792=true
+Annotations:  <none>
+Status:       Running
+IP:           10.1.0.225
+Containers:
+  clitest:
+    Container ID:  docker://7735d13237cbae0d124b605a18edd53dc95b97a90388052fb26775e048ecd469
+    Image:         private-docker-repo/platform/clitest:R1.3.0-RC14
+    Image ID:      docker-pullable://private-docker-repo/platform/clitest@sha256:1f2070a63c4811ed12817069e0acf8870ffe52658aeff8251be631f1ac85bca5
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      cat
+    State:          Running
+      Started:      Mon, 23 Apr 2018 09:56:01 +0300
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      cpu:     2
+      memory:  1000Mi
+    Requests:
+      cpu:     500m
+      memory:  1000Mi
+    Environment:
+      JENKINS_SECRET:  <REDACTED>
+      JENKINS_TUNNEL:  jenkins-slavelistener.default.svc.cluster.local:50000
+      JENKINS_NAME:    clitest-rcc-30792-zmmcp-gnb1r
+      JENKINS_URL:     http://jenkins-ui.default.svc.cluster.local:8080/
+      HOME:            /home/jenkins
+    Mounts:
+      /home/jenkins from volume-0 (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-0j6fq (ro)
+  rcc:
+    Container ID:  docker://e657e233d2229870776041be8ce52732a0bf8f13646cf702422e7939a98ba049
+    Image:         private-docker-repo/platform/rcc:0.2
+    Image ID:      docker-pullable://private-docker-repo/platform/rcc@sha256:50c18e87e966072a9fa59f52a16d8fb9d1f16240826a9a7ecfbc41482696d126
+    Port:          30792/TCP
+    Host Port:     30792/TCP
+    Command:
+      /bin/bash
+    Args:
+      -c
+      /opt/rcc/start.sh `wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4` 30792 30304
+    State:          Running
+      Started:      Mon, 23 Apr 2018 09:56:02 +0300
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      cpu:     500m
+      memory:  2000Mi
+    Requests:
+      cpu:     500m
+      memory:  2000Mi
+    Environment:
+      JENKINS_SECRET:  <REDACTED>
+      JENKINS_TUNNEL:  jenkins-slavelistener.default.svc.cluster.local:50000
+      JENKINS_NAME:    clitest-rcc-30792-zmmcp-gnb1r
+      JENKINS_URL:     http://jenkins-ui.default.svc.cluster.local:8080/
+      HOME:            /home/jenkins
+    Mounts:
+      /home/jenkins from volume-0 (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-0j6fq (ro)
+  jnlp:
+    Container ID:  docker://9955dca7181bfb676edd7c9eb927a919ac0252940ed152fc17a3809bda513305
+    Image:         jenkins/jnlp-slave
+    Image ID:      docker-pullable://jenkins/jnlp-slave@sha256:571b051044478789175fc478d2febff93c6117833b53fb757831e800044a7bd6
+    Port:          <none>
+    Host Port:     <none>
+    Args:
+      <REDACTED>
+      clitest-rcc-30792-zmmcp-gnb1r
+    State:          Running
+      Started:      Mon, 23 Apr 2018 09:56:02 +0300
+    Ready:          True
+    Restart Count:  0
+    Environment:
+      JENKINS_SECRET:  <REDACTED>
+      JENKINS_TUNNEL:  jenkins-slavelistener.default.svc.cluster.local:50000
+      JENKINS_NAME:    clitest-rcc-30792-zmmcp-gnb1r
+      JENKINS_URL:     http://jenkins-ui.default.svc.cluster.local:8080/
+      HOME:            /home/jenkins
+    Mounts:
+      /home/jenkins from volume-0 (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-0j6fq (ro)
+Conditions:
+  Type           Status
+  Initialized    True
+  Ready          True
+  PodScheduled   True
+Volumes:
+  volume-0:
+    Type:    EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:
+  workspace-volume:
+    Type:    EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:
+  default-token-0j6fq:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-0j6fq
+    Optional:    false
+QoS Class:       Burstable
+Node-Selectors:  <none>
+Tolerations:     node.alpha.kubernetes.io/notReady:NoExecute for 300s
+                 node.alpha.kubernetes.io/unreachable:NoExecute for 300s
+Events:
+  Type    Reason                 Age   From                                               Message
+  ----    ------                 ----  ----                                               -------
+  Normal  Scheduled              3m    default-scheduler                                  Successfully assigned clitest-rcc-30792-zmmcp-gnb1r to ip-10-0-1-139.us-west-2.compute.internal
+  Normal  SuccessfulMountVolume  3m    kubelet, ip-10-0-1-139.us-west-2.compute.internal  MountVolume.SetUp succeeded for volume "volume-0"
+  Normal  SuccessfulMountVolume  3m    kubelet, ip-10-0-1-139.us-west-2.compute.internal  MountVolume.SetUp succeeded for volume "workspace-volume"
+  Normal  SuccessfulMountVolume  3m    kubelet, ip-10-0-1-139.us-west-2.compute.internal  MountVolume.SetUp succeeded for volume "default-token-0j6fq"
+  Normal  Started                3m    kubelet, ip-10-0-1-139.us-west-2.compute.internal  Started container
+  Normal  Created                3m    kubelet, ip-10-0-1-139.us-west-2.compute.internal  Created container
+  Normal  Pulled                 3m    kubelet, ip-10-0-1-139.us-west-2.compute.internal  Container image "private-docker-repo/platform/clitest:R1.3.0-RC14" already present on machine
+  Normal  Pulled                 3m    kubelet, ip-10-0-1-139.us-west-2.compute.internal  Container image "private-docker-repo/platform/rcc:0.2" already present on machine
+  Normal  Created                3m    kubelet, ip-10-0-1-139.us-west-2.compute.internal  Created container
+  Normal  Started                3m    kubelet, ip-10-0-1-139.us-west-2.compute.internal  Started container
+  Normal  Pulled                 3m    kubelet, ip-10-0-1-139.us-west-2.compute.internal  Container image "jenkins/jnlp-slave" already present on machine
+  Normal  Created                3m    kubelet, ip-10-0-1-139.us-west-2.compute.internal  Created container
+  Normal  Started                3m    kubelet, ip-10-0-1-139.us-west-2.compute.internal  Started container
+
+
+Name:         clitest-rcc-30819-zdxqn-x40cs
+Namespace:    default
+Node:         ip-10-0-5-128.us-west-2.compute.internal/10.0.5.128
+Start Time:   Mon, 23 Apr 2018 09:55:58 +0300
+Labels:       jenkins=slave
+              jenkins/clitest-rcc-30819=true
+Annotations:  <none>
+Status:       Running
+IP:           10.1.2.65
+Containers:
+  clitest:
+    Container ID:  docker://802263e92b537859ece8599f8bc3227806e585552fa20e473b89a1ffb779740a
+    Image:         private-docker-repo/platform/clitest:R1.3.0-RC14
+    Image ID:      docker-pullable://private-docker-repo/platform/clitest@sha256:1f2070a63c4811ed12817069e0acf8870ffe52658aeff8251be631f1ac85bca5
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      cat
+    State:          Running
+      Started:      Mon, 23 Apr 2018 09:56:00 +0300
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      cpu:     2
+      memory:  1000Mi
+    Requests:
+      cpu:     500m
+      memory:  1000Mi
+    Environment:
+      JENKINS_SECRET:  91f9730f4b24bec12d8c5730242dd644913cdae91f41298ca25a592f40f99187
+      JENKINS_TUNNEL:  jenkins-slavelistener.default.svc.cluster.local:50000
+      JENKINS_NAME:    clitest-rcc-30819-zdxqn-x40cs
+      JENKINS_URL:     http://jenkins-ui.default.svc.cluster.local:8080/
+      HOME:            /home/jenkins
+    Mounts:
+      /home/jenkins from volume-0 (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-0j6fq (ro)
+  rcc:
+    Container ID:  docker://50e189580c866550edbdf62df68b0b539815caf11ad2ea77a66f1728a0e17e32
+    Image:         private-docker-repo/platform/rcc:0.2
+    Image ID:      docker-pullable://private-docker-repo/platform/rcc@sha256:50c18e87e966072a9fa59f52a16d8fb9d1f16240826a9a7ecfbc41482696d126
+    Port:          30819/TCP
+    Host Port:     30819/TCP
+    Command:
+      /bin/bash
+    Args:
+      -c
+      /opt/rcc/start.sh `wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4` 30819 30304
+    State:          Running
+      Started:      Mon, 23 Apr 2018 09:56:00 +0300
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      cpu:     500m
+      memory:  2000Mi
+    Requests:
+      cpu:     500m
+      memory:  2000Mi
+    Environment:
+      JENKINS_SECRET:  91f9730f4b24bec12d8c5730242dd644913cdae91f41298ca25a592f40f99187
+      JENKINS_TUNNEL:  jenkins-slavelistener.default.svc.cluster.local:50000
+      JENKINS_NAME:    clitest-rcc-30819-zdxqn-x40cs
+      JENKINS_URL:     http://jenkins-ui.default.svc.cluster.local:8080/
+      HOME:            /home/jenkins
+    Mounts:
+      /home/jenkins from volume-0 (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-0j6fq (ro)
+  jnlp:
+    Container ID:  docker://53d434df3388fb3b57d7c0d78085c409aeafc1e447315407d97544de91d10865
+    Image:         jenkins/jnlp-slave
+    Image ID:      docker-pullable://jenkins/jnlp-slave@sha256:571b051044478789175fc478d2febff93c6117833b53fb757831e800044a7bd6
+    Port:          <none>
+    Host Port:     <none>
+    Args:
+      91f9730f4b24bec12d8c5730242dd644913cdae91f41298ca25a592f40f99187
+      clitest-rcc-30819-zdxqn-x40cs
+    State:          Running
+      Started:      Mon, 23 Apr 2018 09:56:01 +0300
+    Ready:          True
+    Restart Count:  0
+    Environment:
+      JENKINS_SECRET:  91f9730f4b24bec12d8c5730242dd644913cdae91f41298ca25a592f40f99187
+      JENKINS_TUNNEL:  jenkins-slavelistener.default.svc.cluster.local:50000
+      JENKINS_NAME:    clitest-rcc-30819-zdxqn-x40cs
+      JENKINS_URL:     http://jenkins-ui.default.svc.cluster.local:8080/
+      HOME:            /home/jenkins
+    Mounts:
+      /home/jenkins from volume-0 (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-0j6fq (ro)
+Conditions:
+  Type           Status
+  Initialized    True
+  Ready          True
+  PodScheduled   True
+Volumes:
+  volume-0:
+    Type:    EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:
+  workspace-volume:
+    Type:    EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:
+  default-token-0j6fq:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-0j6fq
+    Optional:    false
+QoS Class:       Burstable
+Node-Selectors:  <none>
+Tolerations:     node.alpha.kubernetes.io/notReady:NoExecute for 300s
+                 node.alpha.kubernetes.io/unreachable:NoExecute for 300s
+Events:
+  Type    Reason                 Age   From                                               Message
+  ----    ------                 ----  ----                                               -------
+  Normal  Scheduled              3m    default-scheduler                                  Successfully assigned clitest-rcc-30819-zdxqn-x40cs to ip-10-0-5-128.us-west-2.compute.internal
+  Normal  SuccessfulMountVolume  3m    kubelet, ip-10-0-5-128.us-west-2.compute.internal  MountVolume.SetUp succeeded for volume "volume-0"
+  Normal  SuccessfulMountVolume  3m    kubelet, ip-10-0-5-128.us-west-2.compute.internal  MountVolume.SetUp succeeded for volume "workspace-volume"
+  Normal  SuccessfulMountVolume  3m    kubelet, ip-10-0-5-128.us-west-2.compute.internal  MountVolume.SetUp succeeded for volume "default-token-0j6fq"
+  Normal  Started                3m    kubelet, ip-10-0-5-128.us-west-2.compute.internal  Started container
+  Normal  Created                3m    kubelet, ip-10-0-5-128.us-west-2.compute.internal  Created container
+  Normal  Pulled                 3m    kubelet, ip-10-0-5-128.us-west-2.compute.internal  Container image "private-docker-repo/platform/clitest:R1.3.0-RC14" already present on machine
+  Normal  Pulled                 3m    kubelet, ip-10-0-5-128.us-west-2.compute.internal  Container image "private-docker-repo/platform/rcc:0.2" already present on machine
+  Normal  Created                3m    kubelet, ip-10-0-5-128.us-west-2.compute.internal  Created container
+  Normal  Started                3m    kubelet, ip-10-0-5-128.us-west-2.compute.internal  Started container
+  Normal  Pulled                 3m    kubelet, ip-10-0-5-128.us-west-2.compute.internal  Container image "jenkins/jnlp-slave" already present on machine
+  Normal  Created                3m    kubelet, ip-10-0-5-128.us-west-2.compute.internal  Created container
+  Normal  Started                3m    kubelet, ip-10-0-5-128.us-west-2.compute.internal  Started container
+
+
+Name:         clitest-rcc-31273-k12l9-3kfbw
+Namespace:    default
+Node:         ip-10-0-9-239.us-west-2.compute.internal/10.0.9.239
+Start Time:   Mon, 23 Apr 2018 09:55:58 +0300
+Labels:       jenkins=slave
+              jenkins/clitest-rcc-31273=true
+Annotations:  <none>
+Status:       Running
+IP:           10.1.5.190
+Containers:
+  clitest:
+    Container ID:  docker://50a86c9de75ae52c127d2fc7789d8c70a1a88a3e493c457c786ad3eda7617878
+    Image:         private-docker-repo/platform/clitest:R1.3.0-RC14
+    Image ID:      docker-pullable://private-docker-repo/platform/clitest@sha256:1f2070a63c4811ed12817069e0acf8870ffe52658aeff8251be631f1ac85bca5
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      cat
+    State:          Running
+      Started:      Mon, 23 Apr 2018 09:56:00 +0300
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      cpu:     2
+      memory:  1000Mi
+    Requests:
+      cpu:     500m
+      memory:  1000Mi
+    Environment:
+      JENKINS_SECRET:  5050f138b40e66c57edb3e0181910730262e4b945e14a9b0a45fa5dc6e7ce804
+      JENKINS_TUNNEL:  jenkins-slavelistener.default.svc.cluster.local:50000
+      JENKINS_NAME:    clitest-rcc-31273-k12l9-3kfbw
+      JENKINS_URL:     http://jenkins-ui.default.svc.cluster.local:8080/
+      HOME:            /home/jenkins
+    Mounts:
+      /home/jenkins from volume-0 (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-0j6fq (ro)
+  rcc:
+    Container ID:  docker://106147f774a3592052e1ee2e0ec62732b663d220c6d1f70fdbadf90828eed923
+    Image:         private-docker-repo/platform/rcc:0.2
+    Image ID:      docker-pullable://private-docker-repo/platform/rcc@sha256:50c18e87e966072a9fa59f52a16d8fb9d1f16240826a9a7ecfbc41482696d126
+    Port:          31273/TCP
+    Host Port:     31273/TCP
+    Command:
+      /bin/bash
+    Args:
+      -c
+      /opt/rcc/start.sh `wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4` 31273 30304
+    State:          Running
+      Started:      Mon, 23 Apr 2018 09:56:00 +0300
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      cpu:     500m
+      memory:  2000Mi
+    Requests:
+      cpu:     500m
+      memory:  2000Mi
+    Environment:
+      JENKINS_SECRET:  5050f138b40e66c57edb3e0181910730262e4b945e14a9b0a45fa5dc6e7ce804
+      JENKINS_TUNNEL:  jenkins-slavelistener.default.svc.cluster.local:50000
+      JENKINS_NAME:    clitest-rcc-31273-k12l9-3kfbw
+      JENKINS_URL:     http://jenkins-ui.default.svc.cluster.local:8080/
+      HOME:            /home/jenkins
+    Mounts:
+      /home/jenkins from volume-0 (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-0j6fq (ro)
+  jnlp:
+    Container ID:  docker://7e03dd055073311a69e648849d21d875baf25b5803766c1d4354637499ab9d48
+    Image:         jenkins/jnlp-slave
+    Image ID:      docker-pullable://jenkins/jnlp-slave@sha256:571b051044478789175fc478d2febff93c6117833b53fb757831e800044a7bd6
+    Port:          <none>
+    Host Port:     <none>
+    Args:
+      5050f138b40e66c57edb3e0181910730262e4b945e14a9b0a45fa5dc6e7ce804
+      clitest-rcc-31273-k12l9-3kfbw
+    State:          Running
+      Started:      Mon, 23 Apr 2018 09:56:01 +0300
+    Ready:          True
+    Restart Count:  0
+    Environment:
+      JENKINS_SECRET:  5050f138b40e66c57edb3e0181910730262e4b945e14a9b0a45fa5dc6e7ce804
+      JENKINS_TUNNEL:  jenkins-slavelistener.default.svc.cluster.local:50000
+      JENKINS_NAME:    clitest-rcc-31273-k12l9-3kfbw
+      JENKINS_URL:     http://jenkins-ui.default.svc.cluster.local:8080/
+      HOME:            /home/jenkins
+    Mounts:
+      /home/jenkins from volume-0 (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-0j6fq (ro)
+Conditions:
+  Type           Status
+  Initialized    True
+  Ready          True
+  PodScheduled   True
+Volumes:
+  volume-0:
+    Type:    EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:
+  workspace-volume:
+    Type:    EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:
+  default-token-0j6fq:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-0j6fq
+    Optional:    false
+QoS Class:       Burstable
+Node-Selectors:  <none>
+Tolerations:     node.alpha.kubernetes.io/notReady:NoExecute for 300s
+                 node.alpha.kubernetes.io/unreachable:NoExecute for 300s
+Events:
+  Type    Reason                 Age   From                                               Message
+  ----    ------                 ----  ----                                               -------
+  Normal  Scheduled              3m    default-scheduler                                  Successfully assigned clitest-rcc-31273-k12l9-3kfbw to ip-10-0-9-239.us-west-2.compute.internal
+  Normal  SuccessfulMountVolume  3m    kubelet, ip-10-0-9-239.us-west-2.compute.internal  MountVolume.SetUp succeeded for volume "volume-0"
+  Normal  SuccessfulMountVolume  3m    kubelet, ip-10-0-9-239.us-west-2.compute.internal  MountVolume.SetUp succeeded for volume "workspace-volume"
+  Normal  SuccessfulMountVolume  3m    kubelet, ip-10-0-9-239.us-west-2.compute.internal  MountVolume.SetUp succeeded for volume "default-token-0j6fq"
+  Normal  Started                3m    kubelet, ip-10-0-9-239.us-west-2.compute.internal  Started container
+  Normal  Created                3m    kubelet, ip-10-0-9-239.us-west-2.compute.internal  Created container
+  Normal  Pulled                 3m    kubelet, ip-10-0-9-239.us-west-2.compute.internal  Container image "private-docker-repo/platform/clitest:R1.3.0-RC14" already present on machine
+  Normal  Pulled                 3m    kubelet, ip-10-0-9-239.us-west-2.compute.internal  Container image "private-docker-repo/platform/rcc:0.2" already present on machine
+  Normal  Created                3m    kubelet, ip-10-0-9-239.us-west-2.compute.internal  Created container
+  Normal  Started                3m    kubelet, ip-10-0-9-239.us-west-2.compute.internal  Started container
+  Normal  Pulled                 3m    kubelet, ip-10-0-9-239.us-west-2.compute.internal  Container image "jenkins/jnlp-slave" already present on machine
+  Normal  Created                3m    kubelet, ip-10-0-9-239.us-west-2.compute.internal  Created container
+  Normal  Started                3m    kubelet, ip-10-0-9-239.us-west-2.compute.internal  Started container

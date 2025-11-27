@@ -1,0 +1,43 @@
+pipeline {
+	agent { label 'my-agent-name' }
+	triggers { pollSCM('H/5 * * * *') }
+
+	options {
+		gitLabConnection('gitlab')
+		gitlabBuilds(builds: ['Checkout', 'Installation', 'Build', 'Cleanup'])
+		timestamps()
+		checkoutToSubdirectory('MyApplication')
+	}
+
+	stages {
+		stage('Checkout') {
+			steps {
+			gitlabCommitStatus("Checkout") {
+				checkout scm
+			}}
+		}
+		stage('Installation') {
+			steps {
+			gitlabCommitStatus("Installation") {
+				sh '''
+					CURDIR=$PWD
+					ls -l ${CURDIR}
+				'''
+			}}
+		}
+		stage("Build") {
+			steps {
+			gitlabCommitStatus("Build") {
+				sh '''
+				'''
+			}}
+		}
+		stage("Cleanup") {
+			steps {
+			gitlabCommitStatus("Cleanup") {
+				sh '''
+				'''
+			}}
+		}
+	}
+}

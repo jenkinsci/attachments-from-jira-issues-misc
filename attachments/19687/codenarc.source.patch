@@ -1,0 +1,22 @@
+Index: src/main/java/hudson/plugins/violations/types/codenarc/CodenarcParser.java
+===================================================================
+--- src/main/java/hudson/plugins/violations/types/codenarc/CodenarcParser.java	(revision 34022)
++++ src/main/java/hudson/plugins/violations/types/codenarc/CodenarcParser.java	(working copy)
+@@ -103,7 +103,7 @@
+         Violation ret = new Violation();
+         ret.setType("codenarc");
+         ret.setLine(getString("lineNumber"));
+-        ret.setMessage(getString("ruleName"));
++        ret.setSource(getString("ruleName"));
+         setSeverity(ret, getString("priority"));
+         getParser().next();
+ 
+@@ -113,7 +113,7 @@
+         } catch (IOException ioe) {
+             expectNextTag("Message");
+         }
+-        ret.setSource(getNextText("Missing SourceLine or Message"));
++        ret.setMessage(getNextText("Missing SourceLine or Message"));
+ 
+         //TODO: the following depends upon a patch to CodeNarc 0.9 - so should be exception tolerant
+         // get the contents of the embedded Description element

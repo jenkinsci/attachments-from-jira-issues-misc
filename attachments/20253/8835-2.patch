@@ -1,0 +1,51 @@
+Index: SubversionSCM.java
+===================================================================
+--- SubversionSCM.java	(revision 38917)
++++ SubversionSCM.java	(working copy)
+@@ -497,14 +497,14 @@
+         try {
+             Map<String,Long> revisions = parseRevisionFile(build);
+             if(svnLocations.length==1) {
+-                Long rev = revisions.get(svnLocations[0].remote);
++                Long rev = revisions.get(getPlainRemoteUrl(svnLocations[0].remote));
+                 if(rev!=null) {
+                     env.put("SVN_REVISION",rev.toString());
+                     env.put("SVN_URL",svnLocations[0].getURL());
+                 }
+             } else if(svnLocations.length>1) {
+                 for(int i=0;i<svnLocations.length;i++) {
+-                    Long rev = revisions.get(svnLocations[i].remote);
++                    Long rev = revisions.get(getPlainRemoteUrl(svnLocations[i].remote));
+                     if(rev!=null) {
+                         env.put("SVN_REVISION_"+(i+1),rev.toString());
+                         env.put("SVN_URL_"+(i+1),svnLocations[i].getURL());
+@@ -518,6 +518,29 @@
+     }
+ 
+     /**
++    * Transforms an svn url into a plain url.
++    * We look for an @ char in the case of http://svnserver/repos@HEAD or
++    * http://svnserver@rev and remove @rev/@HEAD as only the first part of the URL is used in
++    * the map for pulling out the revisions.
++    * I.e the map will only contain http://svnserver/repos which is what we mean by "plain" url.
++    */
++    private String getPlainRemoteUrl(String aRemoteUrl)
++    {
++        String tmpRemote = aRemoteUrl;
++        if(tmpRemote!=null)
++        {
++            // Look for the char
++            int atPos = tmpRemote.lastIndexOf('@');
++            if(atPos!=-1)
++            {
++                // Strip everything after it
++                tmpRemote = tmpRemote.substring(0, atPos);
++            }
++        }
++        return tmpRemote;
++    }
++
++    /**
+      * Called after checkout/update has finished to compute the changelog.
+      */
+     private boolean calcChangeLog(AbstractBuild<?,?> build, File changelogFile, BuildListener listener, List<External> externals) throws IOException, InterruptedException {

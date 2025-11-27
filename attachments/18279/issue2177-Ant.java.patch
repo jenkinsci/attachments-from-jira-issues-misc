@@ -1,0 +1,29 @@
+Index: src/main/java/hudson/tasks/Ant.java
+===================================================================
+--- src/main/java/hudson/tasks/Ant.java	(revision 11250)
++++ src/main/java/hudson/tasks/Ant.java	(working copy)
+@@ -121,15 +121,17 @@
+         String normalizedTarget = targets.replaceAll("[\t\r\n]+"," ");
+ 
+         AntInstallation ai = getAnt();
+-        if (!ai.getExists()) {
+-        	listener.fatalError(Messages.Ant_ExecutableNotFound(ai.name));
+-        	return false;
+-        }
+-        if(ai==null)
++        if(ai==null) {
++            // Default (ant in PATH)
+             args.add(execName);
+-        else
++        } else {
++            // Specific installation
++            if (!ai.getExists()) {
++            	listener.fatalError(Messages.Ant_ExecutableNotFound(ai.name));
++            	return false;
++            }
+             args.add(ai.getExecutable(launcher));
+-
++        }
+ 
+         FilePath buildFilePath = buildFilePath(proj.getModuleRoot());
+ 

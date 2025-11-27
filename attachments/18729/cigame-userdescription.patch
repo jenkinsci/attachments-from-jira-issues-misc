@@ -1,0 +1,65 @@
+Index: src/main/java/hudson/plugins/cigame/LeaderBoardAction.java
+===================================================================
+--- src/main/java/hudson/plugins/cigame/LeaderBoardAction.java	(revision 20290)
++++ src/main/java/hudson/plugins/cigame/LeaderBoardAction.java	(working copy)
+@@ -52,7 +52,7 @@
+         for (User user : User.getAll()) {
+             UserScoreProperty property = user.getProperty(UserScoreProperty.class);
+             if ((property != null) && property.isParticipatingInGame()) {
+-                list.add(new UserScore(property.getUser(), property.getScore()));
++                list.add(new UserScore(property.getUser(), property.getScore(), user.getDescription()));
+             }
+         }
+ 
+@@ -86,11 +86,13 @@
+     public class UserScore {
+         private User user;
+         private double score;
++        private String description;
+ 
+-        public UserScore(User user, double score) {
++        public UserScore(User user, double score, String description) {
+             super();
+             this.user = user;
+             this.score = score;
++            this.description = description;
+         }
+ 
+         @Exported
+@@ -102,6 +104,11 @@
+         public double getScore() {
+             return score;
+         }
++
++        @Exported
++        public String getDescription() {
++            return description;
++        }
+     }
+ 
+     public ACL getACL() {
+Index: src/main/resources/hudson/plugins/cigame/LeaderBoardAction/index.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/cigame/LeaderBoardAction/index.jelly	(revision 20290)
++++ src/main/resources/hudson/plugins/cigame/LeaderBoardAction/index.jelly	(working copy)
+@@ -7,11 +7,13 @@
+         	<table class="pane sortable" style="width:50%">	
+         		<tr>
+         			<td class="pane-header" align="left,center">Participant</td>
++        			<td class="pane-header" align="left,center">Description</td>
+         			<td class="pane-header" initialSortDir="up" align="left" width="10%">Score</td>
+         		</tr>
+           		<j:forEach var="userscore" items="${it.userScores}">
+     	      		<tr>
+         				<td><a href="${rootURL}/${userscore.user.url}">${userscore.user}</a></td>
++					<td>${userscore.description}</td>
+         				<td>${userscore.score}</td>
+         			</tr> 
+           		</j:forEach>
+@@ -19,4 +21,4 @@
+       	</div>
+ 	</l:main-panel>
+   	</l:layout>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>

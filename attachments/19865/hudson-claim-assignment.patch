@@ -1,0 +1,398 @@
+Index: src/main/java/hudson/plugins/claim/AbstractClaimBuildAction.java
+===================================================================
+--- src/main/java/hudson/plugins/claim/AbstractClaimBuildAction.java	(revision 33907)
++++ src/main/java/hudson/plugins/claim/AbstractClaimBuildAction.java	(working copy)
+@@ -5,10 +5,18 @@
+ import hudson.model.ProminentProjectAction;
+ import hudson.model.Saveable;
+ import hudson.model.User;
++import hudson.tasks.Mailer;
+ import hudson.tasks.junit.TestAction;
+ 
+ import java.io.IOException;
++import java.util.Date;
++import java.util.logging.Level;
++import java.util.logging.Logger;
+ 
++import javax.mail.Message;
++import javax.mail.Transport;
++import javax.mail.internet.InternetAddress;
++import javax.mail.internet.MimeMessage;
+ import javax.servlet.ServletException;
+ 
+ import org.acegisecurity.Authentication;
+@@ -23,13 +31,14 @@
+ 		ProminentProjectAction {
+ 
+ 	private static final long serialVersionUID = 1L;
++	private static final Logger LOGGER = Logger.getLogger(AbstractClaimBuildAction.class.getName());
+ 
+ 	private boolean claimed;
+ 	private String claimedBy;
+ 	private boolean transientClaim;
+-	
++
+ 	protected T owner;
+-	
++
+ 	AbstractClaimBuildAction(T owner) {
+ 		this.owner = owner;
+ 	}
+@@ -46,16 +55,57 @@
+ 
+ 	public void doClaim(StaplerRequest req, StaplerResponse resp)
+ 			throws ServletException, IOException {
+-		Authentication authentication = Hudson.getAuthentication();
+-		String name = authentication.getName();
++    Authentication authentication = Hudson.getAuthentication();
++    String currentUsername = authentication.getName();
++		String name = (String) req.getSubmittedForm().get("who");
++    if (StringUtils.isEmpty(name)) {
++      name = currentUsername;
++    } else {
++      // Validate the specified username.
++      User assignedToUser = User.get(name, false);
++      if (assignedToUser == null) {
++        LOGGER.log(Level.WARNING, "Invalid username specified for assignment: "+name);
++        resp.forwardToPreviousPage(req);
++        return;
++      }
++    }
+ 		String reason = (String) req.getSubmittedForm().get("reason");
+ 		boolean sticky = req.getSubmittedForm().getBoolean("sticky");
+ 		if (StringUtils.isEmpty(reason)) reason = null;
+ 		claim(name, reason, sticky);
+ 		owner.save();
++    if (!currentUsername.equals(name)) {
++      sendAssignmentEmail(name, currentUsername, reason);
++    }
+ 		resp.forwardToPreviousPage(req);
+ 	}
+ 
++	private void sendAssignmentEmail(String assignee, String assignedBy, String reason) {
++	  try {
++	    User assigneeUser = User.get(assignee, false);
++	    String assigneeEmail = assigneeUser.getProperty(Mailer.UserProperty.class).getAddress();
++	    String claimedItemDisplayName = getClaimedItemDisplayName();
++	    String claimedItemUrl = Mailer.descriptor().getUrl()+getClaimedItemUrl();
++
++	    MimeMessage msg = new MimeMessage(Mailer.descriptor().createSession());
++	    msg.setFrom(new InternetAddress(Mailer.descriptor().getAdminAddress()));
++	    msg.setRecipient(Message.RecipientType.TO, new InternetAddress(assigneeEmail));
++	    msg.setSentDate(new Date());
++	    msg.setSubject(getNoun()+" assigned to you: "+claimedItemDisplayName);
++
++	    String msgContent = assignedBy + " assigned you this "+getNoun()+": "+claimedItemDisplayName;
++	    msgContent += "\n\nReason: "+reason;
++	    msgContent += "\n\n"+claimedItemUrl;
++	    msg.setContent(msgContent, "text/plain");
++
++	    Transport.send(msg);
++	  } catch (Exception e) {
++	    LOGGER.log(Level.WARNING, "Could not send assignment email to "+assignee, e);
++	  }
++	}
++	protected abstract String getClaimedItemDisplayName();
++	protected abstract String getClaimedItemUrl();
++
+ 	public void doUnclaim(StaplerRequest req, StaplerResponse resp)
+ 			throws ServletException, IOException {
+ 		unclaim();
+@@ -76,7 +126,7 @@
+ 			return claimedBy;
+ 		}
+ 	}
+-	
++
+ 	public void setClaimedBy(String claimedBy) {
+ 		this.claimedBy = claimedBy;
+ 	}
+@@ -92,7 +142,7 @@
+ 		this.reason = reason;
+ 		this.transientClaim = !sticky;
+ 	}
+-	
++
+ 	/**
+ 	 * Claim a new Run with the same settings as this one.
+ 	 */
+@@ -144,15 +194,15 @@
+ 	public void setTransient(boolean transientClaim) {
+ 		this.transientClaim = transientClaim;
+ 	}
+-	
++
+ 	public boolean isSticky() {
+ 		return !transientClaim;
+ 	}
+-	
++
+ 	public void setSticky(boolean sticky) {
+ 		this.transientClaim = !sticky;
+ 	}
+-	
++
+ 	public abstract String getNoun();
+-	
++
+ }
+Index: src/main/java/hudson/plugins/claim/ClaimBuildAction.java
+===================================================================
+--- src/main/java/hudson/plugins/claim/ClaimBuildAction.java	(revision 33907)
++++ src/main/java/hudson/plugins/claim/ClaimBuildAction.java	(working copy)
+@@ -1,13 +1,13 @@
+ package hudson.plugins.claim;
+ 
++import hudson.model.Run;
++
+ import java.io.ObjectStreamException;
+ 
+-import hudson.model.Run;
+-
+ public class ClaimBuildAction extends AbstractClaimBuildAction<Run> {
+ 
+ 	private static final long serialVersionUID = 1L;
+-	
++
+ 	private transient Run run;
+ 
+ 	public ClaimBuildAction(Run run) {
+@@ -17,7 +17,7 @@
+ 	public String getDisplayName() {
+ 		return "Claim Build";
+ 	}
+-	
++
+ 	@Override
+ 	public String getNoun() {
+ 		return "build";
+@@ -30,4 +30,12 @@
+ 		return this;
+ 	}
+ 
++	@Override
++	protected String getClaimedItemDisplayName() {
++	  return owner.getFullDisplayName();
++	}
++	@Override
++	protected String getClaimedItemUrl() {
++	  return owner.getUrl();
++	}
+ }
+Index: src/main/java/hudson/plugins/claim/ClaimTestAction.java
+===================================================================
+--- src/main/java/hudson/plugins/claim/ClaimTestAction.java	(revision 33907)
++++ src/main/java/hudson/plugins/claim/ClaimTestAction.java	(working copy)
+@@ -1,7 +1,6 @@
+ package hudson.plugins.claim;
+ 
+ import hudson.plugins.claim.ClaimTestDataPublisher.Data;
+-import hudson.tasks.junit.TestAction;
+ 
+ public class ClaimTestAction extends AbstractClaimBuildAction<Data> {
+ 
+@@ -15,16 +14,25 @@
+ 	public String getDisplayName() {
+ 		return "Claim Test";
+ 	}
+-	
++
+ 	@Override
+ 	public void claim(String claimedBy, String reason, boolean sticky) {
+ 		super.claim(claimedBy, reason, sticky);
+ 		owner.addClaim(testObjectId, this);
+ 	}
+-	
++
+ 	@Override
+ 	public String getNoun() {
+ 		return "test";
+ 	}
+ 
++	@Override
++	protected String getClaimedItemDisplayName() {
++	  String buildDisplayName = owner.getBuild().getFullDisplayName();
++    return testObjectId+" ("+buildDisplayName+")";
++  }
++	@Override
++	protected String getClaimedItemUrl() {
++	  return owner.getBuild().getUrl();
++	}
+ }
+Index: src/main/java/hudson/plugins/claim/ClaimTestDataPublisher.java
+===================================================================
+--- src/main/java/hudson/plugins/claim/ClaimTestDataPublisher.java	(revision 33907)
++++ src/main/java/hudson/plugins/claim/ClaimTestDataPublisher.java	(working copy)
+@@ -22,14 +22,14 @@
+ import org.kohsuke.stapler.DataBoundConstructor;
+ 
+ public class ClaimTestDataPublisher extends TestDataPublisher {
+-	
++
+ 	@DataBoundConstructor
+ 	public ClaimTestDataPublisher() {}
+-	
++
+ 	@Override
+ 	public Data getTestData(AbstractBuild<?, ?> build, Launcher launcher,
+ 			BuildListener listener, TestResult testResult) {
+-		
++
+ 		Data data = new Data(build);
+ 
+ 		for (CaseResult result: testResult.getFailedTests()) {
+@@ -43,11 +43,11 @@
+ 				}
+ 			}
+ 		}
+-		
++
+ 		return data;
+-		
++
+ 	}
+-	
++
+ 	public static class Data extends TestResultAction.Data implements Saveable {
+ 
+ 		private Map<String,ClaimTestAction> claims = new HashMap<String,ClaimTestAction>();
+@@ -68,21 +68,25 @@
+ 			if (result == null && id.startsWith("junit")) {
+ 				result = claims.get(id.substring(5));
+ 			}
+-			
++
+ 			if (result != null) {
+ 				return Collections.<TestAction>singletonList(result);
+ 			}
+-			
++
+ 			if (testObject instanceof CaseResult) {
+ 				CaseResult cr = (CaseResult) testObject;
+ 				if (!cr.isPassed() && !cr.isSkipped()) {
+ 					return Collections.<TestAction>singletonList(new ClaimTestAction(this, id));
+ 				}
+ 			}
+-			
++
+ 			return Collections.emptyList();
+ 		}
+ 
++		public AbstractBuild<?,?> getBuild() {
++		  return build;
++		}
++
+ 		public void save() throws IOException {
+ 			build.save();
+ 		}
+@@ -91,12 +95,12 @@
+ 				ClaimTestAction claim) {
+ 			claims.put(testObjectId, claim);
+ 		}
+-		
++
+ 	}
+-	
++
+ 	@Extension
+ 	public static class DescriptorImpl extends Descriptor<TestDataPublisher> {
+-		
++
+ 		@Override
+ 		public String getDisplayName() {
+ 			return "Allow claiming of failed tests";
+Index: src/main/resources/hudson/plugins/claim/AbstractClaimBuildAction/summary.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/claim/AbstractClaimBuildAction/summary.jelly	(revision 33907)
++++ src/main/resources/hudson/plugins/claim/AbstractClaimBuildAction/summary.jelly	(working copy)
+@@ -4,15 +4,27 @@
+     <script type="text/javascript">
+         function ShowPopup(hoveritem)
+         {
++            HideAssignPopup();
+             hp = document.getElementById("claimHoverPopup");
+             hp.style.display = "block";
+         }
+-
+-        function HidePopup()
++        function HideClaimPopup()
+         {
+             hp = document.getElementById("claimHoverPopup");
+             hp.style.display = "none";
+         }
++
++        function ShowAssignPopup(hoveritem)
++        {
++            HideClaimPopup();
++            hp = document.getElementById("assignHoverPopup");
++            hp.style.display = "block";
++        }
++        function HideAssignPopup()
++        {
++            hp = document.getElementById("assignHoverPopup");
++            hp.style.display = "none";
++        }
+     </script>
+ 
+     <t:summary icon="orange-square.gif">
+@@ -21,7 +33,8 @@
+                 <p>
+                     You claimed this ${it.noun}.
+                     <j:if test="${it.canRelease()}">
+-                        <a id="dropClaim" href="claim/unclaim">Drop the claim.</a>
++                        <a id="dropClaim" href="claim/unclaim">Drop the claim</a> or
++                        <a id="reassign" href="#" onClick="ShowAssignPopup(this); return false;">reassign</a>.
+                     </j:if>
+                 </p>
+                 <j:if test="${it.hasReason()}">
+@@ -32,7 +45,8 @@
+                 <p>
+                     This ${it.noun} was claimed by ${it.claimedByName}.
+                     <j:if test="${it.canClaim()}">
+-                        <a id="claimForYourself" href="#" onClick="ShowPopup(this); return false;">Claim for yourself.</a>
++                        <a id="claimForYourself" href="#" onClick="ShowPopup(this); return false;">Claim for yourself</a> or
++                        <a id="reassign" href="#" onClick="ShowAssignPopup(this); return false;">reassign</a>.
+                     </j:if>
+                 </p>
+                 <j:if test="${it.hasReason()}">
+@@ -42,7 +56,8 @@
+             <j:otherwise>
+                 This ${it.noun} was not claimed.
+                 <j:if test="${it.canClaim()}">
+-                    <a id ="claim" href="#" onClick="ShowPopup(this); return false;">Claim</a>
++                    <a id ="claim" href="#" onClick="ShowPopup(this); return false;">Claim</a> or
++                    <a id ="assign" href="#" onClick="ShowAssignPopup(this); return false;">assign</a>
+                     it.
+                 </j:if>
+             </j:otherwise>
+@@ -58,10 +73,29 @@
+                 <f:block>
+                     <div align="right">
+                         <f:submit value="${%Claim}"/>
+-                        <input type="button" onClick="HidePopup();" value="Cancel" class="submit-button"/>
++                        <input type="button" onClick="HideClaimPopup();" value="Cancel" class="submit-button"/>
+                     </div>
+                 </f:block>
+             </f:form>
+         </div>
++        <div id="assignHoverPopup" style="display:none; width:500px; z-index:1000; border:1px solid #bbb;">
++            <f:form method="post" action="claim/claim" name="claim">
++                <f:entry title="${%Who}">
++                    <f:textbox name="who" value="${it.who}"/>
++                </f:entry>
++                <f:entry title="${%Reason}" help="/plugin/claim/help-reason.html">
++                    <f:textarea name="reason" value="${it.reason}"/>
++                </f:entry>
++                <f:entry title="${%Sticky}" help="/plugin/claim/help-sticky.html"> 
++                    <f:checkbox name="sticky" checked="${it.sticky}"/>
++                </f:entry>
++                <f:block>
++                    <div align="right">
++                        <f:submit value="${%Assign}"/>
++                        <input type="button" onClick="HideAssignPopup();" value="Cancel" class="submit-button"/>
++                    </div>
++                </f:block>
++            </f:form>
++        </div>
+     </t:summary>
+ </j:jelly>

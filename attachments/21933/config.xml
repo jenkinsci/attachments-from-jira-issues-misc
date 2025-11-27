@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson.plugins.promoted__builds.PromotionProcess>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector"/>
+  <concurrentBuild>false</concurrentBuild>
+  <conditions>
+    <hudson.plugins.promoted__builds.conditions.ManualCondition>
+      <users>john. doe</users>
+      <parameterDefinitions/>
+    </hudson.plugins.promoted__builds.conditions.ManualCondition>
+    <hudson.plugins.promoted__builds.conditions.DownstreamPassCondition>
+      <jobs>Anonymized_Test</jobs>
+      <evenIfUnstable>false</evenIfUnstable>
+    </hudson.plugins.promoted__builds.conditions.DownstreamPassCondition>
+  </conditions>
+  <icon>star-gold</icon>
+  <buildSteps>
+    <EnvInjectBuilder>
+      <info>
+        <propertiesFilePath>StageCraft.properties</propertiesFilePath>
+        <propertiesContent>ReleaseDir=${ReleaseRoot}\${PROJECT_NAME}\${PROJECT_NAME}_${PROJECT_SHORT_VERSION}
+ReleaseDirTest=${env[&apos;PROJECT_SHORT_VERSION&apos;]}
+</propertiesContent>
+      </info>
+    </EnvInjectBuilder>
+    <hudson.tasks.BatchFile>
+      <command>SET</command>
+    </hudson.tasks.BatchFile>
+    <hudson.plugins.svn__tag.SvnTagPublisher>
+      <tagBaseURL>http://anonymizded.com/repos/main/foo/bar/tags/anonymous</tagBaseURL>
+      <tagComment>Tagged by Jenkins on promotion of build ${env[&apos;JOB_NAME&apos;]}-${env[&apos;BUILD_NUMBER&apos;]}.</tagComment>
+      <tagDeleteComment>Old tag deleted by Jenkins upon re-promotion of job.</tagDeleteComment>
+    </hudson.plugins.svn__tag.SvnTagPublisher>
+    <hudson.plugins.promoted__builds.KeepBuildForeverAction/>
+    <hudson.tasks.BatchFile>
+      <command>rd /s /q &quot;%ReleaseDir%&quot;</command>
+    </hudson.tasks.BatchFile>
+    <hudson.plugins.copyartifact.CopyArtifact>
+      <projectName>${PROMOTED_JOB_NAME}</projectName>
+      <filter>Release/**</filter>
+      <target>${ReleaseDir}</target>
+      <selector class="hudson.plugins.copyartifact.SpecificBuildSelector">
+        <buildNumber>${PROMOTED_NUMBER}</buildNumber>
+      </selector>
+    </hudson.plugins.copyartifact.CopyArtifact>
+    <hudson.tasks.BatchFile>
+      <command>REM Move artifacts up from redundant Release directory&#xd;
+xcopy /s /i %ReleaseDir%\Release\*.* %ReleaseDir%&#xd;
+rd /s /q  %ReleaseDir%\Release&#xd;
+</command>
+    </hudson.tasks.BatchFile>
+  </buildSteps>
+</hudson.plugins.promoted__builds.PromotionProcess>

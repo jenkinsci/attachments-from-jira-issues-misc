@@ -1,0 +1,63 @@
+From 0baa1fcb6f08a24745b73e1f6edf89a331c446bf Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?J=C3=B8rgen=20P.=20Tjern=C3=B8?= <jtjerno@mylookout.com>
+Date: Fri, 22 Jul 2011 14:47:54 -0700
+Subject: [PATCH] JENKINS-10421: Use Proc.joinWithTimeout to prevent hangs.
+
+---
+ .../plugins/android_emulator/AndroidEmulator.java  |   24 ++++++++++++-------
+ 1 files changed, 15 insertions(+), 9 deletions(-)
+
+diff --git a/src/main/java/hudson/plugins/android_emulator/AndroidEmulator.java b/src/main/java/hudson/plugins/android_emulator/AndroidEmulator.java
+index 7211296..7d5232d 100644
+--- a/src/main/java/hudson/plugins/android_emulator/AndroidEmulator.java
++++ b/src/main/java/hudson/plugins/android_emulator/AndroidEmulator.java
+@@ -28,6 +28,7 @@ import hudson.util.ArgumentListBuilder;
+ import hudson.util.ForkOutputStream;
+ import hudson.util.FormValidation;
+ import hudson.util.NullStream;
++import hudson.util.StreamTaskListener;
+ 
+ import java.io.BufferedReader;
+ import java.io.ByteArrayOutputStream;
+@@ -42,6 +43,7 @@ import java.net.Socket;
+ import java.util.ArrayList;
+ import java.util.List;
+ import java.util.Map;
++import java.util.concurrent.TimeUnit;
+ import java.util.regex.Matcher;
+ import java.util.regex.Pattern;
+ 
+@@ -628,17 +630,21 @@ public class AndroidEmulator extends BuildWrapper implements Serializable {
+                 ByteArrayOutputStream stream = new ByteArrayOutputStream(4);
+ 
+                 // Run "getprop"
+-                launcher.launch().cmds(bootCheckCmd).stdout(stream).start().join();
+-
+-                // Check output
+-                String result = stream.toString().trim();
+-                if (result.equals("1")) {
+-                    return true;
++                Proc proc = launcher.launch().cmds(bootCheckCmd).stdout(stream).start();
++                long waitTimeout = timeout / 8;
++                int retVal = proc.joinWithTimeout(waitTimeout, TimeUnit.MILLISECONDS, StreamTaskListener.fromStderr());
++
++                if (retVal == 0) {
++	                // Check output
++	                String result = stream.toString().trim();
++	                if (result.equals("1")) {
++	                    return true;
++	                }
++
++	                // Otherwise continue...
++	                Thread.sleep(sleep);
+                 }
+ 
+-                // Otherwise continue...
+-                Thread.sleep(sleep);
+-
+                 // Ensure the emulator is connected to adb, in case it had crashed
+                 launcher.launch().cmds(connectCmd).start().join();
+             }
+-- 
+1.7.3.4
+

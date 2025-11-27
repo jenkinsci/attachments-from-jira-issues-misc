@@ -1,0 +1,88 @@
+import groovy.io.*
+
+@NonCPS
+def listfiles(dir,i,j) {
+    	dlist = []
+    	flist = []
+    	part = []
+    	new File(dir).eachDir {dlist << it.name }
+    	dlist.sort()
+    	new File(dir).eachFile(FileType.FILES, {flist << it.name })
+    	flist.sort()
+    	(dlist << flist).flatten()
+    	return (part << dlist[i..j]).flatten()
+    	
+    }
+    def asynTask(str){
+        println str
+    }
+    
+pipeline {
+    agent any
+    stages {
+    stage('Parallel-Processing') {
+        parallel {
+            stage('Task-1') {
+                steps {
+                script {
+                    timeout(time: 300, unit: 'SECONDS') {
+                      fs = listfiles("/mnt/nfs/var/nfs_share_dir/new/",0,24999)
+                        fs.each {
+                        	println(it)
+                        } 
+                    }
+                }
+                }
+            }
+            stage('Task-2') {
+                steps {
+                script {
+                    timeout(time: 300, unit: 'SECONDS') {
+                      fs = listfiles("/mnt/nfs/var/nfs_share_dir/new/",25000,49999)
+                        fs.each {
+                        	println(it)
+                        } 
+                    }
+                }
+                }
+            }
+            stage('Task-3') {
+                steps {
+                script {
+                    timeout(time: 300, unit: 'SECONDS') {
+                      fs = listfiles("/mnt/nfs/var/nfs_share_dir/new/",50000,74999)
+                        fs.each {
+                        	println(it)
+                        } 
+                    }
+                }
+                }
+            }
+            stage('Task-4') {
+                steps {
+                script {
+                    timeout(time: 300, unit: 'SECONDS') {
+                      fs = listfiles("/mnt/nfs/var/nfs_share_dir/new/",75000,99999)
+                        fs.each {
+                        	println(it)
+                        } 
+                    }
+                }
+                }
+            }
+            stage('Task-5') {
+                steps {
+                script {
+                    timeout(time: 300, unit: 'SECONDS') {
+                      fs = listfiles("/mnt/nfs/var/nfs_share_dir/new/",100000,124999)
+                        fs.each {
+                        	println(it)
+                        } 
+                    }
+                }
+                }
+            }
+        }
+    }
+    }
+}

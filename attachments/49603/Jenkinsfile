@@ -1,0 +1,667 @@
+/* https://jenkins.io/doc/book/pipeline/jenkinsfile/ */
+/* jenkinsfile with code_coverage reports */
+def Archive_Props_WebVersion
+def publishPath
+
+pipeline {
+    agent none
+
+    environment {
+        DASHBOARD_USER     = credentials('dashboard_user')
+        DASHBOARD_PASSWORD = credentials('dashboard_password')
+        PROGET_USER     = credentials('proget_user')
+        PROGET_PASSWORD = credentials('proget_password')
+        PROGET_APIKEY = credentials('proget_apikey')
+    }
+
+    stages {
+        stage('Build') {
+            agent { 
+                label 'windows && docker'
+            }
+            steps {
+                setBuildStatus("In Progress","PENDING","${env.JOB_NAME}")
+                echo 'Building..'
+                
+                dir("build") {
+                    deleteDir()
+                }
+
+                echo "Running ${env.BUILD_ID} on ${env.JENKINS_URL}"
+                posh "'${env.WORKSPACE}/buildrelease-ng-docker.ps1' Release"
+                /*
+                bat """7za.exe a -t7z -r "${env.WORKSPACE}\\CoreWebServices\\financialscripts.7z" "${env.WORKSPACE}\\Financial" -xr!bin -xr!obj -x!*.7z -x!*.vb -x!*.cs -x!*.zip -xr!.git -xr!AcceptanceTesting -xr!Code -xr!Build -xr!NugetSpecs -xr!Specifications -xr!TownSuiteInstaller -xr!Documentation -xr!WebPortals -xr!BuildOutput"""
+                */
+                echo "stashing"
+                stash includes: "RunTests.ps1,RunTests_Docker.ps1,build/**/*.7z,build/*.zip,build/parameterproperties.txt,build/PublicApi/parameterproperties.txt,build/**/*.nupkg", 
+                    name: 'WebPortalStash'
+
+                echo "archiving artifacts"
+                //set_archive_props()
+                //echo "Archive_Props_WebVersion is: ${Archive_Props_WebVersion}"
+                //uploadProgetPackage artifacts: 'build/CoreAutoUpdates-*.7z,build/WebPortalsAutoUpdate-*.7z,build/**/*.nupkg,build/**/*.zip,build/EncryptionTool/*.exe', feedName: "WebPortalPipeline", 
+                //    groupName: "${env.BRANCH_NAME}", packageName: "WebPortals", version: "${Archive_Props_WebVersion}"
+                //archiveArtifacts artifacts: "build/CoreAutoUpdates-*.7z,build/WebPortalsAutoUpdate-*.7z,build/**/*.nupkg,build/**/*.zip,build/EncryptionTool/*.exe", 
+                //    fingerprint: true, caseSensitive: false
+                archiveArtifacts artifacts: "build/CoreAutoUpdates-*.7z,build/WebPortalsAutoUpdate-*.7z,build/PublicApi/PublicApi-*.7z", 
+                    fingerprint: true, caseSensitive: false
+
+            }
+            post {
+                always{
+                     dir("build") {
+                        deleteDir()
+                    }
+                }
+                failure{
+                    setBuildStatus("Complete","FAILURE","${env.JOB_NAME}")
+                }
+            }
+        }
+        stage('Tests: fast'){
+            parallel {
+                stage('Test: unit tests') {
+                    agent { 
+                        label 'windows && docker'
+                    }
+                    options {
+                        skipDefaultCheckout true
+                    }
+                    steps{
+                        unstash 'WebPortalStash'
+
+                        posh "'${env.WORKSPACE}/RunTests_Docker.ps1' pipeline_unit_test_Release"
+                    }
+                    post {
+                        always{
+                            step([$class: "NUnitPublisher", testResultsPattern: "**/build/Tests/NunitFast/upstream-corewebservice-nunit-result.xml"])
+ 
+                            step([$class: 'CoberturaPublisher', coberturaReportFile: '**/build/Tests/NunitFast/Cobertura.xml']) 
+                            // cleanup
+                        // cleanWs notFailBuild: true
+                        dir("build") {
+                                deleteDir()
+                            }
+                            dir("Tests/NunitFast") {
+                                deleteDir()
+                            }
+                        }
+                        failure{
+                            setBuildStatus("Complete","FAILURE","${env.JOB_NAME}")
+                        }
+                    }
+                }
+                stage('Test: cws update') {
+                    agent { 
+                        label 'windows && docker'
+                    }
+                    options {
+                        skipDefaultCheckout true
+                    }
+                    steps{
+                        unstash 'WebPortalStash'
+                        posh "'${env.WORKSPACE}/RunTests_Docker.ps1' pipeline_unit_update_cws_test_Release"
+                    }
+                    post {
+                        always{
+                            step([$class: 'NUnitPublisher', testResultsPattern: "**/build/Tests/NUnitTestsUpdateCws/upstream-corewebservice-nunit-cws-update-result.xml"])	
+							step([$class: 'CoberturaPublisher', coberturaReportFile: '**/build/Tests/NUnitTestsUpdateCws/Cobertura.xml'])
+                            // cleanup
+                        // cleanWs notFailBuild: true
+                        dir("build") {
+                                deleteDir()
+                            }
+                            dir("Tests/NUnitTestsUpdateCws") {
+                                deleteDir()
+                            }
+                        }
+                        failure{
+                            setBuildStatus("Complete","FAILURE","${env.JOB_NAME}")
+                        }
+                    }
+                }
+            }
+        }
+        stage("Tests: slow"){
+            parallel {
+                stage('Test: system and quality') {
+                    agent { 
+                        label 'windows && docker'
+                    }
+                    options {
+                        skipDefaultCheckout true
+                    }
+                    steps{
+                        unstash 'WebPortalStash'
+
+                        // See https://github.com/jenkinsci/copyartifact-plugin/tree/master/src/main/java/hudson/plugins/copyartifact
+                        // for a list of selectors available for CopyArtifiact
+                        // wiki page https://wiki.jenkins.io/display/JENKINS/Copy+Artifact+Plugin
+                        step ([$class: 'CopyArtifact',
+                            projectName: 'TownSuite/Financial/master',
+                            filter: 'BuildOutput/financialscripts.7z',
+                            selector: [$class: 'LastCompletedBuildSelector'],
+                            target: './build/',
+                            flatten: true]);
+
+                        posh "'${env.WORKSPACE}/RunTests_Docker.ps1' pipeline_component_test_Release"
+                    }
+                    post {
+                        always{
+                            step([$class: "NUnitPublisher", testResultsPattern: "**/build/Tests/NUnitTestsSlow/nunit-result.xml"])	
+							
+                             step([$class: 'CoberturaPublisher', coberturaReportFile: '**/build/Tests/NUnitTestsSlow/Cobertura.xml'])  
+                            // clean
+                                dir("build") {
+                                deleteDir()
+                            }
+                            dir("Tests/NunitSlow") {
+                                deleteDir()
+                            }
+                        }
+                        failure{
+                            setBuildStatus("Complete","FAILURE","${env.JOB_NAME}")
+                        }
+                    }
+                }
+                stage('Test: performance') {
+                    agent { 
+                        label 'windows && docker'
+                    }
+                    options {
+                        skipDefaultCheckout true
+                    }
+                    steps{
+                        unstash 'WebPortalStash'
+
+                        step ([$class: 'CopyArtifact',
+                            projectName: 'TownSuite/Financial/master',
+                            filter: 'BuildOutput/financialscripts.7z',
+                            selector: [$class: 'LastCompletedBuildSelector'],
+                            target: './build/',
+                            flatten: true]);
+        
+                        posh "'${env.WORKSPACE}/RunTests_Docker.ps1' pipeline_performance_test_Release"
+
+                        setBuildStatus("Complete","SUCCESS","${env.JOB_NAME}")
+                    }
+                    post {
+                        always{
+                            step([$class: "NUnitPublisher", testResultsPattern: "**/build/Tests/PerformanceTests/nunit-result-performance.xml"])
+							
+							step([$class: 'CoberturaPublisher', coberturaReportFile: '**/build/Tests/PerformanceTests/Cobertura.xml']) 
+                            // cleanup
+                            dir("build") {
+                                deleteDir()
+                            }
+                            dir("Tests/PerformanceTests") {
+                                deleteDir()
+                            }
+                        }
+                        failure{
+                            setBuildStatus("Complete","FAILURE","${env.JOB_NAME}")
+                        }
+                    }
+                }
+                stage('Test: Public API') {
+                    agent { 
+                        label 'windows && docker'
+                    }
+                    options {
+                        skipDefaultCheckout true
+                    }
+                    steps{
+                        unstash 'WebPortalStash'
+                        setBuildStatus("Complete","SUCCESS","${env.JOB_NAME} Public Api")
+                    }
+                    post {
+                        always{
+                        dir("build") {
+                                deleteDir()
+                            }
+                        }
+                        failure{
+                            setBuildStatus("Complete","FAILURE","${env.JOB_NAME} Public Api")
+                        }
+                    }
+                }
+            }
+        }    
+        stage('Deploy: alpha') {
+            when{
+                 expression { return env.BRANCH_NAME.startsWith('PR-') == false }
+            }
+            options {
+                skipDefaultCheckout true
+            }
+            steps{
+                timeout(time:60, unit:'MINUTES') {
+                    script {
+                        publishPath = input message: 'Publish Alpha!', 
+                            ok: 'SET', parameters: [
+                            choice(name: 'Alpha', choices: "WebPortals\nPublicAPI\nWebPortals_And_PublicAPI", description: 'Which should we publish')]
+                    }
+                    node('windows && docker') {
+                        skipDefaultCheckout(true)
+                        wrap([$class: 'BuildUser']) {
+                            /* wrap([$class: 'BuildUser']) { provides access to:
+                            BUILD_USER -- full name of user started build,
+                            BUILD_USER_FIRST_NAME -- first name of user started build,
+                            BUILD_USER_LAST_NAME -- last name of user started build,
+                            BUILD_USER_ID -- id of user started build.
+                            BUILD_USER_EMAIL -- email of user started build.
+                            */
+
+                            echo "Deploying {$publishPath} alpha ${env.BRANCH_NAME}...."
+                            /* files are only uploaded as part of the alpha, beta and stable just reuse the same files */
+                            unstash 'WebPortalStash'
+
+
+                            script {
+                                if ("${publishPath}" == "WebPortals"){
+                                    echo "Web Portals IF"
+                                    upload_release_files "${env.BRANCH_NAME}"
+                                    publish_nuget()
+                                    publish_release "a", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    release_email "a", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    slack_message 'good', "a", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                }
+                                else if ("${publishPath}" == "PublicAPI"){
+                                    echo "Public API IF"
+                                    upload_public_api_release_files "${env.BRANCH_NAME}"
+                                    publish_public_api_release "a", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    release_public_api_email "a", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    slack_public_api_message 'good', "a", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                }
+                                else if ("${publishPath}" == "WebPortals_And_PublicAPI"){
+                                    echo "WebPortals_And_PublicAPI IF"
+
+                                    upload_release_files "${env.BRANCH_NAME}"
+                                    publish_nuget()
+                                    publish_release "a", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    release_email "a", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    slack_message 'good', "a", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+
+                                    upload_public_api_release_files "${env.BRANCH_NAME}"
+                                    publish_public_api_release "a", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    release_public_api_email "a", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    slack_public_api_message 'good', "a", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                }
+                            }
+
+                           
+                        }
+                    }
+                } 
+            }
+            post {
+                always{
+                    node('windows && docker') {
+                        // cleanup
+                        dir("build") {
+                            deleteDir()
+                        }
+                    }
+                }
+            }
+        }
+        stage('Deploy: beta') {
+            when{
+                 expression { return env.BRANCH_NAME.startsWith('PR-') == false }
+            }
+            options {
+                skipDefaultCheckout true
+            }
+            steps{
+                timeout(time:2, unit:'DAYS') {
+                    input message:'Approve {$publishPath} beta deployment?', submitter: 'release-engineers'
+                    node('windows && docker') {
+                        wrap([$class: 'BuildUser']) { 
+                            echo "Deploying {$publishPath} beta ${env.BRANCH_NAME}...."
+                            unstash 'WebPortalStash'
+
+                            script {
+                                if ("${publishPath}" == "WebPortals"){
+                                    echo "Web Portals IF"
+                                    publish_release "b", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    release_email "b", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    slack_message 'good', "b", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                }
+                                else if ("${publishPath}" == "PublicAPI"){
+                                    echo "Public API IF"
+                                    publish_public_api_release "b", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    release_public_api_email "b", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    slack_public_api_message 'good', "b", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                }
+                                else if ("${publishPath}" == "WebPortals_And_PublicAPI"){
+                                    echo "WebPortals_And_PublicAPI IF"
+
+                                    publish_release "b", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    release_email "b", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    slack_message 'good', "b", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+
+                                    publish_public_api_release "b", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    release_public_api_email "b", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    slack_public_api_message 'good', "b", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                }
+                            }
+
+                            
+                        }
+                    }
+                }
+            }
+            post {
+                always{
+                    node('windows && docker') {
+                        // cleanup
+                        dir("build") {
+                            deleteDir()
+                        }
+                    }
+                }
+            }
+        }
+        stage('Deploy: stable') {
+            when{
+                 expression { return env.BRANCH_NAME.startsWith('PR-') == false }
+            }
+            options {
+                skipDefaultCheckout true
+            }
+            steps{
+                timeout(time:2, unit:'DAYS') {
+                    input message:'Approve {$publishPath} stable deployment?', submitter: 'release-engineers'
+                    node('windows && docker') {
+                        wrap([$class: 'BuildUser']) {
+                            echo "Deploying {$publishPath} stable ${env.BRANCH_NAME} ...."
+                            unstash 'WebPortalStash'
+
+                            script {
+                                if ("${publishPath}" == "WebPortals"){
+                                    echo "Web Portals IF"
+                                    publish_release "c", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    release_email "c", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    slack_message 'good', "c", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                }
+                                else if ("${publishPath}" == "PublicAPI"){
+                                    echo "Public API IF"
+                                    publish_public_api_release "c", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    release_public_api_email "c", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    slack_public_api_message 'good', "c", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                }
+                                else if ("${publishPath}" == "WebPortals_And_PublicAPI"){
+                                    echo "WebPortals_And_PublicAPI IF"
+
+                                    publish_release "c", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    release_email "c", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    slack_message 'good', "c", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+
+                                    publish_public_api_release "c", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    release_public_api_email "c", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                    slack_public_api_message 'good', "c", "${env.BRANCH_NAME}", "${env.BUILD_USER_ID}", "${env.BUILD_USER}"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            post {
+                always{
+                    node('windows && docker') {
+                        // cleanup
+                        dir("build") {
+                            deleteDir()
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+}
+
+def setBuildStatus(String message, String state, String context) {
+
+    /*
+    step([$class: 'GitHubCommitStatusSetter',
+                contextSource: [$class: 'ManuallyEnteredCommitContextSource', context: context],
+                errorHandlers: [[$class: "ChangingBuildStatusErrorHandler", result: "UNSTABLE"]],
+                statusResultSource: [$class: 'ConditionalStatusResultSource', results: [[$class: 'AnyBuildResult', message: message, state: state]]]])
+    */
+
+   /*
+    step([
+        $class: "GitHubCommitStatusSetter",
+        reposSource: [$class: "ManuallyEnteredRepositorySource", url: "https://github.com/TownSuite/WebPortals"],
+        contextSource: [$class: "ManuallyEnteredCommitContextSource", context: context],
+        errorHandlers: [[$class: "ChangingBuildStatusErrorHandler", result: "UNSTABLE"]],
+        commitShaSource: [$class: "ManuallyEnteredShaSource", sha: sha ],
+        statusBackrefSource: [$class: "ManuallyEnteredBackrefSource", backref: "${BUILD_URL}flowGraphTable/"],
+        statusResultSource: [$class: "ConditionalStatusResultSource", results: [[$class: "AnyBuildResult", message: message, state: state]] ]
+    ]);
+     */
+
+}
+
+def posh(cmd) {
+    bat 'powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "& ' + cmd + '"; exit $LastExitCode'
+}
+
+def upload_release_files(pipeline){
+ withCredentials([usernameColonPassword(credentialsId: 'box_creds', variable: 'USERPASS')]) {
+    def props = readProperties  file:'build/parameterproperties.txt'
+    def COREVERSION= props['COREVERSION']
+    def WEBVERSION= props['WEBVERSION']
+
+
+    echo "Get core auto update files"
+    def coreFiles = findFiles(glob: "**/build/CoreAutoUpdates-${COREVERSION}.7z")
+    echo "Get web auto update files"
+    def webFiles = findFiles(glob: "**/build/WebPortalsAutoUpdate-${WEBVERSION}.7z")
+
+    echo "upload release packages to box"
+    echo "core file: ${coreFiles[0].name}"
+    echo "web file: ${webFiles[0].name}"
+    bat """
+      curl -T "${env.WORKSPACE}\\build\\${coreFiles[0].name}" ftp://ftp.box.com/Releases/CoreWebServices/${pipeline}/${coreFiles[0].name} --user $USERPASS --ftp-create-dirs --retry 5 --retry-connrefuse
+      curl -T "${env.WORKSPACE}\\build\\ConfigServer.zip" ftp://ftp.box.com/Releases/CoreWebServices/${pipeline}/ConfigServer.zip --user $USERPASS --ftp-create-dirs --retry 5 --retry-connrefuse
+      curl -T "${env.WORKSPACE}\\build\\${webFiles[0].name}" ftp://ftp.box.com/Releases/WebPortals/${pipeline}/${webFiles[0].name} --user $USERPASS --ftp-create-dirs --retry 5 --retry-connrefuse
+    """
+  }
+}
+
+def publish_release(channel, pipeline, BUILD_USER_ID, BUILD_USER){
+    def props = readProperties  file:'build/parameterproperties.txt'
+    def COREVERSION= props['COREVERSION']
+    def WEBVERSION= props['WEBVERSION']
+
+    def salesforceLabel = get_channel_label "$channel"
+    def releaseType = "$pipeline"
+    if (pipeline.toLowerCase().startsWith('r')){
+        releaseType="lts:${pipeline}"
+    }
+
+    echo "starting version list modification and upload"
+    bat """
+rm -f webportals-version-list.xml
+rm -f core-web-service-version-list.xml
+wget --no-check-certificate -O core-web-service-version-list.xml https://townsuite.box.com/shared/static/9w0ugprmdv4kydxw7935wytvasaprlt2.xml
+wget --no-check-certificate -O webportals-version-list.xml https://townsuite.box.com/shared/static/fu0awufpselxgmd8s7ov.xml
+
+SET CURRENTPATH=%CD%
+REM Insert alpha channel into web services
+sed.exe -i "s/<NewDataSet>/<NewDataSet>\\n\\n<Table1>\\n  <type>${releaseType}<\\/type>\\n  <version>${COREVERSION}<\\/version>\\n  <FinancialPrerequisite>4.5.0<\\/FinancialPrerequisite>\\n  <release>na<\\/release>\\n  <url>ftp.box.com\\/Releases\\/CoreWebServices\\/${pipeline}\\/CoreAutoUpdates-${COREVERSION}.7z<\\/url>\\n  <notes><\\/notes>\\n  <golive\\/>\\n<updategroup>${channel}<\\/updategroup>\\n<\\/Table1>\\n/g" "%CURRENTPATH%/core-web-service-version-list.xml"
+
+sed.exe -i "s/<NewDataSet>/<NewDataSet>\\n\\n<Table1>\\n  <type>${releaseType}<\\/type>\\n  <version>${WEBVERSION}<\\/version>\\n  <builddate><\\/builddate>\\n  <CoreservicePrerequisite>${COREVERSION}<\\/CoreservicePrerequisite>\\n <release>na<\\/release>\\n  <url>ftp.box.com\\/Releases\\/WebPortals\\/${pipeline}\\/WebPortalsAutoUpdate-${WEBVERSION}.7z<\\/url>\\n  <notes><\\/notes>\\n  <updategroup>${channel}<\\/updategroup>\\n<\\/Table1>\\n/g" "%CURRENTPATH%/webportals-version-list.xml"
+
+rm -f "sed*"
+
+REM notifiy salesforce of the web service release
+wget -O- --user=${env.DASHBOARD_USER} --password=${env.DASHBOARD_PASSWORD} "https://dashboard.dev.townsuite.com/ReleaseManager/track_channel_publish.php?programname=Web Services&channel=${salesforceLabel}&version=${COREVERSION}&username=${env.BUILD_USER_ID} (${BUILD_USER})" --no-check-certificate
+REM notifiy salesforce of the web portals release
+wget -O- --user=${env.DASHBOARD_USER} --password=${env.DASHBOARD_PASSWORD} "https://dashboard.dev.townsuite.com/ReleaseManager/track_channel_publish.php?programname=Web Portals&channel=${salesforceLabel}&version=${WEBVERSION}&username=${env.BUILD_USER_ID} (${BUILD_USER})" --no-check-certificate
+
+    """
+
+ withCredentials([usernameColonPassword(credentialsId: 'box_creds', variable: 'USERPASS')]) {
+    echo "upload version list to box"
+    bat """
+      curl -T "${env.WORKSPACE}\\core-web-service-version-list.xml" ftp://ftp.box.com/Releases/CoreWebServices/core-web-service-version-list.xml --user $USERPASS --retry 5 --retry-connrefuse
+      curl -T "${env.WORKSPACE}\\webportals-version-list.xml" ftp://ftp.box.com/Releases/WebPortals/webportals-version-list.xml --user $USERPASS --retry 5 --retry-connrefuse
+    """
+  }
+
+}
+
+def publish_nuget(){
+
+    bat """
+REM NuGet.exe sources add -Name "CI Server" -Source "http://gander.dev.townsuite.com:81/nuget/Procom" 
+NuGet.exe sources update -Name "CI Server" -Source "http://gander.dev.townsuite.com:81/nuget/Procom" -username "${env.PROGET_USER}" -password "${env.PROGET_PASSWORD}"
+
+NuGet.exe push -Source http://gander.dev.townsuite.com:81/nuget/Procom -ApiKey ${env.PROGET_APIKEY} .\\build\\NugetPackages\\*.nupkg 
+    """
+
+}
+
+def slack_message(color, channel, pipeline, BUILD_USER_ID, BUILD_USER){
+    def label = get_channel_label "$channel"
+    def props = readProperties  file:'build/parameterproperties.txt'
+    def COREVERSION= props['COREVERSION']
+    def WEBVERSION= props['WEBVERSION']
+
+    def content="""Deploying web portal pipeline: $pipeline, channel $label
+
+Web Services: $COREVERSION 
+Web Portals: $WEBVERSION
+Published by: $BUILD_USER_ID ($BUILD_USER)
+    """
+
+    slackSend color: "$color", message: "$content"
+}
+
+def release_email(channel, pipeline, BUILD_USER_ID, BUILD_USER){
+    def label = get_channel_label "$channel"
+    def props = readProperties  file:'build/parameterproperties.txt'
+    def COREVERSION= props['COREVERSION']
+    def WEBVERSION= props['WEBVERSION']
+
+    def content="""
+Deploying web portals and web service release pipeline $pipeline, channel $label
+
+Web Services: $COREVERSION 
+Web Portals: $WEBVERSION
+Published by: $BUILD_USER_ID ($BUILD_USER)
+
+Web Portal Release Notes: https://github.com/TownSuite/WebPortals/releases
+See attached for auto generated release notes.
+
+    """
+
+    emailext body: "$content", recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: "Web Portals Release, pipeline $pipeline, channel $label - $WEBVERSION", to: 'releases@townsuite.com'
+}
+
+def get_channel_label(channel){
+    def salesforceLabel = ""
+    switch ( channel ) {
+        case "a":
+            salesforceLabel = "Alpha"
+            break
+        case "b":
+            salesforceLabel += "Beta"
+            break
+        case "c":
+            salesforceLabel = "Stable"
+            break
+        default:
+            salesforceLabel = "Alpha"
+    }
+    return salesforceLabel 
+}
+
+def set_archive_props(){
+
+    def props = readProperties  file:'build/parameterproperties.txt'
+    Archive_Props_WebVersion = props['WEBVERSION']
+}
+
+
+// BEGIN PUBLIC API methods
+def upload_public_api_release_files(pipeline){
+ withCredentials([usernameColonPassword(credentialsId: 'box_creds', variable: 'USERPASS')]) {
+    def props = readProperties  file:'build/PublicApi/parameterproperties.txt'
+    def PUBLICAPI= props['PUBLICAPI']
+
+    echo "Uploading files for version ${PUBLICAPI}"
+    echo "Get update files"
+    def coreFiles = findFiles(glob: "**/build/PublicApi/PublicApi-${PUBLICAPI}.7z")
+
+    echo "upload release packages to box"
+    echo "file: ${coreFiles[0].name}"
+    bat """
+      curl -T "${env.WORKSPACE}\\build\\PublicApi\\${coreFiles[0].name}" ftp://ftp.box.com/Releases/PublicApi/${pipeline}/${coreFiles[0].name} --user $USERPASS --ftp-create-dirs --retry 5 --retry-connrefuse
+    """
+  }
+}
+
+def publish_public_api_release(channel, pipeline, BUILD_USER_ID, BUILD_USER){
+    def props = readProperties  file:'build/PublicApi/parameterproperties.txt'
+    def PUBLICAPI= props['PUBLICAPI']
+
+    def releaseType = "$pipeline"
+    if (pipeline.toLowerCase().startsWith('r')){
+        releaseType="lts:${pipeline}"
+    }
+
+    echo "starting version list modification and upload"
+    bat """
+rm -f publicapi-version-list.xml
+wget --no-check-certificate -O publicapi-version-list.xml https://townsuite.box.com/shared/static/4jgadna88ycgeutyoez3zyoh21lmk679.xml
+
+SET CURRENTPATH=%CD%
+sed.exe -i "s/<NewDataSet>/<NewDataSet>\\n\\n<Table1>\\n  <type>${releaseType}<\\/type>\\n  <version>${PUBLICAPI}<\\/version>\\n  <builddate><\\/builddate>\\n  <release>na<\\/release>\\n  <url>ftp.box.com\\/Releases\\/PublicApi\\/${pipeline}\\/PublicApi-${PUBLICAPI}.7z<\\/url>\\n  <notes><\\/notes>\\n  <golive\\/>\\n<updategroup>${channel}<\\/updategroup>\\n<\\/Table1>\\n/g" "%CURRENTPATH%/publicapi-version-list.xml"
+
+rm -f "sed*"
+
+    """
+    
+ withCredentials([usernameColonPassword(credentialsId: 'box_creds', variable: 'USERPASS')]) {
+    echo "upload version list to box"
+    bat """
+      curl -T "${env.WORKSPACE}\\publicapi-version-list.xml" ftp://ftp.box.com/Releases/PublicApi/publicapi-version-list.xml --user $USERPASS --retry 5 --retry-connrefuse
+    """
+  }
+
+}
+
+
+def slack_public_api_message(color, channel, pipeline, BUILD_USER_ID, BUILD_USER){
+    def label = get_channel_label "$channel"
+    def props = readProperties  file:'build/PublicApi/parameterproperties.txt'
+    def PUBLICAPI= props['PUBLICAPI']
+
+    def content="""Deploying public api pipeline: $pipeline, channel $label
+
+Version: $PUBLICAPI 
+Published by: $BUILD_USER_ID ($BUILD_USER)
+    """
+
+    slackSend color: "$color", message: "$content"
+}
+
+def release_public_api_email(channel, pipeline, BUILD_USER_ID, BUILD_USER){
+    def label = get_channel_label "$channel"
+    def props = readProperties  file:'build/PublicApi/parameterproperties.txt'
+    def PUBLICAPI= props['PUBLICAPI']
+
+    def content="""
+Deploying public api release pipeline $pipeline, channel $label
+
+Version: $PUBLICAPI 
+Published by: $BUILD_USER_ID ($BUILD_USER)
+    """
+
+    emailext body: "$content", recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: "Public API Release, pipeline $pipeline, channel $label - $PUBLICAPI", to: 'releases@townsuite.com'
+}
+// END PUBLIC API methods

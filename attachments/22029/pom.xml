@@ -1,0 +1,112 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <name>MyApp Release Configuration</name>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>au.com.myCompany.myApp</groupId>
+	<artifactId>myAppReleaseConfig</artifactId>
+	<version>1.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+    
+	<repositories>
+		<repository>
+			<id>myCompany-maven-repo</id>
+			<url>http://nexus:8081/nexus/content/repositories/public</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>myCompany-maven-plugin-repo</id>
+			<url>http://nexus:8081/nexus/content/groups/public</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
+
+	<scm>
+		<connection>scm:hg:https://buildUser:buildPassword@mercurial/hg/myApp/</connection>
+		<developerConnection>scm:hg:https://buildUser:buildPassword@mercurial/hg/myApp/</developerConnection>
+		<url>scm:hg:https://buildUser:buildPassword@mercurial/hg/myApp/</url>
+	</scm>
+
+	<distributionManagement>
+		<repository>
+			<id>myCompany-maven-release-repo</id>
+			<url>http://nexus:8081/nexus/content/repositories/releases</url>
+		</repository>
+		<snapshotRepository>
+			<id>myCompany-maven-snap-repo</id>
+			<uniqueVersion>false</uniqueVersion>
+			<url>http://nexus:8081/nexus/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+                <!--<version>2.2.1</version>-->
+				<configuration>
+					<preparationGoals>clean install deploy</preparationGoals>
+
+					<!-- use the same version number for all components -->
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+					<!-- Push all local changes to the remote repo -->
+					<pushChanges>false</pushChanges>
+
+					<!--
+						Don't produce specific file lists, commit all changes. This allows
+						Mercurial to implicitly cross the subrepo boundaries.
+					-->
+					<commitAllChanges>false</commitAllChanges>
+
+					<!-- commit the full tree, Mercurial takes care of the subrepos -->
+					<commitByProject>false</commitByProject>
+
+					<!--
+						revert the tagging order, so that the main project gets processed
+						last. This allows it to pick up the changes in the subrepos.
+					-->
+					<revertOrder>true</revertOrder>
+
+					<!-- tag by project, because there are multiple repositories. -->
+					<tagByProject>true</tagByProject>
+
+					<!--
+						In Mercurial, tags are changes in the subrepos that need to be
+						recorded in the main repo. So these changes must be recorded
+						before tagging.
+					-->
+					<tagRequiresCommit>true</tagRequiresCommit>
+
+					<!-- branch by project, because there are multiple repositories. -->
+					<!--branchByProject>true</branchByProject-->
+
+					<!--
+						Mercurial branches do an implicit commit after branch, so there is
+						no need to do an additional commit. This requires that SCM-587 has
+						been applied to your SCM providers.
+					-->
+					<branchRequiresCommit>false</branchRequiresCommit>
+					<remoteTagging>false</remoteTagging>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

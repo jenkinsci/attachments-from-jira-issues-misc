@@ -1,0 +1,93 @@
+From c138e321dbf9fdf68f4744276c4e6fadeb11eb6d Mon Sep 17 00:00:00 2001
+From: remigius <remigius.stalder@descom-consulting.ch>
+Date: Thu, 17 Nov 2011 10:00:08 +0100
+Subject: [PATCH] fix OpenId authentication behind proxy
+
+---
+ .../hudson/plugins/openid/OpenIdLoginService.java  |    1 +
+ .../plugins/openid/OpenIdSsoSecurityRealm.java     |   31 +++++++++++++++++++-
+ 2 files changed, 31 insertions(+), 1 deletions(-)
+
+diff --git a/src/main/java/hudson/plugins/openid/OpenIdLoginService.java b/src/main/java/hudson/plugins/openid/OpenIdLoginService.java
+index a4458dd..8a9ba82 100644
+--- a/src/main/java/hudson/plugins/openid/OpenIdLoginService.java
++++ b/src/main/java/hudson/plugins/openid/OpenIdLoginService.java
+@@ -49,6 +49,7 @@ public class OpenIdLoginService extends FederatedLoginService {
+     private final ConsumerManager manager;
+ 
+     public OpenIdLoginService() throws ConsumerException {
++        OpenIdSsoSecurityRealm.setProxy();
+         manager = new ConsumerManager();
+         manager.setAssociations(new InMemoryConsumerAssociationStore());
+         manager.setNonceVerifier(new InMemoryNonceVerifier(5000));
+diff --git a/src/main/java/hudson/plugins/openid/OpenIdSsoSecurityRealm.java b/src/main/java/hudson/plugins/openid/OpenIdSsoSecurityRealm.java
+index 1a990dd..b006e8c 100644
+--- a/src/main/java/hudson/plugins/openid/OpenIdSsoSecurityRealm.java
++++ b/src/main/java/hudson/plugins/openid/OpenIdSsoSecurityRealm.java
+@@ -48,6 +48,8 @@ import org.openid4java.consumer.InMemoryConsumerAssociationStore;
+ import org.openid4java.consumer.InMemoryNonceVerifier;
+ import org.openid4java.discovery.Discovery;
+ import org.openid4java.discovery.DiscoveryInformation;
++import org.openid4java.util.ProxyProperties;
++import org.openid4java.util.HttpClientFactory;
+ 
+ import java.io.IOException;
+ import java.net.URL;
+@@ -59,11 +61,12 @@ import java.util.List;
+  * @author Kohsuke Kawaguchi
+  */
+ public class OpenIdSsoSecurityRealm extends SecurityRealm {
++    private static boolean proxyIsSet = false;
+     private /*almost final*/ transient volatile ConsumerManager manager;
+ //    private final DiscoveryInformation endpoint;
+ 
+     // for example, https://login.launchpad.net/+openid
+-    // 
++    //
+     public final String endpoint;
+ 
+     private transient volatile DiscoveryInformation discoveredEndpoint;
+@@ -71,14 +74,40 @@ public class OpenIdSsoSecurityRealm extends SecurityRealm {
+     @DataBoundConstructor
+     public OpenIdSsoSecurityRealm(String endpoint) throws IOException, OpenIDException {
+         this.endpoint = endpoint;
++        setProxy();
+         getDiscoveredEndpoint();
+     }
+ 
++    public static void setProxy() {
++/*
++        if(proxyIsSet) return;
++        proxyIsSet = true; // attempt this only once in a lifetime
++*/
++        String proxyHost = System.getProperty("http.proxyHost");
++        if(proxyHost != null && proxyHost.length() > 0) {
++            String proxyPort = System.getProperty("http.proxyPort");
++            int proxyPortValue = 8080;
++            if(proxyPort != null && proxyPort.length() > 0) {
++                try {
++                    proxyPortValue = Integer.parseInt(proxyPort);
++                } catch(Throwable t) {
++                    // do nothing
++                }
++            }
++
++            ProxyProperties proxyProps = new ProxyProperties();
++            proxyProps.setProxyHostName(proxyHost);
++            proxyProps.setProxyPort(proxyPortValue);
++            HttpClientFactory.setProxyProperties(proxyProps);
++        }
++    }
++
+     private ConsumerManager getManager() throws ConsumerException {
+         if (manager!=null)  return manager;
+ 
+         synchronized (this) {
+             if (manager==null) {
++                setProxy();
+                 manager = new ConsumerManager();
+                 manager.setAssociations(new InMemoryConsumerAssociationStore());
+                 manager.setNonceVerifier(new InMemoryNonceVerifier(5000));
+-- 
+1.7.7.GIT
+

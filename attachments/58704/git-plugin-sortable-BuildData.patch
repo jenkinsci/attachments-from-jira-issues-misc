@@ -1,0 +1,33 @@
+diff --git a/src/main/resources/hudson/plugins/git/util/BuildData/index.jelly b/src/main/resources/hudson/plugins/git/util/BuildData/index.jelly
+index 7684a80e..f1f97708 100644
+--- a/src/main/resources/hudson/plugins/git/util/BuildData/index.jelly
++++ b/src/main/resources/hudson/plugins/git/util/BuildData/index.jelly
+@@ -27,12 +27,22 @@
+ 	</ul>
+ 
+ 	<h2>${%Built Branches}</h2>
+-	<ul>
+-
+-	<j:forEach var="branch" items="${it.buildsByBranchName.keySet()}">
+-	<li><j:choose><j:when test="${branch}==''}">(unnamed)</j:when><j:otherwise>${branch}</j:otherwise></j:choose>: ${it.buildsByBranchName.get(branch).toString()}</li>
+-	</j:forEach>
+-	</ul>
++	<table class="jenkins-table sortable">
++		<thead>
++			<th>Ref</th>
++			<th>Build No.</th>
++			<th>Revision</th>
++		</thead>
++		<tbody>
++			<j:forEach var="branch" items="${it.buildsByBranchName.keySet()}">
++				<tr>
++					<td><j:choose><j:when test="${branch}==''}">(unnamed)</j:when><j:otherwise>${branch}</j:otherwise></j:choose></td>
++					<td><a href="../../${it.buildsByBranchName.get(branch).getBuildNumber()}">${it.buildsByBranchName.get(branch).getBuildNumber()}</a></td>
++					<td>${it.buildsByBranchName.get(branch).getRevision()}</td>
++				</tr>
++			</j:forEach>
++		</tbody>
++	</table>
+ 
+ 	</l:main-panel>
+   	</l:layout>

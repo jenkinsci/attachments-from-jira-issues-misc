@@ -1,0 +1,238 @@
+From c79d8ebb6d2cfe131b4d9ee3f3b28164a67640ac Mon Sep 17 00:00:00 2001
+From: Basil Crow <me@basilcrow.com>
+Date: Mon, 30 Oct 2023 08:04:26 -0700
+Subject: [PATCH] Refresh plugin for October 2023
+
+---
+ .mvn/extensions.xml                           |  7 +++
+ .mvn/maven.config                             |  2 +
+ Jenkinsfile                                   |  5 +-
+ pom.xml                                       | 51 ++++++++++---------
+ .../hudson/plugin/SCPRepositoryPublisher.java |  3 +-
+ .../be/certipost/hudson/plugin/SCPSite.java   |  2 +
+ .../hudson/plugin/Entry/config.jelly          |  1 +
+ .../SCPRepositoryPublisher/config.jelly       |  1 +
+ .../SCPRepositoryPublisher/global.jelly       |  1 +
+ .../hudson/plugin/SCPSite/config.jelly        |  1 +
+ src/main/resources/index.jelly                |  1 +
+ 11 files changed, 48 insertions(+), 27 deletions(-)
+ create mode 100644 .mvn/extensions.xml
+ create mode 100644 .mvn/maven.config
+
+diff --git a/.mvn/extensions.xml b/.mvn/extensions.xml
+new file mode 100644
+index 0000000..1f36364
+--- /dev/null
++++ b/.mvn/extensions.xml
+@@ -0,0 +1,7 @@
++<extensions xmlns="http://maven.apache.org/EXTENSIONS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/EXTENSIONS/1.0.0 http://maven.apache.org/xsd/core-extensions-1.0.0.xsd">
++  <extension>
++    <groupId>io.jenkins.tools.incrementals</groupId>
++    <artifactId>git-changelist-maven-extension</artifactId>
++    <version>1.7</version>
++  </extension>
++</extensions>
+diff --git a/.mvn/maven.config b/.mvn/maven.config
+new file mode 100644
+index 0000000..2a0299c
+--- /dev/null
++++ b/.mvn/maven.config
+@@ -0,0 +1,2 @@
++-Pconsume-incrementals
++-Pmight-produce-incrementals
+diff --git a/Jenkinsfile b/Jenkinsfile
+index 77c9ed7..2fb0938 100644
+--- a/Jenkinsfile
++++ b/Jenkinsfile
+@@ -1,4 +1,7 @@
+ #!/usr/bin/env groovy
+ 
+ /* `buildPlugin` step provided by: https://github.com/jenkins-infra/pipeline-library */
+-buildPlugin()
++buildPlugin(useContainerAgent: true, configurations: [
++  [platform: 'linux', jdk: 21],
++  [platform: 'windows', jdk: 17],
++])
+diff --git a/pom.xml b/pom.xml
+index 826e0a9..7a35108 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -1,3 +1,4 @@
++<?xml version="1.0" encoding="UTF-8"?>
+ <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+@@ -5,25 +6,31 @@
+   <parent>
+     <groupId>org.jenkins-ci.plugins</groupId>
+     <artifactId>plugin</artifactId>
+-    <version>1.430</version>
+-    <relativePath/>
++    <version>4.75</version>
++    <relativePath />
+   </parent>
+ 
+   <artifactId>scp</artifactId>
+   <packaging>hpi</packaging>
+-  <version>1.9-SNAPSHOT</version>
++  <version>${revision}${changelist}</version>
+   <name>Jenkins SCP publisher plugin</name>
+   <url>https://wiki.jenkins-ci.org/display/JENKINS/SCP+plugin</url>
+ 
+ 
+   <scm>
+-    <connection>scm:git:git://github.com/jenkinsci/scp-plugin.git</connection>
+-    <developerConnection>scm:git:git@github.com:jenkinsci/scp-plugin.git</developerConnection>
+-    <url>http://github.com/jenkins/scp-plugin</url>
++    <connection>scm:git:https://github.com/${gitHubRepo}.git</connection>
++    <developerConnection>scm:git:git@github.com:${gitHubRepo}.git</developerConnection>
++    <url>https://github.com/${gitHubRepo}</url>
++    <tag>${scmTag}</tag>
+   </scm>
+ 
+   <properties>
+-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
++    <revision>1.9</revision>
++    <changelist>-SNAPSHOT</changelist>
++    <jenkins.version>2.387.3</jenkins.version>
++    <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
++    <!-- TODO fix existing violations -->
++    <spotbugs.threshold>High</spotbugs.threshold>
+   </properties>
+ 
+   <developers>
+@@ -33,28 +40,22 @@
+     </developer>
+   </developers>
+ 
+-  <build>
+-    <plugins>
+-      <plugin>
+-        <groupId>org.apache.maven.plugins</groupId>
+-        <artifactId>maven-release-plugin</artifactId>
+-        <version>2.1</version>
+-        <dependencies>
+-          <dependency>
+-            <groupId>org.apache.maven.scm</groupId>
+-            <artifactId>maven-scm-provider-gitexe</artifactId>
+-            <version>1.3</version>
+-          </dependency>
+-        </dependencies>
+-      </plugin>
+-    </plugins>
+-  </build>
++  <dependencyManagement>
++    <dependencies>
++      <dependency>
++        <groupId>io.jenkins.tools.bom</groupId>
++        <artifactId>bom-2.387.x</artifactId>
++        <version>2516.v113cb_3d00317</version>
++        <type>pom</type>
++        <scope>import</scope>
++      </dependency>
++    </dependencies>
++  </dependencyManagement>
+ 
+   <dependencies>
+     <dependency>
+-      <groupId>com.jcraft</groupId>
++      <groupId>org.jenkins-ci.plugins</groupId>
+       <artifactId>jsch</artifactId>
+-      <version>0.1.50</version>
+     </dependency>
+   </dependencies>
+ 
+diff --git a/src/main/java/be/certipost/hudson/plugin/SCPRepositoryPublisher.java b/src/main/java/be/certipost/hudson/plugin/SCPRepositoryPublisher.java
+index 3a38514..febc8c3 100644
+--- a/src/main/java/be/certipost/hudson/plugin/SCPRepositoryPublisher.java
++++ b/src/main/java/be/certipost/hudson/plugin/SCPRepositoryPublisher.java
+@@ -1,5 +1,6 @@
+ package be.certipost.hudson.plugin;
+ 
++import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+ import hudson.EnvVars;
+ import hudson.Extension;
+ import hudson.FilePath;
+@@ -109,7 +110,6 @@ public final class SCPRepositoryPublisher extends Notifier {
+      * Returns the environment variables set for a node/slave. So you can use
+      * them, as are in your environment
+      *
+-     * @param envVars
+      * @return
+      */
+     public static EnvVars getEnvVars() {
+@@ -358,6 +358,7 @@ public final class SCPRepositoryPublisher extends Notifier {
+             this.syncObj = syncObj;
+         }
+ 
++        @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
+         public void run () {
+             AnnotatedLargeText logText;
+             final StringWriter strWriter;
+diff --git a/src/main/java/be/certipost/hudson/plugin/SCPSite.java b/src/main/java/be/certipost/hudson/plugin/SCPSite.java
+index 34b5789..14b261a 100644
+--- a/src/main/java/be/certipost/hudson/plugin/SCPSite.java
++++ b/src/main/java/be/certipost/hudson/plugin/SCPSite.java
+@@ -1,5 +1,6 @@
+ package be.certipost.hudson.plugin;
+ 
++import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+ import hudson.Extension;
+ import hudson.FilePath;
+ import hudson.Util;
+@@ -404,6 +405,7 @@ public class SCPSite extends AbstractDescribableImpl<SCPSite> {
+             return FormValidation.ok();
+         }
+ 
++        @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
+         public FormValidation doLoginCheck(@QueryParameter String hostname, @QueryParameter String port, @QueryParameter String username, @QueryParameter String password, @QueryParameter String keyfile) {
+             hostname = Util.fixEmpty(hostname);
+             if (hostname == null) {// hosts is not entered yet
+diff --git a/src/main/resources/be/certipost/hudson/plugin/Entry/config.jelly b/src/main/resources/be/certipost/hudson/plugin/Entry/config.jelly
+index f4a11be..d93fb38 100644
+--- a/src/main/resources/be/certipost/hudson/plugin/Entry/config.jelly
++++ b/src/main/resources/be/certipost/hudson/plugin/Entry/config.jelly
+@@ -1,3 +1,4 @@
++<?jelly escape-by-default='true'?>
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+   <f:entry title="${%Source}" field="sourceFile">
+     <f:textbox/>
+diff --git a/src/main/resources/be/certipost/hudson/plugin/SCPRepositoryPublisher/config.jelly b/src/main/resources/be/certipost/hudson/plugin/SCPRepositoryPublisher/config.jelly
+index dfbab10..bd1f49c 100644
+--- a/src/main/resources/be/certipost/hudson/plugin/SCPRepositoryPublisher/config.jelly
++++ b/src/main/resources/be/certipost/hudson/plugin/SCPRepositoryPublisher/config.jelly
+@@ -1,3 +1,4 @@
++<?jelly escape-by-default='true'?>
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+ 
+     <f:entry title="${%SCP site}" field="siteName"
+diff --git a/src/main/resources/be/certipost/hudson/plugin/SCPRepositoryPublisher/global.jelly b/src/main/resources/be/certipost/hudson/plugin/SCPRepositoryPublisher/global.jelly
+index 2fe30f7..c1b881e 100644
+--- a/src/main/resources/be/certipost/hudson/plugin/SCPRepositoryPublisher/global.jelly
++++ b/src/main/resources/be/certipost/hudson/plugin/SCPRepositoryPublisher/global.jelly
+@@ -1,3 +1,4 @@
++<?jelly escape-by-default='true'?>
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+   <f:section title="${%SCP repository hosts}">
+     <f:entry title="${%SCP sites}" description="${%SCP sites that projects will want to connect}">
+diff --git a/src/main/resources/be/certipost/hudson/plugin/SCPSite/config.jelly b/src/main/resources/be/certipost/hudson/plugin/SCPSite/config.jelly
+index 174fc0c..f24fa64 100644
+--- a/src/main/resources/be/certipost/hudson/plugin/SCPSite/config.jelly
++++ b/src/main/resources/be/certipost/hudson/plugin/SCPSite/config.jelly
+@@ -1,3 +1,4 @@
++<?jelly escape-by-default='true'?>
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+   <f:entry title="${%Displayname}" field="displayname">
+     <f:textbox />
+diff --git a/src/main/resources/index.jelly b/src/main/resources/index.jelly
+index b445caf..5d28c3d 100644
+--- a/src/main/resources/index.jelly
++++ b/src/main/resources/index.jelly
+@@ -1,3 +1,4 @@
++<?jelly escape-by-default='true'?>
+ <div>
+   This plugin uploads build artifacts to repository sites using SCP (SSH) protocol.
+ </div>
+-- 
+2.34.1
+

@@ -1,0 +1,127 @@
+// library('declarative-libs')
+
+pipeline {
+
+    parameters {
+        string(name: 'String parameter with spaces', defaultValue: 'Fill me in with something witty!', description: 'This is a string parameter, yo!')
+        booleanParam(name: 'TRUE_OR_FALSE', defaultValue: true, description: 'This boolean defaults to true!') 
+        string(name: 'AGENT_NAME', defaultValue: 'linux', description: 'Where to run')
+    }
+
+    agent {
+        label ("${env.AGENT_NAME}")
+    }
+
+    environment {
+        SOMETHING_TO_INHERIT  = "This has been inherited!"
+        SOMETHING_TO_OVERRIDE = "This should be overriden, if you see it, that's wrong."
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '100')) 
+        disableConcurrentBuilds()
+        timestamps()
+    }
+
+    triggers {
+        pollSCM('*/10 * * * *')
+    }
+
+    tools {
+        jdk 'jdk8'
+    }
+
+    stages {
+        stage ('Parallel Wrapper') {  // start of parallel wrapper
+            parallel {
+                stage('parallel-1') {
+                    steps {
+                        echo "--> AGENT_NAME is ${env.AGENT_NAME} "
+                        echo "--> What version of java?"
+                        sh "java -version"
+                    }
+                }
+                stage('parallel-2 overrides environment variables') {
+                    agent {
+                        label 'linux'
+                    }
+                    environment {
+                        SOMETHING_TO_OVERRIDE = "YES --> Overridden by parallel-2"
+                    }
+                    tools {
+                        jdk 'jdk7'
+                    }
+                    steps {
+                        echo "--> What version of java?"
+                        sh "java -version"
+                        echo "Let's check our environment variables"
+                        echo SOMETHING_TO_INHERIT
+                        echo SOMETHING_TO_OVERRIDE
+                    }
+                }
+                stage('parallel-3 back to jdk8') {
+                    environment {
+                        SOMETHING_TO_OVERRIDE = "YES --> OVERRIDDEN BY PARALLEL-3"
+                    }
+                    tools {
+                        jdk 'jdk8'
+                    }
+                    steps {
+                        echo "--> What version of java?"
+                        sh "java -version"
+                        echo "Let's check our environment variables"
+                        echo SOMETHING_TO_INHERIT
+                        echo SOMETHING_TO_OVERRIDE
+                    }
+
+                }
+
+                stage('parallel-4 back to jdk7') {
+                    environment {
+                        SOMETHING_TO_OVERRIDE = "YES --> OVERRIDDEN BY PARALLEL-4"
+                    }
+                    tools {
+                        jdk 'jdk7'
+                    }
+                    steps {
+                        echo "--> What version of java?"
+                        sh "java -version"
+                        echo "Let's check our environment variables"
+                        echo SOMETHING_TO_INHERIT
+                        echo SOMETHING_TO_OVERRIDE
+                    }
+
+                }
+
+                stage('parallel-5 back to jdk8') {
+                    environment {
+                        SOMETHING_TO_OVERRIDE = "YES --> OVERRIDDEN BY PARALLEL-5"
+                    }
+                    tools {
+                        jdk 'jdk8'
+                    }
+                    steps {
+                        echo "--> What version of java?"
+                        sh "java -version"
+                        echo "Let's check our environment variables"
+                        echo SOMETHING_TO_INHERIT
+                        echo SOMETHING_TO_OVERRIDE
+                    }
+
+                }
+            } // end of parallel
+        } // end of wrapper stage
+    } // end stages
+    post {
+        always {
+            echo "ALWAYS --> Runs all the time."
+        }
+        success {
+            echo "SUCCESS --> Whatever we did, it worked. Yay!"
+        }
+        failure {
+            echo "FAILURE --> Failed. Womp womp."
+        }
+    }
+
+ }

@@ -1,0 +1,12 @@
+Index: src/main/java/hudson/scm/SubversionSCM.java
+===================================================================
+--- src/main/java/hudson/scm/SubversionSCM.java	(revision 39934)
++++ src/main/java/hudson/scm/SubversionSCM.java	(working copy)
+@@ -684,6 +684,7 @@
+             List<SvnInfoP> pList = workspace.act(new BuildRevisionMapTask(build, this, listener, externals));
+             List<SvnInfo> revList= new ArrayList<SvnInfo>(pList.size());
+             for (SvnInfoP p: pList) {
++                revList.add(p.info);
+             	if (p.pinned) 
+             		w.println( p.info.url +'/'+ p.info.revision + "::p");
+             	else

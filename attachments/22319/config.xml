@@ -1,0 +1,135 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<matrix-project>
+  <actions/>
+  <description>remove w200864ms8 , w200864p , w200864o112 - since we can support only 3 instnace on a VM&#xd;
+&#xd;
+remove the J : wjp200864my, wjp200864ms8r2&#xd;
+to skip tests :&#xd;
+&#xd;
+-Dcheck.if.test.is.active=true&#xd;
+-Dtests.list.url=http://mydwbld001.isr.hp.com/skip-k2.properties</description>
+  <logRotator>
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>35</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.SubversionSCM">
+    <locations>
+      <hudson.scm.SubversionSCM_-ModuleLocation>
+        <remote>http://16.44.48.194/repos/oo/trunk/k2</remote>
+      </hudson.scm.SubversionSCM_-ModuleLocation>
+    </locations>
+    <excludedRegions></excludedRegions>
+    <includedRegions></includedRegions>
+    <excludedUsers></excludedUsers>
+    <excludedRevprop></excludedRevprop>
+    <excludedCommitMessages></excludedCommitMessages>
+    <workspaceUpdater class="hudson.scm.subversion.UpdateUpdater"/>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector"/>
+  <concurrentBuild>false</concurrentBuild>
+  <axes>
+    <hudson.matrix.LabelAxis>
+      <name>ooos</name>
+      <values>
+        <string>test-suite-mtx1</string>
+        <string>test-suite-mtx2</string>
+        <string>test-suite-mtx3</string>
+        <string>test-suite-mtx4</string>
+        <string>test-suite-mtx5</string>
+        <string>test-suite-mtx6</string>
+        <string>test-suite-mtx7</string>
+      </values>
+    </hudson.matrix.LabelAxis>
+    <hudson.matrix.TextAxis>
+      <name>pf</name>
+      <values>
+        <string>w200864my</string>
+        <string>w200864ms8r2</string>
+        <string>w200864-2ms8</string>
+        <string>w200864-2o112</string>
+        <string>rhel564my</string>
+        <string>rhel564ms8r2</string>
+        <string>rhel564-2p</string>
+        <string>rhel564-2ms8</string>
+        <string>rhel664my</string>
+        <string>rhel664ms8r2</string>
+        <string>rhel664-2p</string>
+        <string>rhel664-2o112</string>
+        <string>oel564my</string>
+        <string>oel564ms8r2</string>
+        <string>oel564-2p</string>
+        <string>oel564-2o112</string>
+        <string>oel664ms8r2</string>
+        <string>oel664ms8</string>
+        <string>oel664-2p</string>
+        <string>oel664-2o112</string>
+        <string>w200864-R2my</string>
+        <string>w200864-R2ms8r2</string>
+        <string>w200864-R2-2o112</string>
+        <string>w200864-R2-2p</string>
+      </values>
+    </hudson.matrix.TextAxis>
+  </axes>
+  <combinationFilter>((ooos.contains (&quot;test-suite-mtx5&quot;) &amp;&amp; pf.contains (&quot;rhel6&quot;)) ||  (ooos.contains (&quot;test-suite-mtx2&quot;) &amp;&amp; pf.contains (&quot;rhel5&quot;))  ||  (ooos.contains (&quot;test-suite-mtx1&quot;) &amp;&amp; pf.contains (&quot;w200864&quot;)  &amp;&amp; ! (pf.contains (&quot;w200864-R2&quot;))  ) ||  (ooos.contains (&quot;test-suite-mtx4&quot;) &amp;&amp; pf.contains (&quot;oel664&quot;)) || (ooos.contains (&quot;test-suite-mtx3&quot;) &amp;&amp; pf.contains (&quot;w200864-R2&quot;))  || (ooos.contains (&quot;test-suite-mtx6&quot;) &amp;&amp; pf.contains (&quot;oel564&quot;))||  (ooos.contains (&quot;test-suite-mtx7&quot;) &amp;&amp; pf.contains (&quot;wjp200864&quot;)))</combinationFilter>
+  <builders>
+    <hudson.tasks.Maven>
+      <targets>clean
+install
+-pl
+:mgmt-system-tests
+-P
+!local-server
+-Doverride.properties.logical.name=&quot;${pf}&quot;
+-Dtest.suites=elaboration
+-Dcheck.if.test.is.active=true
+-Dtests.list.url=http://mydwbld001.isr.hp.com/skip-k2.properties</targets>
+      <mavenName>(Default)</mavenName>
+      <jvmOptions>-Xmx768m -Xms768m -XX:MaxPermSize=512m -XX:-UseSplitVerifier</jvmOptions>
+      <usePrivateRepository>false</usePrivateRepository>
+    </hudson.tasks.Maven>
+  </builders>
+  <publishers>
+    <hudson.tasks.junit.JUnitResultArchiver>
+      <testResults>**/failsafe-reports/*.xml</testResults>
+      <keepLongStdio>false</keepLongStdio>
+      <testDataPublishers/>
+    </hudson.tasks.junit.JUnitResultArchiver>
+    <hudson.tasks.Mailer>
+      <recipients></recipients>
+      <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>true</sendToIndividuals>
+    </hudson.tasks.Mailer>
+    <hudson.plugins.parameterizedtrigger.BuildTrigger>
+      <configs>
+        <hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
+          <configs class="java.util.Collections$EmptyList"/>
+          <projects>k2_get_mtx_logs</projects>
+          <condition>ALWAYS</condition>
+          <triggerWithNoParameters>true</triggerWithNoParameters>
+        </hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
+      </configs>
+    </hudson.plugins.parameterizedtrigger.BuildTrigger>
+  </publishers>
+  <buildWrappers>
+    <hudson.plugins.build__timeout.BuildTimeoutWrapper>
+      <timeoutMinutes>45</timeoutMinutes>
+      <failBuild>false</failBuild>
+      <writingDescription>false</writingDescription>
+      <timeoutPercentage>0</timeoutPercentage>
+      <timeoutType>absolute</timeoutType>
+      <timeoutMinutesElasticDefault>3</timeoutMinutesElasticDefault>
+    </hudson.plugins.build__timeout.BuildTimeoutWrapper>
+    <hudson.plugins.timestamper.TimestamperBuildWrapper/>
+  </buildWrappers>
+  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+    <runSequentially>false</runSequentially>
+  </executionStrategy>
+</matrix-project>

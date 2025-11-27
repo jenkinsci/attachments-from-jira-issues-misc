@@ -1,0 +1,28 @@
+stage('archive and aggregate') {
+            steps {
+                archiveArtifacts artifacts: 'build/screenshots/**/*.*, build/version/**/*.*', allowEmptyArchive: true, fingerprint: true
+                junit 'build/test-results/**/*.xml'
+                script {
+                    def jobsList = ['Care_QA/qa-01-critical-response-AdminIntegrationsSuite']
+                                
+                                
+                    println(jobsList.get(0))
+                    /*parallel jobsList.collectEntries {value ->
+                        ["Building With ${value}": {
+                            build job : value,
+                            wait: true, propagate: false
+                        }]
+                    }*/
+                    build job : "Care_QA/qa-01-critical-response-AdminIntegrationsSuite", wait: true, propagate: false
+                    copyArtifacts filter: 'build/version/**/*.*', fingerprintArtifacts: true, projectName: 'Care_QA/qa-01-critical-response-AdminIntegrationsSuite', selector: lastCompleted()
+                    try {
+                        testResultsAggregator jobs:[[jobName: 'Care_QA/qa-01-critical-response-AdminIntegrationsSuite']] 
+                    }
+                    catch (err) {
+                        echo err.getMessage()
+                    }    
+                }               
+                      
+                     
+            } 
+        }

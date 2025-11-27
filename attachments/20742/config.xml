@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Nightly run of code analysis for asn.</description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.SubversionSCM">
+    <locations>
+      <hudson.scm.SubversionSCM_-ModuleLocation>
+        <remote>http://172.20.10.7:81/svn/pcrt/trunk/pcrt</remote>
+        <local>src/pcrt</local>
+      </hudson.scm.SubversionSCM_-ModuleLocation>
+      <hudson.scm.SubversionSCM_-ModuleLocation>
+        <remote>http://172.20.10.7:81/svn/tools/devenv/trunk/devenv/platforms/x86_64-64bits-linux-v2.6-g++-v4.4.3</remote>
+        <local>platforms/x86_64-64bits-linux-v2.6-g++-v4.5.2</local>
+      </hudson.scm.SubversionSCM_-ModuleLocation>
+      <hudson.scm.SubversionSCM_-ModuleLocation>
+        <remote>http://172.20.10.7:81/svn/tools/devenv/trunk/devenv/bin</remote>
+        <local>bin</local>
+      </hudson.scm.SubversionSCM_-ModuleLocation>
+      <hudson.scm.SubversionSCM_-ModuleLocation>
+        <remote>http://172.20.10.7:81/svn/tools/devenv/trunk/devenv/etc</remote>
+        <local>etc</local>
+      </hudson.scm.SubversionSCM_-ModuleLocation>
+      <hudson.scm.SubversionSCM_-ModuleLocation>
+        <remote>http://172.20.10.7:81/svn/asn/trunk/asn</remote>
+        <local>src/asn</local>
+      </hudson.scm.SubversionSCM_-ModuleLocation>
+    </locations>
+    <excludedRegions></excludedRegions>
+    <includedRegions></includedRegions>
+    <excludedUsers></excludedUsers>
+    <excludedRevprop></excludedRevprop>
+    <excludedCommitMessages></excludedCommitMessages>
+    <workspaceUpdater class="hudson.scm.subversion.UpdateUpdater"/>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector">
+    <hudson.triggers.TimerTrigger>
+      <spec>0 22 * * *</spec>
+    </hudson.triggers.TimerTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#!/bin/sh
+# clean up
+echo Cleaning up
+cd $WORKSPACE
+rm -f cpd_config.xml cpd.xml
+rm -f cppcheck_ignored_errors.list cppcheck_files.list
+rm -rf cccc</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>#!/bin/sh
+echo Executing CCCC
+cd $WORKSPACE
+find . -type f | grep &quot;/src/asn/&quot; | grep &quot;cpp$&quot; | cccc --lang=c++ --outdir=cccc -
+</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <com.thalesgroup.hudson.plugins.cccc.CcccPublisher>
+      <metricFilePath>cccc/cccc.xml</metricFilePath>
+      <runOnFailedBuild>false</runOnFailedBuild>
+    </com.thalesgroup.hudson.plugins.cccc.CcccPublisher>
+    <hudson.tasks.Mailer>
+      <recipients>s.conrad@belerofon.com</recipients>
+      <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>false</sendToIndividuals>
+    </hudson.tasks.Mailer>
+  </publishers>
+  <buildWrappers/>
+</project>

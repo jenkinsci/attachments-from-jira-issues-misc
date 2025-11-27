@@ -1,0 +1,211 @@
+From 51afb66394ab1c8fa7eb6ec4ef6e36d1af74f1c6 Mon Sep 17 00:00:00 2001
+From: Max Kalika <max@connectsolutions.com>
+Date: Tue, 13 Jul 2010 11:17:27 -0700
+Subject: [PATCH] Add CGit git browser support.
+
+---
+ src/main/java/hudson/plugins/git/GitSCM.java       |   26 +++++-
+ src/main/java/hudson/plugins/git/browser/CGit.java |   98 ++++++++++++++++++++
+ .../hudson/plugins/git/browser/CGit/config.jelly   |    5 +
+ src/main/webapp/cgit.html                          |    3 +
+ .../hudson/plugins/git/MockStaplerRequest.java     |    4 +
+ 5 files changed, 135 insertions(+), 1 deletions(-)
+ create mode 100644 src/main/java/hudson/plugins/git/browser/CGit.java
+ create mode 100644 src/main/resources/hudson/plugins/git/browser/CGit/config.jelly
+ create mode 100644 src/main/webapp/cgit.html
+
+diff --git a/src/main/java/hudson/plugins/git/GitSCM.java b/src/main/java/hudson/plugins/git/GitSCM.java
+index debb764..07db1a4 100644
+--- a/src/main/java/hudson/plugins/git/GitSCM.java
++++ b/src/main/java/hudson/plugins/git/GitSCM.java
+@@ -9,6 +9,7 @@ import hudson.model.*;
+ 
+ import static hudson.Util.fixEmptyAndTrim;
+ 
++import hudson.plugins.git.browser.CGit;
+ import hudson.plugins.git.browser.GitWeb;
+ import hudson.plugins.git.browser.GithubWeb;
+ import hudson.plugins.git.opt.PreBuildMergeOptions;
+@@ -1030,9 +1031,18 @@ public class GitSCM extends SCM implements Serializable {
+          */
+         private GitRepositoryBrowser getBrowserFromRequest(StaplerRequest req) {
+             final GitRepositoryBrowser gitBrowser;
++            final String cgitUrl = req.getParameter("cgit.url");
+             final String gitWebUrl = req.getParameter("gitweb.url");
+             final String githubWebUrl = req.getParameter("githubweb.url");
+-            if (gitWebUrl != null && gitWebUrl.trim().length() > 0) {
++            if (cgitUrl != null && cgitUrl.trim().length() > 0) {
++                try {
++                    gitBrowser = new CGit(cgitUrl.trim());
++                }
++                catch (MalformedURLException e) {
++                    throw new GitException("Error creating CGit", e);
++                }
++            }
++            else if (gitWebUrl != null && gitWebUrl.trim().length() > 0) {
+                 try {
+                     gitBrowser = new GitWeb(gitWebUrl.trim());
+                 }
+@@ -1133,6 +1143,20 @@ public class GitSCM extends SCM implements Serializable {
+             return mergeOptions;
+         }
+ 
++        public static CGit createCGit(String url) {
++            CGit cgit = null;
++            String cgitUrl = url;
++            if (cgitUrl != null && cgitUrl.length() > 0) {
++                try {
++                    cgit = new CGit(cgitUrl);
++                }
++                catch (MalformedURLException e) {
++                    throw new GitException("Error creating CGit", e);
++                }
++            }
++            return cgit;
++        }
++
+         public static GitWeb createGitWeb(String url) {
+             GitWeb gitWeb = null;
+             String gitWebUrl = url;
+diff --git a/src/main/java/hudson/plugins/git/browser/CGit.java b/src/main/java/hudson/plugins/git/browser/CGit.java
+new file mode 100644
+index 0000000..cd296f1
+--- /dev/null
++++ b/src/main/java/hudson/plugins/git/browser/CGit.java
+@@ -0,0 +1,98 @@
++package hudson.plugins.git.browser;
++
++import hudson.Extension;
++import hudson.model.Descriptor;
++import hudson.plugins.git.GitChangeSet;
++import hudson.plugins.git.GitChangeSet.Path;
++import hudson.plugins.git.GitRepositoryBrowser;
++import hudson.scm.EditType;
++import hudson.scm.RepositoryBrowser;
++
++import hudson.scm.browsers.QueryBuilder;
++import java.io.IOException;
++import java.net.URL;
++import java.net.MalformedURLException;
++
++import net.sf.json.JSONObject;
++import org.kohsuke.stapler.DataBoundConstructor;
++import org.kohsuke.stapler.StaplerRequest;
++
++/**
++ * Git Browser URLs
++ */
++public class CGit extends GitRepositoryBrowser {
++
++    private static final long serialVersionUID = 1L;
++    private final URL url;
++
++    @DataBoundConstructor
++    public CGit(String url) throws MalformedURLException {
++        this.url = normalizeToEndWithSlash(new URL(url));
++    }
++
++    public URL getUrl() {
++        return url;
++    }
++
++    private QueryBuilder param() {
++        return new QueryBuilder(url.getQuery());
++    }
++
++    /**
++     * Creates a link to the change set
++     * http://[CGit URL]/commit?id=[commit]
++     *
++     * @param changeSet commit hash
++     * @return change set link
++     * @throws IOException
++     */
++    @Override
++    public URL getChangeSetLink(GitChangeSet changeSet) throws IOException {
++        return new URL(url, url.getPath() + "commit/" + param().add("id=" + changeSet.getId()).toString());
++    }
++
++    /**
++     * Creates a link to the file diff.
++     * http://[CGit URL]/diff/[path]?id=[commit]
++     *
++     * @param path affected file path
++     * @return diff link
++     * @throws IOException
++     */
++    @Override
++    public URL getDiffLink(Path path) throws IOException {
++        GitChangeSet changeSet = path.getChangeSet();
++        return new URL(url, url.getPath() + "diff/" + path.getPath() + param().add("id=" + changeSet.getId()).toString());
++    }
++
++    /**
++     * Creates a link to the file.
++     * http://[CGit URL]/tree/[path]?id=[commit]
++     *
++     * @param path affected file path
++     * @return diff link
++     * @throws IOException
++     */
++    @Override
++    public URL getFileLink(Path path) throws IOException {
++        GitChangeSet changeSet = path.getChangeSet();
++
++        if (path.getEditType() == EditType.DELETE) {
++            return new URL(url, url.getPath() + "tree/" + path.getPath() + param().add("id=" + changeSet.getParentCommit()).toString());
++        } else {
++            return new URL(url, url.getPath() + "tree/" + path.getPath() + param().add("id=" + changeSet.getId()).toString());
++        }
++    }
++
++    @Extension
++    public static class CGITDescriptor extends Descriptor<RepositoryBrowser<?>> {
++        public String getDisplayName() {
++            return "cgit";
++        }
++
++        @Override
++        public CGit newInstance(StaplerRequest req, JSONObject jsonObject) throws FormException {
++            return req.bindParameters(CGit.class, "cgit.");
++        }
++    }
++}
+diff --git a/src/main/resources/hudson/plugins/git/browser/CGit/config.jelly b/src/main/resources/hudson/plugins/git/browser/CGit/config.jelly
+new file mode 100644
+index 0000000..ec84a58
+--- /dev/null
++++ b/src/main/resources/hudson/plugins/git/browser/CGit/config.jelly
+@@ -0,0 +1,5 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
++  <f:entry title="URL" help="/plugin/git/cgit.html">
++    <f:textbox name="cgit.url" value="${browser.url}"/>
++  </f:entry>
++</j:jelly>
+diff --git a/src/main/webapp/cgit.html b/src/main/webapp/cgit.html
+new file mode 100644
+index 0000000..758e819
+--- /dev/null
++++ b/src/main/webapp/cgit.html
+@@ -0,0 +1,3 @@
++<div>
++  Specify the root URL serving this repository (such as <a href="http://repo.or.cz/r/git.git">this</a>.)
++</div>
+diff --git a/src/test/java/hudson/plugins/git/MockStaplerRequest.java b/src/test/java/hudson/plugins/git/MockStaplerRequest.java
+index dd5b896..814450d 100644
+--- a/src/test/java/hudson/plugins/git/MockStaplerRequest.java
++++ b/src/test/java/hudson/plugins/git/MockStaplerRequest.java
+@@ -77,6 +77,10 @@ public class MockStaplerRequest implements StaplerRequest {
+         return put("git.mergeTarget", mergeTarget);
+     }
+ 
++    public MockStaplerRequest setCGitUrl(String cgitUrl) {
++        return put("cgit.url", cgitUrl);
++    }
++
+     public MockStaplerRequest setGitWebUrl(String gitWebUrl) {
+         return put("gitweb.url", gitWebUrl);
+     }
+-- 
+1.6.5.1
+

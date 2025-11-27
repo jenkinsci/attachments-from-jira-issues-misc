@@ -1,0 +1,130 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<matrix-project plugin="matrix-project@1.6">
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>base_dir</name>
+          <description></description>
+          <defaultValue>/media/BackUp/svn/auto/mainline_weekend</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>type</name>
+          <description></description>
+          <defaultValue>unset</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <axes>
+    <org.jenkinsci.plugins.elasticaxisplugin.ElasticAxis plugin="elastic-axis@1.2">
+      <name>Run Regression</name>
+      <values>
+        <string>imb-151-6342</string>
+        <string>imb-151</string>
+        <string>intel-rangeley-4899</string>
+        <string>bigmac</string>
+        <string>jasper-8092</string>
+        <string>omap5432-es2-2586</string>
+        <string>amd64-dual-2</string>
+        <string>nxp-s32v234-evb-8659</string>
+        <string>omap3530-7099</string>
+        <string>sandybridge-001</string>
+        <string>imb-151-6336</string>
+        <string>omap3530-7098</string>
+        <string>intel-skylake-8559</string>
+        <string>nvidia-parker-8346</string>
+        <string>panda-12659</string>
+        <string>intel-skylake-8556</string>
+        <string>omap3530-7567</string>
+        <string>amdk6iii-1</string>
+        <string>imx6q-sabresmart-00049F02E082</string>
+        <string>panda-12660</string>
+        <string>aimb272-12185</string>
+        <string>beagleXM-1</string>
+        <string>beagleXM-2</string>
+        <string>freescale-imx6q-sabre-8635</string>
+        <string>zotac-amd-001</string>
+        <string>ti-am572x-8710</string>
+        <string>mx6q-sabrelite-12252</string>
+        <string>amdk7-1</string>
+        <string>qnet04</string>
+        <string>qnet05</string>
+        <string>am437x-8449</string>
+        <string>j6-dra7x-8466</string>
+        <string>intel-skylake-8493</string>
+        <string>bigintel-7990</string>
+        <string>beagleblack</string>
+        <string>qnet02</string>
+        <string>nvidia-parker-8360</string>
+        <string>omap5432-es2-2764</string>
+        <string>panda-12677</string>
+        <string>bigbertha-8455</string>
+        <string>imx600044-20015160</string>
+        <string>nvidia-parker-8361</string>
+        <string>panda-12676</string>
+        <string>pcm9562-8166</string>
+        <string>beagleblack-002</string>
+        <string>imb-151-6352</string>
+        <string>smpmpxpii</string>
+        <string>omap5432-es2-2206</string>
+        <string>hasswell-bc5ff4e8872e</string>
+        <string>ivybridge-2554</string>
+        <string>adsom-7222</string>
+        <string>imx6q-sabresmart-6115</string>
+        <string>ds81-shuttle-001</string>
+        <string>omap3530-6363</string>
+      </values>
+      <label>target</label>
+      <ignoreOffline>true</ignoreOffline>
+    </org.jenkinsci.plugins.elasticaxisplugin.ElasticAxis>
+  </axes>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>cd $base_dir
+source sourceme.sh
+cd qa/targetbuild/yoyo.suite/build
+cd ${NODE_NAME}
+chmod +x regression.sh
+./regression.sh
+</command>
+    </hudson.tasks.Shell>
+    <hudson.plugins.parameterizedtrigger.TriggerBuilder plugin="parameterized-trigger@2.30">
+      <configs>
+        <hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig>
+          <configs>
+            <hudson.plugins.parameterizedtrigger.CurrentBuildParameters/>
+            <hudson.plugins.parameterizedtrigger.NodeParameters/>
+          </configs>
+          <projects>Release Node</projects>
+          <condition>ALWAYS</condition>
+          <triggerWithNoParameters>false</triggerWithNoParameters>
+          <block/>
+          <buildAllNodesWithLabel>false</buildAllNodesWithLabel>
+        </hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig>
+      </configs>
+    </hudson.plugins.parameterizedtrigger.TriggerBuilder>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <hudson.plugins.build__timeout.BuildTimeoutWrapper plugin="build-timeout@1.15.1">
+      <strategy class="hudson.plugins.build_timeout.impl.AbsoluteTimeOutStrategy">
+        <timeoutMinutes>${timeout}</timeoutMinutes>
+      </strategy>
+      <operationList/>
+    </hudson.plugins.build__timeout.BuildTimeoutWrapper>
+  </buildWrappers>
+  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+    <runSequentially>false</runSequentially>
+  </executionStrategy>
+</matrix-project>

@@ -1,0 +1,50 @@
+pipeline {
+    agent any
+    environment {
+        CONTAINER_NAME = 'fe'
+        IMAGE_NAME = 'personal_blog_fe'
+    }
+    stages {
+        stage('删除上次容器镜像') {
+            steps {
+                sh 'docker --version'
+                // script {
+                //     try {
+                //         sh "docker rm -f ${CONTAINER_NAME}"
+                //         sh "docker rmi ${IMAGE_NAME}"
+                //     } catch (exc) {
+                //         echo "${exc},该容器或镜像不存在"
+                //     }
+                // }
+            }
+        }
+        stage('Build') { 
+            agent {
+                docker {
+                    image 'node:14.18.2' 
+                }
+            }
+            steps {
+                sh 'node -v'
+                sh 'yarn install'
+                echo '安装依赖完成'
+                sh 'CI=false yarn build'
+                sh 'pwd'
+                sh 'ls'
+                echo '打包完成'
+            }
+        }
+        stage('Build Image') {
+            steps {
+                echo '开始构建'
+                sh 'pwd'
+                sh "ls"
+                sh "docker build . -t ${IMAGE_NAME}"
+                echo '构建完成'
+                echo '运行容器'
+                sh "docker run -p 8080:80 -d --name ${CONTAINER_NAME} ${IMAGE_NAME}"
+                echo '运行完成'
+            }
+        }
+    }
+}

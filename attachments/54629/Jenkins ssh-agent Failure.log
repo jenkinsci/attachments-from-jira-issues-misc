@@ -1,0 +1,374 @@
+Started by user ********
+Obtained Jenkinsfile from 2f4e03416705ac20a107fea2053f431a4acb1987
+Running in Durability level: MAX_SURVIVABILITY
+[Pipeline] Start of Pipeline
+[Pipeline] echo
+[WARNING] label option is deprecated. To use a static pod template, use the 'inheritFrom' option.
+[Pipeline] podTemplate
+[Pipeline] {
+[Pipeline] node
+Created Pod: kubernetes ********/********-fb9bcefd-0da0-4934-a6d3-c1738864b368-pgn87-2m50k
+[Normal][********/********-fb9bcefd-0da0-4934-a6d3-c1738864b368-pgn87-2m50k][Scheduled] Successfully assigned ********/********-fb9bcefd-0da0-4934-a6d3-c1738864b368-pgn87-2m50k to pdx2k8slrmtlsw02
+[Normal][********/********-fb9bcefd-0da0-4934-a6d3-c1738864b368-pgn87-2m50k][Pulling] Pulling image "amazon/aws-cli"
+[Normal][********/********-fb9bcefd-0da0-4934-a6d3-c1738864b368-pgn87-2m50k][Pulled] Successfully pulled image "amazon/aws-cli"
+[Normal][********/********-fb9bcefd-0da0-4934-a6d3-c1738864b368-pgn87-2m50k][Created] Created container aws
+[Normal][********/********-fb9bcefd-0da0-4934-a6d3-c1738864b368-pgn87-2m50k][Started] Started container aws
+[Normal][********/********-fb9bcefd-0da0-4934-a6d3-c1738864b368-pgn87-2m50k][Pulled] Container image "docker:stable-git" already present on machine
+[Normal][********/********-fb9bcefd-0da0-4934-a6d3-c1738864b368-pgn87-2m50k][Created] Created container docker
+[Normal][********/********-fb9bcefd-0da0-4934-a6d3-c1738864b368-pgn87-2m50k][Started] Started container docker
+[Normal][********/********-fb9bcefd-0da0-4934-a6d3-c1738864b368-pgn87-2m50k][Pulled] Container image "jenkins/inbound-agent:4.3-4" already present on machine
+[Normal][********/********-fb9bcefd-0da0-4934-a6d3-c1738864b368-pgn87-2m50k][Created] Created container jnlp
+[Normal][********/********-fb9bcefd-0da0-4934-a6d3-c1738864b368-pgn87-2m50k][Started] Started container jnlp
+Agent ********-fb9bcefd-0da0-4934-a6d3-c1738864b368-pgn87-2m50k is provisioned from template ********-fb9bcefd-0da0-4934-a6d3-c1738864b368-pgn87
+---
+apiVersion: "v1"
+kind: "Pod"
+metadata:
+  annotations:
+    buildUrl: "https://********/job/********/job/********/69/"
+    runUrl: "job/********/job/********/job/********/69/"
+  labels:
+    jenkins: "agent"
+    jenkins/label-digest: "4289079d40fed3fa6a698a97125107373a364423"
+    jenkins/label: "********-fb9bcefd-0da0-4934-a6d3-c1738864b368"
+  name: "********-fb9bcefd-0da0-4934-a6d3-c1738864b368-pgn87-2m50k"
+spec:
+  containers:
+  - command:
+    - "cat"
+    image: "amazon/aws-cli"
+    name: "aws"
+    tty: true
+    volumeMounts:
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+  - command:
+    - "cat"
+    image: "docker:stable-git"
+    name: "docker"
+    tty: true
+    volumeMounts:
+    - mountPath: "/var/run/docker.sock"
+      name: "docker-socket"
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+  - env:
+    - name: "JENKINS_SECRET"
+      value: "********"
+    - name: "JENKINS_AGENT_NAME"
+      value: "********-fb9bcefd-0da0-4934-a6d3-c1738864b368-pgn87-2m50k"
+    - name: "JENKINS_NAME"
+      value: "********-fb9bcefd-0da0-4934-a6d3-c1738864b368-pgn87-2m50k"
+    - name: "JENKINS_AGENT_WORKDIR"
+      value: "/home/jenkins/agent"
+    - name: "JENKINS_URL"
+      value: "https://********/"
+    image: "jenkins/inbound-agent:4.3-4"
+    name: "jnlp"
+    resources:
+      limits: {}
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+    volumeMounts:
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+  nodeSelector:
+    kubernetes.io/os: "linux"
+  restartPolicy: "Never"
+  securityContext:
+    fsGroup: 0
+    runAsUser: 0
+  volumes:
+  - emptyDir:
+      medium: ""
+    name: "workspace-volume"
+  - hostPath:
+      path: "/var/run/docker.sock"
+    name: "docker-socket"
+
+Running on ********-fb9bcefd-0da0-4934-a6d3-c1738864b368-pgn87-2m50k in /home/jenkins/agent/workspace/_********_********
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Declarative: Checkout SCM)
+[Pipeline] checkout
+The recommended git tool is: NONE
+using credential whsbitbucket
+Cloning the remote Git repository
+Cloning with configured refspecs honoured and without tags
+Avoid second fetch
+Checking out Revision 2f4e03416705ac20a107fea2053f431a4acb1987 (********)
+Cloning repository https://********/scm/********/********.git
+ > git init /home/jenkins/agent/workspace/_********_******** # timeout=10
+Fetching upstream changes from https://********/scm/********/********.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.20.1'
+using GIT_ASKPASS to set credentials Jenkins user in ********
+ > git fetch --no-tags --force --progress -- https://********/scm/********/********.git +refs/heads/********:refs/remotes/origin/******** # timeout=10
+ > git config remote.origin.url https://********/scm/********/********.git # timeout=10
+ > git config --add remote.origin.fetch +refs/heads/********:refs/remotes/origin/******** # timeout=10
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 2f4e03416705ac20a107fea2053f431a4acb1987 # timeout=10
+Commit message: "********"
+First time build. Skipping changelog.
+Cleaning workspace
+[Bitbucket] Notifying commit build result
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (SSH Prep)
+[Pipeline] container
+[Pipeline] {
+[Pipeline] sh
+ > git rev-list --no-walk bbc62023ad8211b2c525461ebafde5327206136a # timeout=10
+ > git rev-parse --verify HEAD # timeout=10
+Resetting working tree
+ > git reset --hard # timeout=10
+ > git clean -fdx # timeout=10
++ mkdir -p /root/.ssh
++ chmod 700 /root/.ssh
+[Pipeline] sh
++ ssh-keyscan -t rsa bitbucket.org
+# bitbucket.org:22 SSH-2.0-conker_5cfbe6018c conker-3003
++ break
+[Pipeline] sh
++ ssh-keyscan -t rsa ********
+# ********:22 SSH-2.0-APACHE-SSHD-2.3.0
+[Pipeline] }
+[Pipeline] // container
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Clone Source)
+[Pipeline] container
+[Pipeline] {
+[Pipeline] sh
++ which ssh-agent
+/usr/bin/ssh-agent
+[Pipeline] sh
++ echo /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+[Pipeline] sh
++ ssh-agent
+SSH_AUTH_SOCK=/tmp/ssh-XSDmjM1yXPTM/agent.82; export SSH_AUTH_SOCK;
+SSH_AGENT_PID=84; export SSH_AGENT_PID;
+echo Agent pid 84;
+[Pipeline] sshagent
+[ssh-agent] Using credentials ******** (Private SSH key used to connect to bitbucket.org)
+[ssh-agent] Looking for ssh-agent implementation...
+ERROR: Timeout after 1 minutes
+[ssh-agent]   Exec ssh-agent (binary ssh-agent on a remote machine)
+Executing sh script inside container docker of pod ********-fb9bcefd-0da0-4934-a6d3-c1738864b368-pgn87-2m50k
+Executing command: "ssh-agent" 
+exit
+
+: No such file or directory
+sh: exit
+: not found
+ERROR: Timeout after 1 minutes
+[ssh-agent] FATAL: Could not find a suitable ssh-agent provider
+[ssh-agent] Diagnostic report
+[ssh-agent] * Exec ssh-agent (binary ssh-agent on a remote machine)
+[ssh-agent]     java.lang.StringIndexOutOfBoundsException: begin 13, end -1, length 50
+
+[ssh-agent]     	at java.base/java.lang.String.checkBoundsBeginEnd(String.java:3319)
+
+[ssh-agent]     	at java.base/java.lang.String.substring(String.java:1874)
+
+[ssh-agent]     	at com.cloudbees.jenkins.plugins.sshagent.exec.ExecRemoteAgent.getAgentValue(ExecRemoteAgent.java:156)
+
+[ssh-agent]     	at com.cloudbees.jenkins.plugins.sshagent.exec.ExecRemoteAgent.parseAgentEnv(ExecRemoteAgent.java:140)
+
+[ssh-agent]     	at com.cloudbees.jenkins.plugins.sshagent.exec.ExecRemoteAgent.<init>(ExecRemoteAgent.java:68)
+
+[ssh-agent]     	at com.cloudbees.jenkins.plugins.sshagent.exec.ExecRemoteAgentFactory.start(ExecRemoteAgentFactory.java:84)
+
+[ssh-agent]     	at com.cloudbees.jenkins.plugins.sshagent.SSHAgentStepExecution.initRemoteAgent(SSHAgentStepExecution.java:157)
+
+[ssh-agent]     	at com.cloudbees.jenkins.plugins.sshagent.SSHAgentStepExecution.start(SSHAgentStepExecution.java:63)
+
+[ssh-agent]     	at org.jenkinsci.plugins.workflow.cps.DSL.invokeStep(DSL.java:319)
+
+[ssh-agent]     	at org.jenkinsci.plugins.workflow.cps.DSL.invokeMethod(DSL.java:193)
+
+[ssh-agent]     	at org.jenkinsci.plugins.workflow.cps.CpsScript.invokeMethod(CpsScript.java:122)
+
+[ssh-agent]     	at jdk.internal.reflect.GeneratedMethodAccessor7850.invoke(Unknown Source)
+
+[ssh-agent]     	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+
+[ssh-agent]     	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+
+[ssh-agent]     	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:93)
+
+[ssh-agent]     	at groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:325)
+
+[ssh-agent]     	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1213)
+
+[ssh-agent]     	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1022)
+
+[ssh-agent]     	at org.codehaus.groovy.runtime.callsite.PogoMetaClassSite.call(PogoMetaClassSite.java:42)
+
+[ssh-agent]     	at org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCall(CallSiteArray.java:48)
+
+[ssh-agent]     	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:113)
+
+[ssh-agent]     	at org.kohsuke.groovy.sandbox.impl.Checker$1.call(Checker.java:163)
+
+[ssh-agent]     	at org.kohsuke.groovy.sandbox.GroovyInterceptor.onMethodCall(GroovyInterceptor.java:23)
+
+[ssh-agent]     	at org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SandboxInterceptor.onMethodCall(SandboxInterceptor.java:157)
+
+[ssh-agent]     	at org.kohsuke.groovy.sandbox.impl.Checker$1.call(Checker.java:161)
+
+[ssh-agent]     	at org.kohsuke.groovy.sandbox.impl.Checker.checkedCall(Checker.java:165)
+
+[ssh-agent]     	at org.kohsuke.groovy.sandbox.impl.Checker.checkedCall(Checker.java:135)
+
+[ssh-agent]     	at org.kohsuke.groovy.sandbox.impl.Checker.checkedCall(Checker.java:135)
+
+[ssh-agent]     	at com.cloudbees.groovy.cps.sandbox.SandboxInvoker.methodCall(SandboxInvoker.java:17)
+
+[ssh-agent]     	at com.cloudbees.groovy.cps.impl.ContinuationGroup.methodCall(ContinuationGroup.java:86)
+
+[ssh-agent]     	at com.cloudbees.groovy.cps.impl.FunctionCallBlock$ContinuationImpl.dispatchOrArg(FunctionCallBlock.java:113)
+
+[ssh-agent]     	at com.cloudbees.groovy.cps.impl.FunctionCallBlock$ContinuationImpl.fixArg(FunctionCallBlock.java:83)
+
+[ssh-agent]     	at jdk.internal.reflect.GeneratedMethodAccessor328.invoke(Unknown Source)
+
+[ssh-agent]     	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+
+[ssh-agent]     	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+
+[ssh-agent]     	at com.cloudbees.groovy.cps.impl.ContinuationPtr$ContinuationImpl.receive(ContinuationPtr.java:72)
+
+[ssh-agent]     	at com.cloudbees.groovy.cps.impl.ClosureBlock.eval(ClosureBlock.java:46)
+
+[ssh-agent]     	at com.cloudbees.groovy.cps.Next.step(Next.java:83)
+
+[ssh-agent]     	at com.cloudbees.groovy.cps.Continuable$1.call(Continuable.java:174)
+
+[ssh-agent]     	at com.cloudbees.groovy.cps.Continuable$1.call(Continuable.java:163)
+
+[ssh-agent]     	at org.codehaus.groovy.runtime.GroovyCategorySupport$ThreadCategoryInfo.use(GroovyCategorySupport.java:129)
+
+[ssh-agent]     	at org.codehaus.groovy.runtime.GroovyCategorySupport.use(GroovyCategorySupport.java:268)
+
+[ssh-agent]     	at com.cloudbees.groovy.cps.Continuable.run0(Continuable.java:163)
+
+[ssh-agent]     	at org.jenkinsci.plugins.workflow.cps.SandboxContinuable.access$001(SandboxContinuable.java:18)
+
+[ssh-agent]     	at org.jenkinsci.plugins.workflow.cps.SandboxContinuable.run0(SandboxContinuable.java:51)
+
+[ssh-agent]     	at org.jenkinsci.plugins.workflow.cps.CpsThread.runNextChunk(CpsThread.java:185)
+
+[ssh-agent]     	at org.jenkinsci.plugins.workflow.cps.CpsThreadGroup.run(CpsThreadGroup.java:400)
+
+[ssh-agent]     	at org.jenkinsci.plugins.workflow.cps.CpsThreadGroup.access$400(CpsThreadGroup.java:96)
+
+[ssh-agent]     	at org.jenkinsci.plugins.workflow.cps.CpsThreadGroup$2.call(CpsThreadGroup.java:312)
+
+[ssh-agent]     	at org.jenkinsci.plugins.workflow.cps.CpsThreadGroup$2.call(CpsThreadGroup.java:276)
+
+[ssh-agent]     	at org.jenkinsci.plugins.workflow.cps.CpsVmExecutorService$2.call(CpsVmExecutorService.java:67)
+
+[ssh-agent]     	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+
+[ssh-agent]     	at hudson.remoting.SingleLaneExecutorService$1.run(SingleLaneExecutorService.java:136)
+
+[ssh-agent]     	at jenkins.util.ContextResettingExecutorService$1.run(ContextResettingExecutorService.java:28)
+
+[ssh-agent]     	at jenkins.security.ImpersonatingExecutorService$1.run(ImpersonatingExecutorService.java:59)
+
+[ssh-agent]     	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
+
+[ssh-agent]     	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+
+[ssh-agent]     	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+
+[ssh-agent]     	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+
+[ssh-agent]     	at java.base/java.lang.Thread.run(Thread.java:834)
+
+[Pipeline] // sshagent
+[Pipeline] }
+[Pipeline] // container
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // podTemplate
+[Pipeline] End of Pipeline
+[Bitbucket] Notifying commit build result
+[Bitbucket] Build result notified
+java.lang.RuntimeException: [ssh-agent] Could not find a suitable ssh-agent provider.
+	at com.cloudbees.jenkins.plugins.sshagent.SSHAgentStepExecution.initRemoteAgent(SSHAgentStepExecution.java:175)
+	at com.cloudbees.jenkins.plugins.sshagent.SSHAgentStepExecution.start(SSHAgentStepExecution.java:63)
+	at org.jenkinsci.plugins.workflow.cps.DSL.invokeStep(DSL.java:319)
+	at org.jenkinsci.plugins.workflow.cps.DSL.invokeMethod(DSL.java:193)
+	at org.jenkinsci.plugins.workflow.cps.CpsScript.invokeMethod(CpsScript.java:122)
+	at jdk.internal.reflect.GeneratedMethodAccessor7850.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:93)
+	at groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:325)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1213)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1022)
+	at org.codehaus.groovy.runtime.callsite.PogoMetaClassSite.call(PogoMetaClassSite.java:42)
+	at org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCall(CallSiteArray.java:48)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:113)
+	at org.kohsuke.groovy.sandbox.impl.Checker$1.call(Checker.java:163)
+	at org.kohsuke.groovy.sandbox.GroovyInterceptor.onMethodCall(GroovyInterceptor.java:23)
+	at org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SandboxInterceptor.onMethodCall(SandboxInterceptor.java:157)
+	at org.kohsuke.groovy.sandbox.impl.Checker$1.call(Checker.java:161)
+	at org.kohsuke.groovy.sandbox.impl.Checker.checkedCall(Checker.java:165)
+	at org.kohsuke.groovy.sandbox.impl.Checker.checkedCall(Checker.java:135)
+	at org.kohsuke.groovy.sandbox.impl.Checker.checkedCall(Checker.java:135)
+	at com.cloudbees.groovy.cps.sandbox.SandboxInvoker.methodCall(SandboxInvoker.java:17)
+	at WorkflowScript.run(WorkflowScript:57)
+	at ___cps.transform___(Native Method)
+	at com.cloudbees.groovy.cps.impl.ContinuationGroup.methodCall(ContinuationGroup.java:86)
+	at com.cloudbees.groovy.cps.impl.FunctionCallBlock$ContinuationImpl.dispatchOrArg(FunctionCallBlock.java:113)
+	at com.cloudbees.groovy.cps.impl.FunctionCallBlock$ContinuationImpl.fixArg(FunctionCallBlock.java:83)
+	at jdk.internal.reflect.GeneratedMethodAccessor328.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at com.cloudbees.groovy.cps.impl.ContinuationPtr$ContinuationImpl.receive(ContinuationPtr.java:72)
+	at com.cloudbees.groovy.cps.impl.ClosureBlock.eval(ClosureBlock.java:46)
+	at com.cloudbees.groovy.cps.Next.step(Next.java:83)
+	at com.cloudbees.groovy.cps.Continuable$1.call(Continuable.java:174)
+	at com.cloudbees.groovy.cps.Continuable$1.call(Continuable.java:163)
+	at org.codehaus.groovy.runtime.GroovyCategorySupport$ThreadCategoryInfo.use(GroovyCategorySupport.java:129)
+	at org.codehaus.groovy.runtime.GroovyCategorySupport.use(GroovyCategorySupport.java:268)
+	at com.cloudbees.groovy.cps.Continuable.run0(Continuable.java:163)
+	at org.jenkinsci.plugins.workflow.cps.SandboxContinuable.access$001(SandboxContinuable.java:18)
+	at org.jenkinsci.plugins.workflow.cps.SandboxContinuable.run0(SandboxContinuable.java:51)
+	at org.jenkinsci.plugins.workflow.cps.CpsThread.runNextChunk(CpsThread.java:185)
+	at org.jenkinsci.plugins.workflow.cps.CpsThreadGroup.run(CpsThreadGroup.java:400)
+	at org.jenkinsci.plugins.workflow.cps.CpsThreadGroup.access$400(CpsThreadGroup.java:96)
+	at org.jenkinsci.plugins.workflow.cps.CpsThreadGroup$2.call(CpsThreadGroup.java:312)
+	at org.jenkinsci.plugins.workflow.cps.CpsThreadGroup$2.call(CpsThreadGroup.java:276)
+	at org.jenkinsci.plugins.workflow.cps.CpsVmExecutorService$2.call(CpsVmExecutorService.java:67)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at hudson.remoting.SingleLaneExecutorService$1.run(SingleLaneExecutorService.java:136)
+	at jenkins.util.ContextResettingExecutorService$1.run(ContextResettingExecutorService.java:28)
+	at jenkins.security.ImpersonatingExecutorService$1.run(ImpersonatingExecutorService.java:59)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+Finished: FAILURE

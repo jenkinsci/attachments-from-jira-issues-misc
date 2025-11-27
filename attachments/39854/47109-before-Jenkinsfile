@@ -1,0 +1,38 @@
+pipeline {
+    agent any
+    stages {
+        stage('parallel') {
+            parallel {
+                stage('firstParallelStage') {
+                    agent { label ('linux') }
+                    steps {
+                        build 'JENKINS-41334-Triage'
+                    }
+                }
+                stage('secondParallelStage') {
+                    agent { label ('linux') } 
+                    steps {
+                        build 'JENKINS-41334-Triage'
+                    }
+                }
+            } //   this ends the parallel block...
+        } //       ... and this ends the wrapper stage.
+
+        stage('Parallel Steps As Before') {
+            steps {
+                parallel firstBranch: {
+                    node('master') {
+                        build 'ten-parallels'
+                    }
+                },
+                secondBranch: {
+                    node('master') {
+                        build 'ten-parallels'
+                    }
+                },
+                failFast: false
+            }
+        }
+    }
+}
+

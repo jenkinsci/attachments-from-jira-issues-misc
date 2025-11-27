@@ -1,0 +1,32 @@
+Index: src/main/resources/hudson/plugins/japex/JapexReportBuildAction/index.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/japex/JapexReportBuildAction/index.jelly	(revision 12334)
++++ src/main/resources/hudson/plugins/japex/JapexReportBuildAction/index.jelly	(working copy)
+@@ -28,19 +28,20 @@
+         <j:forEach var="report" items="${it.regressionReports}" xmlns:x="jelly:xml" xmlns:reg="http://www.sun.com/japex/regressionReport">
+           <x:parse var="dom" xml="${report}"/>
+           <x:forEach var="driver" select="$dom/*/reg:driver" xmlns:lo="local">
++          	<j:set var="reportName"><x:expr select="@name"/></j:set>
++          	<j:set var="aritMean"><x:expr select="number(reg:resultAritMeanDiffAsPercentage)"/></j:set>
++          	<j:set var="geomMean"><x:expr select="number(reg:resultGeomMeanDiffAsPercentage)"/></j:set>
++          	<j:set var="harmMean"><x:expr select="number(reg:resultHarmMeanDiffAsPercentage)"/></j:set>
+             <tr>
+-              <td><x:expr select="@name"/></td>
++              <td>${reportName}</td>
+               <td>
+-                <x:set var="value" select="number(reg:resultAritMeanDiffAsPercentage)"/>
+-                <lo:colorText />
++                ${aritMean}
+               </td>
+               <td>
+-                <x:set var="value" select="number(reg:resultGeomMeanDiffAsPercentage)"/>
+-                <lo:colorText />
++                ${geomMean}
+               </td>
+               <td>
+-                <x:set var="value" select="number(reg:resultHarmMeanDiffAsPercentage)"/>
+-                <lo:colorText />
++              	${harmMean}
+               </td>
+             </tr>
+           </x:forEach>

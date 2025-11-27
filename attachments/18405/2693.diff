@@ -1,0 +1,37 @@
+Index: src/main/java/hudson/plugins/jabber/im/IMPublisher.java
+===================================================================
+--- src/main/java/hudson/plugins/jabber/im/IMPublisher.java	(revision 13432)
++++ src/main/java/hudson/plugins/jabber/im/IMPublisher.java	(working copy)
+@@ -126,11 +126,11 @@
+     {
+         Assert.isNotNull(build, "Parameter 'build' must not be null.");
+         Assert.isNotNull(buildListener, "Parameter 'arg2' must not be null.");
++        // Escape any spaces and non-ASCII characters in the build URL.
++        String buildUrl = Util.encode(build.getUrl());
++
+         if (getNotificationStrategy().notificationWanted(build))
+         {
+-            // Escape any spaces and non-ASCII characters in the build URL.
+-            String buildUrl = Util.encode(build.getUrl());
+-
+             final StringBuffer sb = new StringBuffer();
+         	sb.append("Project ").append(build.getProject().getName())
+         	.append(" build (").append(build.getNumber()).append("): ")
+@@ -168,7 +168,7 @@
+         if (this.notifySuspects && build.getResult().isWorseThan(Result.SUCCESS)) {
+         	final String message = new StringBuffer("You're suspected of having broken ")
+         	.append(build.getProject().getName()).append(": ")
+-        	.append(Hudson.getInstance().getRootUrl()).append(build.getUrl())
++        	.append(Hudson.getInstance().getRootUrl()).append(buildUrl)
+         	.toString();
+         	for (final IMMessageTarget target : calculateSuspectsTargets(build.getChangeSet())) {
+         		try {
+@@ -183,7 +183,7 @@
+         		(build.getPreviousBuild() != null) && build.getPreviousBuild().getResult().isWorseThan(Result.SUCCESS)) {
+         	final String message = new StringBuffer("Seems you've fixed  ")
+         	.append(build.getProject().getName()).append(": ")
+-        	.append(Hudson.getInstance().getRootUrl()).append(build.getUrl())
++        	.append(Hudson.getInstance().getRootUrl()).append(buildUrl)
+         	.toString();
+         	for (final IMMessageTarget target : calculateSuspectsTargets(build.getChangeSet())) {
+         		try {

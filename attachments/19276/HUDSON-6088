@@ -1,0 +1,449 @@
+Index: src/main/java/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition.java
+===================================================================
+--- src/main/java/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition.java	(revision 29370)
++++ src/main/java/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition.java	(working copy)
+@@ -37,15 +37,18 @@
+ import hudson.plugins.clearcase.PluginImpl;
+ import hudson.util.ArgumentListBuilder;
+ import hudson.util.FormValidation;
++
+ import java.io.ByteArrayOutputStream;
+ import java.io.IOException;
+ import java.util.ArrayList;
+ import java.util.List;
+ import java.util.UUID;
+-import java.util.concurrent.Future;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
++
+ import net.sf.json.JSONObject;
++
++import org.apache.commons.lang.StringUtils;
+ import org.jvnet.localizer.ResourceBundleHolder;
+ import org.kohsuke.stapler.DataBoundConstructor;
+ import org.kohsuke.stapler.QueryParameter;
+@@ -68,6 +71,7 @@
+  * <li>The ClearCase UCM PVOB name;</li>
+  * <li>The ClearCase UCM component name;</li>
+  * <li>The ClearCase UCM promotion level (e.g. RELEASED);</li>
++ * <li>The ClearCase UCM stream;</li>
+  * <li>The ClearCase UCM view to create name.</li>
+  * </ul></p>
+  * <p>The following attribute is then asked at run-time:<ul>
+@@ -82,11 +86,17 @@
+ 
+     private final String component;
+     private final boolean forceRmview;
++    private final boolean useUpdate;
+     /**
+      * The promotion level is optional: If not is set, then the user will be
+      * offered with all the baselines of the ClearCase UCM component.
+      */
+     private final String promotionLevel;
++    /**
++     * The stream is optional: If not set, the user will be proposed baselines from all streams for the Clearcase UCM
++     * component.
++     */
++    private final String stream;
+     private final String pvob;
+     /**
+      * List of folders to be actually retrieved from CC. If no restriction is
+@@ -104,17 +114,20 @@
+     private final UUID uuid;
+ 
+     @DataBoundConstructor
+-    public ClearCaseUcmBaselineParameterDefinition(String pvob, String component, String promotionLevel, String restrictions, String viewName, boolean snapshotView, boolean forceRmview, String uuid) {
++    public ClearCaseUcmBaselineParameterDefinition(String pvob, String component, String promotionLevel, String stream, String restrictions, String viewName,
++            boolean snapshotView, boolean useUpdate, boolean forceRmview, String uuid) {
+         super(PARAMETER_NAME); // we keep the name of the parameter not
+                                // internationalized, it will save many
+                                // issues when updating system settings
+         this.pvob = ClearCaseUcmBaselineUtils.prefixWithSlash(pvob);
+         this.component = component;
+         this.promotionLevel = promotionLevel;
++        this.stream = stream;
+         this.restrictions = restrictions;
+         this.viewName = viewName;
+         this.snapshotView = snapshotView;
+         this.forceRmview = forceRmview;
++        this.useUpdate = useUpdate;
+ 
+         if(uuid == null || uuid.length() == 0) {
+             this.uuid = UUID.randomUUID();
+@@ -134,8 +147,8 @@
+             return null;
+         }
+         else {
+-            return new ClearCaseUcmBaselineParameterValue(
+-                    getName(), getPvob(), getComponent(), getPromotionLevel(), getViewName(), values[0], getForceRmview(), getSnapshotView());
++            return new ClearCaseUcmBaselineParameterValue(getName(), getPvob(), getComponent(), getPromotionLevel(), getStream(), getViewName(), values[0],
++                    isUseUpdate(), getForceRmview(), getSnapshotView());
+         }
+     }
+ 
+@@ -151,6 +164,7 @@
+         value.setRestrictions(getRestrictionsAsList());
+         value.setViewName(viewName);
+         value.setSnapshotView(snapshotView);
++        value.setUseUpdate(useUpdate);
+         // we don't set forceRmview: we use the value which is set by the user
+         // (so it is in formData) to allow overriding the setting ==> the value
+         // was set when invoking req.bindJSON()
+@@ -165,16 +179,21 @@
+      * if something wrong happens).
+      */
+     public String[] getBaselines() throws IOException, InterruptedException {
+-        // cleartool lsbl -fmt "%[name]p " -level <promotion level> -component <component>@<vob>
++        // cleartool lsbl -fmt "%[name]p " -level <promotion level>
++        // -stream <stream>@<pvob> -component <component>@<pvob>
+         ArgumentListBuilder cmd = new ArgumentListBuilder();
+         cmd.add(PluginImpl.getDescriptor().getCleartoolExe());
+         cmd.add("lsbl");
+         cmd.add("-fmt");
+         cmd.add("%[name]p ");
+-        if(promotionLevel != null && promotionLevel.length() > 0) {
++        if(StringUtils.isNotEmpty(promotionLevel)) {
+             cmd.add("-level");
+             cmd.add(promotionLevel);
+         }
++        if(StringUtils.isNotEmpty(stream)) {
++            cmd.add("-stream");
++            cmd.add(stream + '@' + pvob);
++        }
+         cmd.add("-component");
+         cmd.add(component + '@' + pvob);
+ 
+@@ -274,6 +293,10 @@
+         return pvob;
+     }
+ 
++    public String getStream() {
++        return stream;
++    }
++
+     public String getRestrictions() {
+         return restrictions;
+     }
+@@ -292,6 +315,10 @@
+         return snapshotView;
+     }
+ 
++    public boolean isUseUpdate() {
++        return useUpdate;
++    }
++
+     public String getViewName() {
+         return viewName;
+     }
+@@ -330,6 +357,14 @@
+             return FormValidation.ok();
+         }
+ 
++        public FormValidation doCheckStream(@QueryParameter String value) {
++            if(StringUtils.isEmpty(value)) {
++                return FormValidation.warning(ResourceBundleHolder.get(ClearCaseUcmBaselineParameterDefinition.class).format("StreamShouldBeSet"));
++            }
++
++            return FormValidation.ok();
++        }
++
+         public FormValidation doCheckViewName(@QueryParameter String value) {
+             if(value == null || value.length() == 0) {
+                 return FormValidation.error(ResourceBundleHolder.get(ClearCaseUcmBaselineParameterDefinition.class).format("ViewNameMustBeSet"));
+Index: src/main/java/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterValue.java
+===================================================================
+--- src/main/java/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterValue.java	(revision 29370)
++++ src/main/java/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterValue.java	(working copy)
+@@ -83,6 +83,8 @@
+                                                             // comes from ClearCaseUcmBaselineParameterDefinition
+     @Exported(visibility=3) private String promotionLevel;  // this att comes from ClearCaseUcmBaselineParameterDefinition
+     @Exported(visibility=3) private String pvob;            // this att comes from ClearCaseUcmBaselineParameterDefinition
++    @Exported(visibility=3) private String stream;          // this att comes from ClearCaseUcmBaselineParameterDefinition
++    @Exported(visibility=3) private boolean useUpdate;      // this att comes from ClearCaseUcmBaselineParameterDefinition
+     private List<String> restrictions;                      // this att comes from ClearCaseUcmBaselineParameterDefinition
+     @Exported(visibility=3) private boolean snapshotView;   // this att comes from ClearCaseUcmBaselineParameterDefinition
+     @Exported(visibility=3) private String viewName;        // this att comes from ClearCaseUcmBaselineParameterDefinition
+@@ -95,16 +97,19 @@
+     // Is it because of the two booleans? No time to investigate, sorry.
+     @DataBoundConstructor
+     public ClearCaseUcmBaselineParameterValue(String name, String baseline, boolean forceRmview) {
+-        this(name, null, null, null, null, baseline, forceRmview, false);
++        this(name, null, null, null, null, null, baseline, false, forceRmview, false);
+     }
+ 
+-    public ClearCaseUcmBaselineParameterValue(String name, String pvob, String component, String promotionLevel, String viewName, String baseline, boolean forceRmview, boolean snapshotView) {
++    public ClearCaseUcmBaselineParameterValue(String name, String pvob, String component, String promotionLevel, String stream, String viewName,
++            String baseline, boolean useUpdate, boolean forceRmview, boolean snapshotView) {
+         super(name);
+         this.pvob = ClearCaseUcmBaselineUtils.prefixWithSlash(pvob);
+         this.component = component;
+         this.promotionLevel = promotionLevel;
++        this.stream = stream;
+         this.viewName = viewName;
+         this.baseline = baseline;
++        this.useUpdate = useUpdate;
+         this.forceRmview = forceRmview;
+         this.snapshotView = snapshotView;
+     }
+@@ -263,13 +268,16 @@
+                         // --- 1. We remove the view if it already exists ---
+ 
+                         if(viewPath.exists()) {
+-                            cleartool.rmview(viewName);
+-                        }
++                            if(!useUpdate || forceRmview) {
++                                cleartool.rmview(viewName);
++                                // --- 2. We first create the view to be loaded ---
+ 
+-                        // --- 2. We first create the view to be loaded ---
+-
+-                        // cleartool mkview -tag <tag> <view path>
+-                        cleartool.mkview(viewName, snapshotView, null);
++                                // cleartool mkview -tag <tag> <view path>
++                                cleartool.mkview(viewName, snapshotView, null);
++                            }
++                        } else {
++                            cleartool.mkview(viewName, snapshotView, null);
++                        }
+ 
+                         // --- 3. We create the configspec ---
+ 
+@@ -425,6 +433,22 @@
+         this.snapshotView = snapshotView;
+     }
+ 
++    public String getStream() {
++        return stream;
++    }
++
++    public void setStream(String stream) {
++        this.stream = stream;
++    }
++
++    public boolean isUseUpdate() {
++        return useUpdate;
++    }
++
++    public void setUseUpdate(boolean useUpdate) {
++        this.useUpdate = useUpdate;
++    }
++
+     public String getViewName() {
+         return viewName;
+     }
+Index: src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterValue.properties
+===================================================================
+--- src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterValue.properties	(revision 29370)
++++ src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterValue.properties	(working copy)
+@@ -23,6 +23,7 @@
+ Baseline=ClearCase UCM baseline
+ Component=ClearCase UCM component
+ Force\ rmview=Force rmview
++Use\ update=Use update
+ Promotion\ level=ClearCase UCM promotion level
+ PVOB=ClearCase UCM PVOB
+ Snapshot\ view=Snapshot view
+Index: src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterValue_fr.properties
+===================================================================
+--- src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterValue_fr.properties	(revision 29370)
++++ src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterValue_fr.properties	(working copy)
+@@ -23,6 +23,7 @@
+ Baseline=Ligne de base ClearCase UCM
+ Component=Composant ClearCase UCM
+ Force\ rmview=Forcer la recr&eacute;ation de la vue
++Use\ update=Mettre &agrave; jour la vue
+ Promotion\ level=Niveau de promotion ClearCase UCM
+ PVOB=PVOB ClearCase UCM
+ Snapshot\ view=Vue snapshot
+Index: src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition_fr.properties
+===================================================================
+--- src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition_fr.properties	(revision 29370)
++++ src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition_fr.properties	(working copy)
+@@ -26,6 +26,7 @@
+ Force\ rmview=Forcer la recr&eacute;ation de la vue
+ Promotion\ level=Niveau de promotion
+ PromotionLevelShouldBeSet=Sp&eacute;cifier un niveau de promotion permet de r&eacute;duire la liste de lignes de base qui sera offerte \u00E0 l''utilisateur lors du d&eacute;marrage d'un build ; ne devriez-vous pas en d&eacute;finir un ?
++StreamShouldBeSet=Sp&eacute;cifier une stream permet de r&eacute;duire la liste de lignes de base qui sera offerte \u00E0 l''utilisateur lors du d&eacute;marrage d'un build ; ne devriez-vous pas en d&eacute;finir une ?
+ PVOB=PVOB
+ PVOBMustBeSet=La PVOB ClearCase UCM doit obligatoirement &ecirc;tre sp&eacute;cifi&eacute;e
+ Restric\ folders\ to=Restreindre les r&eacute;pertoires &agrave;
+Index: src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition.properties
+===================================================================
+--- src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition.properties	(revision 29370)
++++ src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition.properties	(working copy)
+@@ -26,6 +26,7 @@
+ Force\ rmview=Force rmview
+ Promotion\ level=Promotion level
+ PromotionLevelShouldBeSet=Setting a promotion level allows reducing the size of the baselines that are offered to the user when starting a build; Shouldn''t you define one?
++StreamShouldBeSet=Setting a stream allows reducing the size of the baselines that are offered to the user when starting a build; Shouldn''t you define one?
+ Select\ the\ baseline\ to\ download=Select one of the baselines if the list to download its content
+ PVOB=PVOB
+ PVOBMustBeSet=The ClearCase UCM PVOB must be set
+Index: src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition/help-useUpdate_fr.html
+===================================================================
+--- src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition/help-useUpdate_fr.html	(revision 0)
++++ src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition/help-useUpdate_fr.html	(revision 0)
+@@ -0,0 +1,29 @@
++<!--
++  - The MIT License
++  -
++  - Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy
++  -
++  - Permission is hereby granted, free of charge, to any person obtaining a copy
++  - of this software and associated documentation files (the "Software"), to deal
++  - in the Software without restriction, including without limitation the rights
++  - to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++  - copies of the Software, and to permit persons to whom the Software is
++  - furnished to do so, subject to the following conditions:
++  -
++  - The above copyright notice and this permission notice shall be included in
++  - all copies or substantial portions of the Software.
++  -
++  - THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++  - IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++  - FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++  - AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++  - LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++  - OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++  - THE SOFTWARE.
++  -->
++
++<div>
++    Activer cette option permet de ne pas recr&eacute;er la vue
++    ClearCase UCM &agrave; chaque fois qu'un nouveau build est
++    d&eacute;clench&eacute;, mais de mettre a jour sa sp&eacute;cification de configuration.
++</div>
+Index: src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition/help-useUpdate.html
+===================================================================
+--- src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition/help-useUpdate.html	(revision 0)
++++ src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition/help-useUpdate.html	(revision 0)
+@@ -0,0 +1,29 @@
++<!--
++  - The MIT License
++  -
++  - Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy
++  -
++  - Permission is hereby granted, free of charge, to any person obtaining a copy
++  - of this software and associated documentation files (the "Software"), to deal
++  - in the Software without restriction, including without limitation the rights
++  - to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++  - copies of the Software, and to permit persons to whom the Software is
++  - furnished to do so, subject to the following conditions:
++  -
++  - The above copyright notice and this permission notice shall be included in
++  - all copies or substantial portions of the Software.
++  -
++  - THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++  - IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++  - FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++  - AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++  - LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++  - OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++  - THE SOFTWARE.
++  -->
++
++<div>
++    Check this option to avoid recreation of Clearcase UCM view each time a
++    build is triggered and the baseline has changed, but to update its config
++    spec and update the view with files that have changed.
++</div>
+Index: src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition/help-stream.html
+===================================================================
+--- src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition/help-stream.html	(revision 0)
++++ src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition/help-stream.html	(revision 0)
+@@ -0,0 +1,33 @@
++<!--
++  - The MIT License
++  -
++  - Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy
++  -
++  - Permission is hereby granted, free of charge, to any person obtaining a copy
++  - of this software and associated documentation files (the "Software"), to deal
++  - in the Software without restriction, including without limitation the rights
++  - to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++  - copies of the Software, and to permit persons to whom the Software is
++  - furnished to do so, subject to the following conditions:
++  -
++  - The above copyright notice and this permission notice shall be included in
++  - all copies or substantial portions of the Software.
++  -
++  - THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++  - IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++  - FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++  - AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++  - LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++  - OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++  - THE SOFTWARE.
++  -->
++
++<div>
++    <b>Optional</b> &mdash; Stream of the ClearCase UCM baseline to be
++    downloaded at build-time.<br/>
++    If no stream is set (blank field), then the user will be presented
++    with all the ClearCase UCM baselines belonging to the ClearCase UCM
++    component defined above. If a stream is set, then, at build-time,
++    the user will be presented with only the ClearCase UCM baselines which have
++    defined on this stream.
++</div>
+Index: src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition/help-stream_fr.html
+===================================================================
+--- src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition/help-stream_fr.html	(revision 0)
++++ src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition/help-stream_fr.html	(revision 0)
+@@ -0,0 +1,32 @@
++<!--
++  - The MIT License
++  -
++  - Copyright (c) 2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy
++  -
++  - Permission is hereby granted, free of charge, to any person obtaining a copy
++  - of this software and associated documentation files (the "Software"), to deal
++  - in the Software without restriction, including without limitation the rights
++  - to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++  - copies of the Software, and to permit persons to whom the Software is
++  - furnished to do so, subject to the following conditions:
++  -
++  - The above copyright notice and this permission notice shall be included in
++  - all copies or substantial portions of the Software.
++  -
++  - THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++  - IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++  - FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++  - AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++  - LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++  - OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++  - THE SOFTWARE.
++  -->
++
++<div>
++    <b>Optionnel</b> &mdash; Lorsque ce param&egrave;tre est d&eacute;fini, seules les
++    lignes de bases d&eacute;finies sur cette branche seront s&eacute;lectionnables par le
++    projet lors d'un build.<br/>
++    Si aucune branche n'est sp&eacute;cifi&eacute;, alors, lors du
++    d&eacute;marrage d'un build, l'utilisateur pourra choisir parmi toutes les
++    lignes de base ClearCase UCM du composant ClearCase UCM.
++</div>
+Index: src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition/config.jelly
+===================================================================
+--- src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition/config.jelly	(revision 29370)
++++ src/main/resources/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition/config.jelly	(working copy)
+@@ -32,7 +32,10 @@
+     <f:entry title="${%Promotion level}" field="promotionLevel">
+         <f:textbox name="parameter.promotionLevel" value="${instance.promotionLevel}" />
+     </f:entry>
+-    <f:entry title="${%Restric folders to}" field="restrictions">
++    <f:entry title="${%Stream}" field="stream">
++        <f:textbox name="parameter.stream" value="${instance.stream}" />
++    </f:entry>
++    <f:entry title="${%Restrict folders to}" field="restrictions">
+         <f:expandableTextbox
+             name="parameter.restrictions"
+             value="${instance.restrictions}" />
+@@ -50,4 +53,8 @@
+         <f:checkbox name="forceRmview" checked="${instance.forceRmview}"/>
+         <label class="attach-previous">${%Force rmview}</label>
+     </f:entry>
++    <f:entry field="useUpdate">
++        <f:checkbox name="useUpdate" checked="${instance.useUpdate}"/>
++        <label class="attach-previous">${%Use update}</label>
++    </f:entry>
+ </j:jelly>

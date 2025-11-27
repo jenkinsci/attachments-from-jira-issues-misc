@@ -1,0 +1,172 @@
+pipeline {
+    agent { label 'docker' }
+    stages {
+        stage ('variables') {
+            steps {
+                script {
+                    sh "wget --no-check-certificate https://git.iv.integra-s.com/api/v1/repos/ag/jenkinsfiles-groovy/raw/utils.groovy -O \"${env.WORKSPACE}/utils.groovy\""
+                    utils = load("${env.WORKSPACE}/utils.groovy")                
+                    utils.conan_prepare()
+                }
+            }
+        }
+        stage('build')
+        {
+            failFast true
+            parallel {
+                stage('debian-6 x64 release') {
+                    agent {
+                        dockerfile {
+                          filename 'debian-6.dockerfile'
+                          dir "Docker"
+                          label "docker"  
+                        }            
+                    }
+                    steps {
+                        script {
+                            utils.conan_build("linux-x64-release")
+                        }
+                    }
+                    post {
+                        success {        
+                            script {
+                                utils.conan_success()
+                            }
+                        }
+                        failure {        
+                            script {
+                                utils.conan_failure()
+                            }
+                        }
+                    }
+                }
+                stage('debian-6 x64 debug') {
+                    agent {
+                        dockerfile {
+                          filename 'debian-6.dockerfile'
+                          dir "Docker"
+                          label "docker"  
+                        }            
+                    }
+                    steps {
+                        script {
+                            utils.conan_build("linux-x64-debug")
+                        }
+                    }
+                    post {
+                        success {        
+                            script {
+                                utils.conan_success()
+                            }
+                        }
+                        failure {        
+                            script {
+                                utils.conan_failure()
+                            }
+                        }
+                    }
+                }
+                stage('windows x64 release') {
+                    agent {
+                        label 'windows'
+                    }                    
+                    steps {        
+                        script {
+                            utils.conan_build("windows-x64-release")
+                        }
+                    }
+                    post {
+                        success {        
+                            script {
+                                utils.conan_success()
+                            }
+                        }
+                        failure {        
+                            script {
+                                utils.conan_failure()
+                            }
+                        }
+                    }
+                }
+                stage('windows x64 debug') {
+                    agent {
+                        label 'windows'
+                    }                    
+                    steps {
+                        script {
+                            utils.conan_build("windows-x64-debug")
+                        }
+                    }
+                    post {
+                        success {        
+                            script {
+                                utils.conan_success()
+                            }
+                        }
+                        failure {        
+                            script {
+                                utils.conan_failure()
+                            }
+                        }
+                    }
+                }
+                stage('windows x86 debug') {
+                    agent {
+                        label 'windows'
+                    }
+                    steps {
+                        script {
+                            utils.conan_build("windows-x86-debug")
+                        }
+                    }
+                    post {
+                        success {        
+                            script {
+                                utils.conan_success()
+                            }
+                        }
+                        failure {        
+                            script {
+                                utils.conan_failure()
+                            }
+                        }
+                    }
+                }
+                stage('windows x86 release') {
+                    agent {
+                        label 'windows'
+                    }
+                    steps {
+                        script {
+                            utils.conan_build("windows-x86-release")
+                        }
+                    }
+                    post {
+                        success {        
+                            script {
+                                utils.conan_success()
+                            }
+                        }
+                        failure {        
+                            script {
+                                utils.conan_failure()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    post {
+        success {        
+            script {
+                utils.jenkinsfile_success()
+            }
+        }
+        failure {        
+            script {
+                utils.jenkinsfile_failure()
+            }
+        }
+    }
+}

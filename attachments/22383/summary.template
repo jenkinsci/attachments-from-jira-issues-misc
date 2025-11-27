@@ -1,0 +1,135 @@
+<% 
+import hudson.model.*
+import jenkins.model.*
+%>
+
+<html>
+<head>
+<STYLE>
+BODY, TABLE, TD, TH, P {
+  font-family:Verdana,Helvetica,sans serif;
+  font-size:11px;
+  color:black;
+}
+h1 { color:black; }
+h2 { color:black; }
+h3 { color:black; }
+TD.bg1 { color:white; background-color:#0000C0; font-size:120% }
+TD.bg2 { color:white; background-color:#4040FF; font-size:110% }
+TD.bg3 { color:white; background-color:#8080FF; }
+TD.test_passed { color:blue; }
+TD.test_failed { color:red; }
+TD.console_normal { font-family:courier; font-size: 90%; }
+TD.console_warning { font-family:courier; color: darkorange; font-weight: bold; font-size: 90%;}
+TD.console_error { font-family:courier; color: red; font-weight: bold; font-size: 90%;}
+pre { display:inline }
+</STYLE>
+</head>
+<BODY>
+<% 
+	def spc = "&nbsp;&nbsp;" 
+    def ballColor = 'blue'
+
+	// the goal is to find the top level job which should contain the changelist
+	def upstreamBuild = null
+    def cause = build.causes.find {
+        if(it instanceof hudson.model.Cause.UpstreamCause) {
+            return true 
+        }
+        return false
+    }
+
+    while(cause != null) {
+        upstreamBuild = hudson.model.Hudson.instance.getItem(cause.upstreamProject).getBuildByNumber(cause.upstreamBuild)
+        cause = upstreamBuild.causes.find {
+            return (it instanceof hudson.model.Cause.UpstreamCause);
+        }
+    }	
+	
+	def fails = []
+    // this part gets the failures into a list
+    for(proj in Jenkins.instance.projects) {
+      if(!proj.name.startsWith('00') && !proj.name.startsWith('ZZ') && !proj.name.startsWith('Daily') && !proj.name.startsWith('Hourly')) {
+        if((proj.lastCompletedBuild != null) && (proj.lastCompletedBuild.result.toString() != 'SUCCESS')) {
+          fails.add(proj.lastCompletedBuild)            
+        }
+      }
+	}
+%>
+
+<!-- GENERAL INFO -->
+<b>Failing Builds</b>
+<br/>
+<TABLE cellpadding="2" cellspacing="2" width="50%">
+  <TR >
+      <TH bgcolor="#009999" style="color: #ffffff" style="width: 20px"></TH>
+	  <TH bgcolor="#009999" style="color: #ffffff" style="width: auto"><b>Result</b></TH>
+	  <TH bgcolor="#009999" style="color: #ffffff" style="width: auto"><b>Project<b></TH>
+	  <TH bgcolor="#009999" style="color: #ffffff" style="width: auto"></TH>
+  </TR>
+<% 
+	def bgcolor = "#ffffff"
+    for(bld in fails) { 
+       ballColor = bld.result.toString() ==  'SUCCESS' ? 'blue' : (bld.result.toString() == 'FAILURE' ? 'red' : 'yellow')
+	   
+%>
+  <TR bgcolor="${bgcolor}">
+      <TD align="right"><IMG SRC="${rooturl}static/e59dfe28/images/16x16/${ballColor}.gif" /></TD>
+	  <TD align="center">${bld.result}</TD>
+	  <TD align="center">${bld.project.name}</TD>
+	  <TD><A href="${rooturl}${bld.url}console">Build Log</A></TD>
+  </TR>
+<% 
+       if(bgcolor == "#ffffff") {
+	       bgcolor = "#fef9f1"
+	   } else {
+	       bgcolor = "#ffffff"
+	   }
+    } %>
+</TABLE>
+<BR/>
+    <!-- CHANGE SET -->	
+<%
+	if(upstreamBuild != null) {
+%>
+        <B style="font-size: 150%">Build kicked off by &quot;${upstreamBuild.project.name}&quot;</B><BR/><BR/>
+<%
+        def changeSet = upstreamBuild.changeSet
+		def hadChanges = false
+		if(changeSet != null) {
+%>        
+	        <TABLE width="100%">
+	            <TR><TD class="bg1" colspan="2"><B>CHANGES</B></TD></TR>
+<%
+                changeSet.logs.each() { cs ->
+					hadChanges = true
+%>
+                    <TR>
+		                <TD colspan="2" class="bg2">${spc}<B>${cs.user}: (${cs.msgAnnotated})</B></TD>
+				    </TR>
+<%
+                    cs.affectedPaths.each() { p ->
+%>
+                    <TR>
+				        <TD colspan="2">${spc}${spc}${spc}${spc}${spc}${p}</TD>
+				    </TR>
+<%
+                    }				
+				}
+				
+				if(!hadChanges) {
+%>
+                    <TR><TD colspan="2">No Changes</TD></TR>
+<%
+                }
+%>				
+	        </TABLE>
+		    <BR/>
+<%			
+		}
+	}
+%>
+
+</BODY>
+</HTML>
+

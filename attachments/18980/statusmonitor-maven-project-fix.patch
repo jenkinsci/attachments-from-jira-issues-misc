@@ -1,0 +1,292 @@
+Index: src/test/java/hudson/plugins/statusmonitor/MonitorActionTest.java
+===================================================================
+--- src/test/java/hudson/plugins/statusmonitor/MonitorActionTest.java	Mon Dec 28 16:02:17 CST 2009
++++ src/test/java/hudson/plugins/statusmonitor/MonitorActionTest.java	Mon Dec 28 16:02:17 CST 2009
+@@ -0,0 +1,170 @@
++package hudson.plugins.statusmonitor;
++
++import hudson.matrix.MatrixProject;
++import hudson.maven.MavenModuleSet;
++import hudson.model.AbstractProject;
++import hudson.model.FreeStyleProject;
++import org.jvnet.hudson.test.HudsonTestCase;
++
++import java.io.IOException;
++
++public class MonitorActionTest
++        extends HudsonTestCase
++{
++    private MonitorAction monitorAction;
++
++    @Override
++    protected void setUp() throws Exception
++    {
++        super.setUp();
++
++        monitorAction = new MonitorAction();
++    }
++
++    public void testGetProjectsArray_shouldGetProjectFreeStyleProjectWithAMonitorPublisher()
++            throws Exception
++    {
++        FreeStyleProject freeStyleProject = createFreeStyleProject();
++        addMonitorPublisher(freeStyleProject);
++
++        AbstractProject[][] projects = monitorAction.getProjectsArray();
++
++        assertTrue("Free-style project should be in array since one of its publishers is a MonitorPublisher.",
++                isInArray(projects, freeStyleProject));
++    }
++
++    public void testGetProjectsArray_shouldGetMavenProjectProjectWithAMonitorPublisher()
++            throws Exception
++    {
++        MavenModuleSet mavenProject = createMavenProject();
++        addMonitorPublisher(mavenProject);
++
++        AbstractProject[][] projects = monitorAction.getProjectsArray();
++
++        assertTrue("Maven project should be in array since one of its publishers is a MonitorPublisher.",
++                isInArray(projects, mavenProject));
++    }
++
++    public void testGetProjectsArray_shouldGetMatrixProjectWithAMonitorPublisher()
++            throws Exception
++    {
++        MatrixProject matrixProject = createMatrixProject();
++        addMonitorPublisher(matrixProject);
++
++        AbstractProject[][] projects = monitorAction.getProjectsArray();
++
++        assertTrue("Matrix project should be in array since one of its publishers is a MonitorPublisher.",
++                isInArray(projects, matrixProject));
++    }
++
++    public void testGetProjectsArray_shouldNotGetProjectsWithoutAMonitorPublisher()
++            throws Exception
++    {
++        FreeStyleProject freeStyleProject = createFreeStyleProject();
++
++        AbstractProject[][] projects = monitorAction.getProjectsArray();
++        
++        assertFalse("There should not be any projects in the array since none of the projects have a MonitorPublisher.",
++                isInArray(projects, freeStyleProject));
++    }
++
++    public void testGetProjectsArray_shouldGetMultipleProjectsWhenMultipleProjectsWithMonitorPublishersFound()
++            throws Exception
++    {
++        FreeStyleProject freeStyleProject = createFreeStyleProject();
++        addMonitorPublisher(freeStyleProject);
++        MatrixProject matrixProject = createMatrixProject();
++        addMonitorPublisher(matrixProject);
++
++        AbstractProject[][] projects = monitorAction.getProjectsArray();
++
++        assertTrue("freeStyleProject should be in array since one of its publishers is a MonitorPublisher.",
++                isInArray(projects, freeStyleProject));
++        assertTrue("matrixProject should be in array since one of its publishers is a MonitorPublisher.",
++                isInArray(projects, matrixProject));
++    }
++
++    public void testGetProjectsArray_shouldBeEmptyArrayWhenNoPojrectsWithMonitorPublishersFound()
++    {
++        AbstractProject[][] projects = monitorAction.getProjectsArray();
++
++        assertEquals(0, projects.length);
++    }
++
++    public void testGetProjectsArray_shouldBe1Column3RowsWhenThereAreLessThan3ProjectsWithMonitorPublishersFound()
++            throws Exception
++    {
++        addMonitorPublisher(createFreeStyleProject());
++        addMonitorPublisher(createFreeStyleProject());
++        addMonitorPublisher(createFreeStyleProject());
++
++        AbstractProject[][] projects = monitorAction.getProjectsArray();
++
++        assertEquals("Should have 3 rows of projects with MonitorPublisher publishers.", 3, projects.length);
++        assertEquals("Row should have one project.", 1, projects[0].length);
++        assertEquals("Row should have one project.", 1, projects[1].length);
++        assertEquals("Row should have one project.", 1, projects[2].length);
++    }
++
++    public void testGetProjectsArray_shouldHave3RowsAnd2ColumnsOfProjectsWhenThereAreMoreThan3ProjectsWithMonitorPublishersFound()
++            throws Exception
++    {
++        // 7 projects
++        addMonitorPublisher(createFreeStyleProject());
++        addMonitorPublisher(createFreeStyleProject());
++        addMonitorPublisher(createFreeStyleProject());
++        addMonitorPublisher(createFreeStyleProject());
++        addMonitorPublisher(createFreeStyleProject());
++        addMonitorPublisher(createFreeStyleProject());
++        addMonitorPublisher(createFreeStyleProject());
++
++        AbstractProject[][] projects = monitorAction.getProjectsArray();
++
++        assertEquals("Should have 3 rows of projects with MonitorPublisher publishers.", 4, projects.length);
++        assertEquals("Row should have two projects.", 2, projects[0].length);
++        assertEquals("Row should have two projects.", 2, projects[1].length);
++        assertEquals("Row should have two projects.", 2, projects[2].length);
++        assertEquals("Row should have one project by itself.", 1, projects[3].length);
++    }
++
++    public void testGetProjectsArray_shouldHaveLastProjectByItselfInARowWhenMoreThan3ProjectsWithMonitorPublishersFound()
++            throws Exception
++    {
++        // 6 projects
++        addMonitorPublisher(createFreeStyleProject());
++        addMonitorPublisher(createFreeStyleProject());
++        addMonitorPublisher(createFreeStyleProject());
++        addMonitorPublisher(createFreeStyleProject());
++        addMonitorPublisher(createFreeStyleProject());
++        addMonitorPublisher(createFreeStyleProject());
++
++        AbstractProject[][] projects = monitorAction.getProjectsArray();
++
++        assertEquals("Should have 3 rows of projects with MonitorPublisher publishers.", 3, projects.length);
++        assertEquals("Row should have one project.", 2, projects[0].length);
++        assertEquals("Row should have one project.", 2, projects[1].length);
++        assertEquals("Row should have one project.", 2, projects[2].length);
++    }
++
++    private void addMonitorPublisher(AbstractProject project)
++            throws IOException
++    {
++        //noinspection unchecked
++        project.getPublishersList().add(new MonitorPublisher());
++    }
++
++    public boolean isInArray(AbstractProject[][] projects, AbstractProject expectedProject)
++    {
++        for (AbstractProject[] rowOfProjects : projects)
++        {
++            for (AbstractProject project : rowOfProjects)
++            {
++                if (expectedProject == project)
++                {
++                    return true;
++                }
++            }
++        }
++        return false;
++    }
++}
+Index: src/main/java/hudson/plugins/statusmonitor/MonitorAction.java
+===================================================================
+--- src/main/java/hudson/plugins/statusmonitor/MonitorAction.java	(revision 22969)
++++ src/main/java/hudson/plugins/statusmonitor/MonitorAction.java	Mon Dec 28 16:04:36 CST 2009
+@@ -1,19 +1,14 @@
+ package hudson.plugins.statusmonitor;
+ 
+-import hudson.model.Hudson;
+-import hudson.model.Project;
+-import hudson.tasks.Publisher;
+-
+ import hudson.Extension;
+-import hudson.model.RootAction;
+-import java.util.ArrayList;
+-import java.util.List;
+-
+-import javax.servlet.jsp.jstl.core.LoopTagStatus;
+-
++import hudson.model.*;
+ import org.kohsuke.stapler.export.Exported;
+ import org.kohsuke.stapler.export.ExportedBean;
+ 
++import javax.servlet.jsp.jstl.core.LoopTagStatus;
++import java.util.ArrayList;
++import java.util.List;
++
+ /**
+  * Status Monitor, shows the configured Jobs in a single screen overview
+  * 
+@@ -22,7 +17,6 @@
+ @ExportedBean (defaultVisibility = 999)
+ @Extension
+ public class MonitorAction implements RootAction {
+-
+ 	private static final long serialVersionUID = 1L;
+ 
+ 	private static final int COLUMNS = 2;
+@@ -51,23 +45,24 @@
+ 	 * 
+ 	 * @return list containing Projects.
+ 	 */
+-	private List<Project> getProjects() {
+-		List<Project> result = new ArrayList<Project>();
+-		List<Project> projects = Hudson.getInstance().getProjects();
+-
+-		for (Project project: projects) {
+-			Publisher publisher = project.getPublisher(MonitorPublisher.DESCRIPTOR);
+-			// Has Option been selected?
+-			if (publisher != null) {
+-				result.add(project);
++	private List<AbstractProject> getProjects() {
++        List<AbstractProject> result = new ArrayList<AbstractProject>();
++		List<TopLevelItem> topLevelItems = Hudson.getInstance().getItems();
++        for (TopLevelItem topLevelItem : topLevelItems) {
++            if (topLevelItem instanceof AbstractProject) {
++                AbstractProject abstractProject = (AbstractProject) topLevelItem;
++                if (abstractProject.getPublishersList().get(MonitorPublisher.DESCRIPTOR) != null) {
++                        result.add(abstractProject);
+-			}
+-		}
++                }
++            }
++        }
++
+ 		return result;
+ 	}
+ 
+ 
+-	public String getResult(Project project) {
+-		String result = null;
++	public String getResult(AbstractProject project) {
++		String result;
+ 		if ((project.getLastCompletedBuild() != null) && (project.getLastCompletedBuild().getResult() != null)) {
+ 			if (project.isDisabled()) {
+ 				result = "DISABLED";
+@@ -99,25 +94,25 @@
+ 
+ 
+ 	@Exported
+-	public Project[][] getProjectsArray() {
++	public AbstractProject[][] getProjectsArray() {
+ 		int rows = getRows();
+-		Project[][] result = new Project[rows][];
+-		List<Project> projects = getProjects();
++		AbstractProject[][] result = new AbstractProject[rows][];
++		List<AbstractProject> projects = getProjects();
+ 		for (int i = 0; i < rows; i++) {
+-			Project[] row = result[i];
++			AbstractProject[] row = result[i];
+ 			if (row == null) {
+ 				if (projects.size() <= 3) {
+-					row = new Project[1];
++					row = new AbstractProject[1];
+ 					row[0] = projects.get(i);
+ 				}
+ 				else {
+ 					// last row and uneven
+ 					if (((i + 1) == rows) && ((projects.size() % 2) != 0)) {
+-						row = new Project[1];
++						row = new AbstractProject[1];
+ 						row[0] = projects.get(i * COLUMNS);
+ 					}
+ 					else {
+-						row = new Project[COLUMNS];
++						row = new AbstractProject[COLUMNS];
+ 						for (int j = 0; j < COLUMNS; j++) {
+ 							row[j] = projects.get((i * COLUMNS) + j);
+ 						}
+@@ -131,7 +126,7 @@
+ 
+ 
+ 	@Exported
+-	public int getStyleId(LoopTagStatus varStatus, Project[][] projectsArray) {
++	public int getStyleId(LoopTagStatus varStatus, AbstractProject[][] projectsArray) {
+ 		boolean lastLine = varStatus.isLast() && (projectsArray.length > 1) && (projectsArray[projectsArray.length - 1].length == 1);
+ 		boolean oneDimenional = (projectsArray[0].length == 1);
+ 		if (oneDimenional || lastLine) {

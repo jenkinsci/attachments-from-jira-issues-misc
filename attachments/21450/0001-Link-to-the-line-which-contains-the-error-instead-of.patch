@@ -1,0 +1,27 @@
+From 1392fb743de13f5714c111ee51c89b292f0cf4ea Mon Sep 17 00:00:00 2001
+From: Steven Aerts <steven.aerts@gmail.com>
+Date: Thu, 26 Jan 2012 10:31:37 +0100
+Subject: [PATCH] Link to the line which contains the error instead of just
+ linking to the file.
+
+Signed-off-by: Steven Aerts <steven.aerts@gmail.com>
+---
+ .../plugins/klocwork/KloResult/summary.jelly       |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/src/main/resources/com/thalesgroup/hudson/plugins/klocwork/KloResult/summary.jelly b/src/main/resources/com/thalesgroup/hudson/plugins/klocwork/KloResult/summary.jelly
+index 9c97f4a..b113beb 100755
+--- a/src/main/resources/com/thalesgroup/hudson/plugins/klocwork/KloResult/summary.jelly
++++ b/src/main/resources/com/thalesgroup/hudson/plugins/klocwork/KloResult/summary.jelly
+@@ -53,7 +53,7 @@
+                      ${kloFile.fileNameOnly}
+                 </j:if>
+                 <j:if test="${not elt.isSourceIgnored()}">
+-                      <a href="source.${kloFile.key}">${kloFile.fileNameOnly}</a>
++                      <a href="source.${kloFile.key}?#${kloFile.line}">${kloFile.fileNameOnly}</a>
+                 </j:if>
+ 
+ 
+-- 
+1.7.8.4
+

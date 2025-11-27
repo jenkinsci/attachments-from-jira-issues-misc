@@ -1,0 +1,26 @@
+Index: src/main/java/hudson/maven/MavenModuleSetBuild.java
+===================================================================
+--- src/main/java/hudson/maven/MavenModuleSetBuild.java	(revision 29135)
++++ src/main/java/hudson/maven/MavenModuleSetBuild.java	(working copy)
+@@ -415,6 +415,8 @@
+                         if(!preBuild(listener, project.getPublishers()))
+                             return Result.FAILURE;
+ 
++                        Result r = null;
++                        
+                         SplittableBuildListener slistener = new SplittableBuildListener(listener);
+                         proxies = new HashMap<ModuleName, ProxyImpl2>();
+                         List<String> changedModules = new ArrayList<String>();
+@@ -477,8 +479,11 @@
+                         try {
+                             mpa = new MavenProbeAction(project,process.channel);
+                             addAction(mpa);
+-                            return process.call(builder);
++                            r = process.call(builder);
++                            return r;
+                         } finally {
++                            if (r != null) { setResult(r); }
++
+                             builder.end(launcher);
+                             getActions().remove(mpa);
+                             process.discard();

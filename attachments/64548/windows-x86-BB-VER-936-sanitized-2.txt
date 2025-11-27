@@ -1,0 +1,1350 @@
+﻿[2025-06-19T17:19:12.186Z] Started by user <REDACTED USER>
+[2025-06-19T17:19:13.253Z] [JTE] Obtained Pipeline Configuration File
+[2025-06-19T17:19:13.253Z] [JTE] -- scm: git https://<REDACTED_CREDENTIAL>@bitbucket.org/<ORG>/<REPO>
+[2025-06-19T17:19:13.254Z] [JTE] -- file path: pipeline/pipeline_config.groovy
+[2025-06-19T17:19:13.479Z] [JTE] Pipeline Configuration Modifications
+[2025-06-19T17:19:13.480Z] [JTE] Configurations Added:
+[2025-06-19T17:19:13.481Z] [JTE] - jte.allow_scm_jenkinsfile set to false
+[2025-06-19T17:19:13.481Z] [JTE] - libraries.build_environment.region set to us-west-2
+[2025-06-19T17:19:13.482Z] [JTE] - libraries.build_environment.account set to <aws_account>
+[2025-06-19T17:19:13.482Z] [JTE] - libraries.build_environment.secret set to <REDACTED_AWS_SECRET>
+[2025-06-19T17:19:13.482Z] [JTE] - libraries.build_environment.repoPrefix set to jenkins-build-environment/pipelines
+[2025-06-19T17:19:13.483Z] [JTE] - libraries.build_environment.nestedDockerEnabled set to true
+[2025-06-19T17:19:13.483Z] [JTE] - libraries.build_environment.sharedNetworkEnabled set to false
+[2025-06-19T17:19:13.484Z] [JTE] - libraries.build_environment.dockerfilePath set to 
+[2025-06-19T17:19:13.484Z] [JTE] - libraries.fortify.url set to https://api.ams.fortify.com
+[2025-06-19T17:19:13.484Z] [JTE] - libraries.fortify.apiKey set to ed937c44-742b-4cee-918a-db220da9bf89
+[2025-06-19T17:19:13.485Z] [JTE] - libraries.fortify.apiSecretId set to <REDACTED_SECRET_ID>
+[2025-06-19T17:19:13.485Z] [JTE] - libraries.sonatype.failBuildOnNetworkError set to false
+[2025-06-19T17:19:13.485Z] [JTE] - libraries.sonatype.enableDebugLogging set to false
+[2025-06-19T17:19:13.488Z] [JTE] - libraries.datadog_api.uri set to https://api.datadoghq.com/api/v2
+[2025-06-19T17:19:13.489Z] [JTE] - libraries.datadog_api.appKey set to <REDACTED_APP_KEY>
+[2025-06-19T17:19:13.489Z] [JTE] - libraries.datadog_api.apiKey set to <REDACTED_API_KEY>
+[2025-06-19T17:19:13.489Z] [JTE] - libraries.jira.domain set to https://org.atlassian.net
+[2025-06-19T17:19:13.490Z] [JTE] - libraries.jira.credentialsId set to <REDACTED_CREDENTIAL_ID>
+[2025-06-19T17:19:13.490Z] [JTE] - libraries.jira.startTimeField set to customfield_10831
+[2025-06-19T17:19:13.491Z] [JTE] - libraries.jira.endTimeField set to customfield_10832
+[2025-06-19T17:19:13.491Z] [JTE] - libraries.teams.webhookUrl set to 
+[2025-06-19T17:19:13.494Z] [JTE] - libraries.pipeline_utils.additionalRepos set to []
+[2025-06-19T17:19:13.494Z] [JTE] - application_environments.dev.short_name set to Dev
+[2025-06-19T17:19:13.495Z] [JTE] - application_environments.dev.long_name set to Development
+[2025-06-19T17:19:13.498Z] [JTE] - application_environments.qa.short_name set to QA
+[2025-06-19T17:19:13.499Z] [JTE] - application_environments.qa.long_name set to Quality assurance
+[2025-06-19T17:19:13.499Z] [JTE] - application_environments.staging.short_name set to Staging
+[2025-06-19T17:19:13.499Z] [JTE] - application_environments.staging.long_name set to Staging
+[2025-06-19T17:19:13.500Z] [JTE] - application_environments.prod.short_name set to Prod
+[2025-06-19T17:19:13.500Z] [JTE] - application_environments.prod.long_name set to Production
+[2025-06-19T17:19:13.501Z] [JTE] - keywords.pre_stage_build_enabled set to false
+[2025-06-19T17:19:13.501Z] [JTE] - keywords.application_name set to 
+[2025-06-19T17:19:13.502Z] [JTE] - keywords.service set to 
+[2025-06-19T17:19:13.503Z] [JTE] - keywords.dev_leads set to 
+[2025-06-19T17:19:13.503Z] [JTE] - keywords.qa_leads set to 
+[2025-06-19T17:19:13.504Z] [JTE] - keywords.devops_team set to ITES-DEVOPS
+[2025-06-19T17:19:13.505Z] [JTE] - keywords.approval_timeout.time set to 7
+[2025-06-19T17:19:13.505Z] [JTE] - keywords.approval_timeout.unit set to DAYS
+[2025-06-19T17:19:13.506Z] [JTE] - keywords.pull_request set to ^PR-[0-9]{1,}$
+[2025-06-19T17:19:13.506Z] [JTE] - keywords.bitbucket_merge_message set to Merged in .*?(?=\s\(pull request) \(pull request #[0-9]{1,}\)
+[2025-06-19T17:19:13.506Z] [JTE] - keywords.feature set to ^[Ff]eature/[0-9a-zA-Z]{1,}(.*)
+[2025-06-19T17:19:13.507Z] [JTE] - keywords.master set to ^([Mm]aster|[Mm]ain)$
+[2025-06-19T17:19:13.508Z] [JTE] - keywords.develop set to ^[Dd]evelop(ment|)$
+[2025-06-19T17:19:13.509Z] [JTE] - keywords.hotfix set to ^[Hh]otfix/(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:\.(0|[1-9]\d*))?(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+[2025-06-19T17:19:13.510Z] [JTE] - keywords.release set to ^[Rr]elease/(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+[2025-06-19T17:19:13.510Z] [JTE] - keywords.approved_staging_bypass set to [VOR DevOps Pipelines/Edge/*, VOR DevOps Pipelines/Cloud/inference-cloud-service, VOR DevOps Pipelines/Cloud/instore-delivery, VOR DevOps Pipelines/Cloud/vor-cloud-data-sync-up]
+[2025-06-19T17:19:13.513Z] [JTE] - keywords.fortify_enabled set to true
+[2025-06-19T17:19:13.513Z] [JTE] - keywords.sonatype_enabled set to true
+[2025-06-19T17:19:13.513Z] [JTE] Configurations Deleted: None
+[2025-06-19T17:19:13.515Z] [JTE] Configurations Changed: None
+[2025-06-19T17:19:13.516Z] [JTE] Configurations Duplicated: None
+[2025-06-19T17:19:13.516Z] [JTE] Configurations Ignored: None
+[2025-06-19T17:19:13.517Z] [JTE] Subsequent May Merge:
+[2025-06-19T17:19:13.520Z] [JTE] - libraries
+[2025-06-19T17:19:13.521Z] [JTE] - libraries.build_environment
+[2025-06-19T17:19:13.521Z] [JTE] - libraries.fortify
+[2025-06-19T17:19:13.522Z] [JTE] - libraries.sonatype
+[2025-06-19T17:19:13.524Z] [JTE] - application_environments
+[2025-06-19T17:19:13.524Z] [JTE] - application_environments.dev
+[2025-06-19T17:19:13.525Z] [JTE] - application_environments.qa
+[2025-06-19T17:19:13.525Z] [JTE] - application_environments.staging
+[2025-06-19T17:19:13.526Z] [JTE] - application_environments.prod
+[2025-06-19T17:19:13.527Z] [JTE] - keywords
+[2025-06-19T17:19:13.528Z] [JTE] Subsequent May Override:
+[2025-06-19T17:19:13.528Z] [JTE] - libraries.build_environment.nestedDockerEnabled
+[2025-06-19T17:19:13.528Z] [JTE] - libraries.build_environment.sharedNetworkEnabled
+[2025-06-19T17:19:13.530Z] [JTE] - libraries.build_environment.dockerfilePath
+[2025-06-19T17:19:13.531Z] [JTE] - libraries.sonatype.failBuildOnNetworkError
+[2025-06-19T17:19:13.531Z] [JTE] - libraries.sonatype.enableDebugLogging
+[2025-06-19T17:19:13.531Z] [JTE] - libraries.teams.webhookUrl
+[2025-06-19T17:19:13.532Z] [JTE] - libraries.pipeline_utils.additionalRepos
+[2025-06-19T17:19:13.534Z] [JTE] - keywords.pre_stage_build_enabled
+[2025-06-19T17:19:13.535Z] [JTE] - keywords.application_name
+[2025-06-19T17:19:13.535Z] [JTE] - keywords.service
+[2025-06-19T17:19:13.535Z] [JTE] - keywords.dev_leads
+[2025-06-19T17:19:13.536Z] [JTE] - keywords.qa_leads
+[2025-06-19T17:22:21.144Z] [JTE] Obtained Template Configuration File
+[2025-06-19T17:22:21.144Z] [JTE] -- scm: git https://<REDACTED_CREDENTIAL>@bitbucket.org/<ORG>/<REPO>
+[2025-06-19T17:22:21.149Z] [JTE] -- file path: pipeline_config.groovy
+[2025-06-19T17:22:26.818Z] [JTE] Pipeline Configuration Modifications
+[2025-06-19T17:22:26.818Z] [JTE] Configurations Added:
+[2025-06-19T17:22:26.818Z] [JTE] - libraries.build_environment.os set to windows
+[2025-06-19T17:22:26.819Z] [JTE] - libraries.build_environment.arch set to x86
+[2025-06-19T17:22:26.819Z] [JTE] - libraries.fortify.app set to devops-poc-jenkins-example-app
+[2025-06-19T17:22:26.819Z] [JTE] - libraries.fortify.technologyStack set to PYTHON
+[2025-06-19T17:22:26.819Z] [JTE] - libraries.fortify.languageLevel set to 3
+[2025-06-19T17:22:26.820Z] [JTE] - libraries.sonatype.iqApplication set to devops-poc-jenkins-example-app
+[2025-06-19T17:22:26.822Z] [JTE] - libraries.sonatype.iqScanPatterns set to [
+[2025-06-19T17:22:26.823Z] [JTE]             "**/requirements/*.txt",
+[2025-06-19T17:22:26.823Z] [JTE]             "**/requirements.txt"
+[2025-06-19T17:22:26.823Z] [JTE]         ]
+[2025-06-19T17:22:26.824Z] [JTE] - libraries.custom_build set to [:]
+[2025-06-19T17:22:26.824Z] [JTE] - libraries.shell_test.script set to jenkins/scripts/test.bat
+[2025-06-19T17:22:26.825Z] [JTE] - libraries.s3_deploy.source set to build/**
+[2025-06-19T17:22:26.825Z] [JTE] - libraries.s3_deploy.target set to bucket_folder/
+[2025-06-19T17:22:26.826Z] [JTE] - libraries.s3_deploy.exclude set to **/ignorable.txt
+[2025-06-19T17:22:26.827Z] [JTE] - libraries.shell_pre_stage_build.script set to jenkins/scripts/pre_stage_build.ps1
+[2025-06-19T17:22:26.828Z] [JTE] - pipeline_utils.additionalRepos set to [[path:engine, url:https://bitbucket.org/<org>/devops-poc-jenkins-template-engine.git, branch:develop], [path:linux, url:https://bitbucket.org/<org>/devops-poc-jenkins-example-app.git, branch:master]]
+[2025-06-19T17:22:26.828Z] [JTE] - application_environments.dev.s3_deploy.credentials set to <REDACTED_AWS_SECRET>
+[2025-06-19T17:22:26.828Z] [JTE] - application_environments.dev.s3_deploy.region set to us-west-2
+[2025-06-19T17:22:26.828Z] [JTE] - application_environments.dev.s3_deploy.bucket set to devops-testing-jenkins-bucket
+[2025-06-19T17:22:26.829Z] [JTE] - application_environments.qa.s3_deploy.credentials set to <REDACTED_AWS_SECRET>
+[2025-06-19T17:22:26.831Z] [JTE] - application_environments.qa.s3_deploy.region set to us-west-2
+[2025-06-19T17:22:26.832Z] [JTE] - application_environments.qa.s3_deploy.bucket set to devops-testing-jenkins-bucket
+[2025-06-19T17:22:26.832Z] [JTE] - application_environments.staging.s3_deploy.credentials set to <REDACTED_AWS_SECRET>
+[2025-06-19T17:22:26.832Z] [JTE] - application_environments.staging.s3_deploy.region set to us-west-2
+[2025-06-19T17:22:26.832Z] [JTE] - application_environments.staging.s3_deploy.bucket set to devops-testing-jenkins-bucket
+[2025-06-19T17:22:26.833Z] [JTE] - application_environments.prod.s3_deploy.credentials set to <REDACTED_AWS_SECRET>
+[2025-06-19T17:22:26.835Z] [JTE] - application_environments.prod.s3_deploy.region set to us-west-2
+[2025-06-19T17:22:26.835Z] [JTE] - application_environments.prod.s3_deploy.bucket set to devops-testing-jenkins-bucket
+[2025-06-19T17:22:26.835Z] [JTE] - application_environments.test.s3_deploy.credentials set to <REDACTED_AWS_SECRET>
+[2025-06-19T17:22:26.836Z] [JTE] - application_environments.test.s3_deploy.region set to us-west-2
+[2025-06-19T17:22:26.836Z] [JTE] - application_environments.test.s3_deploy.bucket set to devops-testing-jenkins-bucket
+[2025-06-19T17:22:26.836Z] [JTE] Configurations Deleted: None
+[2025-06-19T17:22:26.837Z] [JTE] Configurations Changed:
+[2025-06-19T17:22:26.837Z] [JTE] - libraries.build_environment.dockerfilePath changed from  to jenkins/build_env
+[2025-06-19T17:22:26.838Z] [JTE] - keywords.application_name changed from  to ExampleApplication
+[2025-06-19T17:22:26.838Z] [JTE] - keywords.service changed from  to Web
+[2025-06-19T17:22:26.838Z] [JTE] - keywords.dev_leads changed from  to users
+[2025-06-19T17:22:26.838Z] [JTE] - keywords.qa_leads changed from  to users
+[2025-06-19T17:22:26.838Z] [JTE] Configurations Duplicated: None
+[2025-06-19T17:22:26.839Z] [JTE] Configurations Ignored: None
+[2025-06-19T17:22:26.839Z] [JTE] Subsequent May Merge: None
+[2025-06-19T17:22:26.839Z] [JTE] Subsequent May Override: None
+[2025-06-19T17:22:43.894Z] [JTE] Obtained Template
+[2025-06-19T17:22:43.895Z] [JTE] -- scm: git https://<REDACTED_CREDENTIAL>@bitbucket.org/<ORG>/<REPO>
+[2025-06-19T17:22:43.895Z] [JTE] -- file path: pipeline/Jenkinsfile
+[2025-06-19T17:23:32.846Z] [JTE] Loading Library build_environment
+[2025-06-19T17:23:32.846Z] [JTE] -- scm: git https://<REDACTED_CREDENTIAL>@bitbucket.org/<ORG>/<REPO>
+[2025-06-19T17:23:37.126Z] [JTE] Loading Library fortify
+[2025-06-19T17:23:37.128Z] [JTE] -- scm: git https://<REDACTED_CREDENTIAL>@bitbucket.org/<ORG>/<REPO>
+[2025-06-19T17:23:40.563Z] [JTE] Loading Library sonatype
+[2025-06-19T17:23:40.563Z] [JTE] -- scm: git https://<REDACTED_CREDENTIAL>@bitbucket.org/<ORG>/<REPO>
+[2025-06-19T17:23:43.629Z] [JTE] Loading Library datadog_api
+[2025-06-19T17:23:43.630Z] [JTE] -- scm: git https://<REDACTED_CREDENTIAL>@bitbucket.org/<ORG>/<REPO>
+[2025-06-19T17:23:48.420Z] [JTE] Loading Library jira
+[2025-06-19T17:23:48.421Z] [JTE] -- scm: git https://<REDACTED_CREDENTIAL>@bitbucket.org/<ORG>/<REPO>
+[2025-06-19T17:23:51.533Z] [JTE] Loading Library teams
+[2025-06-19T17:23:51.533Z] [JTE] -- scm: git https://<REDACTED_CREDENTIAL>@bitbucket.org/<ORG>/<REPO>
+[2025-06-19T17:23:54.933Z] [JTE] Loading Library pipeline_utils
+[2025-06-19T17:23:54.933Z] [JTE] -- scm: git https://<REDACTED_CREDENTIAL>@bitbucket.org/<ORG>/<REPO>
+[2025-06-19T17:23:58.058Z] [JTE] Loading Library custom_build
+[2025-06-19T17:23:58.059Z] [JTE] -- scm: git https://<REDACTED_CREDENTIAL>@bitbucket.org/<ORG>/<REPO>
+[2025-06-19T17:24:03.476Z] [JTE] Loading Library shell_test
+[2025-06-19T17:24:03.476Z] [JTE] -- scm: git https://<REDACTED_CREDENTIAL>@bitbucket.org/<ORG>/<REPO>
+[2025-06-19T17:24:07.975Z] [JTE] Loading Library s3_deploy
+[2025-06-19T17:24:07.978Z] [JTE] -- scm: git https://<REDACTED_CREDENTIAL>@bitbucket.org/<ORG>/<REPO>
+[2025-06-19T17:24:11.368Z] [JTE] Loading Library shell_pre_stage_build
+[2025-06-19T17:24:11.369Z] [JTE] -- scm: git https://<REDACTED_CREDENTIAL>@bitbucket.org/<ORG>/<REPO>
+[2025-06-19T17:24:37.690Z] [Pipeline] Start of Pipeline
+[2025-06-19T17:24:37.863Z] [JTE][@Validate - build_environment/initialize_build_env_internal_config.call]
+[2025-06-19T17:24:37.972Z] [JTE][Step - build_environment/set_cred.call()]
+[2025-06-19T17:24:38.076Z] [JTE][Step - build_environment/set_url.call()]
+[2025-06-19T17:24:38.183Z] [JTE][Step - build_environment/get_docker_flags.call()]
+[2025-06-19T17:24:38.207Z] [JTE][@Validate - fortify/initialize_fortify_internal_config.call]
+[2025-06-19T17:24:38.210Z] [JTE][@Validate - sonatype/initialize_sonatype_internal_config.call]
+[2025-06-19T17:24:38.578Z] [JTE][Step - build_environment/set_os.call()]
+[2025-06-19T17:24:38.670Z] [JTE][Step - build_environment/set_arch.call()]
+[2025-06-19T17:24:38.779Z] [JTE][Step - pipeline_utils/triggered_by.call(String)]
+[2025-06-19T17:24:38.869Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:24:39.002Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:24:39.079Z] [Pipeline] withEnv
+[2025-06-19T17:24:39.086Z] [Pipeline] {
+[2025-06-19T17:24:39.153Z] [Pipeline] datadog
+[2025-06-19T17:24:39.154Z] [Datadog] Logging is already enabled globally, you do not need to specify 'collectLogs: true'
+[2025-06-19T17:24:39.163Z] [Pipeline] {
+[2025-06-19T17:24:39.252Z] [Pipeline] stage
+[2025-06-19T17:24:39.263Z] [Pipeline] { (Source Control)
+[2025-06-19T17:24:39.521Z] [Pipeline] node
+[2025-06-19T17:24:54.529Z] Still waiting to schedule task
+[2025-06-19T17:24:54.530Z] ‘EC2 (devops-ec2) - windows-ssh (i-0897c222c3230be72)’ is offline
+[2025-06-19T17:31:09.139Z] Running on EC2 (devops-ec2) - windows-ssh (i-0897c222c3230be72) in c:\jenkins\workspace\enkins-example-windows-app_PR-18
+[2025-06-19T17:31:09.147Z] [Pipeline] {
+[2025-06-19T17:32:16.641Z] [Pipeline] checkout
+[2025-06-19T17:32:17.151Z] The recommended git tool is: NONE
+[2025-06-19T17:32:21.991Z] using credential svc-bitbucket-cloud
+[2025-06-19T17:32:22.007Z] Cloning the remote Git repository
+[2025-06-19T17:32:22.007Z] Cloning with configured refspecs honoured and without tags
+[2025-06-19T17:32:22.079Z] Cloning repository https://bitbucket.org/<org>/jenkins-example-windows-app.git
+[2025-06-19T17:32:22.882Z]  > git init c:\jenkins\workspace\enkins-example-windows-app_PR-18 # timeout=10
+[2025-06-19T17:32:24.850Z] Fetching upstream changes from https://bitbucket.org/<org>/jenkins-example-windows-app.git
+[2025-06-19T17:32:24.852Z]  > git --version # timeout=10
+[2025-06-19T17:32:24.937Z]  > git --version # 'git version 2.49.0.windows.1'
+[2025-06-19T17:32:24.940Z] using GIT_ASKPASS to set credentials Service account credentials for Bitbucket Cloud access
+[2025-06-19T17:32:24.955Z]  > git fetch --no-tags --force --progress -- https://bitbucket.org/<org>/jenkins-example-windows-app.git +refs/heads/feature/ESD-116_additional-repos:refs/remotes/origin/feature/ESD-116_additional-repos # timeout=10
+[2025-06-19T17:32:40.760Z]  > git config remote.origin.url https://bitbucket.org/<org>/jenkins-example-windows-app.git # timeout=10
+[2025-06-19T17:32:40.882Z]  > git config --add remote.origin.fetch +refs/heads/feature/ESD-116_additional-repos:refs/remotes/origin/feature/ESD-116_additional-repos # timeout=10
+[2025-06-19T17:32:41.619Z] Avoid second fetch
+[2025-06-19T17:32:41.619Z] Checking out Revision f3da946fece362d013d9fa081f85e80c9c95eeb7 (PR-18)
+[2025-06-19T17:32:42.348Z] Commit message: "adding a comment in dockerfile"
+[2025-06-19T17:32:42.348Z] First time build. Skipping changelog.
+[2025-06-19T17:32:42.349Z] [Bitbucket] Notifying pull request build result
+[2025-06-19T17:32:42.723Z] The recommended git tool is: NONE
+[2025-06-19T17:32:42.736Z] using credential svc-bitbucket-cloud
+[2025-06-19T17:32:42.859Z] The recommended git tool is: NONE
+[2025-06-19T17:32:42.872Z] using credential svc-bitbucket-cloud
+[2025-06-19T17:32:41.665Z]  > git config core.sparsecheckout # timeout=10
+[2025-06-19T17:32:41.810Z]  > git checkout -f f3da946fece362d013d9fa081f85e80c9c95eeb7 # timeout=10
+[2025-06-19T17:32:42.787Z]  > git rev-parse "HEAD^{commit}" # timeout=10
+[2025-06-19T17:32:46.150Z] [GitCheckoutListener] Recording commits of 'git https://bitbucket.org/<org>/jenkins-example-windows-app.git'
+[2025-06-19T17:32:46.151Z] [GitCheckoutListener] Found no previous build with recorded Git commits
+[2025-06-19T17:32:46.151Z] [GitCheckoutListener] -> Starting initial recording of commits
+[2025-06-19T17:32:46.151Z] [GitCheckoutListener] -> Single parent commit found - branch is already descendant of target branch head
+[2025-06-19T17:32:46.151Z] [GitCheckoutListener] -> Using head commit 'f3da946' as starting point
+[2025-06-19T17:32:46.151Z] [GitCheckoutListener] -> Recorded 46 new commits
+[2025-06-19T17:32:46.151Z] [GitCheckoutListener] -> Git commit decorator successfully obtained 'hudson.plugins.git.browser.BitbucketWeb@4c6f66bf' to render commit links
+[2025-06-19T17:32:46.595Z] [Pipeline] withEnv
+[2025-06-19T17:32:46.603Z] [Pipeline] {
+[2025-06-19T17:32:46.701Z] [Pipeline] cleanWs
+[2025-06-19T17:32:46.778Z] [WS-CLEANUP] Deleting project workspace...
+[2025-06-19T17:32:46.778Z] [WS-CLEANUP] Deferred wipeout is disabled by the job configuration...
+[2025-06-19T17:32:47.220Z] [WS-CLEANUP] done
+[2025-06-19T17:32:47.310Z] [JTE][Step - pipeline_utils/checkout_scm.call()]
+[2025-06-19T17:32:47.580Z] [Pipeline] checkout
+[2025-06-19T17:32:47.733Z] The recommended git tool is: NONE
+[2025-06-19T17:32:47.748Z] using credential svc-bitbucket-cloud
+[2025-06-19T17:32:47.777Z] Cloning the remote Git repository
+[2025-06-19T17:32:47.777Z] Cloning with configured refspecs honoured and without tags
+[2025-06-19T17:32:47.818Z] Cloning repository https://bitbucket.org/<org>/jenkins-example-windows-app.git
+[2025-06-19T17:32:47.824Z]  > git init c:\jenkins\workspace\enkins-example-windows-app_PR-18 # timeout=10
+[2025-06-19T17:32:47.957Z] Fetching upstream changes from https://bitbucket.org/<org>/jenkins-example-windows-app.git
+[2025-06-19T17:32:47.960Z]  > git --version # timeout=10
+[2025-06-19T17:32:48.043Z]  > git --version # 'git version 2.49.0.windows.1'
+[2025-06-19T17:32:48.044Z] using GIT_ASKPASS to set credentials Service account credentials for Bitbucket Cloud access
+[2025-06-19T17:32:48.049Z]  > git fetch --no-tags --force --progress -- https://bitbucket.org/<org>/jenkins-example-windows-app.git +refs/heads/feature/ESD-116_additional-repos:refs/remotes/origin/feature/ESD-116_additional-repos # timeout=10
+[2025-06-19T17:32:50.365Z] Avoid second fetch
+[2025-06-19T17:32:50.366Z] Checking out Revision f3da946fece362d013d9fa081f85e80c9c95eeb7 (PR-18)
+[2025-06-19T17:32:50.565Z] Commit message: "adding a comment in dockerfile"
+[2025-06-19T17:32:50.566Z] [GitCheckoutListener] Skipping recording, since SCM 'git https://bitbucket.org/<org>/jenkins-example-windows-app.git' already has been processed
+[2025-06-19T17:32:50.760Z] [Pipeline] stash
+[2025-06-19T17:32:50.240Z]  > git config remote.origin.url https://bitbucket.org/<org>/jenkins-example-windows-app.git # timeout=10
+[2025-06-19T17:32:50.320Z]  > git config --add remote.origin.fetch +refs/heads/feature/ESD-116_additional-repos:refs/remotes/origin/feature/ESD-116_additional-repos # timeout=10
+[2025-06-19T17:32:50.406Z]  > git config core.sparsecheckout # timeout=10
+[2025-06-19T17:32:50.472Z]  > git checkout -f f3da946fece362d013d9fa081f85e80c9c95eeb7 # timeout=10
+[2025-06-19T17:32:54.539Z] Stashed 23 file(s) to https://abc-jenkins-stashed-artifacts.s3.us-west-2.amazonaws.com/Example%20DevOps%20Pipelines/jenkins-example-windows-app/PR-18/66/stashes/source.tgz
+[2025-06-19T17:32:54.520Z] [Pipeline] script
+[2025-06-19T17:32:54.531Z] [Pipeline] {
+[2025-06-19T17:32:54.680Z] [JTE][Step - pipeline_utils/get_scm_variable.call(String)]
+[2025-06-19T17:32:54.780Z] [JTE][Step - pipeline_utils/run_sh.call(LinkedHashMap)]
+[2025-06-19T17:32:54.795Z] [Pipeline] bat
+[2025-06-19T17:32:55.465Z] [Pipeline] echo
+[2025-06-19T17:32:55.524Z] Committer email: <REDACTED_EMAIL>
+[2025-06-19T17:32:55.661Z] [JTE][Step - pipeline_utils/get_merged_branch.call()]
+[2025-06-19T17:32:55.751Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:32:55.857Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:32:56.132Z] [JTE][Step - pipeline_utils/set_branch_and_trigger_variables.call()]
+[2025-06-19T17:32:56.228Z] [JTE][Step - pipeline_utils/triggered_by.call(String)]
+[2025-06-19T17:32:56.328Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:32:56.447Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:32:56.653Z] [JTE][Step - pipeline_utils/triggered_by.call(String)]
+[2025-06-19T17:32:56.724Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:32:56.829Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:32:56.943Z] [JTE][Step - pipeline_utils/pr_merge_check.call()]
+[2025-06-19T17:34:53.924Z] [Pipeline] echo
+[2025-06-19T17:34:54.000Z] Source Branch: feature/ESD-116_additional-repos
+[2025-06-19T17:34:54.019Z] [Pipeline] echo
+[2025-06-19T17:34:54.086Z] Target Branch: develop
+[2025-06-19T17:34:54.115Z] [Pipeline] withCredentials
+[2025-06-19T17:34:54.131Z] Masking supported pattern matches of %BB_TOKEN%
+[2025-06-19T17:34:54.189Z] [Pipeline] {
+[2025-06-19T17:34:54.236Z] [Pipeline] isUnix
+[2025-06-19T17:34:54.343Z] [Pipeline] bat
+[2025-06-19T17:34:54.791Z] 
+[2025-06-19T17:34:54.792Z] administrator@EC2AMAZ-1EA1VB4 c:\jenkins\workspace\enkins-example-windows-app_PR-18>git config --global credential.helper "" 
+[2025-06-19T17:34:54.792Z] 
+[2025-06-19T17:34:54.792Z] administrator@EC2AMAZ-1EA1VB4 c:\jenkins\workspace\enkins-example-windows-app_PR-18>git remote set-url origin https://<REDACTED_CREDENTIAL>@bitbucket.org/<ORG>/<REPO> 
+[2025-06-19T17:34:54.792Z] 
+[2025-06-19T17:34:54.792Z] administrator@EC2AMAZ-1EA1VB4 c:\jenkins\workspace\enkins-example-windows-app_PR-18>git fetch origin +refs/heads/develop:refs/remotes/origin/develop 
+[2025-06-19T17:34:55.757Z] From https://bitbucket.org/<org>/jenkins-example-windows-app
+[2025-06-19T17:34:55.757Z]  * [new branch]      develop    -> origin/develop
+[2025-06-19T17:34:55.757Z] 
+[2025-06-19T17:34:55.757Z] administrator@EC2AMAZ-1EA1VB4 c:\jenkins\workspace\enkins-example-windows-app_PR-18>git checkout -B feature/ESD-116_additional-repos   || git checkout feature/ESD-116_additional-repos 
+[2025-06-19T17:34:55.757Z] Switched to a new branch 'feature/ESD-116_additional-repos'
+[2025-06-19T17:34:55.757Z] 
+[2025-06-19T17:34:55.757Z] administrator@EC2AMAZ-1EA1VB4 c:\jenkins\workspace\enkins-example-windows-app_PR-18>git config user.name "jenkins" 
+[2025-06-19T17:34:56.015Z] 
+[2025-06-19T17:34:56.015Z] administrator@EC2AMAZ-1EA1VB4 c:\jenkins\workspace\enkins-example-windows-app_PR-18>git config user.email \"<REDACTED_EMAIL>\" 
+[2025-06-19T17:34:56.015Z] 
+[2025-06-19T17:34:56.015Z] administrator@EC2AMAZ-1EA1VB4 c:\jenkins\workspace\enkins-example-windows-app_PR-18>git merge --no-commit --no-ff origin/develop   || (git merge --abort   && exit 1 ) 
+[2025-06-19T17:34:56.016Z] Already up to date.
+[2025-06-19T17:34:56.055Z] [Pipeline] echo
+[2025-06-19T17:34:56.121Z] PR #18 is mergeable with develop
+[2025-06-19T17:34:56.129Z] [Pipeline] }
+[2025-06-19T17:34:56.242Z] [Pipeline] // withCredentials
+[2025-06-19T17:34:56.293Z] [Pipeline] }
+[2025-06-19T17:34:56.368Z] [Pipeline] // script
+[2025-06-19T17:34:56.402Z] [Pipeline] }
+[2025-06-19T17:34:56.490Z] [Pipeline] // withEnv
+[2025-06-19T17:34:56.532Z] [Pipeline] }
+[2025-06-19T17:34:56.640Z] [Pipeline] // node
+[2025-06-19T17:34:56.684Z] [Pipeline] }
+[2025-06-19T17:34:56.753Z] [Pipeline] // stage
+[2025-06-19T17:34:56.806Z] [Pipeline] stage
+[2025-06-19T17:34:56.813Z] [Pipeline] { (Validation)
+[2025-06-19T17:34:56.895Z] [Pipeline] script
+[2025-06-19T17:34:56.905Z] [Pipeline] {
+[2025-06-19T17:34:57.072Z] [JTE][Step - pipeline_utils/print_build_details.call()]
+[2025-06-19T17:34:57.091Z] [Pipeline] echo
+[2025-06-19T17:34:57.107Z] Trigger: pull request, Source: feature/ESD-116_additional-repos, Target: develop
+[2025-06-19T17:34:57.241Z] [JTE][Step - pipeline_utils/validate_build_details.call()]
+[2025-06-19T17:34:57.321Z] [JTE][Step - pipeline_utils/triggered_by.call(String)]
+[2025-06-19T17:34:57.405Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:34:57.583Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:34:57.705Z] [JTE][Step - pipeline_utils/triggered_by.call(String)]
+[2025-06-19T17:34:57.799Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:34:57.882Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:34:57.974Z] [JTE][Step - pipeline_utils/on_merge.call(LinkedHashMap, CpsClosure2)]
+[2025-06-19T17:34:58.050Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:34:58.130Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:34:58.219Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:34:58.343Z] [JTE][Step - pipeline_utils/on_merge.call(LinkedHashMap, CpsClosure2)]
+[2025-06-19T17:34:58.425Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:34:58.491Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:34:58.581Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:34:58.736Z] [JTE][Step - pipeline_utils/on_pull_request.call(LinkedHashMap, CpsClosure2)]
+[2025-06-19T17:34:58.843Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:34:58.962Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:34:59.080Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:34:59.200Z] [JTE][Step - pipeline_utils/on_pull_request.call(LinkedHashMap, CpsClosure2)]
+[2025-06-19T17:34:59.272Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:34:59.340Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:34:59.425Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:34:59.492Z] [Pipeline] }
+[2025-06-19T17:34:59.566Z] [Pipeline] // script
+[2025-06-19T17:34:59.600Z] [Pipeline] }
+[2025-06-19T17:34:59.663Z] [Pipeline] // stage
+[2025-06-19T17:34:59.713Z] [Pipeline] stage
+[2025-06-19T17:34:59.721Z] [Pipeline] { (Jira Ticket)
+[2025-06-19T17:34:59.882Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:34:59.969Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:35:00.073Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:35:00.173Z] Stage "Jira Ticket" skipped due to when conditional
+[2025-06-19T17:35:00.192Z] [Pipeline] getContext
+[2025-06-19T17:35:00.275Z] [Pipeline] stage
+[2025-06-19T17:35:00.283Z] [Pipeline] { (Input Ticket)
+[2025-06-19T17:35:00.345Z] Stage "Jira Ticket" skipped due to when conditional
+[2025-06-19T17:35:00.361Z] [Pipeline] getContext
+[2025-06-19T17:35:00.394Z] [Pipeline] }
+[2025-06-19T17:35:00.485Z] [Pipeline] // stage
+[2025-06-19T17:35:00.538Z] [Pipeline] stage
+[2025-06-19T17:35:00.546Z] [Pipeline] { (Get Ticket)
+[2025-06-19T17:35:00.593Z] Stage "Jira Ticket" skipped due to when conditional
+[2025-06-19T17:35:00.608Z] [Pipeline] getContext
+[2025-06-19T17:35:00.638Z] [Pipeline] }
+[2025-06-19T17:35:00.714Z] [Pipeline] // stage
+[2025-06-19T17:35:00.759Z] [Pipeline] }
+[2025-06-19T17:35:00.860Z] [Pipeline] // stage
+[2025-06-19T17:35:00.952Z] [Pipeline] stage
+[2025-06-19T17:35:00.962Z] [Pipeline] { (Build Environment)
+[2025-06-19T17:35:01.154Z] [Pipeline] node
+[2025-06-19T17:35:01.204Z] Running on EC2 (devops-ec2) - windows-ssh (i-0897c222c3230be72) in c:\jenkins\workspace\enkins-example-windows-app_PR-18
+[2025-06-19T17:35:01.230Z] [Pipeline] {
+[2025-06-19T17:35:37.232Z] [Pipeline] checkout
+[2025-06-19T17:35:37.315Z] The recommended git tool is: NONE
+[2025-06-19T17:35:37.335Z] using credential svc-bitbucket-cloud
+[2025-06-19T17:35:37.443Z] Fetching changes from the remote Git repository
+[2025-06-19T17:35:37.567Z] Fetching without tags
+[2025-06-19T17:35:37.418Z]  > git rev-parse --resolve-git-dir c:\jenkins\workspace\enkins-example-windows-app_PR-18\.git # timeout=10
+[2025-06-19T17:35:37.529Z]  > git config remote.origin.url https://bitbucket.org/<org>/jenkins-example-windows-app.git # timeout=10
+[2025-06-19T17:35:37.632Z] Fetching upstream changes from https://bitbucket.org/<org>/jenkins-example-windows-app.git
+[2025-06-19T17:35:37.633Z]  > git --version # timeout=10
+[2025-06-19T17:35:37.757Z]  > git --version # 'git version 2.49.0.windows.1'
+[2025-06-19T17:35:37.758Z] using GIT_ASKPASS to set credentials Service account credentials for Bitbucket Cloud access
+[2025-06-19T17:35:37.765Z]  > git fetch --no-tags --force --progress -- https://bitbucket.org/<org>/jenkins-example-windows-app.git +refs/heads/feature/ESD-116_additional-repos:refs/remotes/origin/feature/ESD-116_additional-repos # timeout=10
+[2025-06-19T17:35:38.741Z] Checking out Revision f3da946fece362d013d9fa081f85e80c9c95eeb7 (PR-18)
+[2025-06-19T17:35:38.957Z] Commit message: "adding a comment in dockerfile"
+[2025-06-19T17:35:38.958Z] [GitCheckoutListener] Skipping recording, since SCM 'git https://bitbucket.org/<org>/jenkins-example-windows-app.git' already has been processed
+[2025-06-19T17:35:39.109Z] [Pipeline] withEnv
+[2025-06-19T17:35:39.122Z] [Pipeline] {
+[2025-06-19T17:35:39.246Z] [Pipeline] unstash
+[2025-06-19T17:35:38.803Z]  > git config core.sparsecheckout # timeout=10
+[2025-06-19T17:35:38.884Z]  > git checkout -f f3da946fece362d013d9fa081f85e80c9c95eeb7 # timeout=10
+[2025-06-19T17:35:39.730Z] Unstashed file(s) from https://abc-jenkins-stashed-artifacts.s3.us-west-2.amazonaws.com/Example%20DevOps%20Pipelines/jenkins-example-windows-app/PR-18/66/stashes/source.tgz
+[2025-06-19T17:35:39.748Z] [Pipeline] script
+[2025-06-19T17:35:39.759Z] [Pipeline] {
+[2025-06-19T17:35:39.943Z] [JTE][Step - build_environment/create_ecr_repo.call()]
+[2025-06-19T17:35:39.968Z] [Pipeline] withAWS
+[2025-06-19T17:35:39.970Z] Constructing AWS CredentialsSetting AWS region us-west-2 
+[2025-06-19T17:35:39.977Z] [Pipeline] {
+[2025-06-19T17:35:40.042Z] [Pipeline] bat
+[2025-06-19T17:35:40.436Z] 
+[2025-06-19T17:35:40.436Z] administrator@EC2AMAZ-1EA1VB4 c:\jenkins\workspace\enkins-example-windows-app_PR-18>aws ecr describe-repositories --repository-names jenkins-build-environment/pipelines/jenkins-example-windows-app   1>NUL 2>&1  || aws ecr create-repository --repository-name jenkins-build-environment/pipelines/jenkins-example-windows-app 
+[2025-06-19T17:36:12.568Z] [Pipeline] }
+[2025-06-19T17:36:12.672Z] [Pipeline] // withAWS
+[2025-06-19T17:36:12.733Z] [Pipeline] echo
+[2025-06-19T17:36:12.798Z] ECR repository 'jenkins-build-environment/pipelines/jenkins-example-windows-app' is ready.
+[2025-06-19T17:36:13.022Z] [JTE][Step - build_environment/set_tag.call()]
+[2025-06-19T17:36:13.047Z] [Pipeline] bat
+[2025-06-19T17:36:14.725Z] [JTE][Step - build_environment/get_build_environment.call()]
+[2025-06-19T17:36:14.748Z] [Pipeline] stage
+[2025-06-19T17:36:14.755Z] [Pipeline] { (Build Environment: Get)
+[2025-06-19T17:36:14.904Z] [Pipeline] withEnv
+[2025-06-19T17:36:14.913Z] [Pipeline] {
+[2025-06-19T17:36:14.978Z] [Pipeline] withDockerRegistry
+[2025-06-19T17:36:15.106Z] $ docker login -u AWS -p ******** https://<aws_account>.dkr.ecr.us-west-2.amazonaws.com
+[2025-06-19T17:36:19.829Z] WARNING! Using --password via the CLI is insecure. Use --password-stdin.
+[2025-06-19T17:36:19.962Z] 
+[2025-06-19T17:36:19.963Z] WARNING! Your credentials are stored unencrypted in 'c:\jenkins\workspace\enkins-example-windows-app_PR-18@tmp\f4f91a45-ea13-437e-a360-29473188e5e8\config.json'.
+[2025-06-19T17:36:19.964Z] Configure a credential helper to remove this warning. See
+[2025-06-19T17:36:19.964Z] https://docs.docker.com/go/credential-store/
+[2025-06-19T17:36:19.965Z] 
+[2025-06-19T17:36:19.966Z] Login Succeeded
+[2025-06-19T17:36:19.940Z] [Pipeline] {
+[2025-06-19T17:36:20.071Z] [JTE][Step - pipeline_utils/run_sh.call(LinkedHashMap)]
+[2025-06-19T17:36:20.091Z] [Pipeline] bat
+[2025-06-19T17:45:57.318Z] [Pipeline] echo
+[2025-06-19T17:45:57.423Z] Image Name: <aws_account>.dkr.ecr.us-west-2.amazonaws.com/jenkins-build-environment/pipelines/jenkins-example-windows-app:01f390a906259fcb8d2fef27314aabba9080c77ddb62666dea731c760cc86f02
+[2025-06-19T17:45:57.437Z] [Pipeline] echo
+[2025-06-19T17:45:57.498Z] Docker image exists with the matching SHA256 in the tag.
+[2025-06-19T17:45:57.505Z] [Pipeline] }
+[2025-06-19T17:45:57.596Z] [Pipeline] // withDockerRegistry
+[2025-06-19T17:45:57.641Z] [Pipeline] }
+[2025-06-19T17:45:57.728Z] [Pipeline] // withEnv
+[2025-06-19T17:45:57.762Z] [Pipeline] }
+[2025-06-19T17:45:57.839Z] [Pipeline] // stage
+[2025-06-19T17:45:57.905Z] [Pipeline] echo
+[2025-06-19T17:45:57.984Z] No image update necessary.
+[2025-06-19T17:45:57.990Z] [Pipeline] }
+[2025-06-19T17:45:58.064Z] [Pipeline] // script
+[2025-06-19T17:45:58.103Z] [Pipeline] }
+[2025-06-19T17:45:58.183Z] [Pipeline] // withEnv
+[2025-06-19T17:45:58.217Z] [Pipeline] }
+[2025-06-19T17:45:58.292Z] [Pipeline] // node
+[2025-06-19T17:45:58.325Z] [Pipeline] }
+[2025-06-19T17:45:58.387Z] [Pipeline] // stage
+[2025-06-19T17:45:58.444Z] [Pipeline] stage
+[2025-06-19T17:45:58.452Z] [Pipeline] { (Pre-Stage Checks)
+[2025-06-19T17:45:58.635Z] [JTE][Step - pipeline_utils/is_nonstandard_branch.call()]
+[2025-06-19T17:45:58.713Z] [JTE][Step - pipeline_utils/triggered_by.call(String)]
+[2025-06-19T17:45:58.793Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:45:58.924Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:45:58.990Z] [Pipeline] node
+[2025-06-19T17:45:59.034Z] Running on EC2 (devops-ec2) - windows-ssh (i-0897c222c3230be72) in c:\jenkins\workspace\enkins-example-windows-app_PR-18
+[2025-06-19T17:45:59.060Z] [Pipeline] {
+[2025-06-19T17:46:35.022Z] [Pipeline] checkout
+[2025-06-19T17:46:35.104Z] The recommended git tool is: NONE
+[2025-06-19T17:46:35.114Z] using credential svc-bitbucket-cloud
+[2025-06-19T17:46:35.284Z] Fetching changes from the remote Git repository
+[2025-06-19T17:46:35.426Z] Fetching without tags
+[2025-06-19T17:46:35.125Z]  > git rev-parse --resolve-git-dir c:\jenkins\workspace\enkins-example-windows-app_PR-18\.git # timeout=10
+[2025-06-19T17:46:35.306Z]  > git config remote.origin.url https://bitbucket.org/<org>/jenkins-example-windows-app.git # timeout=10
+[2025-06-19T17:46:35.425Z] Fetching upstream changes from https://bitbucket.org/<org>/jenkins-example-windows-app.git
+[2025-06-19T17:46:35.426Z]  > git --version # timeout=10
+[2025-06-19T17:46:35.507Z]  > git --version # 'git version 2.49.0.windows.1'
+[2025-06-19T17:46:35.508Z] using GIT_ASKPASS to set credentials Service account credentials for Bitbucket Cloud access
+[2025-06-19T17:46:35.514Z]  > git fetch --no-tags --force --progress -- https://bitbucket.org/<org>/jenkins-example-windows-app.git +refs/heads/feature/ESD-116_additional-repos:refs/remotes/origin/feature/ESD-116_additional-repos # timeout=10
+[2025-06-19T17:46:38.325Z] Checking out Revision f3da946fece362d013d9fa081f85e80c9c95eeb7 (PR-18)
+[2025-06-19T17:46:38.543Z] Commit message: "adding a comment in dockerfile"
+[2025-06-19T17:46:38.543Z] [GitCheckoutListener] Skipping recording, since SCM 'git https://bitbucket.org/<org>/jenkins-example-windows-app.git' already has been processed
+[2025-06-19T17:46:38.677Z] [Pipeline] withEnv
+[2025-06-19T17:46:38.684Z] [Pipeline] {
+[2025-06-19T17:46:38.756Z] [Pipeline] stage
+[2025-06-19T17:46:38.764Z] [Pipeline] { (Pre-Stage Build)
+[2025-06-19T17:46:38.816Z] Stage "Pre-Stage Build" skipped due to when conditional
+[2025-06-19T17:46:38.829Z] [Pipeline] getContext
+[2025-06-19T17:46:38.917Z] [Pipeline] }
+[2025-06-19T17:46:39.035Z] [Pipeline] // stage
+[2025-06-19T17:46:39.100Z] [Pipeline] stage
+[2025-06-19T17:46:39.108Z] [Pipeline] { (Scan)
+[2025-06-19T17:46:39.174Z] [Pipeline] script
+[2025-06-19T17:46:39.183Z] [Pipeline] {
+[2025-06-19T17:46:39.249Z] [Pipeline] unstash
+[2025-06-19T17:46:38.323Z]  > git config core.sparsecheckout # timeout=10
+[2025-06-19T17:46:38.402Z]  > git checkout -f f3da946fece362d013d9fa081f85e80c9c95eeb7 # timeout=10
+[2025-06-19T17:46:43.138Z] Unstashed file(s) from https://abc-jenkins-stashed-artifacts.s3.us-west-2.amazonaws.com/Example%20DevOps%20Pipelines/jenkins-example-windows-app/PR-18/66/stashes/source.tgz
+[2025-06-19T17:46:43.237Z] [JTE][Step - fortify/static_code_vulnerability_scan.call()]
+[2025-06-19T17:46:43.261Z] [Pipeline] stage
+[2025-06-19T17:46:43.269Z] [Pipeline] { (Fortify: Static Code Vulnerability Scan)
+[2025-06-19T17:46:43.344Z] [Pipeline] echo
+[2025-06-19T17:46:43.420Z] Running static code vulnerability scan via Fortify.
+[2025-06-19T17:46:43.537Z] [JTE][Step - fortify/with_fcli_fod_session.call(CpsClosure2)]
+[2025-06-19T17:46:43.567Z] [Pipeline] withCredentials
+[2025-06-19T17:46:43.579Z] Masking supported pattern matches of %API_KEY_SECRET%
+[2025-06-19T17:46:43.645Z] [Pipeline] {
+[2025-06-19T17:46:43.683Z] [Pipeline] }
+[2025-06-19T17:46:43.778Z] [Pipeline] // withCredentials
+[2025-06-19T17:46:43.889Z] [Pipeline] echo
+[2025-06-19T17:46:43.974Z] Authenticating with FoD.
+[2025-06-19T17:46:44.078Z] [JTE][Step - fortify/fcli_fod_call.call(String)]
+[2025-06-19T17:46:44.160Z] [JTE][Step - pipeline_utils/run_sh.call(LinkedHashMap)]
+[2025-06-19T17:46:44.177Z] [Pipeline] bat
+[2025-06-19T17:47:16.480Z] [Pipeline] echo
+[2025-06-19T17:47:16.541Z] Authenticated successfully with FoD.
+[2025-06-19T17:47:16.583Z] [Pipeline] echo
+[2025-06-19T17:47:16.672Z] Creating or re-using dynamic branch release.
+[2025-06-19T17:47:16.885Z] [JTE][Step - fortify/fcli_fod_create_release.call()]
+[2025-06-19T17:47:16.955Z] [JTE][Step - pipeline_utils/triggered_by.call(String)]
+[2025-06-19T17:47:17.030Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:47:17.116Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:47:17.238Z] [JTE][Step - pipeline_utils/on_merge.call(LinkedHashMap, CpsClosure2)]
+[2025-06-19T17:47:17.367Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:47:17.449Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:47:17.565Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:47:17.673Z] [JTE][Step - pipeline_utils/on_pull_request.call(LinkedHashMap, CpsClosure2)]
+[2025-06-19T17:47:17.777Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:47:17.845Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:47:17.928Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:47:18.048Z] [JTE][Step - pipeline_utils/on_merge.call(LinkedHashMap, CpsClosure2)]
+[2025-06-19T17:47:18.117Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:47:18.186Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:47:18.270Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:47:18.382Z] [JTE][Step - pipeline_utils/on_pull_request.call(LinkedHashMap, CpsClosure2)]
+[2025-06-19T17:47:18.455Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:47:18.545Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:47:18.642Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:47:18.759Z] [JTE][Step - fortify/fcli_fod_call.call(String)]
+[2025-06-19T17:47:18.857Z] [JTE][Step - pipeline_utils/run_sh.call(LinkedHashMap)]
+[2025-06-19T17:47:18.874Z] [Pipeline] bat
+[2025-06-19T17:47:29.075Z] [Pipeline] readJSON
+[2025-06-19T17:47:29.251Z] [Pipeline] echo
+[2025-06-19T17:47:29.309Z] Using releaseId 1331047
+[2025-06-19T17:47:29.433Z] [JTE][Step - fortify/fcli_fod_setup_scan.call(String)]
+[2025-06-19T17:47:29.448Z] [Pipeline] echo
+[2025-06-19T17:47:29.528Z] Setting up scan.
+[2025-06-19T17:47:29.632Z] [JTE][Step - fortify/fcli_fod_call.call(String)]
+[2025-06-19T17:47:29.709Z] [JTE][Step - pipeline_utils/run_sh.call(LinkedHashMap)]
+[2025-06-19T17:47:29.724Z] [Pipeline] bat
+[2025-06-19T17:47:42.501Z] [Pipeline] echo
+[2025-06-19T17:47:42.577Z] Done setting up scan.
+[2025-06-19T17:47:42.697Z] [JTE][Step - fortify/fcli_fod_start_scan.call(String, String)]
+[2025-06-19T17:47:42.711Z] [Pipeline] echo
+[2025-06-19T17:47:42.767Z] Starting scan.
+[2025-06-19T17:47:42.783Z] [Pipeline] fileExists
+[2025-06-19T17:47:43.014Z] [JTE][Step - pipeline_utils/run_sh.call(LinkedHashMap)]
+[2025-06-19T17:47:43.032Z] [Pipeline] bat
+[2025-06-19T17:47:51.296Z] [Pipeline] echo
+[2025-06-19T17:47:51.355Z] administrator@EC2AMAZ-1EA1VB4 c:\jenkins\workspace\enkins-example-windows-app_PR-18>powershell -command "Compress-Archive -Path c:\jenkins\workspace\enkins-example-windows-app_PR-18 -DestinationPath C:\Users\Administrator\AppData\Local\Temp/fod-jenkins_Example_DevOps_Pipelines_jenkins_example_windows_app_PR_18_66.zip"
+[2025-06-19T17:47:51.477Z] [JTE][Step - fortify/fcli_fod_call.call(String)]
+[2025-06-19T17:47:51.565Z] [JTE][Step - pipeline_utils/run_sh.call(LinkedHashMap)]
+[2025-06-19T17:47:51.582Z] [Pipeline] bat
+[2025-06-19T17:48:04.223Z] [Pipeline] echo
+[2025-06-19T17:48:04.342Z] administrator@EC2AMAZ-1EA1VB4 c:\jenkins\workspace\enkins-example-windows-app_PR-18>c:\jenkins\workspace\enkins-example-windows-app_PR-18/../fcli fod sast start --file C:\Users\Administrator\AppData\Local\Temp/fod-jenkins_Example_DevOps_Pipelines_jenkins_example_windows_app_PR_18_66.zip --rel 1331047 --store jenkins_Example_DevOps_Pipelines_jenkins_example_windows_app_PR_18_66 
+[2025-06-19T17:48:04.342Z] 
+[2025-06-19T17:48:04.342Z] Upload fod-jenkins_Example_DevOps_Pipelines_jenkins_example_windows_app_PR_18_66.zip: 0 of 96401 bytes complete
+[2025-06-19T17:48:04.342Z] 
+[2025-06-19T17:48:04.342Z] Upload fod-jenkins_Example_DevOps_Pipelines_jenkins_example_windows_app_PR_18_66.zip: 96401 of 96401 bytes complete
+[2025-06-19T17:48:04.342Z]  Id        Scan type  Analysis Status  Application                     Microservice  Release                           Action  
+[2025-06-19T17:48:04.342Z]  14935089  Static     Pending          devops-poc-jenkins-example-app                feature/ESD-116_additional-repos  STARTED
+[2025-06-19T17:48:04.489Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:48:04.561Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:48:04.650Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:48:04.689Z] [Pipeline] echo
+[2025-06-19T17:48:04.749Z] As this is a PR to develop, we do not need to wait on results.
+[2025-06-19T17:48:04.850Z] [JTE][Step - fortify/fcli_fod_call.call(String)]
+[2025-06-19T17:48:04.962Z] [JTE][Step - pipeline_utils/run_sh.call(LinkedHashMap)]
+[2025-06-19T17:48:04.976Z] [Pipeline] bat
+[2025-06-19T17:48:06.662Z] [Pipeline] echo
+[2025-06-19T17:48:06.721Z] Logging out from FoD.
+[2025-06-19T17:48:06.788Z] [Pipeline] }
+[2025-06-19T17:48:06.866Z] [Pipeline] // stage
+[2025-06-19T17:48:07.063Z] [JTE][Step - sonatype/open_source_vulnerability_scan.call()]
+[2025-06-19T17:48:07.095Z] [Pipeline] stage
+[2025-06-19T17:48:07.104Z] [Pipeline] { (Sonatype: Open Source Vulnerability Scan)
+[2025-06-19T17:48:07.175Z] [Pipeline] echo
+[2025-06-19T17:48:07.243Z] Running open source vulnerability scan via Sonatype
+[2025-06-19T17:48:07.267Z] [Pipeline] readJSON
+[2025-06-19T17:48:07.467Z] [JTE][Step - pipeline_utils/on_pull_request.call(LinkedHashMap, CpsClosure2)]
+[2025-06-19T17:48:07.549Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:48:07.619Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:48:07.722Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:48:07.871Z] [JTE][Step - pipeline_utils/on_merge.call(LinkedHashMap, CpsClosure2)]
+[2025-06-19T17:48:07.943Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:48:08.016Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:48:08.104Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:48:08.157Z] [Pipeline] nexusPolicyEvaluation
+[2025-06-19T17:48:18.157Z] [INFO] 2025-06-19T17:48:17.962Z Scanning application devops-poc-jenkins-example-app.
+[2025-06-19T17:48:18.514Z] [INFO] Discovered commit hash 'f3da946fece362d013d9fa081f85e80c9c95eeb7' via environment variable GIT_COMMIT
+[2025-06-19T17:48:18.532Z] [INFO] Discovered branch name 'PR-18' via environment variable GIT_BRANCH
+[2025-06-19T17:48:20.380Z] [INFO] Amending source control record for application with id: devops-poc-jenkins-example-app with discovered Repository URL: https://bitbucket.org/<org>/jenkins-example-windows-app
+[2025-06-19T17:48:19.815Z] [INFO] Scan configuration properties:
+[2025-06-19T17:48:19.837Z] [INFO]    dirExcludes=null
+[2025-06-19T17:48:19.845Z] [INFO]    dirIncludes=null
+[2025-06-19T17:48:19.846Z] [INFO]    fileExcludes=
+[2025-06-19T17:48:19.847Z] [INFO]    fileIncludes=
+[2025-06-19T17:48:19.891Z] [INFO] 2025-06-19T17:48:19.890Z Scanned 0 total files
+[2025-06-19T17:48:19.901Z] [INFO] 2025-06-19T17:48:19.899Z Finished scanning application devops-poc-jenkins-example-app.
+[2025-06-19T17:48:20.998Z] [INFO] Waiting for policy evaluation to complete...
+[2025-06-19T17:48:20.280Z] [INFO] Discovered repository url 'https://bitbucket.org/<org>/jenkins-example-windows-app' via environment variable GIT_URL
+[2025-06-19T17:48:20.368Z] [INFO] Repository URL https://bitbucket.org/<org>/jenkins-example-windows-app was found using automation
+[2025-06-19T17:48:26.314Z] [INFO] Assigned scan ID a393322f22fa4e54a6c9e8a25706f224 for evaluation
+[2025-06-19T17:48:31.465Z] [INFO] Policy evaluation completed in 10 seconds.
+[2025-06-19T17:48:31.710Z] 
+[2025-06-19T17:48:31.710Z] The detailed report can be viewed online at https://awsstdev011.rpl.local/ui/links/application/devops-poc-jenkins-example-app/report/a393322f22fa4e54a6c9e8a25706f224
+[2025-06-19T17:48:31.710Z] The application priorities can be viewed online at https://awsstdev011.rpl.local/ui/links/developer/priorities/devops-poc-jenkins-example-app/a393322f22fa4e54a6c9e8a25706f224
+[2025-06-19T17:48:31.710Z] Summary of policy violations: 0 critical, 0 severe, 0 moderate
+[2025-06-19T17:48:31.726Z] [Pipeline] echo
+[2025-06-19T17:48:31.789Z] Sonatype results stored successfully.
+[2025-06-19T17:48:31.909Z] [JTE][Step - sonatype/sontype_vulnerability_send_to_datadog.call()]
+[2025-06-19T17:48:31.998Z] [JTE][Step - sonatype/open_soure_vulnerability_scan_results.call()]
+[2025-06-19T17:48:32.014Z] [Pipeline] echo
+[2025-06-19T17:48:32.097Z] Fecthing sonatype vulnerabilities results
+[2025-06-19T17:48:32.113Z] [Pipeline] readJSON
+[2025-06-19T17:48:32.353Z] [JTE][Step - pipeline_utils/triggered_by.call(String)]
+[2025-06-19T17:48:32.455Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:48:32.540Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:48:32.584Z] [Pipeline] echo
+[2025-06-19T17:48:32.650Z] connecting datadog api send_datadog_metrcis
+[2025-06-19T17:48:32.665Z] [Pipeline] echo
+[2025-06-19T17:48:32.750Z] sending datadog metrcis
+[2025-06-19T17:48:32.886Z] [JTE][Step - datadog_api/send_datadog_metric.call(LinkedHashMap)]
+[2025-06-19T17:48:32.912Z] [Pipeline] writeJSON
+[2025-06-19T17:48:33.084Z] [Pipeline] echo
+[2025-06-19T17:48:33.154Z] {"series":[{"metric":"sonatype.vulnerabilities.total","type":3,"points":[{"timestamp":1750355312,"value":0}],"resources":[{"name":"devops-poc-jenkins-example-app","type":"Sonatype.app.name"},{"name":"feature/ESD-116_additional-repos","type":"branch"}]},{"metric":"sonatype.vulnerabilities.malicious","type":3,"points":[{"timestamp":1750355312,"value":0}],"resources":[{"name":"devops-poc-jenkins-example-app","type":"Sonatype.app.name"},{"name":"feature/ESD-116_additional-repos","type":"branch"}]},{"metric":"sonatype.vulnerabilities.critical","type":3,"points":[{"timestamp":1750355312,"value":0}],"resources":[{"name":"devops-poc-jenkins-example-app","type":"Sonatype.app.name"},{"name":"feature/ESD-116_additional-repos","type":"branch"}]},{"metric":"sonatype.vulnerabilities.high","type":3,"points":[{"timestamp":1750355312,"value":0}],"resources":[{"name":"devops-poc-jenkins-example-app","type":"Sonatype.app.name"},{"name":"feature/ESD-116_additional-repos","type":"branch"}]},{"metric":"sonatype.vulnerabilities.medium","type":3,"points":[{"timestamp":1750355312,"value":0}],"resources":[{"name":"devops-poc-jenkins-example-app","type":"Sonatype.app.name"},{"name":"feature/ESD-116_additional-repos","type":"branch"}]},{"metric":"sonatype.vulnerabilities.low","type":3,"points":[{"timestamp":1750355312,"value":0}],"resources":[{"name":"devops-poc-jenkins-example-app","type":"Sonatype.app.name"},{"name":"feature/ESD-116_additional-repos","type":"branch"}]}]}
+[2025-06-19T17:48:33.192Z] [Pipeline] withCredentials
+[2025-06-19T17:48:33.225Z] Masking supported pattern matches of %DD_API_KEY_KPI_DEVOPS% or %DD_APP_KEY_KPI_DEVOPS%
+[2025-06-19T17:48:33.284Z] [Pipeline] {
+[2025-06-19T17:48:33.326Z] [Pipeline] }
+[2025-06-19T17:48:33.423Z] [Pipeline] // withCredentials
+[2025-06-19T17:48:33.476Z] [Pipeline] httpRequest
+[2025-06-19T17:48:33.841Z] HttpMethod: POST
+[2025-06-19T17:48:33.896Z] URL: https://api.datadoghq.com/api/v2/series
+[2025-06-19T17:48:33.898Z] Content-Type: application/json
+[2025-06-19T17:48:33.898Z] DD-API-KEY: *****
+[2025-06-19T17:48:33.899Z] DD-APP-KEY: *****
+[2025-06-19T17:48:33.951Z] Sending request to url: https://api.datadoghq.com/api/v2/series
+[2025-06-19T17:48:34.347Z] Response Code: HTTP/1.1 202 Accepted
+[2025-06-19T17:48:34.386Z] Success: Status code 202 is in the accepted range: 100:500
+[2025-06-19T17:48:34.401Z] [Pipeline] echo
+[2025-06-19T17:48:34.489Z] Metrics sent successfully!
+[2025-06-19T17:48:34.546Z] [Pipeline] echo
+[2025-06-19T17:48:34.623Z] successfully sent datadog metrcis
+[2025-06-19T17:48:34.702Z] [Pipeline] echo
+[2025-06-19T17:48:34.787Z] Successfully sent sonatype vulnerabilities result to Datadog
+[2025-06-19T17:48:34.794Z] [Pipeline] }
+[2025-06-19T17:48:34.889Z] [Pipeline] // stage
+[2025-06-19T17:48:34.948Z] [Pipeline] }
+[2025-06-19T17:48:35.041Z] [Pipeline] // script
+[2025-06-19T17:48:35.083Z] [Pipeline] }
+[2025-06-19T17:48:35.172Z] [Pipeline] // stage
+[2025-06-19T17:48:35.244Z] [Pipeline] stage
+[2025-06-19T17:48:35.251Z] [Pipeline] { (Automated Unit Test)
+[2025-06-19T17:48:35.321Z] [Pipeline] script
+[2025-06-19T17:48:35.333Z] [Pipeline] {
+[2025-06-19T17:48:35.467Z] [JTE][Step - pipeline_utils/complete_unit_testing.call()]
+[2025-06-19T17:48:35.568Z] [JTE][Step - build_environment/with_build_environment.call(CpsClosure2)]
+[2025-06-19T17:48:35.595Z] [Pipeline] withEnv
+[2025-06-19T17:48:35.603Z] [Pipeline] {
+[2025-06-19T17:48:35.700Z] [Pipeline] withDockerRegistry
+[2025-06-19T17:48:35.786Z] $ docker login -u AWS -p ******** https://<aws_account>.dkr.ecr.us-west-2.amazonaws.com
+[2025-06-19T17:48:36.568Z] WARNING! Using --password via the CLI is insecure. Use --password-stdin.
+[2025-06-19T17:48:36.696Z] 
+[2025-06-19T17:48:36.697Z] WARNING! Your credentials are stored unencrypted in 'c:\jenkins\workspace\enkins-example-windows-app_PR-18@tmp\f20b7d30-9bdf-48b9-9a0c-a3a10b61a1b7\config.json'.
+[2025-06-19T17:48:36.697Z] Configure a credential helper to remove this warning. See
+[2025-06-19T17:48:36.697Z] https://docs.docker.com/go/credential-store/
+[2025-06-19T17:48:36.698Z] 
+[2025-06-19T17:48:36.698Z] Login Succeeded
+[2025-06-19T17:48:36.736Z] [Pipeline] {
+[2025-06-19T17:48:36.782Z] [Pipeline] isUnix
+[2025-06-19T17:48:36.903Z] [Pipeline] withEnv
+[2025-06-19T17:48:36.912Z] [Pipeline] {
+[2025-06-19T17:48:36.977Z] [Pipeline] bat
+[2025-06-19T17:48:37.393Z] 
+[2025-06-19T17:48:37.393Z] administrator@EC2AMAZ-1EA1VB4 c:\jenkins\workspace\enkins-example-windows-app_PR-18>docker inspect -f . "jenkins-build-environment/pipelines/jenkins-example-windows-app:01f390a906259fcb8d2fef27314aabba9080c77ddb62666dea731c760cc86f02" 
+[2025-06-19T17:48:37.652Z] 
+[2025-06-19T17:48:37.652Z] Error: No such object: jenkins-build-environment/pipelines/jenkins-example-windows-app:01f390a906259fcb8d2fef27314aabba9080c77ddb62666dea731c760cc86f02
+[2025-06-19T17:48:37.692Z] [Pipeline] bat
+[2025-06-19T17:48:38.124Z] 
+[2025-06-19T17:48:38.124Z] administrator@EC2AMAZ-1EA1VB4 c:\jenkins\workspace\enkins-example-windows-app_PR-18>docker inspect -f . "<aws_account>.dkr.ecr.us-west-2.amazonaws.com/jenkins-build-environment/pipelines/jenkins-example-windows-app:01f390a906259fcb8d2fef27314aabba9080c77ddb62666dea731c760cc86f02" 
+[2025-06-19T17:48:38.382Z] .
+[2025-06-19T17:48:38.411Z] [Pipeline] }
+[2025-06-19T17:48:38.499Z] [Pipeline] // withEnv
+[2025-06-19T17:48:38.561Z] [Pipeline] withDockerContainer
+[2025-06-19T17:48:38.917Z] EC2 (devops-ec2) - windows-ssh (i-0897c222c3230be72) does not seem to be running inside a container
+[2025-06-19T17:48:39.112Z] $ docker run -d -t -v //./pipe/docker_engine://./pipe/docker_engine -w c:/jenkins/workspace/enkins-example-windows-app_PR-18/ -v c:/jenkins/workspace/enkins-example-windows-app_PR-18/:c:/jenkins/workspace/enkins-example-windows-app_PR-18/ -v c:/jenkins/workspace/enkins-example-windows-app_PR-18@tmp/:c:/jenkins/workspace/enkins-example-windows-app_PR-18@tmp/ -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** <aws_account>.dkr.ecr.us-west-2.amazonaws.com/jenkins-build-environment/pipelines/jenkins-example-windows-app:01f390a906259fcb8d2fef27314aabba9080c77ddb62666dea731c760cc86f02 cmd.exe
+[2025-06-19T17:49:05.608Z] $ docker top 4f8bd4019e7df9f429e67995f1520bf0c5894de2e88253d9fb25d4b86b7243a9
+[2025-06-19T17:49:05.791Z] [Pipeline] {
+[2025-06-19T17:49:05.853Z] [Pipeline] unstash
+[2025-06-19T17:49:06.260Z] Unstashed file(s) from https://abc-jenkins-stashed-artifacts.s3.us-west-2.amazonaws.com/Example%20DevOps%20Pipelines/jenkins-example-windows-app/PR-18/66/stashes/source.tgz
+[2025-06-19T17:49:06.337Z] [JTE][Step - pipeline_utils/on_merge.call(LinkedHashMap, CpsClosure2)]
+[2025-06-19T17:49:06.406Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:49:06.472Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:49:06.567Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:49:06.705Z] [JTE][Step - pipeline_utils/on_pull_request.call(LinkedHashMap, CpsClosure2)]
+[2025-06-19T17:49:06.799Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:49:06.892Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:49:06.992Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:49:07.100Z] [JTE][Step - shell_test/test_for.call(ApplicationEnvironment)]
+[2025-06-19T17:49:07.117Z] [Pipeline] echo
+[2025-06-19T17:49:07.242Z] Running shell test for Dev. Script path: jenkins/scripts/test.bat
+[2025-06-19T17:49:07.284Z] [Pipeline] writeJSON
+[2025-06-19T17:49:07.433Z] [Pipeline] bat
+[2025-06-19T17:49:08.118Z] 
+[2025-06-19T17:49:08.118Z] administrator@EC2AMAZ-1EA1VB4 c:\jenkins\workspace\enkins-example-windows-app_PR-18>CALL c:\jenkins\workspace\enkins-example-windows-app_PR-18/jenkins/scripts/test.bat "{\"s3_deploy\":{\"credentials\":\"<aws_account>\",\"region\":\"us-west-2\",\"bucket\":\"devops-testing-jenkins-bucket\"},\"long_name\":\"Development\",\"short_name\":\"Dev\"}" 
+[2025-06-19T17:49:08.118Z] "Environment: "{\"s3_deploy\":{\"credentials\":\"<aws_account>\",\"region\":\"us-west-2\",\"bucket\":\"devops-testing-jenkins-bucket\"},\"long_name\":\"Development\",\"short_name\":\"Dev\"}""
+[2025-06-19T17:49:20.317Z] "In test batch script"
+[2025-06-19T17:49:20.317Z] "Testing application on windows x86 for Dev..."
+[2025-06-19T17:49:22.843Z] ...
+[2025-06-19T17:49:22.844Z] ----------------------------------------------------------------------
+[2025-06-19T17:49:22.844Z] Ran 3 tests in 0.001s
+[2025-06-19T17:49:22.844Z] 
+[2025-06-19T17:49:22.844Z] OK
+[2025-06-19T17:49:22.994Z] [JTE][Step - pipeline_utils/on_merge.call(LinkedHashMap, CpsClosure2)]
+[2025-06-19T17:49:23.085Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:49:23.179Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:49:23.318Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:49:23.471Z] [JTE][Step - pipeline_utils/on_pull_request.call(LinkedHashMap, CpsClosure2)]
+[2025-06-19T17:49:23.570Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:49:23.659Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:49:23.751Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:49:23.796Z] [Pipeline] }
+[2025-06-19T17:49:23.794Z] $ docker stop --time=1 4f8bd4019e7df9f429e67995f1520bf0c5894de2e88253d9fb25d4b86b7243a9
+[2025-06-19T17:49:30.755Z] $ docker rm -f --volumes 4f8bd4019e7df9f429e67995f1520bf0c5894de2e88253d9fb25d4b86b7243a9
+[2025-06-19T17:49:30.983Z] [Pipeline] // withDockerContainer
+[2025-06-19T17:49:31.038Z] [Pipeline] }
+[2025-06-19T17:49:31.127Z] [Pipeline] // withDockerRegistry
+[2025-06-19T17:49:31.165Z] [Pipeline] }
+[2025-06-19T17:49:31.248Z] [Pipeline] // withEnv
+[2025-06-19T17:49:31.310Z] [Pipeline] }
+[2025-06-19T17:49:31.393Z] [Pipeline] // script
+[2025-06-19T17:49:31.436Z] [Pipeline] }
+[2025-06-19T17:49:31.524Z] [Pipeline] // stage
+[2025-06-19T17:49:31.554Z] Post stage
+[2025-06-19T17:49:31.593Z] [Pipeline] cleanWs
+[2025-06-19T17:49:31.671Z] [WS-CLEANUP] Deleting project workspace...
+[2025-06-19T17:49:31.671Z] [WS-CLEANUP] Deferred wipeout is disabled by the job configuration...
+[2025-06-19T17:49:31.768Z] [WS-CLEANUP] done
+[2025-06-19T17:49:31.777Z] [Pipeline] }
+[2025-06-19T17:49:31.885Z] [Pipeline] // withEnv
+[2025-06-19T17:49:31.920Z] [Pipeline] }
+[2025-06-19T17:49:32.001Z] [Pipeline] // node
+[2025-06-19T17:49:32.037Z] [Pipeline] }
+[2025-06-19T17:49:32.107Z] [Pipeline] // stage
+[2025-06-19T17:49:32.162Z] [Pipeline] stage
+[2025-06-19T17:49:32.170Z] [Pipeline] { (Approve - Dev)
+[2025-06-19T17:49:32.316Z] [JTE][Step - pipeline_utils/is_nonstandard_branch.call()]
+[2025-06-19T17:49:32.397Z] [JTE][Step - pipeline_utils/triggered_by.call(String)]
+[2025-06-19T17:49:32.497Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:49:32.608Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:49:32.768Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:49:32.879Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:49:32.993Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:49:33.118Z] [JTE][Step - pipeline_utils/get_approver.call(ApplicationEnvironment)]
+[2025-06-19T17:49:33.233Z] [JTE][Step - pipeline_utils/approve_for.call(LinkedHashMap, ApplicationEnvironment)]
+[2025-06-19T17:49:33.252Z] [Pipeline] emailext
+[2025-06-19T17:49:33.292Z] Sending email to: Users
+[2025-06-19T17:49:35.162Z] [Pipeline] timeout
+[2025-06-19T17:49:35.162Z] Timeout set to expire in 7 days 0 hr
+[2025-06-19T17:49:35.169Z] [Pipeline] {
+[2025-06-19T17:49:35.252Z] [Pipeline] input
+[2025-06-19T17:49:35.300Z] Deploy to Dev?
+[2025-06-19T17:49:35.300Z] Approve deployment or Abort
+[2025-06-19T17:49:49.252Z] Approved by User
+[2025-06-19T17:49:49.342Z] [Pipeline] }
+[2025-06-19T17:49:49.419Z] [Pipeline] // timeout
+[2025-06-19T17:49:49.473Z] [Pipeline] }
+[2025-06-19T17:49:49.554Z] [Pipeline] // stage
+[2025-06-19T17:49:49.619Z] [Pipeline] stage
+[2025-06-19T17:49:49.628Z] [Pipeline] { (Dev)
+[2025-06-19T17:49:49.810Z] [JTE][Step - pipeline_utils/is_nonstandard_branch.call()]
+[2025-06-19T17:49:49.883Z] [JTE][Step - pipeline_utils/triggered_by.call(String)]
+[2025-06-19T17:49:49.978Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:49:50.077Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:49:50.186Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:49:50.251Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:49:50.373Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:49:50.433Z] [Pipeline] node
+[2025-06-19T17:49:50.797Z] Running on EC2 (devops-ec2) - windows-ssh (i-0897c222c3230be72) in c:\jenkins\workspace\enkins-example-windows-app_PR-18
+[2025-06-19T17:49:50.824Z] [Pipeline] {
+[2025-06-19T17:50:06.685Z] [Pipeline] checkout
+[2025-06-19T17:50:06.761Z] The recommended git tool is: NONE
+[2025-06-19T17:50:06.777Z] using credential svc-bitbucket-cloud
+[2025-06-19T17:50:06.797Z] Cloning the remote Git repository
+[2025-06-19T17:50:06.797Z] Cloning with configured refspecs honoured and without tags
+[2025-06-19T17:50:06.786Z] Cloning repository https://bitbucket.org/<org>/jenkins-example-windows-app.git
+[2025-06-19T17:50:06.786Z]  > git init c:\jenkins\workspace\enkins-example-windows-app_PR-18 # timeout=10
+[2025-06-19T17:50:06.915Z] Fetching upstream changes from https://bitbucket.org/<org>/jenkins-example-windows-app.git
+[2025-06-19T17:50:06.917Z]  > git --version # timeout=10
+[2025-06-19T17:50:07.006Z]  > git --version # 'git version 2.49.0.windows.1'
+[2025-06-19T17:50:07.007Z] using GIT_ASKPASS to set credentials Service account credentials for Bitbucket Cloud access
+[2025-06-19T17:50:07.011Z]  > git fetch --no-tags --force --progress -- https://bitbucket.org/<org>/jenkins-example-windows-app.git +refs/heads/feature/ESD-116_additional-repos:refs/remotes/origin/feature/ESD-116_additional-repos # timeout=10
+[2025-06-19T17:50:09.422Z] Avoid second fetch
+[2025-06-19T17:50:09.423Z] Checking out Revision f3da946fece362d013d9fa081f85e80c9c95eeb7 (PR-18)
+[2025-06-19T17:50:09.684Z] Commit message: "adding a comment in dockerfile"
+[2025-06-19T17:50:09.685Z] [GitCheckoutListener] Skipping recording, since SCM 'git https://bitbucket.org/<org>/jenkins-example-windows-app.git' already has been processed
+[2025-06-19T17:50:09.795Z] [Pipeline] withEnv
+[2025-06-19T17:50:09.803Z] [Pipeline] {
+[2025-06-19T17:50:09.877Z] [Pipeline] stage
+[2025-06-19T17:50:09.884Z] [Pipeline] { (Build)
+[2025-06-19T17:50:09.209Z]  > git config remote.origin.url https://bitbucket.org/<org>/jenkins-example-windows-app.git # timeout=10
+[2025-06-19T17:50:09.311Z]  > git config --add remote.origin.fetch +refs/heads/feature/ESD-116_additional-repos:refs/remotes/origin/feature/ESD-116_additional-repos # timeout=10
+[2025-06-19T17:50:09.412Z]  > git config core.sparsecheckout # timeout=10
+[2025-06-19T17:50:09.493Z]  > git checkout -f f3da946fece362d013d9fa081f85e80c9c95eeb7 # timeout=10
+[2025-06-19T17:50:10.019Z] [JTE][Step - pipeline_utils/complete_build_for.call(ApplicationEnvironment)]
+[2025-06-19T17:50:10.037Z] [Pipeline] script
+[2025-06-19T17:50:10.048Z] [Pipeline] {
+[2025-06-19T17:50:10.192Z] [JTE][Step - build_environment/with_build_environment.call(CpsClosure2)]
+[2025-06-19T17:50:10.215Z] [Pipeline] withEnv
+[2025-06-19T17:50:10.223Z] [Pipeline] {
+[2025-06-19T17:50:10.295Z] [Pipeline] withDockerRegistry
+[2025-06-19T17:50:10.385Z] $ docker login -u AWS -p ******** https://<aws_account>.dkr.ecr.us-west-2.amazonaws.com
+[2025-06-19T17:50:10.493Z] WARNING! Using --password via the CLI is insecure. Use --password-stdin.
+[2025-06-19T17:50:10.552Z] 
+[2025-06-19T17:50:10.553Z] WARNING! Your credentials are stored unencrypted in 'c:\jenkins\workspace\enkins-example-windows-app_PR-18@tmp\be5328b2-721c-446d-bd6a-86a0282a553a\config.json'.
+[2025-06-19T17:50:10.553Z] Configure a credential helper to remove this warning. See
+[2025-06-19T17:50:10.553Z] https://docs.docker.com/go/credential-store/
+[2025-06-19T17:50:10.553Z] 
+[2025-06-19T17:50:10.554Z] Login Succeeded
+[2025-06-19T17:50:10.588Z] [Pipeline] {
+[2025-06-19T17:50:10.643Z] [Pipeline] isUnix
+[2025-06-19T17:50:10.735Z] [Pipeline] withEnv
+[2025-06-19T17:50:10.743Z] [Pipeline] {
+[2025-06-19T17:50:10.816Z] [Pipeline] bat
+[2025-06-19T17:50:11.186Z] 
+[2025-06-19T17:50:11.186Z] administrator@EC2AMAZ-1EA1VB4 c:\jenkins\workspace\enkins-example-windows-app_PR-18>docker inspect -f . "jenkins-build-environment/pipelines/jenkins-example-windows-app:01f390a906259fcb8d2fef27314aabba9080c77ddb62666dea731c760cc86f02" 
+[2025-06-19T17:50:11.186Z] 
+[2025-06-19T17:50:11.186Z] Error: No such object: jenkins-build-environment/pipelines/jenkins-example-windows-app:01f390a906259fcb8d2fef27314aabba9080c77ddb62666dea731c760cc86f02
+[2025-06-19T17:50:11.248Z] [Pipeline] bat
+[2025-06-19T17:50:11.613Z] 
+[2025-06-19T17:50:11.613Z] administrator@EC2AMAZ-1EA1VB4 c:\jenkins\workspace\enkins-example-windows-app_PR-18>docker inspect -f . "<aws_account>.dkr.ecr.us-west-2.amazonaws.com/jenkins-build-environment/pipelines/jenkins-example-windows-app:01f390a906259fcb8d2fef27314aabba9080c77ddb62666dea731c760cc86f02" 
+[2025-06-19T17:50:11.614Z] .
+[2025-06-19T17:50:11.645Z] [Pipeline] }
+[2025-06-19T17:50:11.721Z] [Pipeline] // withEnv
+[2025-06-19T17:50:11.776Z] [Pipeline] withDockerContainer
+[2025-06-19T17:50:11.955Z] EC2 (devops-ec2) - windows-ssh (i-0897c222c3230be72) does not seem to be running inside a container
+[2025-06-19T17:50:12.000Z] $ docker run -d -t -v //./pipe/docker_engine://./pipe/docker_engine -w c:/jenkins/workspace/enkins-example-windows-app_PR-18/ -v c:/jenkins/workspace/enkins-example-windows-app_PR-18/:c:/jenkins/workspace/enkins-example-windows-app_PR-18/ -v c:/jenkins/workspace/enkins-example-windows-app_PR-18@tmp/:c:/jenkins/workspace/enkins-example-windows-app_PR-18@tmp/ -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** <aws_account>.dkr.ecr.us-west-2.amazonaws.com/jenkins-build-environment/pipelines/jenkins-example-windows-app:01f390a906259fcb8d2fef27314aabba9080c77ddb62666dea731c760cc86f02 cmd.exe
+[2025-06-19T17:50:17.408Z] $ docker top c9659b35ba7c2201c5bf94794035a9834d34cb9597d5a04eb9bf480917d50d2a
+[2025-06-19T17:50:18.225Z] [Pipeline] {
+[2025-06-19T17:50:18.300Z] [Pipeline] unstash
+[2025-06-19T17:50:18.730Z] Unstashed file(s) from https://abc-jenkins-stashed-artifacts.s3.us-west-2.amazonaws.com/Example%20DevOps%20Pipelines/jenkins-example-windows-app/PR-18/66/stashes/source.tgz
+[2025-06-19T17:50:18.851Z] [JTE][Step - custom_build/build_for.call(ApplicationEnvironment)]
+[2025-06-19T17:50:18.878Z] [Pipeline] load
+[2025-06-19T17:50:18.977Z] [Pipeline] { (jenkins/libraries/custom_build/steps//custom_build.groovy)
+[2025-06-19T17:50:19.088Z] [Pipeline] }
+[2025-06-19T17:50:19.223Z] [Pipeline] // load
+[2025-06-19T17:50:19.274Z] [Pipeline] echo
+[2025-06-19T17:50:19.333Z]         Executing custom non-shell build for Dev.
+[2025-06-19T17:50:19.333Z]         Create your own library for a more complicated build process.
+[2025-06-19T17:50:19.334Z] 
+[2025-06-19T17:50:19.334Z]         For example: You have an application that does an s3 getObject using
+[2025-06-19T17:50:19.334Z]         Jenkins credentials, then calls an API using a Jenkins Plugin, and
+[2025-06-19T17:50:19.334Z]         then does an npm build.
+[2025-06-19T17:50:19.334Z] This example just creates a generic file,
+[2025-06-19T17:50:19.334Z]         which will be uploaded to S3 later when s3_deploy library executes.
+[2025-06-19T17:50:19.335Z]         This is similar to a React UI being built and deployed to S3. This
+[2025-06-19T17:50:19.335Z]         example can be modified by developers.
+[2025-06-19T17:50:19.335Z]     
+[2025-06-19T17:50:19.354Z] [Pipeline] writeFile
+[2025-06-19T17:50:19.492Z] [Pipeline] }
+[2025-06-19T17:50:19.490Z] $ docker stop --time=1 c9659b35ba7c2201c5bf94794035a9834d34cb9597d5a04eb9bf480917d50d2a
+[2025-06-19T17:50:25.918Z] $ docker rm -f --volumes c9659b35ba7c2201c5bf94794035a9834d34cb9597d5a04eb9bf480917d50d2a
+[2025-06-19T17:50:26.164Z] [Pipeline] // withDockerContainer
+[2025-06-19T17:50:26.209Z] [Pipeline] }
+[2025-06-19T17:50:26.294Z] [Pipeline] // withDockerRegistry
+[2025-06-19T17:50:26.338Z] [Pipeline] }
+[2025-06-19T17:50:26.433Z] [Pipeline] // withEnv
+[2025-06-19T17:50:26.498Z] [Pipeline] }
+[2025-06-19T17:50:26.580Z] [Pipeline] // script
+[2025-06-19T17:50:26.625Z] [Pipeline] }
+[2025-06-19T17:50:26.695Z] [Pipeline] // stage
+[2025-06-19T17:50:26.746Z] [Pipeline] stage
+[2025-06-19T17:50:26.754Z] [Pipeline] { (Deploy)
+[2025-06-19T17:50:26.889Z] [JTE][Step - pipeline_utils/complete_deployment_to.call(ApplicationEnvironment)]
+[2025-06-19T17:50:26.904Z] [Pipeline] script
+[2025-06-19T17:50:26.913Z] [Pipeline] {
+[2025-06-19T17:50:27.044Z] [JTE][Step - build_environment/with_build_environment.call(CpsClosure2)]
+[2025-06-19T17:50:27.067Z] [Pipeline] withEnv
+[2025-06-19T17:50:27.074Z] [Pipeline] {
+[2025-06-19T17:50:27.142Z] [Pipeline] withDockerRegistry
+[2025-06-19T17:50:27.190Z] $ docker login -u AWS -p ******** https://<aws_account>.dkr.ecr.us-west-2.amazonaws.com
+[2025-06-19T17:50:27.301Z] WARNING! Using --password via the CLI is insecure. Use --password-stdin.
+[2025-06-19T17:50:27.343Z] 
+[2025-06-19T17:50:27.344Z] WARNING! Your credentials are stored unencrypted in 'c:\jenkins\workspace\enkins-example-windows-app_PR-18@tmp\6b1350ad-cbd6-48d4-958c-b84cda044fe6\config.json'.
+[2025-06-19T17:50:27.344Z] Configure a credential helper to remove this warning. See
+[2025-06-19T17:50:27.344Z] https://docs.docker.com/go/credential-store/
+[2025-06-19T17:50:27.344Z] 
+[2025-06-19T17:50:27.345Z] Login Succeeded
+[2025-06-19T17:50:27.378Z] [Pipeline] {
+[2025-06-19T17:50:27.416Z] [Pipeline] isUnix
+[2025-06-19T17:50:27.514Z] [Pipeline] withEnv
+[2025-06-19T17:50:27.521Z] [Pipeline] {
+[2025-06-19T17:50:27.583Z] [Pipeline] bat
+[2025-06-19T17:50:27.936Z] 
+[2025-06-19T17:50:27.936Z] administrator@EC2AMAZ-1EA1VB4 c:\jenkins\workspace\enkins-example-windows-app_PR-18>docker inspect -f . "jenkins-build-environment/pipelines/jenkins-example-windows-app:01f390a906259fcb8d2fef27314aabba9080c77ddb62666dea731c760cc86f02" 
+[2025-06-19T17:50:27.936Z] 
+[2025-06-19T17:50:27.936Z] Error: No such object: jenkins-build-environment/pipelines/jenkins-example-windows-app:01f390a906259fcb8d2fef27314aabba9080c77ddb62666dea731c760cc86f02
+[2025-06-19T17:50:27.973Z] [Pipeline] bat
+[2025-06-19T17:50:28.348Z] 
+[2025-06-19T17:50:28.352Z] administrator@EC2AMAZ-1EA1VB4 c:\jenkins\workspace\enkins-example-windows-app_PR-18>docker inspect -f . "<aws_account>.dkr.ecr.us-west-2.amazonaws.com/jenkins-build-environment/pipelines/jenkins-example-windows-app:01f390a906259fcb8d2fef27314aabba9080c77ddb62666dea731c760cc86f02" 
+[2025-06-19T17:50:28.353Z] .
+[2025-06-19T17:50:28.386Z] [Pipeline] }
+[2025-06-19T17:50:28.480Z] [Pipeline] // withEnv
+[2025-06-19T17:50:28.538Z] [Pipeline] withDockerContainer
+[2025-06-19T17:50:28.740Z] EC2 (devops-ec2) - windows-ssh (i-0897c222c3230be72) does not seem to be running inside a container
+[2025-06-19T17:50:28.792Z] $ docker run -d -t -v //./pipe/docker_engine://./pipe/docker_engine -w c:/jenkins/workspace/enkins-example-windows-app_PR-18/ -v c:/jenkins/workspace/enkins-example-windows-app_PR-18/:c:/jenkins/workspace/enkins-example-windows-app_PR-18/ -v c:/jenkins/workspace/enkins-example-windows-app_PR-18@tmp/:c:/jenkins/workspace/enkins-example-windows-app_PR-18@tmp/ -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** <aws_account>.dkr.ecr.us-west-2.amazonaws.com/jenkins-build-environment/pipelines/jenkins-example-windows-app:01f390a906259fcb8d2fef27314aabba9080c77ddb62666dea731c760cc86f02 cmd.exe
+[2025-06-19T17:50:34.618Z] $ docker top af0daaa9864a0ae21076c9f1484fc342a35711c5ea9d1d05194cc5875ca3b861
+[2025-06-19T17:50:35.119Z] [Pipeline] {
+[2025-06-19T17:50:35.260Z] [JTE][Step - s3_deploy/deploy_to.call(ApplicationEnvironment)]
+[2025-06-19T17:50:35.277Z] [Pipeline] echo
+[2025-06-19T17:50:35.387Z] Running S3 deploy for Dev.
+[2025-06-19T17:50:35.410Z] [Pipeline] withAWS
+[2025-06-19T17:50:35.413Z] Constructing AWS CredentialsSetting AWS region us-west-2 
+[2025-06-19T17:50:35.419Z] [Pipeline] {
+[2025-06-19T17:50:35.493Z] [Pipeline] dir
+[2025-06-19T17:50:35.493Z] Running in c:\jenkins\workspace\enkins-example-windows-app_PR-18\build
+[2025-06-19T17:50:35.499Z] [Pipeline] {
+[2025-06-19T17:50:35.560Z] [Pipeline] s3Upload
+[2025-06-19T17:50:35.905Z] Uploading ** to s3://devops-testing-jenkins-bucket/bucket_folder/ 
+[2025-06-19T17:50:40.731Z] Upload complete
+[2025-06-19T17:50:40.737Z] [Pipeline] }
+[2025-06-19T17:50:40.809Z] [Pipeline] // dir
+[2025-06-19T17:50:40.843Z] [Pipeline] }
+[2025-06-19T17:50:40.914Z] [Pipeline] // withAWS
+[2025-06-19T17:50:40.963Z] [Pipeline] }
+[2025-06-19T17:50:40.961Z] $ docker stop --time=1 af0daaa9864a0ae21076c9f1484fc342a35711c5ea9d1d05194cc5875ca3b861
+[2025-06-19T17:50:40.709Z] Finished: Uploading to devops-testing-jenkins-bucket/bucket_folder/some_artifact.txt
+[2025-06-19T17:50:47.481Z] $ docker rm -f --volumes af0daaa9864a0ae21076c9f1484fc342a35711c5ea9d1d05194cc5875ca3b861
+[2025-06-19T17:50:47.721Z] [Pipeline] // withDockerContainer
+[2025-06-19T17:50:47.763Z] [Pipeline] }
+[2025-06-19T17:50:47.838Z] [Pipeline] // withDockerRegistry
+[2025-06-19T17:50:47.875Z] [Pipeline] }
+[2025-06-19T17:50:47.949Z] [Pipeline] // withEnv
+[2025-06-19T17:50:47.999Z] [Pipeline] }
+[2025-06-19T17:50:48.077Z] [Pipeline] // script
+[2025-06-19T17:50:48.122Z] Post stage
+[2025-06-19T17:50:48.154Z] [Pipeline] cleanWs
+[2025-06-19T17:50:48.263Z] [WS-CLEANUP] Deleting project workspace...
+[2025-06-19T17:50:48.264Z] [WS-CLEANUP] Deferred wipeout is disabled by the job configuration...
+[2025-06-19T17:50:48.356Z] [WS-CLEANUP] done
+[2025-06-19T17:50:48.365Z] [Pipeline] }
+[2025-06-19T17:50:48.492Z] [Pipeline] // stage
+[2025-06-19T17:50:48.527Z] [Pipeline] }
+[2025-06-19T17:50:48.589Z] [Pipeline] // withEnv
+[2025-06-19T17:50:48.622Z] [Pipeline] }
+[2025-06-19T17:50:48.709Z] [Pipeline] // node
+[2025-06-19T17:50:48.750Z] [Pipeline] }
+[2025-06-19T17:50:48.832Z] [Pipeline] // stage
+[2025-06-19T17:50:48.891Z] [Pipeline] stage
+[2025-06-19T17:50:48.898Z] [Pipeline] { (Approve - Dev Testing Complete)
+[2025-06-19T17:50:49.074Z] [JTE][Step - pipeline_utils/is_nonstandard_branch.call()]
+[2025-06-19T17:50:49.179Z] [JTE][Step - pipeline_utils/triggered_by.call(String)]
+[2025-06-19T17:50:49.332Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:50:49.447Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:50:49.599Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:50:49.701Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:50:49.820Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:50:49.972Z] [JTE][Step - pipeline_utils/get_approver.call(ApplicationEnvironment)]
+[2025-06-19T17:50:50.099Z] [JTE][Step - pipeline_utils/approve_for.call(LinkedHashMap, ApplicationEnvironment)]
+[2025-06-19T17:50:50.119Z] [Pipeline] emailext
+[2025-06-19T17:50:50.167Z] Sending email to: Users
+[2025-06-19T17:50:52.152Z] [Pipeline] timeout
+[2025-06-19T17:50:52.153Z] Timeout set to expire in 7 days 0 hr
+[2025-06-19T17:50:52.160Z] [Pipeline] {
+[2025-06-19T17:50:52.227Z] [Pipeline] input
+[2025-06-19T17:50:52.275Z] Transition to next stage?
+[2025-06-19T17:50:52.276Z] Transition or Abort
+[2025-06-19T17:52:57.225Z] Approved by User
+[2025-06-19T17:52:57.311Z] [Pipeline] }
+[2025-06-19T17:52:57.383Z] [Pipeline] // timeout
+[2025-06-19T17:52:57.436Z] [Pipeline] }
+[2025-06-19T17:52:57.506Z] [Pipeline] // stage
+[2025-06-19T17:52:57.568Z] [Pipeline] stage
+[2025-06-19T17:52:57.575Z] [Pipeline] { (Approve - Non-standard Environment)
+[2025-06-19T17:52:57.737Z] [JTE][Step - pipeline_utils/is_nonstandard_branch.call()]
+[2025-06-19T17:52:57.811Z] [JTE][Step - pipeline_utils/triggered_by.call(String)]
+[2025-06-19T17:52:57.882Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:52:57.979Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:52:58.024Z] Stage "Approve - Non-standard Environment" skipped due to when conditional
+[2025-06-19T17:52:58.039Z] [Pipeline] getContext
+[2025-06-19T17:52:58.069Z] [Pipeline] }
+[2025-06-19T17:52:58.165Z] [Pipeline] // stage
+[2025-06-19T17:52:58.227Z] [Pipeline] stage
+[2025-06-19T17:52:58.236Z] [Pipeline] { (Non-standard Environment)
+[2025-06-19T17:52:58.373Z] [JTE][Step - pipeline_utils/is_nonstandard_branch.call()]
+[2025-06-19T17:52:58.441Z] [JTE][Step - pipeline_utils/triggered_by.call(String)]
+[2025-06-19T17:52:58.510Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:52:58.643Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:52:58.682Z] Stage "Non-standard Environment" skipped due to when conditional
+[2025-06-19T17:52:58.697Z] [Pipeline] getContext
+[2025-06-19T17:52:58.790Z] [Pipeline] stage
+[2025-06-19T17:52:58.799Z] [Pipeline] { (Build)
+[2025-06-19T17:52:58.856Z] Stage "Non-standard Environment" skipped due to when conditional
+[2025-06-19T17:52:58.871Z] [Pipeline] getContext
+[2025-06-19T17:52:58.902Z] [Pipeline] }
+[2025-06-19T17:52:58.972Z] [Pipeline] // stage
+[2025-06-19T17:52:59.024Z] [Pipeline] stage
+[2025-06-19T17:52:59.032Z] [Pipeline] { (Deploy)
+[2025-06-19T17:52:59.076Z] Stage "Non-standard Environment" skipped due to when conditional
+[2025-06-19T17:52:59.090Z] [Pipeline] getContext
+[2025-06-19T17:52:59.119Z] [Pipeline] }
+[2025-06-19T17:52:59.220Z] [Pipeline] // stage
+[2025-06-19T17:52:59.286Z] [Pipeline] }
+[2025-06-19T17:52:59.374Z] [Pipeline] // stage
+[2025-06-19T17:52:59.436Z] [Pipeline] stage
+[2025-06-19T17:52:59.444Z] [Pipeline] { (Approve - QA)
+[2025-06-19T17:52:59.617Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:52:59.697Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:52:59.804Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:52:59.929Z] [JTE][Step - pipeline_utils/get_approver.call(ApplicationEnvironment)]
+[2025-06-19T17:53:00.023Z] [JTE][Step - pipeline_utils/approve_for.call(LinkedHashMap, ApplicationEnvironment)]
+[2025-06-19T17:53:00.050Z] [Pipeline] emailext
+[2025-06-19T17:53:00.093Z] Sending email to: users
+[2025-06-19T17:53:01.860Z] [Pipeline] timeout
+[2025-06-19T17:53:01.860Z] Timeout set to expire in 7 days 0 hr
+[2025-06-19T17:53:01.867Z] [Pipeline] {
+[2025-06-19T17:53:01.933Z] [Pipeline] input
+[2025-06-19T17:53:01.980Z] Deploy to QA?
+[2025-06-19T17:53:01.980Z] Approve deployment or Abort
+[2025-06-19T17:53:07.793Z] Approved by User
+[2025-06-19T17:53:07.883Z] [Pipeline] }
+[2025-06-19T17:53:07.977Z] [Pipeline] // timeout
+[2025-06-19T17:53:08.026Z] [Pipeline] }
+[2025-06-19T17:53:08.098Z] [Pipeline] // stage
+[2025-06-19T17:53:08.154Z] [Pipeline] stage
+[2025-06-19T17:53:08.161Z] [Pipeline] { (QA)
+[2025-06-19T17:53:08.329Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:53:08.430Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:53:08.550Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:53:08.628Z] [Pipeline] node
+[2025-06-19T17:53:08.687Z] Running on EC2 (devops-ec2) - windows-ssh (i-0897c222c3230be72) in c:\jenkins\workspace\enkins-example-windows-app_PR-18
+[2025-06-19T17:53:08.725Z] [Pipeline] {
+[2025-06-19T17:55:00.286Z] [Pipeline] checkout
+[2025-06-19T17:55:00.377Z] The recommended git tool is: NONE
+[2025-06-19T17:55:00.409Z] using credential svc-bitbucket-cloud
+[2025-06-19T17:55:00.441Z] Cloning the remote Git repository
+[2025-06-19T17:55:00.441Z] Cloning with configured refspecs honoured and without tags
+[2025-06-19T17:55:00.424Z] Cloning repository https://bitbucket.org/<org>/jenkins-example-windows-app.git
+[2025-06-19T17:55:00.424Z]  > git init c:\jenkins\workspace\enkins-example-windows-app_PR-18 # timeout=10
+[2025-06-19T17:55:00.551Z] Fetching upstream changes from https://bitbucket.org/<org>/jenkins-example-windows-app.git
+[2025-06-19T17:55:00.552Z]  > git --version # timeout=10
+[2025-06-19T17:55:00.657Z]  > git --version # 'git version 2.49.0.windows.1'
+[2025-06-19T17:55:00.658Z] using GIT_ASKPASS to set credentials Service account credentials for Bitbucket Cloud access
+[2025-06-19T17:55:00.663Z]  > git fetch --no-tags --force --progress -- https://bitbucket.org/<org>/jenkins-example-windows-app.git +refs/heads/feature/ESD-116_additional-repos:refs/remotes/origin/feature/ESD-116_additional-repos # timeout=10
+[2025-06-19T17:55:03.866Z] Avoid second fetch
+[2025-06-19T17:55:03.867Z] Checking out Revision f3da946fece362d013d9fa081f85e80c9c95eeb7 (PR-18)
+[2025-06-19T17:55:04.160Z] Commit message: "adding a comment in dockerfile"
+[2025-06-19T17:55:04.160Z] [GitCheckoutListener] Skipping recording, since SCM 'git https://bitbucket.org/<org>/jenkins-example-windows-app.git' already has been processed
+[2025-06-19T17:55:04.253Z] [Pipeline] withEnv
+[2025-06-19T17:55:04.261Z] [Pipeline] {
+[2025-06-19T17:55:04.340Z] [Pipeline] stage
+[2025-06-19T17:55:04.348Z] [Pipeline] { (Build)
+[2025-06-19T17:55:03.626Z]  > git config remote.origin.url https://bitbucket.org/<org>/jenkins-example-windows-app.git # timeout=10
+[2025-06-19T17:55:03.748Z]  > git config --add remote.origin.fetch +refs/heads/feature/ESD-116_additional-repos:refs/remotes/origin/feature/ESD-116_additional-repos # timeout=10
+[2025-06-19T17:55:03.849Z]  > git config core.sparsecheckout # timeout=10
+[2025-06-19T17:55:03.952Z]  > git checkout -f f3da946fece362d013d9fa081f85e80c9c95eeb7 # timeout=10
+[2025-06-19T17:55:04.697Z] [JTE][Step - pipeline_utils/complete_build_for.call(ApplicationEnvironment)]
+[2025-06-19T17:55:04.713Z] [Pipeline] script
+[2025-06-19T17:55:04.723Z] [Pipeline] {
+[2025-06-19T17:55:04.859Z] [JTE][Step - build_environment/with_build_environment.call(CpsClosure2)]
+[2025-06-19T17:55:04.883Z] [Pipeline] withEnv
+[2025-06-19T17:55:04.890Z] [Pipeline] {
+[2025-06-19T17:55:04.962Z] [Pipeline] withDockerRegistry
+[2025-06-19T17:55:05.017Z] $ docker login -u AWS -p ******** https://<aws_account>.dkr.ecr.us-west-2.amazonaws.com
+[2025-06-19T17:55:05.138Z] WARNING! Using --password via the CLI is insecure. Use --password-stdin.
+[2025-06-19T17:55:05.194Z] 
+[2025-06-19T17:55:05.196Z] WARNING! Your credentials are stored unencrypted in 'c:\jenkins\workspace\enkins-example-windows-app_PR-18@tmp\ca282113-09e0-488f-9fd7-767d3f613060\config.json'.
+[2025-06-19T17:55:05.196Z] Configure a credential helper to remove this warning. See
+[2025-06-19T17:55:05.198Z] https://docs.docker.com/go/credential-store/
+[2025-06-19T17:55:05.199Z] 
+[2025-06-19T17:55:05.199Z] Login Succeeded
+[2025-06-19T17:55:05.246Z] [Pipeline] {
+[2025-06-19T17:55:05.288Z] [Pipeline] isUnix
+[2025-06-19T17:55:05.387Z] [Pipeline] withEnv
+[2025-06-19T17:55:05.394Z] [Pipeline] {
+[2025-06-19T17:55:05.462Z] [Pipeline] bat
+[2025-06-19T17:55:05.813Z] 
+[2025-06-19T17:55:05.813Z] administrator@EC2AMAZ-1EA1VB4 c:\jenkins\workspace\enkins-example-windows-app_PR-18>docker inspect -f . "jenkins-build-environment/pipelines/jenkins-example-windows-app:01f390a906259fcb8d2fef27314aabba9080c77ddb62666dea731c760cc86f02" 
+[2025-06-19T17:55:05.814Z] 
+[2025-06-19T17:55:05.814Z] Error: No such object: jenkins-build-environment/pipelines/jenkins-example-windows-app:01f390a906259fcb8d2fef27314aabba9080c77ddb62666dea731c760cc86f02
+[2025-06-19T17:55:05.849Z] [Pipeline] bat
+[2025-06-19T17:55:06.224Z] 
+[2025-06-19T17:55:06.224Z] administrator@EC2AMAZ-1EA1VB4 c:\jenkins\workspace\enkins-example-windows-app_PR-18>docker inspect -f . "<aws_account>.dkr.ecr.us-west-2.amazonaws.com/jenkins-build-environment/pipelines/jenkins-example-windows-app:01f390a906259fcb8d2fef27314aabba9080c77ddb62666dea731c760cc86f02" 
+[2025-06-19T17:55:06.224Z] .
+[2025-06-19T17:55:06.259Z] [Pipeline] }
+[2025-06-19T17:55:06.345Z] [Pipeline] // withEnv
+[2025-06-19T17:55:06.400Z] [Pipeline] withDockerContainer
+[2025-06-19T17:55:06.580Z] EC2 (devops-ec2) - windows-ssh (i-0897c222c3230be72) does not seem to be running inside a container
+[2025-06-19T17:55:06.639Z] $ docker run -d -t -v //./pipe/docker_engine://./pipe/docker_engine -w c:/jenkins/workspace/enkins-example-windows-app_PR-18/ -v c:/jenkins/workspace/enkins-example-windows-app_PR-18/:c:/jenkins/workspace/enkins-example-windows-app_PR-18/ -v c:/jenkins/workspace/enkins-example-windows-app_PR-18@tmp/:c:/jenkins/workspace/enkins-example-windows-app_PR-18@tmp/ -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** <aws_account>.dkr.ecr.us-west-2.amazonaws.com/jenkins-build-environment/pipelines/jenkins-example-windows-app:01f390a906259fcb8d2fef27314aabba9080c77ddb62666dea731c760cc86f02 cmd.exe
+[2025-06-19T17:55:12.273Z] $ docker top dd83a030640035c0ff2c9160ec28e775211f65242bf0d71d1c8d3ca4683da29a
+[2025-06-19T17:55:12.908Z] [Pipeline] {
+[2025-06-19T17:55:12.971Z] [Pipeline] unstash
+[2025-06-19T17:55:13.461Z] Unstashed file(s) from https://abc-jenkins-stashed-artifacts.s3.us-west-2.amazonaws.com/Example%20DevOps%20Pipelines/jenkins-example-windows-app/PR-18/66/stashes/source.tgz
+[2025-06-19T17:55:13.539Z] [JTE][Step - custom_build/build_for.call(ApplicationEnvironment)]
+[2025-06-19T17:55:13.562Z] [Pipeline] load
+[2025-06-19T17:55:13.713Z] [Pipeline] { (jenkins/libraries/custom_build/steps//custom_build.groovy)
+[2025-06-19T17:55:13.791Z] [Pipeline] }
+[2025-06-19T17:55:13.874Z] [Pipeline] // load
+[2025-06-19T17:55:13.922Z] [Pipeline] echo
+[2025-06-19T17:55:13.991Z]         Executing custom non-shell build for QA.
+[2025-06-19T17:55:13.991Z]         Create your own library for a more complicated build process.
+[2025-06-19T17:55:13.991Z] 
+[2025-06-19T17:55:13.991Z]         For example: You have an application that does an s3 getObject using
+[2025-06-19T17:55:13.991Z]         Jenkins credentials, then calls an API using a Jenkins Plugin, and
+[2025-06-19T17:55:13.991Z]         then does an npm build.
+[2025-06-19T17:55:13.991Z] This example just creates a generic file,
+[2025-06-19T17:55:13.991Z]         which will be uploaded to S3 later when s3_deploy library executes.
+[2025-06-19T17:55:13.991Z]         This is similar to a React UI being built and deployed to S3. This
+[2025-06-19T17:55:13.992Z]         example can be modified by developers.
+[2025-06-19T17:55:13.992Z]     
+[2025-06-19T17:55:14.007Z] [Pipeline] writeFile
+[2025-06-19T17:55:14.177Z] [Pipeline] }
+[2025-06-19T17:55:14.170Z] $ docker stop --time=1 dd83a030640035c0ff2c9160ec28e775211f65242bf0d71d1c8d3ca4683da29a
+[2025-06-19T17:55:20.591Z] $ docker rm -f --volumes dd83a030640035c0ff2c9160ec28e775211f65242bf0d71d1c8d3ca4683da29a
+[2025-06-19T17:55:20.831Z] [Pipeline] // withDockerContainer
+[2025-06-19T17:55:20.875Z] [Pipeline] }
+[2025-06-19T17:55:20.964Z] [Pipeline] // withDockerRegistry
+[2025-06-19T17:55:21.002Z] [Pipeline] }
+[2025-06-19T17:55:21.084Z] [Pipeline] // withEnv
+[2025-06-19T17:55:21.130Z] [Pipeline] }
+[2025-06-19T17:55:21.235Z] [Pipeline] // script
+[2025-06-19T17:55:21.313Z] [Pipeline] }
+[2025-06-19T17:55:21.447Z] [Pipeline] // stage
+[2025-06-19T17:55:21.509Z] [Pipeline] stage
+[2025-06-19T17:55:21.516Z] [Pipeline] { (Deploy)
+[2025-06-19T17:55:21.666Z] [JTE][Step - pipeline_utils/complete_deployment_to.call(ApplicationEnvironment)]
+[2025-06-19T17:55:21.684Z] [Pipeline] script
+[2025-06-19T17:55:21.697Z] [Pipeline] {
+[2025-06-19T17:55:21.873Z] [JTE][Step - build_environment/with_build_environment.call(CpsClosure2)]
+[2025-06-19T17:55:21.898Z] [Pipeline] withEnv
+[2025-06-19T17:55:21.906Z] [Pipeline] {
+[2025-06-19T17:55:21.992Z] [Pipeline] withDockerRegistry
+[2025-06-19T17:55:22.055Z] $ docker login -u AWS -p ******** https://<aws_account>.dkr.ecr.us-west-2.amazonaws.com
+[2025-06-19T17:55:22.165Z] WARNING! Using --password via the CLI is insecure. Use --password-stdin.
+[2025-06-19T17:55:22.226Z] 
+[2025-06-19T17:55:22.226Z] WARNING! Your credentials are stored unencrypted in 'c:\jenkins\workspace\enkins-example-windows-app_PR-18@tmp\c48480f2-b123-4de7-8efc-ee7edc670adc\config.json'.
+[2025-06-19T17:55:22.227Z] Configure a credential helper to remove this warning. See
+[2025-06-19T17:55:22.227Z] https://docs.docker.com/go/credential-store/
+[2025-06-19T17:55:22.227Z] 
+[2025-06-19T17:55:22.227Z] Login Succeeded
+[2025-06-19T17:55:22.273Z] [Pipeline] {
+[2025-06-19T17:55:22.321Z] [Pipeline] isUnix
+[2025-06-19T17:55:22.413Z] [Pipeline] withEnv
+[2025-06-19T17:55:22.421Z] [Pipeline] {
+[2025-06-19T17:55:22.508Z] [Pipeline] bat
+[2025-06-19T17:55:22.868Z] 
+[2025-06-19T17:55:22.869Z] administrator@EC2AMAZ-1EA1VB4 c:\jenkins\workspace\enkins-example-windows-app_PR-18>docker inspect -f . "jenkins-build-environment/pipelines/jenkins-example-windows-app:01f390a906259fcb8d2fef27314aabba9080c77ddb62666dea731c760cc86f02" 
+[2025-06-19T17:55:22.869Z] 
+[2025-06-19T17:55:22.869Z] Error: No such object: jenkins-build-environment/pipelines/jenkins-example-windows-app:01f390a906259fcb8d2fef27314aabba9080c77ddb62666dea731c760cc86f02
+[2025-06-19T17:55:22.911Z] [Pipeline] bat
+[2025-06-19T17:55:23.282Z] 
+[2025-06-19T17:55:23.282Z] administrator@EC2AMAZ-1EA1VB4 c:\jenkins\workspace\enkins-example-windows-app_PR-18>docker inspect -f . "<aws_account>.dkr.ecr.us-west-2.amazonaws.com/jenkins-build-environment/pipelines/jenkins-example-windows-app:01f390a906259fcb8d2fef27314aabba9080c77ddb62666dea731c760cc86f02" 
+[2025-06-19T17:55:23.283Z] .
+[2025-06-19T17:55:23.316Z] [Pipeline] }
+[2025-06-19T17:55:23.400Z] [Pipeline] // withEnv
+[2025-06-19T17:55:23.456Z] [Pipeline] withDockerContainer
+[2025-06-19T17:55:23.639Z] EC2 (devops-ec2) - windows-ssh (i-0897c222c3230be72) does not seem to be running inside a container
+[2025-06-19T17:55:23.687Z] $ docker run -d -t -v //./pipe/docker_engine://./pipe/docker_engine -w c:/jenkins/workspace/enkins-example-windows-app_PR-18/ -v c:/jenkins/workspace/enkins-example-windows-app_PR-18/:c:/jenkins/workspace/enkins-example-windows-app_PR-18/ -v c:/jenkins/workspace/enkins-example-windows-app_PR-18@tmp/:c:/jenkins/workspace/enkins-example-windows-app_PR-18@tmp/ -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** <aws_account>.dkr.ecr.us-west-2.amazonaws.com/jenkins-build-environment/pipelines/jenkins-example-windows-app:01f390a906259fcb8d2fef27314aabba9080c77ddb62666dea731c760cc86f02 cmd.exe
+[2025-06-19T17:55:28.553Z] $ docker top 44bcfe6865ea684132710d52c9594ace5750c55eac649c1e18aa383ce1932d30
+[2025-06-19T17:55:29.042Z] [Pipeline] {
+[2025-06-19T17:55:29.202Z] [JTE][Step - s3_deploy/deploy_to.call(ApplicationEnvironment)]
+[2025-06-19T17:55:29.222Z] [Pipeline] echo
+[2025-06-19T17:55:29.312Z] Running S3 deploy for QA.
+[2025-06-19T17:55:29.338Z] [Pipeline] withAWS
+[2025-06-19T17:55:29.344Z] Constructing AWS CredentialsSetting AWS region us-west-2 
+[2025-06-19T17:55:29.355Z] [Pipeline] {
+[2025-06-19T17:55:29.447Z] [Pipeline] dir
+[2025-06-19T17:55:29.448Z] Running in c:\jenkins\workspace\enkins-example-windows-app_PR-18\build
+[2025-06-19T17:55:29.455Z] [Pipeline] {
+[2025-06-19T17:55:29.527Z] [Pipeline] s3Upload
+[2025-06-19T17:55:29.610Z] Uploading ** to s3://devops-testing-jenkins-bucket/bucket_folder/ 
+[2025-06-19T17:55:29.696Z] Upload complete
+[2025-06-19T17:55:29.704Z] [Pipeline] }
+[2025-06-19T17:55:29.805Z] [Pipeline] // dir
+[2025-06-19T17:55:29.849Z] [Pipeline] }
+[2025-06-19T17:55:29.941Z] [Pipeline] // withAWS
+[2025-06-19T17:55:29.992Z] [Pipeline] }
+[2025-06-19T17:55:29.989Z] $ docker stop --time=1 44bcfe6865ea684132710d52c9594ace5750c55eac649c1e18aa383ce1932d30
+[2025-06-19T17:55:29.671Z] Finished: Uploading to devops-testing-jenkins-bucket/bucket_folder/some_artifact.txt
+[2025-06-19T17:55:36.543Z] $ docker rm -f --volumes 44bcfe6865ea684132710d52c9594ace5750c55eac649c1e18aa383ce1932d30
+[2025-06-19T17:55:36.731Z] [Pipeline] // withDockerContainer
+[2025-06-19T17:55:36.766Z] [Pipeline] }
+[2025-06-19T17:55:36.842Z] [Pipeline] // withDockerRegistry
+[2025-06-19T17:55:36.877Z] [Pipeline] }
+[2025-06-19T17:55:36.953Z] [Pipeline] // withEnv
+[2025-06-19T17:55:36.998Z] [Pipeline] }
+[2025-06-19T17:55:37.081Z] [Pipeline] // script
+[2025-06-19T17:55:37.133Z] Post stage
+[2025-06-19T17:55:37.174Z] [Pipeline] cleanWs
+[2025-06-19T17:55:37.259Z] [WS-CLEANUP] Deleting project workspace...
+[2025-06-19T17:55:37.260Z] [WS-CLEANUP] Deferred wipeout is disabled by the job configuration...
+[2025-06-19T17:55:37.330Z] [WS-CLEANUP] done
+[2025-06-19T17:55:37.339Z] [Pipeline] }
+[2025-06-19T17:55:37.430Z] [Pipeline] // stage
+[2025-06-19T17:55:37.470Z] [Pipeline] }
+[2025-06-19T17:55:37.550Z] [Pipeline] // withEnv
+[2025-06-19T17:55:37.589Z] [Pipeline] }
+[2025-06-19T17:55:37.688Z] [Pipeline] // node
+[2025-06-19T17:55:37.736Z] [Pipeline] }
+[2025-06-19T17:55:37.835Z] [Pipeline] // stage
+[2025-06-19T17:55:37.892Z] [Pipeline] stage
+[2025-06-19T17:55:37.901Z] [Pipeline] { (Approve - QA Testing Complete)
+[2025-06-19T17:55:38.092Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:55:38.184Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:55:38.277Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:55:38.389Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:55:38.462Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:55:38.656Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:55:38.690Z] Stage "Approve - QA Testing Complete" skipped due to when conditional
+[2025-06-19T17:55:38.709Z] [Pipeline] getContext
+[2025-06-19T17:55:38.740Z] [Pipeline] }
+[2025-06-19T17:55:38.821Z] [Pipeline] // stage
+[2025-06-19T17:55:38.887Z] [Pipeline] stage
+[2025-06-19T17:55:38.896Z] [Pipeline] { (Approve - Staging)
+[2025-06-19T17:55:39.076Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:55:39.171Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:55:39.341Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:55:39.512Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:55:39.675Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:55:39.801Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:55:39.834Z] Stage "Approve - Staging" skipped due to when conditional
+[2025-06-19T17:55:39.848Z] [Pipeline] getContext
+[2025-06-19T17:55:39.887Z] [Pipeline] }
+[2025-06-19T17:55:39.966Z] [Pipeline] // stage
+[2025-06-19T17:55:40.053Z] [Pipeline] stage
+[2025-06-19T17:55:40.060Z] [Pipeline] { (Staging)
+[2025-06-19T17:55:40.229Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:55:40.302Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:55:40.395Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:55:40.516Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:55:40.603Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:55:40.719Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:55:40.752Z] Stage "Staging" skipped due to when conditional
+[2025-06-19T17:55:40.769Z] [Pipeline] getContext
+[2025-06-19T17:55:40.861Z] [Pipeline] stage
+[2025-06-19T17:55:40.868Z] [Pipeline] { (Build)
+[2025-06-19T17:55:40.945Z] Stage "Staging" skipped due to when conditional
+[2025-06-19T17:55:40.961Z] [Pipeline] getContext
+[2025-06-19T17:55:40.990Z] [Pipeline] }
+[2025-06-19T17:55:41.080Z] [Pipeline] // stage
+[2025-06-19T17:55:41.143Z] [Pipeline] stage
+[2025-06-19T17:55:41.152Z] [Pipeline] { (Deploy)
+[2025-06-19T17:55:41.202Z] Stage "Staging" skipped due to when conditional
+[2025-06-19T17:55:41.217Z] [Pipeline] getContext
+[2025-06-19T17:55:41.252Z] [Pipeline] }
+[2025-06-19T17:55:41.350Z] [Pipeline] // stage
+[2025-06-19T17:55:41.388Z] [Pipeline] }
+[2025-06-19T17:55:41.462Z] [Pipeline] // stage
+[2025-06-19T17:55:41.512Z] [Pipeline] stage
+[2025-06-19T17:55:41.519Z] [Pipeline] { (Approve - Prod)
+[2025-06-19T17:55:41.646Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:55:41.733Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:55:41.829Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:55:41.857Z] Stage "Approve - Prod" skipped due to when conditional
+[2025-06-19T17:55:41.869Z] [Pipeline] getContext
+[2025-06-19T17:55:41.899Z] [Pipeline] }
+[2025-06-19T17:55:41.972Z] [Pipeline] // stage
+[2025-06-19T17:55:42.028Z] [Pipeline] stage
+[2025-06-19T17:55:42.037Z] [Pipeline] { (Prod)
+[2025-06-19T17:55:42.169Z] [JTE][Step - pipeline_utils/triggered_by.call(LinkedHashMap, String)]
+[2025-06-19T17:55:42.267Z] [JTE][Step - pipeline_utils/is_pr_build.call()]
+[2025-06-19T17:55:42.390Z] [JTE][Step - pipeline_utils/is_tag_build.call()]
+[2025-06-19T17:55:42.421Z] Stage "Prod" skipped due to when conditional
+[2025-06-19T17:55:42.435Z] [Pipeline] getContext
+[2025-06-19T17:55:42.522Z] [Pipeline] stage
+[2025-06-19T17:55:42.529Z] [Pipeline] { (Build)
+[2025-06-19T17:55:42.587Z] Stage "Prod" skipped due to when conditional
+[2025-06-19T17:55:42.601Z] [Pipeline] getContext
+[2025-06-19T17:55:42.630Z] [Pipeline] }
+[2025-06-19T17:55:42.717Z] [Pipeline] // stage
+[2025-06-19T17:55:42.793Z] [Pipeline] stage
+[2025-06-19T17:55:42.800Z] [Pipeline] { (Deploy)
+[2025-06-19T17:55:42.858Z] Stage "Prod" skipped due to when conditional
+[2025-06-19T17:55:42.872Z] [Pipeline] getContext
+[2025-06-19T17:55:42.905Z] [Pipeline] }
+[2025-06-19T17:55:42.983Z] [Pipeline] // stage
+[2025-06-19T17:55:43.018Z] [Pipeline] }
+[2025-06-19T17:55:43.103Z] [Pipeline] // stage
+[2025-06-19T17:55:43.179Z] [Pipeline] stage
+[2025-06-19T17:55:43.187Z] [Pipeline] { (Declarative: Post Actions)
+[2025-06-19T17:55:43.276Z] [Pipeline] node
+[2025-06-19T17:55:43.329Z] Running on EC2 (devops-ec2) - windows-ssh (i-0897c222c3230be72) in c:\jenkins\workspace\enkins-example-windows-app_PR-18
+[2025-06-19T17:55:43.357Z] [Pipeline] {
+[2025-06-19T17:55:43.421Z] [Pipeline] script
+[2025-06-19T17:55:43.432Z] [Pipeline] {
+[2025-06-19T17:55:43.614Z] [JTE][Step - pipeline_utils/send_post_email.call()]
+[2025-06-19T17:55:43.673Z] [Pipeline] emailext
+[2025-06-19T17:55:43.758Z] Request made to compress build log
+[2025-06-19T17:55:43.798Z] Sending email to: users
+[2025-06-19T17:55:45.750Z] [JTE][Step - fortify/static_code_vulnerability_scan_notification.call()]
+[2025-06-19T17:55:45.766Z] [Pipeline] echo
+[2025-06-19T17:55:45.834Z] Checking Fortify scan results at pipeline end.
+[2025-06-19T17:55:45.965Z] [JTE][Step - fortify/with_fcli_fod_session.call(CpsClosure2)]
+[2025-06-19T17:55:45.997Z] [Pipeline] withCredentials
+[2025-06-19T17:55:46.017Z] Masking supported pattern matches of %API_KEY_SECRET%
+[2025-06-19T17:55:46.161Z] [Pipeline] {
+[2025-06-19T17:55:46.219Z] [Pipeline] }
+[2025-06-19T17:55:46.313Z] [Pipeline] // withCredentials
+[2025-06-19T17:55:46.365Z] [Pipeline] echo
+[2025-06-19T17:55:46.429Z] Authenticating with FoD.
+[2025-06-19T17:55:46.571Z] [JTE][Step - fortify/fcli_fod_call.call(String)]
+[2025-06-19T17:55:46.670Z] [JTE][Step - pipeline_utils/run_sh.call(LinkedHashMap)]
+[2025-06-19T17:55:46.685Z] [Pipeline] bat
+[2025-06-19T17:56:01.717Z] [Pipeline] echo
+[2025-06-19T17:56:01.783Z] Authenticated successfully with FoD.
+[2025-06-19T17:56:01.839Z] [Pipeline] echo
+[2025-06-19T17:56:01.901Z] Fetching Fortify scan results for releaseId: 1331047
+[2025-06-19T17:56:02.021Z] [JTE][Step - fortify/fcli_fod_polling_results.call(String, String)]
+[2025-06-19T17:56:02.045Z] [Pipeline] echo
+[2025-06-19T17:56:02.110Z] Polling scan results.
+[2025-06-19T17:56:02.318Z] [JTE][Step - fortify/fcli_fod_call.call(String)]
+[2025-06-19T17:56:02.433Z] [JTE][Step - pipeline_utils/run_sh.call(LinkedHashMap)]
+[2025-06-19T17:56:02.452Z] [Pipeline] bat
+[2025-06-19T17:56:12.574Z] [Pipeline] readJSON
+[2025-06-19T17:56:12.715Z] [Pipeline] echo
+[2025-06-19T17:56:12.807Z] Current Status: Completed
+[2025-06-19T17:56:12.825Z] [Pipeline] echo
+[2025-06-19T17:56:12.910Z] Scan complete after 0 minutes
+[2025-06-19T17:56:12.926Z] [Pipeline] echo
+[2025-06-19T17:56:13.017Z] Interpretting scan results.
+[2025-06-19T17:56:13.032Z] [Pipeline] echo
+[2025-06-19T17:56:13.099Z] --- Summary ---
+[2025-06-19T17:56:13.099Z] Status: PASS
+[2025-06-19T17:56:13.100Z] Rating: 5/5
+[2025-06-19T17:56:13.100Z] 
+[2025-06-19T17:56:13.100Z] --- Vulnerabilities ---
+[2025-06-19T17:56:13.100Z] Total: 0
+[2025-06-19T17:56:13.100Z] Critical: 0
+[2025-06-19T17:56:13.100Z] High: 0
+[2025-06-19T17:56:13.100Z] Medium: 0
+[2025-06-19T17:56:13.100Z] Low: 0
+[2025-06-19T17:56:13.100Z] 
+[2025-06-19T17:56:13.180Z] [Pipeline] echo
+[2025-06-19T17:56:13.252Z] No critical/high vulnerabilities detected. Email or Teams Notification not sent.
+[2025-06-19T17:56:13.370Z] [JTE][Step - fortify/fcli_fod_enforce_results.call(LinkedHashMap)]
+[2025-06-19T17:56:13.385Z] [Pipeline] echo
+[2025-06-19T17:56:13.450Z] No blocking vulnerabilities found. Proceeding with build.
+[2025-06-19T17:56:13.575Z] [JTE][Step - fortify/fcli_fod_call.call(String)]
+[2025-06-19T17:56:13.664Z] [JTE][Step - pipeline_utils/run_sh.call(LinkedHashMap)]
+[2025-06-19T17:56:13.681Z] [Pipeline] bat
+[2025-06-19T17:56:15.201Z] [Pipeline] echo
+[2025-06-19T17:56:15.270Z] Logging out from FoD.
+[2025-06-19T17:56:15.435Z] [JTE][Step - sonatype/open_source_vulnerability_scan_notification.call()]
+[2025-06-19T17:56:15.517Z] [JTE][Step - sonatype/open_soure_vulnerability_scan_results.call()]
+[2025-06-19T17:56:15.534Z] [Pipeline] echo
+[2025-06-19T17:56:15.599Z] Fecthing sonatype vulnerabilities results
+[2025-06-19T17:56:15.615Z] [Pipeline] readJSON
+[2025-06-19T17:56:15.775Z] [Pipeline] echo
+[2025-06-19T17:56:15.834Z] No Sonatype vulnerabilities with threat level >= 7. Skipping email and Teams notification.
+[2025-06-19T17:56:15.889Z] [Pipeline] }
+[2025-06-19T17:56:15.974Z] [Pipeline] // script
+[2025-06-19T17:56:16.030Z] [Pipeline] }
+[2025-06-19T17:56:16.124Z] [Pipeline] // node
+[2025-06-19T17:56:16.174Z] [Pipeline] echo
+[2025-06-19T17:56:16.196Z] Build succeeded
+[2025-06-19T17:56:16.233Z] [Pipeline] }
+[2025-06-19T17:56:16.301Z] [Pipeline] // stage
+[2025-06-19T17:56:16.343Z] [Pipeline] }
+[2025-06-19T17:56:16.418Z] [Pipeline] // datadog
+[2025-06-19T17:56:16.455Z] [Pipeline] }
+[2025-06-19T17:56:16.521Z] [Pipeline] // withEnv
+[2025-06-19T17:56:16.765Z] [Pipeline] End of Pipeline
+[2025-06-19T17:56:16.916Z] [Bitbucket] Notifying pull request build result
+[2025-06-19T17:56:17.251Z] [Bitbucket] Build result notified
+[2025-06-19T17:56:17.285Z] Finished: SUCCESS
+

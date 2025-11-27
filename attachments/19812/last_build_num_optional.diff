@@ -1,0 +1,121 @@
+Index: core/src/main/java/hudson/matrix/Layouter.java
+===================================================================
+--- core/src/main/java/hudson/matrix/Layouter.java	(revision 35075)
++++ core/src/main/java/hudson/matrix/Layouter.java	(working copy)
+@@ -56,18 +56,29 @@
+      */
+     private int xSize, ySize, zSize;
+ 
++    public final boolean showbuildnum;
+ 
+     public Layouter(List<Axis> x, List<Axis> y, List<Axis> z) {
++        /* default show build number to false */
++        this(x,y,z,false);
++    }
++    
++    public Layouter(List<Axis> x, List<Axis> y, List<Axis> z, boolean showbuildnum) {
+         this.x = x;
+         this.y = y;
+         this.z = z;
++        this.showbuildnum = showbuildnum;
+         init();
+     }
+-
+     /**
+      * Automatically split axes to x,y, and z.
+      */
+     public Layouter(AxisList axisList) {
++        this(axisList, false);
++     }
++    
++    public Layouter(AxisList axisList, boolean showbuildnum) {
++        this.showbuildnum = showbuildnum;
+         x = new ArrayList<Axis>();
+         y = new ArrayList<Axis>();
+         z = new ArrayList<Axis>();
+@@ -101,6 +112,7 @@
+         init();
+     }
+ 
++
+     private void init() {
+         xSize = calc(x,-1);
+         ySize = calc(y,-1);
+Index: core/src/main/java/hudson/matrix/MatrixProject.java
+===================================================================
+--- core/src/main/java/hudson/matrix/MatrixProject.java	(revision 35075)
++++ core/src/main/java/hudson/matrix/MatrixProject.java	(working copy)
+@@ -60,6 +60,13 @@
+ import org.kohsuke.stapler.StaplerResponse;
+ import org.kohsuke.stapler.TokenList;
+ 
++import org.kohsuke.stapler.ForwardToView;
++import org.kohsuke.stapler.HttpRedirect;
++import org.kohsuke.stapler.HttpResponses;
++import org.kohsuke.stapler.QueryParameter;
++import org.kohsuke.stapler.export.Exported;
++
++
+ import javax.servlet.ServletException;
+ import java.io.File;
+ import java.io.FileFilter;
+@@ -136,6 +143,10 @@
+     private String touchStoneCombinationFilter;
+     
+     /**
++     * Flag to indicate if build number are shown in view.
++     */
++    private boolean showBuildNumbers;
++    /**
+      * Required result on the touchstone combinations, in order to
+      * continue with the rest
+      */
+@@ -178,6 +189,30 @@
+     }
+ 
+     /**
++     * If true, {@link MatrixRun}s are shown with build number in current status view
++     */
++    public boolean isShowBuildNumbers() {
++        return showBuildNumbers;
++    }
++    
++    public void setShowBuildNumbers(boolean showBuildNumbers) throws IOException {
++        if(this.showBuildNumbers==showBuildNumbers)     return; // noop
++        this.showBuildNumbers = showBuildNumbers;
++        save();
++    }
++
++    public HttpResponse doDisable_buildnumbers() throws IOException, ServletException {
++        requirePOST();
++        setShowBuildNumbers(false);
++        return new HttpRedirect(".");
++    }
++    public HttpResponse doEnable_buildnumbers() throws IOException, ServletException {
++        requirePOST();
++        setShowBuildNumbers(true);
++        return new HttpRedirect(".");
++    }
++
++    /**
+      * Sets the combination filter.
+      *
+      * @param combinationFilter the combinationFilter to set
+@@ -276,7 +311,7 @@
+     }
+ 
+     public Layouter<MatrixConfiguration> getLayouter() {
+-        return new Layouter<MatrixConfiguration>(axes) {
++        return new Layouter<MatrixConfiguration>(axes, isShowBuildNumbers()) {
+             protected MatrixConfiguration getT(Combination c) {
+                 return getItem(c);
+             }
+@@ -597,6 +632,8 @@
+         checkAxisNames(newAxes);
+         this.axes = new AxisList(newAxes.toList());
+ 
++        
++        showBuildNumbers = json.has("showBuildNumbers");
+         runSequentially = json.has("runSequentially");
+ 
+         buildWrappers.rebuild(req, json, BuildWrappers.getFor(this));

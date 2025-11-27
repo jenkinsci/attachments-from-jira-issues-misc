@@ -1,0 +1,140 @@
+Started
+Updating svn://localhost/blub/trunk
+U         pom.xml
+At revision 35
+[.] $ /opt/local/maven2/current/bin/mvn release:clean
+[INFO] Scanning for projects...
+[INFO] Searching repository for plugin with prefix: 'release'.
+[INFO] ------------------------------------------------------------------------
+[INFO] Building Unnamed - com.ui.blub:blub:jar:1-SNAPSHOT
+[INFO]    task-segment: [release:clean] (aggregator-style)
+[INFO] ------------------------------------------------------------------------
+[INFO] [release:clean]
+[INFO] Cleaning up after release...
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESSFUL
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 4 seconds
+[INFO] Finished at: Fri Mar 20 22:06:07 CET 2009
+[INFO] Final Memory: 11M/29M
+[INFO] ------------------------------------------------------------------------
+[.] $ /opt/local/maven2/current/bin/mvn clean install
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Building Unnamed - com.ui.blub:blub:jar:1-SNAPSHOT
+[INFO]    task-segment: [clean, install]
+[INFO] ------------------------------------------------------------------------
+[INFO] [clean:clean]
+[INFO] Deleting directory /Software/hudson/jobs/blub/workspace/target
+[INFO] [resources:resources]
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Software/hudson/jobs/blub/workspace/src/main/resources
+[INFO] [compiler:compile]
+[INFO] Compiling 1 source file to /Software/hudson/jobs/blub/workspace/target/classes
+[INFO] [resources:testResources]
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Software/hudson/jobs/blub/workspace/src/test/resources
+[INFO] [compiler:testCompile]
+[INFO] Compiling 1 source file to /Software/hudson/jobs/blub/workspace/target/test-classes
+[INFO] [surefire:test]
+[INFO] Surefire report directory: /Software/hudson/jobs/blub/workspace/target/surefire-reports
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running com.ui.blub.AppTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.028 sec
+
+Results :
+
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] [jar:jar]
+[INFO] Building jar: /Software/hudson/jobs/blub/workspace/target/blub-1-SNAPSHOT.jar
+[INFO] [install:install]
+[INFO] Installing /Software/hudson/jobs/blub/workspace/target/blub-1-SNAPSHOT.jar to /Software/nobackup/m2repo/com/ui/blub/blub/1-SNAPSHOT/blub-1-SNAPSHOT.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESSFUL
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 6 seconds
+[INFO] Finished at: Fri Mar 20 22:06:14 CET 2009
+[INFO] Final Memory: 24M/59M
+[INFO] ------------------------------------------------------------------------
+[.] $ /opt/local/maven2/current/bin/mvn -Dtag=blub-${RELEASE_VERSION} -DreleaseVersion=${RELEASE_VERSION} -DdevelopmentVersion=${DEVELOPMENT_VERSION} -B release:prepare
+[INFO] Scanning for projects...
+[INFO] Searching repository for plugin with prefix: 'release'.
+[INFO] ------------------------------------------------------------------------
+[INFO] Building Unnamed - com.ui.blub:blub:jar:1-SNAPSHOT
+[INFO]    task-segment: [release:prepare] (aggregator-style)
+[INFO] ------------------------------------------------------------------------
+[INFO] [release:prepare]
+[INFO] Verifying that there are no local modifications...
+[INFO] Executing: /bin/sh -c cd /Software/hudson/jobs/blub/workspace && svn --non-interactive status
+[INFO] Working directory: /Software/hudson/jobs/blub/workspace
+[INFO] Checking dependencies and plugins for snapshots ...
+[INFO] Transforming 'Unnamed - com.ui.blub:blub:jar:1-SNAPSHOT'...
+[INFO] Not generating release POMs
+[INFO] Executing goals 'clean verify'...
+[INFO] [INFO] Scanning for projects...
+[INFO] [INFO] ------------------------------------------------------------------------
+[INFO] [INFO] Building Unnamed - com.ui.blub:blub:jar:1
+[INFO] [INFO]    task-segment: [clean, verify]
+[INFO] [INFO] ------------------------------------------------------------------------
+[INFO] [INFO] [clean:clean]
+[INFO] [INFO] Deleting directory /Software/hudson/jobs/blub/workspace/target
+[INFO] [INFO] [resources:resources]
+[INFO] [INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] [INFO] skip non existing resourceDirectory /Software/hudson/jobs/blub/workspace/src/main/resources
+[INFO] [INFO] [compiler:compile]
+[INFO] [INFO] Compiling 1 source file to /Software/hudson/jobs/blub/workspace/target/classes
+[INFO] [INFO] [resources:testResources]
+[INFO] [INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] [INFO] skip non existing resourceDirectory /Software/hudson/jobs/blub/workspace/src/test/resources
+[INFO] [INFO] [compiler:testCompile]
+[INFO] [INFO] Compiling 1 source file to /Software/hudson/jobs/blub/workspace/target/test-classes
+[INFO] [INFO] [surefire:test]
+[INFO] [INFO] Surefire report directory: /Software/hudson/jobs/blub/workspace/target/surefire-reports
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.ui.blub.AppTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.038 sec
+[INFO] 
+[INFO] Results :
+[INFO] 
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] [INFO] [jar:jar]
+[INFO] [INFO] Building jar: /Software/hudson/jobs/blub/workspace/target/blub-1.jar
+[INFO] [INFO] ------------------------------------------------------------------------
+[INFO] [INFO] BUILD SUCCESSFUL
+[INFO] [INFO] ------------------------------------------------------------------------
+[INFO] [INFO] Total time: 6 seconds
+[INFO] [INFO] Finished at: Fri Mar 20 22:06:27 CET 2009
+[INFO] [INFO] Final Memory: 23M/54M
+[INFO] [INFO] ------------------------------------------------------------------------
+[INFO] Checking in modified POMs...
+[INFO] Executing: /bin/sh -c cd /Software/hudson/jobs/blub/workspace && svn --non-interactive commit --file /tmp/maven-scm-172261124.commit --targets /tmp/maven-scm-15647-targets
+[INFO] Working directory: /Software/hudson/jobs/blub/workspace
+[INFO] Tagging release with the label blub-null...
+[INFO] Executing: /bin/sh -c cd /Software/hudson/jobs/blub/workspace && svn --non-interactive copy --file /tmp/maven-scm-1593566870.commit . svn://localhost/blub/tags/blub-null
+[INFO] Working directory: /Software/hudson/jobs/blub/workspace
+[INFO] ------------------------------------------------------------------------
+[ERROR] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Unable to tag SCM
+Provider message:
+The svn tag command failed.
+Command output:
+svn: Path 'svn://localhost/blub/tags/blub-null' already exists
+
+[INFO] ------------------------------------------------------------------------
+[INFO] For more information, run Maven with the -e switch
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 12 seconds
+[INFO] Finished at: Fri Mar 20 22:06:28 CET 2009
+[INFO] Final Memory: 12M/30M
+[INFO] ------------------------------------------------------------------------
+Zeichne Testergebnisse auf.
+Finished: FAILURE

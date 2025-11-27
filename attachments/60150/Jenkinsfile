@@ -1,0 +1,17 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Hello') {
+            steps {
+                withCredentials([conjurSecretCredential(credentialsId: 'application-sample-componentB-privateKey', variable: 'CONJUR_SECRET')]) {
+                    sh 'echo $CONJUR_SECRET | base64'
+                }
+                
+                withCredentials([conjurSecretCredential(credentialsId: 'myPrivateKeySecret', variable: 'CONJUR_SECRET')]) {
+                    sh 'echo $CONJUR_SECRET | base64'
+                }
+            }
+        }
+    }
+}

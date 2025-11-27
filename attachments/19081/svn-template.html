@@ -1,0 +1,182 @@
+<html>
+<head>
+<style type="text/css">
+    body {font-size:10pt; font-family:Arial, Helvetica, sans-serif}
+    .unittests { font-size: 80% }
+    #mods pre { font-size: 80%; padding-left: 2em }
+    #mods ul { font-size: 80% }
+    h3 { background-color: #cc99ff }
+    h3.unittests { font-size: 120%; background-color: #EEEEEE }
+    h4.unittests { font-size: 110%; background-color: #EEEEEE }
+    .unittests-oddrow { background-color:#e6eff5 }
+    .stacktrace-oddrow { background-color:#EEEEEE }
+    .testFailure { padding: 0 1em 1em 1em }
+    .testName { color: #000080; background-color: #CCDDDD }
+    .stackTrace { color: #901090; border-style: solid; border-color: gray; padding-left: 3px }
+    .stackTraceLine { white-space: pre; }
+</style>
+</head>
+<body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0"  >
+<%
+def lastSuccesfulBuild = build.previousNotFailedBuild
+def failed = build.result != hudson.model.Result.SUCCESS
+
+def currResult = build.result
+def prevResult = build.previousBuild?.result ?: null
+
+def consecutiveSuccess = currResult == hudson.model.Result.SUCCESS && prevResult == hudson.model.Result.SUCCESS
+
+def builds = []
+def changes = []
+def count = 0
+
+if(consecutiveSuccess){
+   builds << build
+   def changeItems = build.changeSet.items
+   count += changeItems.length
+   changes += changeItems as List
+}else{
+    while(lastSuccesfulBuild){
+        builds << lastSuccesfulBuild
+        def changeItems = lastSuccesfulBuild.changeSet.items
+        count += changeItems.length
+        changes += changeItems as List
+    	lastSuccesfulBuild = lastSuccesfulBuild.nextBuild
+    }
+}
+
+%> 
+<h2>Build Result - $BUILD_STATUS</h2>
+<h3>Build Information</h3>
+<ul>
+    <li>Project Url - <a href="$PROJECT_URL">$PROJECT_URL</a></li>
+    <li>Project name - $PROJECT_NAME</li>
+    <li>Build on - ${build.timestampString2}</li>
+    <li>Time taken to build - ${build.durationString}</li>
+</ul>
+
+<div id="mods">
+    <h3>Modifications since last successful build:&nbsp; (${count}) </h3>
+    <% changes.eachWithIndex { item, index -> %>
+        <% if (index) { %> <hr size="1" width="80%" align="left" /> <% } %>
+        ${item.revision} by ${item.author} on ${item.date}
+        <pre>${item.msg}</pre>
+        <ul>
+        <% item.paths.each{ fileEntry -> %>
+            <li> ${fileEntry.editType.name} ${fileEntry.value} </li>
+        <% } %>
+        </ul>
+    <% } %>
+</div>
+
+<%
+if(build.testResultAction) {
+    def rootUrl = hudson.model.Hudson.instance.rootUrl
+    def testResult = build.testResultAction
+    def jobName = build.parent.name
+
+    def lastBuildSuccessRate = String.format("%.2f",(testResult.totalCount-testResult.result.failCount)*100f/(testResult.totalCount))
+    def lastBuildDuration = String.format("%.2f",(testResult.result.duration ))
+
+    def startedPassing = []
+    def startedFailing = []
+    def failing = []
+
+    def previousFailedTestCases = new HashSet()
+    def currentFailedTestCase = new HashSet()
+
+    if(build.previousBuild?.testResultAction){
+        build.previousBuild.testResultAction.failedTests.each {
+            previousFailedTestCases << it.fullName
+        }
+    }
+
+    testResult.failedTests.each{tr ->
+          def packageName = tr.packageName
+          def className = tr.simpleName
+          def testName = tr.safeName
+          def displayName = tr.fullName
+
+          currentFailedTestCase << displayName
+          def url = "${rootUrl}job/$jobName/lastBuild/testReport/$packageName/$className/$testName"
+          if(tr.age == 1){
+            startedFailing << [displayName:displayName,url:url,age:1]
+          } else{
+            failing << [displayName:displayName,url:url,age:tr.age]
+          }
+    }
+
+    startedPassing = previousFailedTestCases - currentFailedTestCase
+
+    startedFailing = startedFailing.sort {it.displayName}
+    failing = failing.sort {it.displayName}
+    startedPassing = startedPassing.sort()
+%>
+    <h3>Test Results</h3>
+    <h4>Summary -</h4>
+    <ul>
+      <li>Failure count and delta - $testResult.failCount $testResult.failureDiffString </li>
+      <li>Success rate - $lastBuildSuccessRate% </li>
+      <li>Total count - $testResult.totalCount </li>
+    </ul>
+    <% if (startedPassing) {%>
+        <h4 class="unittests"> The Good - The following testcases started passing. Good work!</h4>
+        <table>
+            <% def row = 0
+               startedPassing.each { %>
+                <tr class="unittests ${row++%2?'unittests-oddrow':''}">
+                    <td>${it.split(/\./)[-1]}</td>
+                    <td>${it.split(/\./)[0..-2].join('.')}</td>
+                </tr>
+            <% } %>
+        </table>
+    <% } %>
+    <% if (startedFailing) {%>
+        <h4 class="unittests"> The Bad - The following testcases started FAILING. ${count?'Did the last change cause it?':''}</h4>
+        <table>
+            <% def row = 0
+               startedFailing.each { %>
+                <tr class="unittests ${row++%2?'unittests-oddrow':''}">
+                    <td><a href="$it.url">${it.displayName.split(/\./)[-1]}</a></td>
+                    <td>${it.displayName.split(/\./)[0..-2].join('.')}</td>
+                </tr>
+            <% } %>
+        </table>
+    <% } %>
+    <% if (failing) {%>
+        <h4 class="unittests"> The Ugly - The following testcases are still failing. Someone should look into it!</h4>
+        <table>
+            <tr class="unittests"><th>Test</th><th>Class</th><th>Consecutive<br/>Failed<br/>Builds</th></tr>
+            <% def row = 0
+               failing.each { %>
+                <tr class="unittests ${row++%2?'unittests-oddrow':''}">
+                    <td><a href="$it.url">${it.displayName.split(/\./)[-1]}</a></td>
+                    <td>${it.displayName.split(/\./)[0..-2].join('.')}</td>
+                    <td align="center">$it.age</a></td>
+                </tr>
+            <% } %>
+        </table>
+    <% } %>
+
+    <% if (testResult.failedTests) { %>
+       <h3 class="unittests">Unit Test Error Details</h3>
+      <% testResult.failedTests.each {tr -> %>
+          <div class="testFailure">
+            <div class="testName">Test: $tr.name</div>
+            <div class="className">Class: $tr.className</div>
+            <div class="stackTrace">
+                <% def row = 0; tr.errorStackTrace.readLines().each {line -> %>
+                    <div class="stackTraceLine ${row++%2?'stacktrace-oddrow':''}">$line</div>
+                <% } %>
+            </div>
+          </div>
+      <% } %>
+    <% } %>
+
+<% } %>
+<% if(failed) {%>
+  <h3>Server Logs</h3>
+    ${build.getLog(100).join('<br/>')}
+<% } %>
+</body>
+</html>

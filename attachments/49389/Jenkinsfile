@@ -1,0 +1,56 @@
+pipeline {
+  agent {
+    docker {
+      image 'centos:latest'
+      label 'docker&&swarm'
+    }
+  }
+  stages {
+    stage("Build environment") {
+      environment {
+        BUILD_ID = "${env.BUILD_ID}"
+      }
+      steps {
+        sh "echo Build using"
+        sh "cat test.txt"
+        archiveArtifacts artifacts: 'test.txt'
+        stash includes: 'test.txt', name: 'build and tasks'
+      }            
+    }
+    stage("Dev") {
+      steps {
+        unstash 'build and tasks'
+        sh 'echo "IN DEV"'
+        sh 'cat test.txt'
+      }
+    }
+    stage("QA") {
+      steps {
+        unstash 'build and tasks'
+        sh 'echo "IN QA"'
+        sh 'cat test.txt'
+      }
+    }
+    stage("Staging") {
+      steps {
+        unstash 'build and tasks'
+        sh 'echo "IN STAGING"'
+        sh 'cat test.txt'
+      }
+    }
+    stage("PreProd") {
+      steps {
+        unstash 'build and tasks'
+        sh 'echo "IN PreProd"'
+        sh 'cat test.txt'
+      }
+    }
+    stage("Production") {
+      steps {
+        unstash 'build and tasks'
+        sh 'echo "IN PROD"'
+        sh 'cat test.txt'
+      }             
+    }           
+  }
+}

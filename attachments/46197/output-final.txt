@@ -1,0 +1,127 @@
+STEPS CODE:
+------------
+			    	steps {
+			
+						echo 'Update Jira'
+						
+						script {
+							commentJiraIssues().each { jiraChange ->
+							    echo "jiraChange: "+jiraChange
+							    
+							    jiraAddComment( 
+					            		idOrKey: jiraChange.id,
+					            		site: "iwjira",
+					            		comment: jiraChange.comment,
+										failOnError: false,
+										auditLog: false
+					            )
+							}
+						}
+
+						echo "beyond script"
+			    	}
+
+METHOD CODE
+--------
+@NonCPS
+def commentJiraIssues() {
+	echo "commentJiraIssues"
+	
+	def issue_pattern = "(OG|OGSD|OHD)-\\d+"
+	def jiraList = []
+		
+	// Find all relevant commit ids
+	currentBuild.changeSets.each {changeSet ->
+	    changeSet.each { commit ->
+	        echo "... ping"
+			echo "... commit: "+commit
+
+	        String commitId = commit.getCommitId()
+	        String msg = commit.getMsg()
+	        echo "testing commit: "+msg
+	        
+	        msg.findAll(issue_pattern).each {id ->
+	            
+	            echo "issue: "+id
+	            def ts = new Date(commit.getTimestamp())
+	
+	            // Add Jira to list
+	            jiraList << [ id: id, comment: "[JENKINS-PIPELINE]\n"+
+	            				"Current Build:  "+ currentBuild.absoluteUrl+"\n"+
+	            				"Git Commit ID:  ${env.GITREPO_HOST_URL}/scm/#changesetPanel;${env.GITREPO_BRANCH};"+commitId+"\n"+
+	            				"Commit Message: "+msg+"\n"+
+	            		  		"Author:         "+commit.getAuthor().getFullName()+"\n"+
+	            		  		"Timestamp:      "+ts.format("yyyyMMdd.HHmmss", TimeZone.getTimeZone('UTC'))+" UTC\n"+
+	            		  		"Files:          "+commit.getAffectedPaths()
+	            		  		 ]
+				            		  		
+	            echo "... after add"
+	        }
+	        echo "... after findAll"
+	    }
+	}
+	
+	// If we get here, we know that *THIS* build is successful
+    // test previousBuilds and relate all info for past
+    // unsuccessful builds
+
+	echo "testing previous builds"
+		        
+    echo "currentBuild is: "+currentBuild
+    def run = currentBuild.previousBuild
+    echo "run is: "+run
+    
+    while (run != null) {
+    	echo "evaluating run: "+run.number+", "+run.currentResult
+    	
+		if (run.resultIsWorseOrEqualTo("UNSTABLE")) {
+			echo "worse than success"
+			
+			run.changeSets.each {changeSet ->
+		    	changeSet.each { commit ->
+			        echo "... ping"
+					echo "... commit: "+commit
+							        
+			        String commitId = commit.getCommitId()
+			        String msg = commit.getMsg()
+			        echo "...testing commit: "+msg
+			        
+			        msg.findAll(issue_pattern).each { id ->
+			            
+			            echo "issue: "+id
+		
+						def ts = new Date(commit.getTimestamp())
+                    
+			            // Add Jira to list
+						jiraList << [ id: id, comment: "[JENKINS-PIPELINE]\n"+
+	            				"Current Build:  "+ currentBuild.absoluteUrl+"\n"+
+	            				"Git Commit ID:  ${env.GITREPO_HOST_URL}/scm/#changesetPanel;${env.GITREPO_BRANCH};"+commitId+"\n"+
+	            				"Commit Message: "+msg+"\n"+
+	            		  		"Author:         "+commit.getAuthor().getFullName()+"\n"+
+	            		  		"Timestamp:      "+ts.format("yyyyMMdd.HHmmss", TimeZone.getTimeZone('UTC'))+" UTC\n"+
+	            		  		"Files:          "+commit.getAffectedPaths()
+	            		  		]
+			            
+			            echo "... after add"
+			        }
+			        
+			        echo "... after findAll"
+				}
+		    }
+			echo "end of commits for run"
+			
+			// iterate
+			run = run.previousBuild
+		    echo "run is now: "+run
+			
+	   	} else {
+	   		echo "was successful - ending loop"
+
+			// break out of loop
+			run = null
+	   	}
+    }
+	echo "done with previous builds"
+	echo "jiras: "+jiraList
+	jiraList		        
+}

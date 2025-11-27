@@ -1,0 +1,47 @@
+From a92106431d0d7b671ff63f1206ce66eff049ac24 Mon Sep 17 00:00:00 2001
+From: Peter Collingbourne <peter@pcc.me.uk>
+Date: Mon, 23 Nov 2009 01:44:30 -0800
+Subject: [PATCH] Implemented MockStaplerRequest.getOriginalRestOfPath and getStapler
+
+This allows the plugin to compile with the latest version of Stapler
+---
+ .../hudson/plugins/git/MockStaplerRequest.java     |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
+
+diff --git a/src/test/java/hudson/plugins/git/MockStaplerRequest.java b/src/test/java/hudson/plugins/git/MockStaplerRequest.java
+index f29f859..eec576e 100644
+--- a/src/test/java/hudson/plugins/git/MockStaplerRequest.java
++++ b/src/test/java/hudson/plugins/git/MockStaplerRequest.java
+@@ -22,6 +22,7 @@ import net.sf.json.JSONObject;
+ 
+ import org.apache.commons.fileupload.FileItem;
+ import org.kohsuke.stapler.Ancestor;
++import org.kohsuke.stapler.Stapler;
+ import org.kohsuke.stapler.StaplerRequest;
+ import org.kohsuke.stapler.StaplerResponse;
+ 
+@@ -114,6 +115,10 @@ public class MockStaplerRequest implements StaplerRequest {
+         return this;
+     }
+ 
++    public Stapler getStapler() {
++        throw new UnsupportedOperationException();
++    }
++
+     public <T> T bindJSON(Class<T> type, JSONObject src) {
+         throw new UnsupportedOperationException();
+     }
+@@ -186,6 +191,10 @@ public class MockStaplerRequest implements StaplerRequest {
+         throw new UnsupportedOperationException();
+     }
+ 
++    public String getOriginalRestOfPath() {
++        throw new UnsupportedOperationException();
++    }
++
+     public String getRootPath() {
+         throw new UnsupportedOperationException();
+     }
+-- 
+1.6.3.3
+

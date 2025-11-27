@@ -1,0 +1,244 @@
+Index: src/test/java/hudson/plugins/warnings/parser/GnatParserTest.java
+===================================================================
+--- src/test/java/hudson/plugins/warnings/parser/GnatParserTest.java	(Revision 0)
++++ src/test/java/hudson/plugins/warnings/parser/GnatParserTest.java	(Revision 0)
+@@ -0,0 +1,123 @@
++package hudson.plugins.warnings.parser;
++
++import static junit.framework.Assert.*;
++import hudson.plugins.warnings.util.model.FileAnnotation;
++import hudson.plugins.warnings.util.model.Priority;
++
++import java.io.IOException;
++import java.util.Collection;
++import java.util.Iterator;
++
++import org.junit.Test;
++
++/**
++ * Tests the class {@link GnatParser}.
++ */
++public class GnatParserTest extends ParserTester {
++    /**
++     * Parses a file with two Gnat warnings.
++     *
++     * @throws IOException
++     *      if the file could not be read
++     */
++    @Test
++    public void testWarningsParser() throws IOException {
++        Collection<FileAnnotation> warnings = new GnatParser().parse(GnatParserTest.class.getResourceAsStream("gnat.txt"));
++
++	assertEquals("Wrong number of warnings detected.", 9, warnings.size());
++
++	
++        Iterator<FileAnnotation> iterator = warnings.iterator();
++        FileAnnotation annotation = iterator.next();
++
++	// /home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/utilities/class_utilities.adb:402:23: warning: call to obsolescent procedure "Very_Verbose" declared at debug.ads:59
++        checkWarning(annotation,
++		     402,
++		     "call to obsolescent procedure \"Very_Verbose\" declared at debug.ads:59",
++		     "/home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/utilities/class_utilities.adb",
++		     GnatParser.WARNING_TYPE,
++		     "GNAT warning",
++		     Priority.NORMAL);
++
++	// /home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/utilities/iml-interfaces-cfg.adb:63:14: warning: variable "E" is not referenced
++        annotation = iterator.next();
++        checkWarning(annotation,
++		     63,
++		     "variable \"E\" is not referenced",
++		     "/home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/utilities/iml-interfaces-cfg.adb",
++		     GnatParser.WARNING_TYPE,
++		     "GNAT warning",
++		     Priority.NORMAL);
++
++	// /home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/pointsto/andersen_results.adb:96:80: (style) this line is too long
++        annotation = iterator.next();
++        checkWarning(annotation,
++		     96,
++		     "this line is too long",
++		     "/home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/pointsto/andersen_results.adb",
++		     GnatParser.WARNING_TYPE,
++		     "GNAT style",
++		     Priority.LOW);
++
++	// /home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/generated/ada_delta_constraints.adb:3:06: warning: redundant with clause in body
++        annotation = iterator.next();
++        checkWarning(annotation,
++		     3,
++		     "redundant with clause in body",
++		     "/home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/generated/ada_delta_constraints.adb",
++		     GnatParser.WARNING_TYPE,
++		     "GNAT warning",
++		     Priority.NORMAL);
++
++	// /home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/reuse/src/array_tables.adb:97:07: warning: variable "Dummy_Empty_Array_Item" is read but never assigned
++        annotation = iterator.next();
++        checkWarning(annotation,
++		     97,
++		     "variable \"Dummy_Empty_Array_Item\" is read but never assigned",
++		     "/home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/reuse/src/array_tables.adb",
++		     GnatParser.WARNING_TYPE,
++		     "GNAT warning",
++		     Priority.NORMAL);
++
++	// /home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/reuse/src/graph_algorithms-generic_explorers.adb:63:14: warning: "C" is not modified, could be declared constant
++        annotation = iterator.next();
++        checkWarning(annotation,
++		     63,
++		     "\"C\" is not modified, could be declared constant",
++		     "/home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/reuse/src/graph_algorithms-generic_explorers.adb",
++		     GnatParser.WARNING_TYPE,
++		     "GNAT warning",
++		     Priority.NORMAL);
++
++	// /home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/reuse/src/process_data.adb:257:49: (style) bad casing of "False" declared in Standard
++        annotation = iterator.next();
++        checkWarning(annotation,
++		     257,
++		     "bad casing of \"False\" declared in Standard",
++		     "/home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/reuse/src/process_data.adb",
++		     GnatParser.WARNING_TYPE,
++		     "GNAT style",
++		     Priority.LOW);
++
++	// /home/bergerbd/.hudson/jobs/Test/workspace/projects/tools/scangen/src/scangen.adb:23:35: error: binary operator expected
++        annotation = iterator.next();
++        checkWarning(annotation,
++		     23,
++		     "binary operator expected",
++		     "/home/bergerbd/.hudson/jobs/Test/workspace/projects/tools/scangen/src/scangen.adb",
++		     GnatParser.WARNING_TYPE,
++		     "GNAT error",
++		     Priority.HIGH);
++
++	// /home/bergerbd/.hudson/jobs/Test/workspace/projects/tools/scangen/src/scangen.adb:23:36: error: identifier cannot start with underline
++        annotation = iterator.next();
++        checkWarning(annotation,
++		     23,
++		     "identifier cannot start with underline",
++		     "/home/bergerbd/.hudson/jobs/Test/workspace/projects/tools/scangen/src/scangen.adb",
++		     GnatParser.WARNING_TYPE,
++		     "GNAT error",
++		     Priority.HIGH);
++    }
++}
++
+
+Eigenschaftsänderungen: src/test/java/hudson/plugins/warnings/parser/GnatParserTest.java
+___________________________________________________________________
+Hinzugefügt: svn:keywords
+   + Author Date Id Revision
+Hinzugefügt: svn:eol-style
+   + native
+
+Index: src/test/java/hudson/plugins/warnings/parser/ParserRegistryTest.java
+===================================================================
+--- src/test/java/hudson/plugins/warnings/parser/ParserRegistryTest.java	(Revision 13216)
++++ src/test/java/hudson/plugins/warnings/parser/ParserRegistryTest.java	(Arbeitskopie)
+@@ -19,7 +19,7 @@
+  */
+ public class ParserRegistryTest {
+     /** Total number of expected warnings. */
+-    private static final int TOTAL_WARNINGS = 152;
++    private static final int TOTAL_WARNINGS = 161;
+     /** Error message. */
+     private static final String WRONG_NUMBER_OF_ANNOTATIONS_PARSED = "Wrong number of annotations parsed";
+ 
+Index: src/test/resources/hudson/plugins/warnings/parser/all.txt
+===================================================================
+--- src/test/resources/hudson/plugins/warnings/parser/all.txt	(Revision 13216)
++++ src/test/resources/hudson/plugins/warnings/parser/all.txt	(Arbeitskopie)
+@@ -607,3 +607,21 @@
+ ... then your regex should be able to do its thing without the need for any new config. I've tentatively updated the help file to mention this, too. Please delete or update the paragraph beginning "Also note" as you see fit.
+ 
+   foo.cc:4:39: error: foo.h: No such file or directory
++
++/home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/utilities/class_utilities.adb:402:23: warning: call to obsolescent procedure "Very_Verbose" declared at debug.ads:59
++
++/home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/utilities/iml-interfaces-cfg.adb:63:14: warning: variable "E" is not referenced
++
++/home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/pointsto/andersen_results.adb:96:80: (style) this line is too long
++
++/home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/generated/ada_delta_constraints.adb:3:06: warning: redundant with clause in body
++
++/home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/reuse/src/array_tables.adb:97:07: warning: variable "Dummy_Empty_Array_Item" is read but never assigned
++
++/home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/reuse/src/graph_algorithms-generic_explorers.adb:63:14: warning: "C" is not modified, could be declared constant
++
++/home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/reuse/src/process_data.adb:257:49: (style) bad casing of "False" declared in Standard
++
++/home/bergerbd/.hudson/jobs/Test/workspace/projects/tools/scangen/src/scangen.adb:23:35: error: binary operator expected
++
++/home/bergerbd/.hudson/jobs/Test/workspace/projects/tools/scangen/src/scangen.adb:23:36: error: identifier cannot start with underline
+Index: src/test/resources/hudson/plugins/warnings/parser/gnat.txt
+===================================================================
+--- src/test/resources/hudson/plugins/warnings/parser/gnat.txt	(Revision 0)
++++ src/test/resources/hudson/plugins/warnings/parser/gnat.txt	(Revision 0)
+@@ -0,0 +1,17 @@
++/home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/utilities/class_utilities.adb:402:23: warning: call to obsolescent procedure "Very_Verbose" declared at debug.ads:59
++
++/home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/utilities/iml-interfaces-cfg.adb:63:14: warning: variable "E" is not referenced
++
++/home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/pointsto/andersen_results.adb:96:80: (style) this line is too long
++
++/home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/generated/ada_delta_constraints.adb:3:06: warning: redundant with clause in body
++
++/home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/reuse/src/array_tables.adb:97:07: warning: variable "Dummy_Empty_Array_Item" is read but never assigned
++
++/home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/reuse/src/graph_algorithms-generic_explorers.adb:63:14: warning: "C" is not modified, could be declared constant
++
++/home/bergerbd/.hudson/jobs/Test/workspace/projects/libs/reuse/src/process_data.adb:257:49: (style) bad casing of "False" declared in Standard
++
++/home/bergerbd/.hudson/jobs/Test/workspace/projects/tools/scangen/src/scangen.adb:23:35: error: binary operator expected
++
++/home/bergerbd/.hudson/jobs/Test/workspace/projects/tools/scangen/src/scangen.adb:23:36: error: identifier cannot start with underline
+
+Eigenschaftsänderungen: src/test/resources/hudson/plugins/warnings/parser/gnat.txt
+___________________________________________________________________
+Hinzugefügt: svn:eol-style
+   + native
+
+Index: src/main/java/hudson/plugins/warnings/parser/GnatParser.java
+===================================================================
+--- src/main/java/hudson/plugins/warnings/parser/GnatParser.java	(Revision 13216)
++++ src/main/java/hudson/plugins/warnings/parser/GnatParser.java	(Arbeitskopie)
+@@ -13,13 +13,13 @@
+     /** Warning type of this parser. */
+     static final String WARNING_TYPE = "gnat";
+     /** Pattern of Gnat compiler warnings. */
+-    private static final String GNAT_WARNING_PATTERN = "(.*):(\\d*):(\\d*): (error:|warning:|\\(style\\)) (.*)";
++    private static final String GNAT_WARNING_PATTERN = "^([^\\s]+):(\\d+):(\\d+): ((error:)|(warning:)|(\\(style\\))) (.+)$";
+ 
+     /**
+      * Creates a new instance of <code>GnatParser</code>.
+      */
+     public GnatParser() {
+-        super(GNAT_WARNING_PATTERN);
++        super(GNAT_WARNING_PATTERN, true);
+     }
+ 
+ 
+@@ -42,7 +42,6 @@
+             category = "GNAT error";
+         }
+         return new Warning(matcher.group(1), getLineNumber(matcher.group(2)), WARNING_TYPE,
+-                category, matcher.group(5), priority);
++                category, matcher.group(8), priority);
+     }
+ }
+-
+Index: src/main/java/hudson/plugins/warnings/parser/ParserRegistry.java
+===================================================================
+--- src/main/java/hudson/plugins/warnings/parser/ParserRegistry.java	(Revision 13216)
++++ src/main/java/hudson/plugins/warnings/parser/ParserRegistry.java	(Arbeitskopie)
+@@ -43,6 +43,7 @@
+         parsers.add(new MsBuildParser());
+         parsers.add(new MavenParser());
+         parsers.add(new GccParser());
++        parsers.add(new GnatParser());
+         parsers.add(new InvalidsParser());
+         parsers.add(new SunCParser());
+ 

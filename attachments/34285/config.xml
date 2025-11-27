@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <actions/>
+  <description>User Service Software Test Project !!</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>30</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+  </properties>
+  <scm class="hudson.scm.IntegritySCM" plugin="integrity-plugin@2.0.1">
+    <ciServerURL>http://buildserverUser:8080/</ciServerURL>
+    <integrityURL>http://Company-ptc13:7002</integrityURL>
+    <browser class="hudson.scm.browsers.IntegrityWebUI">
+      <url>http://Company-ptc13:7002</url>
+    </browser>
+    <serverConfig>a065bc14-ee6e-420f-b478-2331053a5077</serverConfig>
+    <userName>build_User</userName>
+    <password>wtOwGc7KIVAovMdXEhMRE/rPCKhrAiwdM2xLZNJMM18=</password>
+    <configPath>P:/Projects/User/Software/Service/src.main/src.main.pj</configPath>
+    <includeList/>
+    <excludeList/>
+    <checkpointLabel>${env['JOB_NAME']}-${env['BUILD_NUMBER']}-${new java.text.SimpleDateFormat("yyyy_MM_dd").format(new Date())}</checkpointLabel>
+    <configurationName>8a3db5a5-2024-4e91-9869-193e947eb8a4</configurationName>
+    <cleanCopy>false</cleanCopy>
+    <CPBasedMode>false</CPBasedMode>
+    <skipAuthorInfo>false</skipAuthorInfo>
+    <lineTerminator>native</lineTerminator>
+    <restoreTimestamp>false</restoreTimestamp>
+    <checkpointBeforeBuild>false</checkpointBeforeBuild>
+    <alternateWorkspace/>
+    <fetchChangedWorkspaceFiles>false</fetchChangedWorkspaceFiles>
+    <deleteNonMembers>false</deleteNonMembers>
+    <checkoutThreadPoolSize>5</checkoutThreadPoolSize>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.plugins.powershell.PowerShell plugin="powershell@1.3">
+      <command>.\cleanbuild.ps1 -Version $env:AssemblyVersion -Delbin $True</command>
+    </hudson.plugins.powershell.PowerShell>
+  </builders>
+  <publishers>
+    <hudson.scm.IntegrityCheckpointAction plugin="integrity-plugin@2.0.1">
+      <checkpointLabel>PUser_ServiceSw_x86_${env['AssemblyVersion']}_Test</checkpointLabel>
+      <logger class="org.apache.commons.logging.impl.SLF4JLocationAwareLog">
+        <name>hudson.scm.IntegrityCheckpointAction</name>
+      </logger>
+      <serverConfig>a065bc14-ee6e-420f-b478-2331053a5077</serverConfig>
+    </hudson.scm.IntegrityCheckpointAction>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>bin/**</artifacts>
+      <allowEmptyArchive>false</allowEmptyArchive>
+      <onlyIfSuccessful>false</onlyIfSuccessful>
+      <fingerprint>false</fingerprint>
+      <defaultExcludes>true</defaultExcludes>
+      <caseSensitive>true</caseSensitive>
+    </hudson.tasks.ArtifactArchiver>
+  </publishers>
+  <buildWrappers>
+    <hudson.plugins.ansicolor.AnsiColorBuildWrapper plugin="ansicolor@0.4.2">
+      <colorMapName>xterm</colorMapName>
+    </hudson.plugins.ansicolor.AnsiColorBuildWrapper>
+    <org.jvnet.hudson.tools.versionnumber.VersionNumberBuilder plugin="versionnumber@1.6">
+      <versionNumberString>0.1.${BUILD_DATE_FORMATTED, "yyMM"}.${BUILD_DATE_FORMATTED, "dd"}${BUILDS_TODAY, XXX}</versionNumberString>
+      <projectStartDate>2014-09-23 22:00:00.0 UTC</projectStartDate>
+      <environmentVariableName>AssemblyVersion</environmentVariableName>
+      <environmentPrefixVariable/>
+      <oBuildsToday/>
+      <oBuildsThisWeek/>
+      <oBuildsThisMonth/>
+      <oBuildsThisYear/>
+      <oBuildsAllTime/>
+      <skipFailedBuilds>false</skipFailedBuilds>
+      <useAsBuildDisplayName>false</useAsBuildDisplayName>
+    </org.jvnet.hudson.tools.versionnumber.VersionNumberBuilder>
+    <EnvInjectPasswordWrapper plugin="envinject@1.92.1">
+      <injectGlobalPasswords>false</injectGlobalPasswords>
+      <maskPasswordParameters>true</maskPasswordParameters>
+      <passwordEntries>
+        <EnvInjectPasswordEntry>
+          <name>build_User</name>
+          <value>wtOwGc7KIVAovMdXEhMRE/rPCKhrAiwdM2xLZNJMM18=</value>
+        </EnvInjectPasswordEntry>
+      </passwordEntries>
+    </EnvInjectPasswordWrapper>
+  </buildWrappers>
+</project>

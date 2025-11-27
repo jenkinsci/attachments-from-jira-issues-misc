@@ -1,0 +1,55 @@
+pipeline {
+      agent{
+        node{
+           label 'BuildMachines'
+           customWorkspace 'C:/CI/work/REDACTED_JOB_NAME'
+         }
+      }
+     options {
+         skipDefaultCheckout()
+         disableConcurrentBuilds()
+      }
+      
+      stages {
+         stage('Clear Artifacts'){
+            steps{
+               script {
+                  if((branch_name).contains('release')){
+                     'Always keep artifacts and logs for release'
+                     properties([buildDiscarder(logRotator(daysToKeep: '', artifactDaysToKeep: '', artifactNumToKeepStr: '', numToKeepStr: ''))])
+                  }
+                  else if((branch_name).contains('staging')){
+                     echo 'Set artifacts to be discarded after 5 and logs to be discarded after 20 for staging'
+                     properties([buildDiscarder(logRotator(daysToKeep: '365', artifactDaysToKeep: '365', artifactNumToKeepStr: '5', numToKeepStr: '20'))])
+                  }
+                  else{
+                     echo 'Set artifacts to be discarded after 3 and logs to be discarded after 5 if not staging or release'
+                     properties([buildDiscarder(logRotator(daysToKeep: '90', artifactDaysToKeep: '90', artifactNumToKeepStr: '3', numToKeepStr: '5'))])
+                  }
+               }
+            }
+         }
+         
+         stage ('Checkout SCM'){
+            steps {
+               dir(REDACTED_REPO_NAME){
+                  checkout scm
+               }
+               
+               script{
+                  // REDACTED SCRIPT ACTIONS to check out other SVN repos
+                  // by the time this step has been reached, the problematic
+                  // clone has already happened.
+               }
+            }
+         }
+         
+         stage('BUILD') {
+            steps {
+               script {
+                  // REDACTED BUILD ACTIONS
+               }
+            }
+         }
+      }
+   }

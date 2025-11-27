@@ -1,0 +1,13 @@
+Index: main/maven-plugin/src/main/java/hudson/maven/MavenBuild.java
+===================================================================
+--- main/maven-plugin/src/main/java/hudson/maven/MavenBuild.java	(revision 21942)
++++ main/maven-plugin/src/main/java/hudson/maven/MavenBuild.java	(working copy)
+@@ -478,7 +462,7 @@
+ 
+         @Override
+         protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
+-            return wsl.allocate(getParentBuild().getModuleRoot().child(getProject().getRelativePath()));
++            return wsl.allocate(getModuleSetBuild().getModuleRoot().child(getProject().getRelativePath()));
+         }
+ 
+         protected Result doRun(BuildListener listener) throws Exception {

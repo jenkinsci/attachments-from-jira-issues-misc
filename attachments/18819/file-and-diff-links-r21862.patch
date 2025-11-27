@@ -1,0 +1,542 @@
+diff -r d0129104f8bc -r 67b762bbb49b src/main/java/hudson/plugins/mercurial/browser/BitBucket.java
+--- a/src/main/java/hudson/plugins/mercurial/browser/BitBucket.java	Fri Sep 18 20:17:11 2009 +0200
++++ b/src/main/java/hudson/plugins/mercurial/browser/BitBucket.java	Fri Sep 18 23:22:22 2009 +0200
+@@ -3,11 +3,13 @@
+ import hudson.Extension;
+ import hudson.model.Descriptor;
+ import hudson.plugins.mercurial.MercurialChangeSet;
++import hudson.plugins.mercurial.MercurialSCM;
+ import hudson.scm.RepositoryBrowser;
+ 
+ import java.io.IOException;
+ import java.net.URL;
+ import java.net.MalformedURLException;
++import java.util.logging.Logger;
+ 
+ import net.sf.json.JSONObject;
+ import org.kohsuke.stapler.DataBoundConstructor;
+@@ -16,19 +18,50 @@
+ /**
+  * Mercurial web interface served using a <a href="http://bitbucket.org/">BitBucket</a> repository.
+  */
+-public class BitBucket extends HgBrowser {
+-	
++public class BitBucket extends HgBrowser {	    
++    
+ 	@DataBoundConstructor
+ 	public BitBucket(String url) throws MalformedURLException {
+ 	    super(url);
+ 	}
+ 	
++	/**
++	 * {@inheritDoc}
++	 */
+ 	@Override
+ 	public URL getChangeSetLink(MercurialChangeSet changeSet)
+ 			throws IOException {
++	    current = changeSet;
+ 		return new URL(getUrl(), "changeset/" + changeSet.getShortNode() + "/");
+ 	}
+ 
++    /**
++     * {@inheritDoc} 
++     * 
++     * Throws {@link IllegalStateException} when this method is called before at least one call 
++     * to {@literal getChangeSetLink(MercurialChangeSet)}.
++     */
++    @Override
++	public URL getFileLink(String path) throws MalformedURLException {
++        checkCurrentIsNotNull();
++        // http://bitbucket.org/mfriedenhagen/hudson-mercurial/src/d736d15e5389/src/main/java/hudson/plugins/mercurial/browser/HgBrowser.java        
++        return new URL(getUrl(), "src/" + current.getShortNode() + "/" + path);
++    }
++    
++    /**
++     * {@inheritDoc}
++     * 
++     * Throws {@link IllegalStateException} when this method is called before at least one call 
++     * to {@literal getChangeSetLink(MercurialChangeSet)}.
++     */
++    @Override
++    public URL getDiffLink(String path) throws MalformedURLException {
++        checkCurrentIsNotNull();
++        // http://bitbucket.org/mfriedenhagen/hudson-mercurial/changeset/d736d15e5389/#chg-src/main/java/hudson/plugins/mercurial/browser/HgBrowser.java
++        return new URL(getUrl(), "changeset/" + current.getShortNode() + "/#chg-" + path);
++    }
++    
++	
+     @Extension
+     public static class DescriptorImpl extends Descriptor<RepositoryBrowser<?>> {
+         public String getDisplayName() {
+diff -r d0129104f8bc -r 67b762bbb49b src/main/java/hudson/plugins/mercurial/browser/GoogleCode.java
+--- a/src/main/java/hudson/plugins/mercurial/browser/GoogleCode.java	Fri Sep 18 20:17:11 2009 +0200
++++ b/src/main/java/hudson/plugins/mercurial/browser/GoogleCode.java	Fri Sep 18 23:22:22 2009 +0200
+@@ -6,8 +6,10 @@
+ import hudson.scm.RepositoryBrowser;
+ 
+ import java.io.IOException;
++import java.io.UnsupportedEncodingException;
+ import java.net.URL;
+ import java.net.MalformedURLException;
++import java.net.URLEncoder;
+ 
+ import net.sf.json.JSONObject;
+ import org.kohsuke.stapler.DataBoundConstructor;
+@@ -17,7 +19,7 @@
+  * Mercurial web interface served using a <a href="http://code.google.com/">Google code</a> repository.
+  */
+ public class GoogleCode extends HgBrowser {
+-	
++    
+ 	@DataBoundConstructor
+ 	public GoogleCode(String url) throws MalformedURLException {
+ 	    super(url);
+@@ -26,13 +28,48 @@
+ 	    }
+ 	}
+ 	
++	/**
++	 * {@inheritDoc}
++	 */
+ 	@Override
+ 	public URL getChangeSetLink(MercurialChangeSet changeSet)
+ 			throws IOException {
++	    current = changeSet;
+ 	    //E.g.: http://code.google.com/p/jmemcache-daemon/source/detail?r=eb1b7d8338ccaf6d54420bc98f52d00563d3cb40
+ 		return new URL(getUrl(), "detail?r=" + changeSet.getNode());
+ 	}
+ 
++	/**
++	 * {@inheritDoc}
++	 * 
++     * Throws {@link IllegalStateException} when this method is called before at least one call 
++     * to {@literal getChangeSetLink(MercurialChangeSet)}.
++	 */
++	@Override
++	public URL getFileLink(String path) throws MalformedURLException {
++        checkCurrentIsNotNull();
++	    //E.g.: http://code.google.com/p/jmemcache-daemon/source/browse/test/src/test/java/com/thimbleware/jmemcached/test/AvailablePortFinder.java?r=2634a09900cb4dbc1dea714ac0a5db6ddf882321
++	    return new URL(getUrl(), "browse/" + path + "?spec=svn"+ current.getNode() + "&r=" + current.getNode());
++	}
++	
++    /**
++     * {@inheritDoc}
++     * 
++     * Throws {@link IllegalStateException} when this method is called before at least one call 
++     * to {@literal getChangeSetLink(MercurialChangeSet)}.
++     */
++	@Override
++	public URL getDiffLink(String path) throws MalformedURLException {
++	    checkCurrentIsNotNull();
++	    //E.g: http://code.google.com/p/jmemcache-daemon/source/diff?spec=svn8365b0a208d3d5f07a014d05b878ed8c88e72ddf&old=eb1b7d8338ccaf6d54420bc98f52d00563d3cb40&r=8365b0a208d3d5f07a014d05b878ed8c88e72ddf&format=unidiff&path=%2Fcore%2Fsrc%2Fmain%2Fjava%2Fcom%2Fthimbleware%2Fjmemcached%2FCache.java	    
++	    try {
++	        // We don't specify the old revision, but google seems to clever enough to take the predecessor as default.
++            return new URL(getUrl(), "diff?spec=svn"+ current.getNode() + "&r=" + current.getNode() + "&format=unidiff&path=%2F" + URLEncoder.encode(path, "UTF-8"));
++        } catch (UnsupportedEncodingException e) {
++            throw new RuntimeException("JDK broken?",  e);
++        }
++	}
++	
+     @Extension
+     public static class DescriptorImpl extends Descriptor<RepositoryBrowser<?>> {
+         public String getDisplayName() {
+diff -r d0129104f8bc -r 67b762bbb49b src/main/java/hudson/plugins/mercurial/browser/HgBrowser.java
+--- a/src/main/java/hudson/plugins/mercurial/browser/HgBrowser.java	Fri Sep 18 20:17:11 2009 +0200
++++ b/src/main/java/hudson/plugins/mercurial/browser/HgBrowser.java	Fri Sep 18 23:22:22 2009 +0200
+@@ -14,6 +14,10 @@
+  */
+ public class HgBrowser extends RepositoryBrowser<MercurialChangeSet> {
+ 
++    transient MercurialChangeSet current;
++    
++    private transient HgWeb hgWebDefaultInstance;
++
+     private URL url;
+ 
+     private static final long serialVersionUID = 1L;
+@@ -23,7 +27,44 @@
+      */
+     @Override
+     public URL getChangeSetLink(MercurialChangeSet changeset) throws IOException {
+-        return doReadResolve().getChangeSetLink(changeset);
++        doReadResolve();
++        hgWebDefaultInstance.current = changeset;
++        return hgWebDefaultInstance.getChangeSetLink(changeset);
++    }
++
++    /**
++     * Returns a link to a specific revision of a file.
++     * 
++     * @param path to a file.
++     * @return URL pointing to a specific revision of the file.
++     * 
++     * @throws MalformedURLException
++     */
++    public URL getFileLink(String path) throws MalformedURLException {
++        return doReadResolve().getFileLink(path);
++    }
++
++    /**
++     * Returns a link to a diff for a file.
++     * 
++     * @param path to a file.
++     * @return URL pointing to a specific revision of the file.
++     * 
++     * @throws MalformedURLException
++     */
++    public URL getDiffLink(String path) throws MalformedURLException {
++        return doReadResolve().getDiffLink(path);
++    }
++
++    /**
++     * Throws an {@link IllegalStateException} if current is null. This is used in subclasses.
++     * 
++     * @throws IllegalStateException if current is null. 
++     */
++    void checkCurrentIsNotNull() {
++        if (current == null) {
++            throw new IllegalStateException("current changeset must not be null, did you forget to call 'getChangeSetLink'?");
++        }
+     }
+ 
+     /*protected*/public HgBrowser(String url) throws MalformedURLException {
+@@ -39,8 +80,12 @@
+         return doReadResolve();
+     }
+     private HgWeb doReadResolve() {
++        if (hgWebDefaultInstance != null) {
++            return hgWebDefaultInstance;
++        }
+         try {
+-            return new HgWeb(url.toExternalForm());
++            hgWebDefaultInstance = new HgWeb(url.toExternalForm());
++            return hgWebDefaultInstance;
+         } catch (MalformedURLException e) {
+             throw new RuntimeException(e);
+         }
+diff -r d0129104f8bc -r 67b762bbb49b src/main/java/hudson/plugins/mercurial/browser/HgWeb.java
+--- a/src/main/java/hudson/plugins/mercurial/browser/HgWeb.java	Fri Sep 18 20:17:11 2009 +0200
++++ b/src/main/java/hudson/plugins/mercurial/browser/HgWeb.java	Fri Sep 18 23:22:22 2009 +0200
+@@ -18,18 +18,49 @@
+  * or hgweb CGI scripts.
+  */
+ public class HgWeb extends HgBrowser {
++    
+ 	@DataBoundConstructor
+ 	public HgWeb(String url) throws MalformedURLException {
+ 	    super(url);
+ 	}
+ 	
++	/**
++	 * {@inheritDoc}
++	 */
+ 	@Override
+ 	public URL getChangeSetLink(MercurialChangeSet changeSet)
+ 			throws IOException {
++		current = changeSet;
+ 		// TODO: consider verifying the repository connection to tip at configuration time?
+ 		return new URL(getUrl(), "rev/" + changeSet.getShortNode());
+ 	}
+ 
++    /**
++     * {@inheritDoc}
++     * 
++     * Throws {@link IllegalStateException} when this method is called before at least one call 
++     * to {@literal getChangeSetLink(MercurialChangeSet)}.
++     */
++    @Override
++    public URL getFileLink(String path) throws MalformedURLException {
++        checkCurrentIsNotNull();
++        // http://hg.friedenhagen.net/index.cgi/mercurial-hudson/file/d736d15e5389/src/main/java/hudson/plugins/mercurial/browser/HgBrowser.java
++        return new URL(getUrl(), "file/" + current.getShortNode() + "/" + path);
++    }
++    
++    /**
++     * {@inheritDoc}
++     * 
++     * Throws {@link IllegalStateException} when this method is called before at least one call 
++     * to {@literal getChangeSetLink(MercurialChangeSet)}.
++     */
++    @Override
++    public URL getDiffLink(String path) throws MalformedURLException {
++        checkCurrentIsNotNull();
++        // http://hg.friedenhagen.net/index.cgi/mercurial-hudson/diff/d736d15e5389/src/main/java/hudson/plugins/mercurial/browser/HgBrowser.java
++        return new URL(getUrl(), "diff/" + current.getShortNode() + "/" + path);
++    }
++
+     @Extension
+     public static class DescriptorImpl extends Descriptor<RepositoryBrowser<?>> {
+         public String getDisplayName() {
+diff -r d0129104f8bc -r 67b762bbb49b src/main/resources/hudson/plugins/mercurial/MercurialChangeSetList/index.jelly
+--- a/src/main/resources/hudson/plugins/mercurial/MercurialChangeSetList/index.jelly	Fri Sep 18 20:17:11 2009 +0200
++++ b/src/main/resources/hudson/plugins/mercurial/MercurialChangeSetList/index.jelly	Fri Sep 18 23:22:22 2009 +0200
+@@ -31,7 +31,19 @@
+           <j:forEach var="p" items="${cs.getPaths(k)}">
+             <tr>
+               <td width="20"><t:editTypeIcon type="${k}" /></td>
+-              <td>${p}</td>
++              <td>
++                <j:if test="${k.getName().equals('delete')}">
++                    <tt>${p}</tt>
++                </j:if>
++                <j:if test="${!k.getName().equals('delete')}">
++                    <a href="${browser.getFileLink(p)}"><tt>${p}</tt></a>
++                    <j:set var="diff" value="${browser.getDiffLink(p)}"/>
++                    <j:if test="${diff!=null and k.getName().equals('edit')}">
++                      <st:nbsp/>
++                      <a href="${diff}">(diff)</a>
++                    </j:if>
++                </j:if>
++              </td>
+             </tr>
+           </j:forEach>
+         </j:forEach>
+diff -r d0129104f8bc -r 67b762bbb49b src/test/java/hudson/plugins/mercurial/browser/AbstractBrowserTestBase.java
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/test/java/hudson/plugins/mercurial/browser/AbstractBrowserTestBase.java	Fri Sep 18 23:22:22 2009 +0200
+@@ -0,0 +1,63 @@
++package hudson.plugins.mercurial.browser;
++
++import static org.junit.Assert.assertEquals;
++import hudson.plugins.mercurial.MercurialChangeSet;
++
++import java.io.IOException;
++import java.net.MalformedURLException;
++
++import org.junit.Test;
++
++public abstract class AbstractBrowserTestBase {
++
++    protected final HgBrowser browser;
++    protected final MercurialChangeSet changeSet;
++
++    
++    @SuppressWarnings("deprecation")
++    public AbstractBrowserTestBase(HgBrowser browser) {
++        this.browser = browser;
++        changeSet = new MercurialChangeSet();
++        changeSet.setNode("6704efde87541766fadba17f66d04b926cd4d343");
++
++    }
++
++    @Test(expected = IllegalStateException.class)
++    public void testGetFileLinkIllegalState() throws IOException {
++        browser.getFileLink("src/main/java/hudson/plugins/mercurial/browser/HgBrowser.java");
++    }
++
++    @Test(expected = IllegalStateException.class)
++    public void testGetDiffLinkIllegalState() throws IOException {        
++        browser.getDiffLink("src/main/java/hudson/plugins/mercurial/browser/HgBrowser.java");
++    }
++
++    /**
++     * @param expected
++     * @throws IOException
++     * @throws MalformedURLException
++     */
++    protected void testGetFileLink(final String expected) throws IOException, MalformedURLException {
++        browser.getChangeSetLink(changeSet);
++        assertEquals(expected, browser.getFileLink("src/main/java/hudson/plugins/mercurial/browser/HgBrowser.java").toExternalForm());
++    }
++
++    /**
++     * @param expected
++     * @throws IOException
++     * @throws MalformedURLException
++     */
++    protected void testGetDiffLink(final String expected) throws IOException, MalformedURLException {
++        browser.getChangeSetLink(changeSet);
++        assertEquals(expected, browser.getDiffLink("src/main/java/hudson/plugins/mercurial/browser/HgBrowser.java").toExternalForm());
++    }
++
++    /**
++     * @param expected
++     * @throws IOException
++     */
++    protected void testGetChangeSetLinkMercurialChangeSet(final String expected) throws IOException {
++        assertEquals(expected, browser.getChangeSetLink(changeSet).toExternalForm());
++    }
++
++}
+diff -r d0129104f8bc -r 67b762bbb49b src/test/java/hudson/plugins/mercurial/browser/BitBucketTest.java
+--- a/src/test/java/hudson/plugins/mercurial/browser/BitBucketTest.java	Fri Sep 18 20:17:11 2009 +0200
++++ b/src/test/java/hudson/plugins/mercurial/browser/BitBucketTest.java	Fri Sep 18 23:22:22 2009 +0200
+@@ -3,22 +3,31 @@
+  */
+ package hudson.plugins.mercurial.browser;
+ 
+-import static org.junit.Assert.assertEquals;
+-import hudson.plugins.mercurial.MercurialChangeSet;
+-
+ import java.io.IOException;
++import java.net.MalformedURLException;
+ 
+ import org.junit.Test;
+ 
+-public class BitBucketTest {
++public class BitBucketTest extends AbstractBrowserTestBase {
++
++    private static final String REPO_URL = "http://www.example.org/hg/repos";
++
++    public BitBucketTest() throws MalformedURLException {
++        super(new BitBucket(REPO_URL));        
++    }
+ 
+     @Test
+-    @SuppressWarnings("deprecation")
+     public void testGetChangeSetLinkMercurialChangeSet() throws IOException {
+-        final BitBucket browser = new BitBucket("http://www.example.org/hg/repos");
+-        assertEquals("http://www.example.org/hg/repos/", browser.getUrl().toExternalForm());
+-        final MercurialChangeSet changeSet = new MercurialChangeSet();
+-        changeSet.setNode("6704efde87541766fadba17f66d04b926cd4d343");
+-        assertEquals("http://www.example.org/hg/repos/changeset/6704efde8754/", browser.getChangeSetLink(changeSet).toExternalForm());
++        testGetChangeSetLinkMercurialChangeSet(REPO_URL+ "/changeset/6704efde8754/");
++    }
++    
++    @Test
++    public void testGetFileLink() throws IOException {
++        testGetFileLink(REPO_URL + "/src/6704efde8754/src/main/java/hudson/plugins/mercurial/browser/HgBrowser.java");
++    }
++
++    @Test
++    public void testGetDiffLink() throws IOException {        
++        testGetDiffLink(REPO_URL + "/changeset/6704efde8754/#chg-src/main/java/hudson/plugins/mercurial/browser/HgBrowser.java");
+     }
+ }
+diff -r d0129104f8bc -r 67b762bbb49b src/test/java/hudson/plugins/mercurial/browser/GoogleCodeTest.java
+--- a/src/test/java/hudson/plugins/mercurial/browser/GoogleCodeTest.java	Fri Sep 18 20:17:11 2009 +0200
++++ b/src/test/java/hudson/plugins/mercurial/browser/GoogleCodeTest.java	Fri Sep 18 23:22:22 2009 +0200
+@@ -1,30 +1,38 @@
+ package hudson.plugins.mercurial.browser;
+ 
+-import static org.junit.Assert.*;
+-
+-import hudson.plugins.mercurial.MercurialChangeSet;
++import static org.junit.Assert.assertEquals;
+ 
+ import java.io.IOException;
+ import java.net.MalformedURLException;
+ 
+ import org.junit.Test;
+ 
+-public class GoogleCodeTest {
++public class GoogleCodeTest extends AbstractBrowserTestBase {
++
++    private static final String REPO_URL = "http://code.google.com/p/PROJECTNAME/source";
++    
++    public GoogleCodeTest() throws MalformedURLException {
++        super(new GoogleCode(REPO_URL));
++    }
+ 
+     @Test
+-    @SuppressWarnings("deprecation")
+     public void testGetChangeSetLinkMercurialChangeSet() throws IOException {
+-        final GoogleCode browser = new GoogleCode("http://code.google.com/p/PROJECTNAME/source");
+-        final MercurialChangeSet changeSet = new MercurialChangeSet();
+-        final String node = "6704efde87541766fadba17f66d04b926cd4d343";
+-        changeSet.setNode(node);
+-        assertEquals("http://code.google.com/p/PROJECTNAME/source/detail?r=" + node, browser.getChangeSetLink(changeSet).toExternalForm());
++        testGetChangeSetLinkMercurialChangeSet(REPO_URL+"/detail?r=6704efde87541766fadba17f66d04b926cd4d343");
++    }
++
++    @Test
++    public void testGetFileLink() throws IOException {
++        testGetFileLink(REPO_URL + "/browse/src/main/java/hudson/plugins/mercurial/browser/HgBrowser.java?spec=svn6704efde87541766fadba17f66d04b926cd4d343&r=6704efde87541766fadba17f66d04b926cd4d343");
++    }
++
++    @Test
++    public void testGetDiffLink() throws IOException {        
++        testGetDiffLink(REPO_URL + "/diff?spec=svn6704efde87541766fadba17f66d04b926cd4d343&r=6704efde87541766fadba17f66d04b926cd4d343&format=unidiff&path=%2Fsrc%2Fmain%2Fjava%2Fhudson%2Fplugins%2Fmercurial%2Fbrowser%2FHgBrowser.java");
+     }
+ 
+     @Test
+     public void testGoogleCode() throws MalformedURLException {
+-        final GoogleCode browser = new GoogleCode("http://code.google.com/p/PROJECTNAME/source");
+-        assertEquals("http://code.google.com/p/PROJECTNAME/source/", browser.getUrl().toExternalForm());
++        assertEquals(REPO_URL +"/", browser.getUrl().toExternalForm());
+     }
+ 
+     @Test(expected=MalformedURLException.class)
+diff -r d0129104f8bc -r 67b762bbb49b src/test/java/hudson/plugins/mercurial/browser/HgBrowserTest.java
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/test/java/hudson/plugins/mercurial/browser/HgBrowserTest.java	Fri Sep 18 23:22:22 2009 +0200
+@@ -0,0 +1,44 @@
++package hudson.plugins.mercurial.browser;
++
++import static org.junit.Assert.*;
++
++import java.io.IOException;
++import java.net.MalformedURLException;
++
++import org.junit.Test;
++
++public class HgBrowserTest extends AbstractBrowserTestBase {
++    
++    private static final String REPO_URL = "http://hg.friedenhagen.net/index.cgi/mercurial-hudson";
++
++    public HgBrowserTest() throws MalformedURLException {
++        super(new HgBrowser(REPO_URL));
++    }
++
++    @Test
++    public void testGetChangeSetLinkMercurialChangeSet() throws IOException {
++        testGetChangeSetLinkMercurialChangeSet(REPO_URL + "/rev/6704efde8754");
++    }
++
++    @Test
++    public void testGetFileLink() throws IOException {
++        testGetFileLink(REPO_URL + "/file/6704efde8754/src/main/java/hudson/plugins/mercurial/browser/HgBrowser.java");
++    }
++
++    @Test
++    public void testGetDiffLink() throws IOException {        
++        testGetDiffLink(REPO_URL + "/diff/6704efde8754/src/main/java/hudson/plugins/mercurial/browser/HgBrowser.java");
++    }
++    
++    @Test
++    public final void testGetUrl() throws MalformedURLException {
++        assertEquals("http://abc/", new HgBrowser("http://abc").getUrl().toExternalForm());
++    }
++
++    @Test
++    public final void testResolveObject() throws MalformedURLException {
++        final Object browser = new HgBrowser("http://abc").readResolve();
++        assertEquals(HgWeb.class, browser.getClass());
++    }
++
++}
+diff -r d0129104f8bc -r 67b762bbb49b src/test/java/hudson/plugins/mercurial/browser/HgWebTest.java
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/test/java/hudson/plugins/mercurial/browser/HgWebTest.java	Fri Sep 18 23:22:22 2009 +0200
+@@ -0,0 +1,31 @@
++package hudson.plugins.mercurial.browser;
++
++import java.io.IOException;
++import java.net.MalformedURLException;
++
++import org.junit.Test;
++
++public class HgWebTest extends AbstractBrowserTestBase {
++     
++    private static final String REPO_URL = "http://hg.friedenhagen.net/index.cgi/mercurial-hudson";
++
++    public HgWebTest() throws MalformedURLException {
++        super(new HgWeb(REPO_URL));
++    }
++    
++    @Test
++    public void testGetChangeSetLinkMercurialChangeSet() throws IOException {
++        testGetChangeSetLinkMercurialChangeSet(REPO_URL + "/rev/6704efde8754");
++    }
++
++    @Test
++    public void testGetFileLink() throws IOException {
++        testGetFileLink(REPO_URL + "/file/6704efde8754/src/main/java/hudson/plugins/mercurial/browser/HgBrowser.java");
++    }
++
++    @Test
++    public void testGetDiffLink() throws IOException {        
++        testGetDiffLink(REPO_URL + "/diff/6704efde8754/src/main/java/hudson/plugins/mercurial/browser/HgBrowser.java");
++    }
++
++}

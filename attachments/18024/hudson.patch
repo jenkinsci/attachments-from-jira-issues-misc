@@ -1,0 +1,93 @@
+Index: src/main/java/hudson/plugins/findbugs/AbstractWarningsDetail.java
+===================================================================
+RCS file: /cvs/hudson/hudson/plugins/findbugs/src/main/java/hudson/plugins/findbugs/AbstractWarningsDetail.java,v
+retrieving revision 1.8
+diff -u -r1.8 AbstractWarningsDetail.java
+--- src/main/java/hudson/plugins/findbugs/AbstractWarningsDetail.java	11 Nov 2007 20:43:35 -0000	1.8
++++ src/main/java/hudson/plugins/findbugs/AbstractWarningsDetail.java	26 Nov 2007 22:55:43 -0000
+@@ -154,7 +154,7 @@
+      * @param key the warning key
+      * @return the warning with the specified key.
+      */
+-    public final Warning getWarning(final int key) {
++    public Warning getWarning(final int key) {
+         return warningsByKey.get(key);
+     }
+ 
+Index: src/main/java/hudson/plugins/findbugs/FindBugsResult.java
+===================================================================
+RCS file: /cvs/hudson/hudson/plugins/findbugs/src/main/java/hudson/plugins/findbugs/FindBugsResult.java,v
+retrieving revision 1.30
+diff -u -r1.30 FindBugsResult.java
+--- src/main/java/hudson/plugins/findbugs/FindBugsResult.java	11 Nov 2007 20:43:35 -0000	1.30
++++ src/main/java/hudson/plugins/findbugs/FindBugsResult.java	26 Nov 2007 22:55:50 -0000
+@@ -17,6 +17,8 @@
+ import org.xml.sax.SAXException;
+ 
+ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
++import java.util.HashMap;
++import java.util.Map;
+ 
+ /**
+  * Represents the results of the FindBugs analysis. One instance of this class is persisted for
+@@ -45,6 +47,9 @@
+     /** All fixed warnings in the current build.*/
+     @SuppressWarnings("Se")
+     private transient WeakReference<Set<Warning>> fixedWarnings;
++    /** All fixed warnings in the current build.*/
++    @SuppressWarnings("Se")
++    private transient WeakReference<Map<Integer, Warning>> mappedWarnings;
+     /** The number of warnings in this build. */
+     private final int numberOfWarnings;
+     /** The number of new warnings in this build. */
+@@ -79,7 +84,7 @@
+      * @param previousProject the parsed FindBugs result of the previous build
+      */
+     public FindBugsResult(final AbstractBuild<?, ?> build, final JavaProject project, final JavaProject previousProject) {
+-        super(build, project.getWarnings());
++        super(build, Collections.EMPTY_SET);
+         numberOfWarnings = project.getNumberOfWarnings();
+ 
+         this.project = new WeakReference<JavaProject>(project);
+@@ -215,6 +220,33 @@
+         return EMPTY_SET;
+     }
+ 
++    @Override
++    public Warning getWarning(int key) {
++        return getMappedWarnings().get(key);
++    }
++
++    private Map<Integer, Warning> getMappedWarnings() {
++        if (mappedWarnings == null) {
++            loadMappedWarnings();
++        }
++        Map<Integer, Warning> result = mappedWarnings.get();
++        if (result == null) {
++            loadMappedWarnings();
++        }
++        return mappedWarnings.get();
++    }
++
++    private void loadMappedWarnings() {
++        Map<Integer, Warning> result = new HashMap<Integer, Warning>();
++        int key = 0;
++        for (Warning warning : getWarnings()) {
++            warning.setKey(key);
++            result.put(warning.getKey(), warning);
++            key++;
++        }
++        mappedWarnings = new WeakReference<Map<Integer, Warning>>(result);
++    }
++
+     /**
+      * Loads the FindBugs results and wraps them in a weak reference that might
+      * get removed by the garbage collector.
+@@ -229,7 +261,6 @@
+             if (isCurrent()) {
+                 findBugsCounter.restoreMapping(result);
+             }
+-            computeWarningMapping(result.getWarnings());
+             computePriorities(result.getWarnings());
+             project = new WeakReference<JavaProject>(result);
+         }

@@ -1,0 +1,14 @@
+pipeline { 
+  agent any
+  parameters {
+    string (name: 'PARAM2', defaultValue: 'val2', description: 'value2')
+  }
+  stages {
+    stage ('Build') {
+      steps {
+	sh "echo ${params.PARAM}"
+	sh "echo ${params.PARAM2}"
+      }
+    }
+  }
+} //pipeline

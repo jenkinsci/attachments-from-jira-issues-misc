@@ -1,0 +1,493 @@
+diff --git a/src/main/java/hudson/plugins/git/GitAPI.java b/src/main/java/hudson/plugins/git/GitAPI.java
+index 46c55a3..1b8c9b8 100644
+--- a/src/main/java/hudson/plugins/git/GitAPI.java
++++ b/src/main/java/hudson/plugins/git/GitAPI.java
+@@ -847,4 +847,21 @@ public class GitAPI implements IGitAPI {
+             throw new GitException("Error retrieving tag names", e);
+         }
+     }
++    
++    public IGitAPI getSubmoduleAPI( String submodulePath ) throws GitException
++    {
++    	IGitAPI submoduleAPI = new GitAPI(
++    		gitExe, 
++    		workspace.child(submodulePath),
++    		listener, 
++    		environment
++    	);
++    	if ( !submoduleAPI.hasGitRepo() ) {
++    		String errorMsg = "Submodule " + submodulePath + " repo does not exist.";
++    		listener.error(errorMsg);
++    		throw new GitException(errorMsg);
++    	}
++    	
++    	return submoduleAPI;
++    }
+ }
+diff --git a/src/main/java/hudson/plugins/git/GitChangeLogParser.java b/src/main/java/hudson/plugins/git/GitChangeLogParser.java
+index ab9c0fb..dc72717 100644
+--- a/src/main/java/hudson/plugins/git/GitChangeLogParser.java
++++ b/src/main/java/hudson/plugins/git/GitChangeLogParser.java
+@@ -26,40 +26,45 @@ public class GitChangeLogParser extends ChangeLogParser {
+     }
+     public GitChangeSetList parse(AbstractBuild build, File changelogFile)
+         throws IOException, SAXException {
++    	
++    	BufferedReader rdr = new BufferedReader(new FileReader(changelogFile));
++    	try {
++    		return parse( build, rdr );
++    	}
++        finally {
++            rdr.close();
++        }
++    	
++    }
++    
++    public GitChangeSetList parse(AbstractBuild build, BufferedReader rdr)
++    	throws IOException, SAXException {
+         
+         ArrayList<GitChangeSet> r = new ArrayList<GitChangeSet>();
+         
+         // Parse the log file into GitChangeSet items - each one is a commit
++        String line;
++        // We use the null value to determine whether at least one commit was
++        // present in the changelog. If it stays null, there is no commit line.
++        List<String> lines = null;
+         
+-        BufferedReader rdr = new BufferedReader(new FileReader(changelogFile));
+-        
+-        try {
+-            String line;
+-            // We use the null value to determine whether at least one commit was
+-            // present in the changelog. If it stays null, there is no commit line.
+-            List<String> lines = null;
+-            
+-            while ((line = rdr.readLine()) != null) {
+-                if (line.startsWith("commit ")) {
+-                    if (lines != null) {
+-                        r.add(parseCommit(lines, authorOrCommitter));
+-                    }
+-                    lines = new ArrayList<String>();
++        while ((line = rdr.readLine()) != null) {
++            if (line.startsWith("commit ")) {
++                if (lines != null) {
++                    r.add(parseCommit(lines, authorOrCommitter));
+                 }
+-		
+-                if (lines != null)
+-                    lines.add(line);
++                lines = new ArrayList<String>();
+             }
+-            
+-            if (lines != null) {
+-                r.add(parseCommit(lines, authorOrCommitter));
+-            }
+-            
+-            return new GitChangeSetList(build, r);
++	
++            if (lines != null)
++                lines.add(line);
+         }
+-        finally {
+-            rdr.close();
++        
++        if (lines != null) {
++            r.add(parseCommit(lines, authorOrCommitter));
+         }
++        
++        return new GitChangeSetList(build, r);
+     }
+     
+     private GitChangeSet parseCommit(List<String> lines, boolean authorOrCommitter) {
+diff --git a/src/main/java/hudson/plugins/git/GitChangeSet.java b/src/main/java/hudson/plugins/git/GitChangeSet.java
+index 7fb0327..6ed28f2 100644
+--- a/src/main/java/hudson/plugins/git/GitChangeSet.java
++++ b/src/main/java/hudson/plugins/git/GitChangeSet.java
+@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
+  */
+ public class GitChangeSet extends ChangeLogSet.Entry {
+ 
+-    private static final Pattern FILE_LOG_ENTRY = Pattern.compile("^:[0-9]{6} [0-9]{6} ([0-9a-f]{40}) ([0-9a-f]{40}) ([ACDMRTUX])(?>[0-9]+)?\t(.*)$");
++    private static final Pattern FILE_LOG_ENTRY = Pattern.compile("^:([0-9]{6}) ([0-9]{6}) ([0-9a-f]{40}) ([0-9a-f]{40}) ([ACDMRTUX])(?>[0-9]+)?\t(.*)$");
+     private static final Pattern AUTHOR_ENTRY = Pattern.compile("^author (.*) <(.*)> (.*) (.*)$");
+     private static final Pattern COMMITTER_ENTRY = Pattern.compile("^committer (.*) <(.*)> (.*) (.*)$");
+     private static final Pattern RENAME_SPLIT = Pattern.compile("^(.*?)\t(.*)$");
+@@ -90,17 +90,21 @@ public class GitChangeSet extends ChangeLogSet.Entry {
+                     message += line.substring(4) + "\n";
+                 } else if (':' == line.charAt(0)) {
+                     Matcher fileMatcher = FILE_LOG_ENTRY.matcher(line);
+-                    if (fileMatcher.matches() && fileMatcher.groupCount() >= 4) {
+-                        String mode = fileMatcher.group(3);
+-                        if (mode.length() == 1) {
++                    if (fileMatcher.matches() && fileMatcher.groupCount() >= 6) {
++                        String action = fileMatcher.group(5);
++                        if (action.length() == 1) {
++                        	String srcMode = null;
++                        	String dstMode = null;
+                             String src = null;
+                             String dst = null;
+-                            String path = fileMatcher.group(4);
+-                            char editMode = mode.charAt(0);
++                            String path = fileMatcher.group(6);
++                            char editMode = action.charAt(0);
+                             if (editMode == 'M' || editMode == 'A' || editMode == 'D'
+                                 || editMode == 'R' || editMode == 'C') {
+-                                src = parseHash(fileMatcher.group(1));
+-                                dst = parseHash(fileMatcher.group(2));
++                            	srcMode = fileMatcher.group(1);
++                            	dstMode = fileMatcher.group(2);
++                                src = parseHash(fileMatcher.group(3));
++                                dst = parseHash(fileMatcher.group(4));
+                             }
+ 
+                             // Handle rename as two operations - a delete and an add
+@@ -109,8 +113,8 @@ public class GitChangeSet extends ChangeLogSet.Entry {
+                                 if (renameSplitMatcher.matches() && renameSplitMatcher.groupCount() >= 2) {
+                                     String oldPath = renameSplitMatcher.group(1);
+                                     String newPath = renameSplitMatcher.group(2);
+-                                    this.paths.add(new Path(src, dst, 'D', oldPath, this));
+-                                    this.paths.add(new Path(src, dst, 'A', newPath, this));
++                                    this.paths.add(new Path(srcMode, dstMode, src, dst, 'D', oldPath, this));
++                                    this.paths.add(new Path(srcMode, dstMode, src, dst, 'A', newPath, this));
+                                 }
+                             }
+                             // Handle copy as an add
+@@ -118,11 +122,11 @@ public class GitChangeSet extends ChangeLogSet.Entry {
+                                 Matcher copySplitMatcher = RENAME_SPLIT.matcher(path);
+                                 if (copySplitMatcher.matches() && copySplitMatcher.groupCount() >= 2) {
+                                     String newPath = copySplitMatcher.group(2);
+-                                    this.paths.add(new Path(src, dst, 'A', newPath, this));
++                                    this.paths.add(new Path(srcMode, dstMode, src, dst, 'A', newPath, this));
+                                 }
+                             }
+                             else {
+-                                this.paths.add(new Path(src, dst, editMode, path, this));
++                                this.paths.add(new Path(srcMode, dstMode, src, dst, editMode, path, this));
+                             }
+                         }
+                     }
+@@ -304,15 +308,21 @@ public class GitChangeSet extends ChangeLogSet.Entry {
+     @ExportedBean(defaultVisibility=999)
+     public static class Path implements AffectedFile {
+ 
++        private String srcMode;
++        private String dstMode;
+         private String src;
+         private String dst;
+         private char action;
+         private String path;
+         private GitChangeSet changeSet;
+ 
+-        private Path(String source, String destination, char action, String filePath, GitChangeSet changeSet) {
+-            this.src = source;
+-            this.dst = destination;
++        private Path(String sourceMode, String destinationMode, String sourceHash, 
++        		String destinationHash, char action, String filePath, 
++        		GitChangeSet changeSet) {
++            this.srcMode = sourceMode;
++            this.dstMode = destinationMode;
++            this.src = sourceHash;
++            this.dst = destinationHash;
+             this.action = action;
+             this.path = filePath;
+             this.changeSet = changeSet;
+@@ -326,6 +336,14 @@ public class GitChangeSet extends ChangeLogSet.Entry {
+             return dst;
+         }
+ 
++        public String getSrcMode() {
++        	return srcMode;
++        }
++        
++        public String getDestMode() {
++        	return dstMode;
++        }
++        
+         @Exported(name="file")
+         public String getPath() {
+             return path;
+diff --git a/src/main/java/hudson/plugins/git/GitSCM.java b/src/main/java/hudson/plugins/git/GitSCM.java
+index ee381b1..21f84fa 100644
+--- a/src/main/java/hudson/plugins/git/GitSCM.java
++++ b/src/main/java/hudson/plugins/git/GitSCM.java
+@@ -1010,7 +1010,8 @@ public class GitSCM extends SCM implements Serializable {
+             for(Branch b : revToBuild.getBranches()) {
+                 Build lastRevWas = buildChooser.prevBuildForChangelog(b.getName(), buildData, git);
+                 if(lastRevWas != null) {
+-                    changeLog.append(putChangelogDiffsIntoFile(git,  b.name, lastRevWas.getSHA1().name(), revToBuild.getSha1().name()));
++                    changeLog.append(putChangelogDiffsIntoFile(listener, git,  b.name, 
++                    	lastRevWas.getSHA1().name(), revToBuild.getSha1().name()));
+                     histories++;
+                 } else {
+                     listener.getLogger().println("No change to record in branch " + b.getName());
+@@ -1034,14 +1035,18 @@ public class GitSCM extends SCM implements Serializable {
+         }
+     }
+ 
+-    private String putChangelogDiffsIntoFile(IGitAPI git, String branchName, String revFrom,
+-                                             String revTo) throws IOException {
++    private String putChangelogDiffsIntoFile(BuildListener listener, IGitAPI git, 
++    		String branchName, String revFrom, String revTo) throws IOException {
+         ByteArrayOutputStream fos = new ByteArrayOutputStream();
+         // fos.write("<data><![CDATA[".getBytes());
+         String changeset = "Changes in branch " + branchName + ", between " + revFrom + " and " + revTo + "\n";
+         fos.write(changeset.getBytes());
+ 
+-        git.changelog(revFrom, revTo, fos);
++		if ( recursiveSubmodules )
++			new GitUtils( listener, git ).collectChangesRecursively( revFrom, revTo, fos );
++		else
++			git.changelog(revFrom, revTo, fos );
++
+         // fos.write("]]></data>".getBytes());
+         fos.close();
+         return fos.toString("UTF-8");
+diff --git a/src/main/java/hudson/plugins/git/IGitAPI.java b/src/main/java/hudson/plugins/git/IGitAPI.java
+index f199fc2..49262b1 100644
+--- a/src/main/java/hudson/plugins/git/IGitAPI.java
++++ b/src/main/java/hudson/plugins/git/IGitAPI.java
+@@ -31,10 +31,12 @@ public interface IGitAPI {
+     void submoduleUpdate(boolean recursive)  throws GitException;
+     void submoduleClean(boolean recursive)  throws GitException;
+     void submoduleSync() throws GitException;
++
+     String getSubmoduleUrl(String name) throws GitException;
+     void setSubmoduleUrl(String name, String url) throws GitException;
+     void fixSubmoduleUrls( TaskListener listener ) throws GitException;
+     void setupSubmoduleUrls( TaskListener listener ) throws GitException;
++    IGitAPI getSubmoduleAPI( String submodulePath ) throws GitException;
+ 
+     public void fetch(String repository, String refspec) throws GitException;
+     void fetch(RemoteConfig remoteRepository);
+diff --git a/src/main/java/hudson/plugins/git/util/GitUtils.java b/src/main/java/hudson/plugins/git/util/GitUtils.java
+index 83d0e66..0e60d5d 100644
+--- a/src/main/java/hudson/plugins/git/util/GitUtils.java
++++ b/src/main/java/hudson/plugins/git/util/GitUtils.java
+@@ -13,14 +13,22 @@ import hudson.model.TaskListener;
+ import hudson.slaves.NodeProperty;
+ import hudson.model.StreamBuildListener;
+ import hudson.plugins.git.Branch;
++import hudson.plugins.git.GitChangeSet;
+ import hudson.plugins.git.GitException;
+ import hudson.plugins.git.IGitAPI;
+ import hudson.plugins.git.IndexEntry;
+ import hudson.plugins.git.Revision;
++import hudson.plugins.git.GitChangeSetList;
++import hudson.plugins.git.GitChangeLogParser;
+ 
+ 
+ import java.io.IOException;
++import java.io.InputStream;
+ import java.io.OutputStream;
++import java.io.ByteArrayOutputStream;
++import java.io.BufferedReader;
++import java.io.PrintWriter;
++import java.io.StringReader;
+ import java.util.Collection;
+ import java.util.HashMap;
+ import java.util.HashSet;
+@@ -35,6 +43,15 @@ public class GitUtils {
+     IGitAPI git;
+     TaskListener listener;
+ 
++    /** git submodule configuration file */
++    private static final String GITMODULES_FILE = ".gitmodules";
++    
++    /** special mode in git to indicate a submodule */
++    private static final String SUBMODULE_MODE = "160000";
++    
++    /** maximum submodule depth for recursively collecting submodule changes */
++    private static final int SUBMODULE_CHANGES_MAX_DEPTH = 10;
++    
+     public GitUtils(TaskListener listener, IGitAPI git) {
+         this.git = git;
+         this.listener = listener;
+@@ -45,7 +62,7 @@ public class GitUtils {
+ 
+         // Remove anything that isn't a submodule
+         for (Iterator<IndexEntry> it = submodules.iterator(); it.hasNext();) {
+-            if (!it.next().getMode().equals("160000")) {
++            if (!it.next().getMode().equals(SUBMODULE_MODE)) {
+                 it.remove();
+             }
+         }
+@@ -218,4 +235,177 @@ public class GitUtils {
+ 
+         return returnNames;
+     }
+-}
+\ No newline at end of file
++    
++    
++	/**
++	 * Collect all commit details between a revision range including
++	 * all commits to updated submodules.
++	 * 
++	 * @param revFrom - start of revision range
++	 * @param revTo   - end of revision range
++	 * @param fos     - output stream to append results
++	 */
++	public void collectChangesRecursively(
++    	String revFrom, 
++    	String revTo, 
++    	OutputStream fos
++	)
++	{
++		collectChangesRecursively( listener, "", 0, git, revFrom, revTo, fos );
++	}
++	
++	
++	/**
++	 * Recursively collects changes made to submodules.
++	 * 
++	 * @param relativeRootPath current root path of repository (root should be a null or empty string)
++	 * @param currentDepth submodule depth (root should be 0)
++	 * @param git root repository API object
++	 * @param revFrom - start of revision range
++	 * @param revTo   - end of revision range
++	 * @param fos     - output stream to append results
++	 * 
++	 * @throws GitException
++	 */
++    private static void collectChangesRecursively(
++    	TaskListener listener,
++    	final String relativeRootPath,
++    	int currentDepth,
++    	IGitAPI git,
++    	String revFrom, 
++    	String revTo, 
++    	OutputStream fos
++    ) throws GitException 
++    {
++    	if ( currentDepth > SUBMODULE_CHANGES_MAX_DEPTH )
++    		return;
++    	
++        boolean hasSubmodules = git.hasGitModules();
++        boolean isRootRepo = ( ( relativeRootPath == null ) || (relativeRootPath.length() == 0) );
++        
++        // read data into temporary stream so that we can pre-parse for submodules just to be able
++        // to recurse and add more changes
++        ByteArrayOutputStream commitStream = new ByteArrayOutputStream();
++        git.changelog( revFrom, revTo, commitStream );
++        BufferedReader commitReader = new BufferedReader(new StringReader(commitStream.toString()));
++        GitChangeSetList changeSetList;
++        try {
++        	changeSetList = new GitChangeLogParser(false).parse(null, commitReader );
++        }
++        catch ( Exception e ) {
++        	throw new GitException("Unable to parse changelog for ./" + 
++        		relativeRootPath, e);
++        }
++        
++        PrintWriter writer = new PrintWriter(fos);
++        Iterator<GitChangeSet> itChangeSet = changeSetList.iterator();
++        while ( itChangeSet.hasNext() ) {
++        	
++        	GitChangeSet changeSet = itChangeSet.next();
++        	Iterator<GitChangeSet.Path> itPath = changeSet.getAffectedFiles().iterator();
++
++            // if recursive commit retrieval is enabled, determine if there are
++            // any submodule updates in this commit range and recurse to determine
++            // their collective changes
++           	//for ( int idxEntry = 0; idxEntry < commitEntries.length; ++idxEntry ) {
++        	while ( itPath.hasNext() ) {
++        		
++        		GitChangeSet.Path currPath = itPath.next();
++        			
++    			// recurse to gather more changes if this was a submodule update
++    			if ( hasSubmodules && currPath.getSrcMode().equals(SUBMODULE_MODE) && 
++    				currPath.getDestMode().equals(SUBMODULE_MODE) ) {
++    				String submodulePath = currPath.getPath();
++					String newRootPath;
++					if ( isRootRepo )
++						newRootPath = submodulePath;
++					else
++						newRootPath = relativeRootPath + "/" + submodulePath;
++        				
++        			try {
++            			
++						IGitAPI submoduleAPI = git.getSubmoduleAPI(submodulePath);
++						collectChangesRecursively(
++							listener,
++							newRootPath,
++							currentDepth + 1,
++							submoduleAPI,
++							currPath.getSrc(),
++							currPath.getDst(),
++            				fos
++						);
++
++        			}
++        			catch ( GitException e ) {
++        				// any exceptions should already be logged to the listener
++        				// associated with the Git API.  So here we just indicate that
++        				// we are attempting to continue
++                        listener
++	                        .getLogger()
++	                        .println(
++                                 "Problem recursively checking submodule for changes: "
++                                 + newRootPath
++                                 + " - continuing anyway");
++        			}
++    			}
++        	}
++        }
++        
++       	// prefix any paths with the relative root path if this is a submodule directory
++    	if ( !isRootRepo ) {
++    		try {
++    			commitStream = prependPathToCommits(relativeRootPath, commitStream);
++    		}
++    		catch ( IOException e ) {
++    			listener.getLogger().println(
++    				"Unable to prepend " + relativeRootPath + " to commits - continuing anyway");
++    		}
++    	}       
++    	// append this level's commits
++        writer.write(commitStream.toString());
++        writer.flush();
++    }
++    
++    
++    /**
++     * Rewrites a commit log stream to prefix all paths with a relative submodule path
++     * 
++     * @param pathPrefix relative submodule path
++     * @param commitStream original commit log stream
++     * @return new commit log stream
++     */
++    private static ByteArrayOutputStream prependPathToCommits( final String pathPrefix, ByteArrayOutputStream commitStream )
++    	throws IOException
++    {
++    	ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
++    	PrintWriter writer = new PrintWriter(outputStream);
++    	
++    	BufferedReader commitReader = new BufferedReader(new StringReader(commitStream.toString()));
++    	String line;
++    	while ( (line = commitReader.readLine()) != null ) {
++    		
++    		// prefix any paths if this is a file log entry
++    		if ( line.startsWith(":") ) {
++    			
++    			String[] components = line.split("\t");
++    			String newLine;
++    			if ( components.length < 2 ) {
++    				newLine = line;
++    			}
++    			else {
++    				newLine = components[0] + "\t" + pathPrefix + "/" + components[1];
++    				if ( components.length > 2 ) {
++    					newLine = newLine + "\t" + pathPrefix + "/" + components[2];
++    				}
++    			}
++    			
++    			line = newLine;
++    		}
++    		
++    		writer.write(line + "\n");
++    	}
++    	
++    	writer.flush();
++    	return outputStream;
++    }
++}

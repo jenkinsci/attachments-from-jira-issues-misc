@@ -1,0 +1,86 @@
+
+pipeline {
+
+    agent any
+
+    options {
+        timeout(time: 90, unit: 'MINUTES')
+    }
+
+    parameters {
+        booleanParam(defaultValue: true, description: 'Run Tests?', name: 'RUN_TEST')
+    }
+
+    environment {
+        MAVEN_CONFIG = '-B -s C:\\home\\settings.xml'
+        MODE = 'service'
+    }
+
+    stages {
+
+		// Checkout / clean omitted
+
+        stage('Build & Unit-Test') {
+            parallel {
+                stage('Backend') {
+                    stages {
+                        stage('Build and install snapshots') {
+                            steps {
+                                sh "./mvnw install -DskipTests"
+                            }
+                        }
+                        stage('Backend unit tests') {
+                            when {
+                                expression { params.RUN_TEST }
+                            }
+                            steps {
+                                sh "./mvnw test"
+                            }
+                        }
+                    }
+                }
+                stage('Frontend') {
+                    stages {
+                        stage('Install node and yarn') {
+                            steps {
+                                dir('babs-app') {
+                                    sh "chmod +x mvnw"
+                                    sh '''
+                                        ./mvnw com.github.eirslett:frontend-maven-plugin:install-node-and-yarn \
+                                            -DnodeVersion=v8.9.4 -DyarnVersion=v1.5.1 \
+                                            -DnodeDownloadRoot=http://artifactory/remote-gen-nodejs/ \
+                                            -DyarnDownloadRoot=http://artifactory/libs-release-babs/temp/yarn/
+                                    '''
+                                }
+                            }
+                        }
+						
+						// Until here everything works!
+						
+                        stage('yarn install') {
+                            options {
+                                retry(3)
+                            }
+                            steps {
+                                dir('babs-app') {
+                                    sh '''
+                                        ./mvnw com.github.eirslett:frontend-maven-plugin:yarn \
+                                            -Dfrontend.yarn.arguments="config set sass_binary_site \"http://some.local.site\""
+                                    '''
+                                    sh "./mvnw com.github.eirslett:frontend-maven-plugin:yarn -Dfrontend.yarn.arguments=\"install\""
+                                }
+                            }
+                        }
+						
+                        // Further frontend stages omitted
+                    }
+                }
+            }
+        }
+		
+		// Further stages omitted
+
+    }
+
+
+}

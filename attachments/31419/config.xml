@@ -1,0 +1,382 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.plugins.gitlab.GitLabNotifier_-GitLabJobProperty plugin="gitlab-notification@1.0.1-SNAPSHOT">
+      <gitLabUrl></gitLabUrl>
+      <token></token>
+      <projectBranchPath></projectBranchPath>
+      <startNotification>false</startNotification>
+      <notifySuccess>false</notifySuccess>
+      <notifyAborted>false</notifyAborted>
+      <notifyNotBuilt>false</notifyNotBuilt>
+      <notifyUnstable>false</notifyUnstable>
+      <notifyFailure>false</notifyFailure>
+      <notifyBackToNormal>false</notifyBackToNormal>
+      <notifyRepeatedFailure>false</notifyRepeatedFailure>
+      <includeTestSummary>false</includeTestSummary>
+      <showCommitList>false</showCommitList>
+    </jenkins.plugins.gitlab.GitLabNotifier_-GitLabJobProperty>
+    <jenkins.plugins.slack.SlackNotifier_-SlackJobProperty plugin="slack@1.8.1">
+      <teamDomain></teamDomain>
+      <token></token>
+      <room></room>
+      <startNotification>false</startNotification>
+      <notifySuccess>false</notifySuccess>
+      <notifyAborted>false</notifyAborted>
+      <notifyNotBuilt>false</notifyNotBuilt>
+      <notifyUnstable>false</notifyUnstable>
+      <notifyFailure>false</notifyFailure>
+      <notifyBackToNormal>false</notifyBackToNormal>
+      <notifyRepeatedFailure>false</notifyRepeatedFailure>
+      <includeTestSummary>false</includeTestSummary>
+      <showCommitList>false</showCommitList>
+      <includeCustomMessage>false</includeCustomMessage>
+      <customMessage></customMessage>
+    </jenkins.plugins.slack.SlackNotifier_-SlackJobProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>SUITE</name>
+          <description></description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>execution</string>
+              <string>executionservice</string>
+              <string>demo1</string>
+              <string>regression</string>
+              <string>repository</string>
+              <string>reporting</string>
+              <string>playlist</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>VM</name>
+          <description></description>
+          <defaultValue>velocity-platformqa-1</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.RunParameterDefinition>
+          <name>TARGET_BUILD</name>
+          <description></description>
+          <projectName>vel_BuildVM--v5.2</projectName>
+          <filter>SUCCESSFUL</filter>
+        </hudson.model.RunParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>RESTART_VM</name>
+          <description></description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>BRANCH</name>
+          <description></description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>execservice1</string>
+              <string>master</string>
+              <string>vplat-5.1</string>
+              <string>vplat-5.2</string>
+              <string>vplat-6.0</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ITEST_LICENSE_SERVER</name>
+          <description></description>
+          <defaultValue>englshost.spirenteng.com</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ITEST_LICENSE_SERVER_PROXY</name>
+          <description></description>
+          <defaultValue>englshost.spirenteng.com:5000</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ITEST_TEST_FILE_PATH</name>
+          <description></description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@1.8.4">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <configVersion>1</configVersion>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    <EnvInjectJobProperty plugin="envinject@1.92.1">
+      <info>
+        <propertiesContent>PROJECT_NAME=velocity_platform_api_test
+ITAR_DIR=itarDir
+REPORT_DIR=reports
+ITEST_REPORT_FORMAT=project://resources/reports24/test_report_templates/XML_Raw
+ITEST_RT_HOME_WINDOWS=C:\iTestRT
+GIT_CHECKOUT_DIR=gitSource</propertiesContent>
+        <loadFilesFromMaster>false</loadFilesFromMaster>
+      </info>
+      <on>true</on>
+      <keepJenkinsSystemVariables>true</keepJenkinsSystemVariables>
+      <keepBuildVariables>true</keepBuildVariables>
+      <overrideBuildParameters>false</overrideBuildParameters>
+      <contributors>
+        <org.jenkinsci.plugins.sharedobjects.SharedObjectJobProperty plugin="shared-objects@0.44">
+          <populateSharedObjects>false</populateSharedObjects>
+        </org.jenkinsci.plugins.sharedobjects.SharedObjectJobProperty>
+        <org.jenkinsci.plugins.sharedobjects.ToolInstallationJobProperty plugin="shared-objects@0.44">
+          <populateToolInstallation>false</populateToolInstallation>
+        </org.jenkinsci.plugins.sharedobjects.ToolInstallationJobProperty>
+      </contributors>
+    </EnvInjectJobProperty>
+    <job-metadata plugin="metadata@1.1.0b">
+      <values class="linked-list">
+        <metadata-tree>
+          <name>job-info</name>
+          <parent class="job-metadata" reference="../../.."/>
+          <generated>true</generated>
+          <exposedToEnvironment>false</exposedToEnvironment>
+          <children class="linked-list">
+            <metadata-tree>
+              <name>last-saved</name>
+              <description></description>
+              <parent class="metadata-tree" reference="../../.."/>
+              <generated>true</generated>
+              <exposedToEnvironment>false</exposedToEnvironment>
+              <children class="linked-list">
+                <metadata-date>
+                  <name>time</name>
+                  <description></description>
+                  <parent class="metadata-tree" reference="../../.."/>
+                  <generated>true</generated>
+                  <exposedToEnvironment>false</exposedToEnvironment>
+                  <value>
+                    <time>1449683456427</time>
+                    <timezone>Etc/UTC</timezone>
+                  </value>
+                  <checked>false</checked>
+                </metadata-date>
+                <metadata-tree>
+                  <name>user</name>
+                  <parent class="metadata-tree" reference="../../.."/>
+                  <generated>true</generated>
+                  <exposedToEnvironment>false</exposedToEnvironment>
+                  <children class="linked-list">
+                    <metadata-string>
+                      <name>display-name</name>
+                      <description></description>
+                      <parent class="metadata-tree" reference="../../.."/>
+                      <generated>true</generated>
+                      <exposedToEnvironment>false</exposedToEnvironment>
+                      <value>Neulinger, Nathan (nneulinger)</value>
+                    </metadata-string>
+                    <metadata-string>
+                      <name>full-name</name>
+                      <description></description>
+                      <parent class="metadata-tree" reference="../../.."/>
+                      <generated>true</generated>
+                      <exposedToEnvironment>false</exposedToEnvironment>
+                      <value>Neulinger, Nathan (nneulinger)</value>
+                    </metadata-string>
+                  </children>
+                </metadata-tree>
+              </children>
+            </metadata-tree>
+          </children>
+        </metadata-tree>
+      </values>
+    </job-metadata>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.0">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>git@git-ito.spirenteng.com:velocity-platform-qa/velocity_platform_api_test.git</url>
+        <credentialsId>61541a46-dca8-41d4-9ddd-6e4b5e84c4b1</credentialsId>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>${BRANCH}</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="list"/>
+    <extensions>
+      <hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+        <relativeTargetDir>gitSource/velocity_platform_api_test</relativeTargetDir>
+      </hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+    </extensions>
+  </scm>
+  <assignedNode>qa-centos7-1b</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <org.jenkinsci.plugins.conditionalbuildstep.ConditionalBuilder plugin="conditional-buildstep@1.3.3">
+      <runner class="org.jenkins_ci.plugins.run_condition.BuildStepRunner$DontRun" plugin="run-condition@1.0"/>
+      <runCondition class="org.jenkins_ci.plugins.run_condition.core.NodeCondition" plugin="run-condition@1.0">
+        <allowedNodes>
+          <string>pv750-ito2</string>
+        </allowedNodes>
+      </runCondition>
+      <conditionalbuilders>
+        <hudson.tasks.BatchFile>
+          <command>@echo &quot;*******GENERATING PROJECT ITAR***********&quot;&#xd;
+mkdir .iTestConfiguration&#xd;
+mkdir %ITAR_DIR%&#xd;
+&quot;%ITEST_HOME%itestcli.bat&quot; --workspace %GIT_CHECKOUT_DIR% --configFolder .iTestConfiguration --exportPath %ITAR_DIR% -expr %PROJECT_NAME%</command>
+        </hudson.tasks.BatchFile>
+        <hudson.tasks.BatchFile>
+          <command>@echo &quot;*******GENERATING RESOURCES ITAR***********&quot;&#xd;
+&quot;%ITEST_HOME%itestcli.bat&quot; --workspace gitSource --configFolder .iTestConfiguration --exportPath %ITAR_DIR% -expr resources</command>
+        </hudson.tasks.BatchFile>
+        <hudson.tasks.BatchFile>
+          <command>@echo &quot;****** CONFIGURING REPORTS ********&quot;&#xd;
+@echo mkdir %REPORT_DIR%</command>
+        </hudson.tasks.BatchFile>
+        <hudson.tasks.BatchFile>
+          <command>@echo ******************* STARTING SUITE EXECUTION **************************&#xd;
+&#xd;
+SET ITEST_PROJECT_PATH=project://%PROJECT_NAME%&#xd;
+SET ITEST_REPORT=%REPORT_DIR%/%JOB_NAME%_report&#xd;
+&#xd;
+SET ITEST_PARAMETER_FILE_PATH=%ITEST_PROJECT_PATH%/parameter_files/parameters_%VM%.ffpt&#xd;
+REM SET ITEST_TEST_FILE_PATH=%ITEST_PROJECT_PATH%/test_suites/%SUITE%.ffts&#xd;
+&#xd;
+%ITEST_RT_HOME_WINDOWS%\itestrt --licenseServer %ITEST_LICENSE_SERVER% --licenseProxy %ITEST_LICENSE_SERVER_PROXY% --itar %ITAR_DIR% --test.logfile %JOB_NAME%_testlog.log --paramfile %ITEST_PARAMETER_FILE_PATH% --test %ITEST_TEST_FILE_PATH% --report %ITEST_REPORT% --format %ITEST_REPORT_FORMAT%</command>
+        </hudson.tasks.BatchFile>
+      </conditionalbuilders>
+    </org.jenkinsci.plugins.conditionalbuildstep.ConditionalBuilder>
+    <org.jenkinsci.plugins.conditionalbuildstep.ConditionalBuilder plugin="conditional-buildstep@1.3.3">
+      <runner class="org.jenkins_ci.plugins.run_condition.BuildStepRunner$Fail" plugin="run-condition@1.0"/>
+      <runCondition class="org.jenkins_ci.plugins.run_condition.core.NodeCondition" plugin="run-condition@1.0">
+        <allowedNodes>
+          <string>qa-centos7-1b</string>
+        </allowedNodes>
+      </runCondition>
+      <conditionalbuilders>
+        <hudson.tasks.Shell>
+          <command>echo &quot;*******GENERATING ITAR***********&quot;
+mkdir .iTestConfiguration
+mkdir ${ITAR_DIR}
+java -jar ${ITEST_RT_HOME}/itestcli.jar --workspace ${GIT_CHECKOUT_DIR} --configFolder .iTestConfiguration --exportPath ${ITAR_DIR} -expr ${PROJECT_NAME}</command>
+        </hudson.tasks.Shell>
+        <hudson.tasks.Shell>
+          <command>echo &quot;*******GENERATING RESOURCES ITAR***********&quot;
+java -jar ${ITEST_RT_HOME}/itestcli.jar --workspace ${GIT_CHECKOUT_DIR} --configFolder .iTestConfiguration --exportPath ${ITAR_DIR} -expr resources</command>
+        </hudson.tasks.Shell>
+        <hudson.tasks.Shell>
+          <command>echo &quot;****** CONFIGURING REPORTS ********&quot;
+mkdir ${REPORT_DIR}</command>
+        </hudson.tasks.Shell>
+        <hudson.tasks.Shell>
+          <command>echo ******************* STARTING SUITE EXECUTION **************************
+
+ITEST_PROJECT_PATH=project://${PROJECT_NAME}
+ITEST_REPORT=${REPORT_DIR}/${JOB_NAME}_report
+
+ITEST_PARAMETER_FILE_PATH=${ITEST_PROJECT_PATH}/parameter_files/parameters_${VM}.ffpt
+#ITEST_TEST_FILE_PATH=${ITEST_PROJECT_PATH}/test_suites/${SUITE}.ffts
+
+sh ${ITEST_RT_HOME_LINUX}/itestrt --licenseServer ${ITEST_LICENSE_SERVER} --licenseProxy ${ITEST_LICENSE_SERVER_PROXY} --itar ${ITAR_DIR} --test.logfile ${JOB_NAME%_testlog.log --paramfile ${ITEST_PARAMETER_FILE_PATH} --test ${ITEST_TEST_FILE_PATH} --report ${ITEST_REPORT} --format ${ITEST_REPORT_FORMAT}</command>
+        </hudson.tasks.Shell>
+      </conditionalbuilders>
+    </org.jenkinsci.plugins.conditionalbuildstep.ConditionalBuilder>
+  </builders>
+  <publishers>
+    <xunit plugin="xunit@1.98">
+      <types>
+        <CustomType>
+          <pattern>reports/*.xml</pattern>
+          <skipNoTestFiles>false</skipNoTestFiles>
+          <failIfNotNew>true</failIfNotNew>
+          <deleteOutputFiles>false</deleteOutputFiles>
+          <stopProcessingIfError>true</stopProcessingIfError>
+          <customXSL>gitSource/velocity_platform_api_test/config/junit_report.xslt</customXSL>
+        </CustomType>
+      </types>
+      <thresholds>
+        <org.jenkinsci.plugins.xunit.threshold.FailedThreshold>
+          <unstableThreshold>1</unstableThreshold>
+          <unstableNewThreshold>1</unstableNewThreshold>
+          <failureThreshold>2</failureThreshold>
+          <failureNewThreshold>2</failureNewThreshold>
+        </org.jenkinsci.plugins.xunit.threshold.FailedThreshold>
+        <org.jenkinsci.plugins.xunit.threshold.SkippedThreshold>
+          <unstableThreshold>1</unstableThreshold>
+          <unstableNewThreshold>1</unstableNewThreshold>
+          <failureThreshold>2</failureThreshold>
+          <failureNewThreshold>2</failureNewThreshold>
+        </org.jenkinsci.plugins.xunit.threshold.SkippedThreshold>
+      </thresholds>
+      <thresholdMode>1</thresholdMode>
+      <extraConfiguration>
+        <testTimeMargin>3000</testTimeMargin>
+      </extraConfiguration>
+    </xunit>
+    <hudson.plugins.emailext.ExtendedEmailPublisher plugin="email-ext@2.40.5">
+      <recipientList>chiranjeev.banerjee@spirent.com</recipientList>
+      <configuredTriggers>
+        <hudson.plugins.emailext.plugins.trigger.AlwaysTrigger>
+          <email>
+            <recipientList></recipientList>
+            <subject>$PROJECT_DEFAULT_SUBJECT</subject>
+            <body>$PROJECT_DEFAULT_CONTENT</body>
+            <recipientProviders>
+              <hudson.plugins.emailext.plugins.recipients.ListRecipientProvider/>
+            </recipientProviders>
+            <attachmentsPattern></attachmentsPattern>
+            <attachBuildLog>false</attachBuildLog>
+            <compressBuildLog>false</compressBuildLog>
+            <replyTo>$PROJECT_DEFAULT_REPLYTO</replyTo>
+            <contentType>project</contentType>
+          </email>
+        </hudson.plugins.emailext.plugins.trigger.AlwaysTrigger>
+      </configuredTriggers>
+      <contentType>text/html</contentType>
+      <defaultSubject>$DEFAULT_SUBJECT</defaultSubject>
+      <defaultContent>&lt;html&gt;
+	&lt;h3&gt;VELOCITY_PLATFORM_AUTOMATION RESULTS&lt;/h3&gt;
+	&lt;table border=&quot;1&quot; style=&quot;width:50%&quot;&gt;
+		&lt;thead style=&quot;background-color:cyan&quot;&gt;
+			&lt;th&gt;TOTAL&lt;/th&gt;&lt;th&gt;PASS&lt;/th&gt;&lt;th&gt;FAIL&lt;/th&gt;&lt;th&gt;FAILEDTESTS&lt;/th&gt;
+		&lt;/thead&gt;
+		&lt;tbody&gt;
+			&lt;tr&gt;
+				&lt;td&gt;${TEST_COUNTS}&lt;/td&gt;
+				&lt;td&gt;${TEST_COUNTS,var=&quot;pass&quot;}&lt;/td&gt;
+				&lt;td&gt;${TEST_COUNTS,var=&quot;fail&quot;}&lt;/td&gt;
+				&lt;td&gt;${TEST_COUNTS,var=&quot;skip&quot;}&lt;/td&gt;
+                                &lt;td&gt;&lt;a href=&quot;${BUILD_URL}/testReport/&quot;&gt;See_Failed_Tests&lt;/a&gt;&lt;/td&gt;
+			&lt;/tr&gt;
+		&lt;/tbody&gt;
+	&lt;/table&gt;
+       &lt;/br&gt;
+       &lt;/br&gt;
+	&lt;a href=&quot;${BUILD_URL}/console&quot;&gt;See Results In Jenkins Console Output&lt;/a&gt;
+       &lt;/br&gt;
+	&lt;a href=&quot;http://itoqadashboard.spirenteng.com:8080/dashboard/&quot;&gt;Go to QA Dashboard&lt;/a&gt;
+&lt;/html&gt;</defaultContent>
+      <attachmentsPattern></attachmentsPattern>
+      <presendScript>$DEFAULT_PRESEND_SCRIPT</presendScript>
+      <attachBuildLog>false</attachBuildLog>
+      <compressBuildLog>false</compressBuildLog>
+      <replyTo>chiranjeev.banerjee@spirent.com</replyTo>
+      <saveOutput>false</saveOutput>
+      <disabled>false</disabled>
+    </hudson.plugins.emailext.ExtendedEmailPublisher>
+  </publishers>
+  <buildWrappers>
+    <hudson.plugins.ws__cleanup.PreBuildCleanup plugin="ws-cleanup@0.28">
+      <deleteDirs>false</deleteDirs>
+      <cleanupParameter></cleanupParameter>
+      <externalDelete></externalDelete>
+    </hudson.plugins.ws__cleanup.PreBuildCleanup>
+    <hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.7.2"/>
+  </buildWrappers>
+</project>

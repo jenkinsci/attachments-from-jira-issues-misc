@@ -1,0 +1,779 @@
+### Eclipse Workspace Patch 1.0
+#P DASHBOARD-VIEW
+Index: src/main/java/hudson/plugins/view/dashboard/builds/LatestBuilds.java
+===================================================================
+--- src/main/java/hudson/plugins/view/dashboard/builds/LatestBuilds.java	(revision 0)
++++ src/main/java/hudson/plugins/view/dashboard/builds/LatestBuilds.java	(revision 0)
+@@ -0,0 +1,62 @@
++package hudson.plugins.view.dashboard.builds;
++
++import hudson.Extension;
++import hudson.model.Descriptor;
++import hudson.model.Hudson;
++import hudson.model.Job;
++import hudson.model.Run;
++import hudson.model.TopLevelItem;
++import hudson.plugins.view.dashboard.DashboardPortlet;
++
++import java.util.ArrayList;
++import java.util.Collection;
++import java.util.Collections;
++import java.util.List;
++
++import org.kohsuke.stapler.DataBoundConstructor;
++
++public class LatestBuilds extends DashboardPortlet{
++
++	@DataBoundConstructor
++	public LatestBuilds(String name) {
++		super(name);
++	}
++	
++	/**
++	 * Number of latest builds which will be displayed on the screen
++	 */
++	private static final int N_LATEST_JOBS = 10;
++	
++	/**
++	 * Last <code>N_LATEST_BUILDS</code> builds
++	 *
++	 */
++	public List<Run> getFinishedBuilds() {
++		Collection<TopLevelItem> jobs = Hudson.getInstance().getItems();
++		List<Run> allBuilds = new ArrayList<Run>();
++		for (TopLevelItem job : jobs) {
++			if (job instanceof Job) {
++				List<Run> builds = ((Job) job).getBuilds();
++				allBuilds.addAll(builds);
++			}
++		}
++		Collections.sort(allBuilds, Run.ORDER_BY_DATE);
++		List<Run> recentBuilds = new ArrayList<Run>();
++		if(allBuilds.size() < N_LATEST_JOBS)
++			recentBuilds = allBuilds;
++		else
++			recentBuilds = allBuilds.subList(0,N_LATEST_JOBS);
++			
++		return recentBuilds;
++	}		
++
++	@Extension
++    public static class DescriptorImpl extends Descriptor<DashboardPortlet> {
++
++		@Override
++		public String getDisplayName() {
++			return "Last " + N_LATEST_JOBS + " jobs";
++		}
++	}
++	
++}
+Index: src/main/java/hudson/plugins/view/dashboard/stats/StatBuilds.java
+===================================================================
+--- src/main/java/hudson/plugins/view/dashboard/stats/StatBuilds.java	(revision 0)
++++ src/main/java/hudson/plugins/view/dashboard/stats/StatBuilds.java	(revision 0)
+@@ -0,0 +1,74 @@
++package hudson.plugins.view.dashboard.stats;
++
++import hudson.Extension;
++import hudson.model.BallColor;
++import hudson.model.Descriptor;
++import hudson.model.Hudson;
++import hudson.model.Job;
++import hudson.model.Run;
++import hudson.model.TopLevelItem;
++import hudson.plugins.view.dashboard.DashboardPortlet;
++
++import java.util.Collection;
++import java.util.List;
++import java.util.Map;
++import java.util.SortedMap;
++import java.util.TreeMap;
++
++import org.kohsuke.stapler.DataBoundConstructor;
++
++
++/**
++ * Build statistics - number of builds with given build status
++ * 
++ * @author Vojtech Juranek
++ */
++public class StatBuilds extends DashboardPortlet{
++	
++	@DataBoundConstructor
++	public StatBuilds(String name) {
++		super(name);
++	}
++	
++	public Map<BallColor, Integer> getBuildStat() {
++		int nBuilds = 0;
++		SortedMap<BallColor, Integer> colStatBuilds = new TreeMap<BallColor, Integer>();
++		for (BallColor color : BallColor.values()) {
++			colStatBuilds.put(color.noAnime(), 0);
++		}
++		Collection<TopLevelItem> jobs = Hudson.getInstance().getItems();
++		//loop over job
++		for (TopLevelItem job : jobs) {
++			if (job instanceof Job) {
++				// Build statistics
++				List<Run> builds = ((Job) job).getBuilds();
++				if (builds.isEmpty()) {
++					colStatBuilds.put(BallColor.GREY.noAnime(), colStatBuilds
++							.get(BallColor.GREY) + 1);
++					nBuilds++;
++				} else {
++					//loop over builds
++					for (Run build : builds) {
++						BallColor bColor = build.getIconColor();
++						if(bColor != null && bColor.noAnime() != null && colStatBuilds.get(bColor) != null){
++							colStatBuilds.put(bColor.noAnime(), colStatBuilds
++								.get(bColor) + 1);
++							nBuilds++;
++						}
++					}
++				}
++			}
++		}
++		return colStatBuilds;
++	}
++
++	@Extension
++    public static class DescriptorImpl extends Descriptor<DashboardPortlet> {
++
++		@Override
++		public String getDisplayName() {
++			return "Build statistics";
++		}
++	}
++
++}
+Index: src/main/resources/hudson/plugins/view/dashboard/builds/LatestBuilds/portlet.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/view/dashboard/builds/LatestBuilds/portlet.jelly	(revision 0)
++++ src/main/resources/hudson/plugins/view/dashboard/builds/LatestBuilds/portlet.jelly	(revision 0)
+@@ -0,0 +1,33 @@
++<!--
++The MIT License
++
++Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in
++all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++THE SOFTWARE.
++-->
++
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:dp="/hudson/plugins/view/dashboard" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
++  <dp:decorate portlet="${it}">
++    <tr><td>
++      <div align="center">
++		<st:include page="latestbuilds.jelly"/>
++       </div>
++     </td></tr>
++  </dp:decorate>
++</j:jelly>
+\ No newline at end of file
+Index: src/main/java/hudson/plugins/view/dashboard/stats/StatJobs.java
+===================================================================
+--- src/main/java/hudson/plugins/view/dashboard/stats/StatJobs.java	(revision 0)
++++ src/main/java/hudson/plugins/view/dashboard/stats/StatJobs.java	(revision 0)
+@@ -0,0 +1,128 @@
++package hudson.plugins.view.dashboard.stats;
++
++import hudson.Extension;
++import hudson.model.Descriptor;
++import hudson.model.HealthReport;
++import hudson.model.Hudson;
++import hudson.model.Job;
++import hudson.model.TopLevelItem;
++import hudson.plugins.view.dashboard.DashboardPortlet;
++
++import java.util.Collection;
++import java.util.Map;
++import java.util.SortedMap;
++import java.util.TreeMap;
++
++import org.kohsuke.stapler.DataBoundConstructor;
++
++/**
++ * Job statistics - number of jobs with given health status
++ * 
++ * @author Vojtech Juranek
++ */
++public class StatJobs extends DashboardPortlet{
++
++	@DataBoundConstructor
++	public StatJobs(String name) {
++		super(name);
++	}
++	
++	/**
++	 * Heath status of the builds (use enum not class for it)
++	 */
++	public enum HealthStatus{
++		/*
++		HEALTH_OVER_80("health-80plus.gif",Messages._StatsView_NoRecentBuildFailed().toString()),
++	    HEALTH_60_TO_79("health-60to79.gif",Messages._StatsView_NOfMFailed(20, 40).toString()),
++	    HEALTH_40_TO_59("health-40to59.gif",Messages._StatsView_NOfMFailed(40, 60).toString()),
++	    HEALTH_20_TO_39("health-20to39.gif",Messages._StatsView_NOfMFailed(60, 80).toString()),
++	    HEALTH_0_TO_19("health-00to19.gif",Messages._StatsView_AllRecentBuildFailed().toString()),
++	    HEALTH_UNKNOWN("empty.gif",Messages._StatsView_UnknownStatus().toString());
++	    */
++		
++		HEALTH_OVER_80("health-80plus.gif","No recent builds failed"),
++	    HEALTH_60_TO_79("health-60to79.gif","20-40% of recent builds failed"),
++	    HEALTH_40_TO_59("health-40to59.gif","40-60% of recent builds failed"),
++	    HEALTH_20_TO_39("health-20to39.gif","60-80% of recent builds failed"),
++	    HEALTH_0_TO_19("health-00to19.gif","All recent builds failed"),
++	    HEALTH_UNKNOWN("empty.gif","Unknown status");
++		
++		private HealthReport healthReport;
++		private String iconUrl;
++		private String description;
++		
++		HealthStatus(String iconUrl, String description) {
++	        this.iconUrl = iconUrl;
++	        this.description = description;
++		}
++		
++		public static HealthStatus getHealthStatus(Job job){
++			int score = job.getBuildHealth().getScore();
++			int nBuilds = job.getBuilds().size();
++			if (score < 20) {
++                return HEALTH_0_TO_19;
++            } else if (score < 40) {
++                return HEALTH_20_TO_39;
++            } else if (score < 60) {
++                return HEALTH_40_TO_59;
++            } else if (score < 80) {
++                return HEALTH_60_TO_79;
++            } else if (score >= 79){
++            	if(nBuilds != 0)
++            		return HEALTH_OVER_80;
++            	else
++            		return HEALTH_UNKNOWN;
++            }
++            else{
++            	return HEALTH_UNKNOWN;
++            }
++		}
++		
++		public String getIconUrl(){
++			return Hudson.RESOURCE_PATH + "/images/32x32/" + iconUrl;
++		}
++		
++		public String getIconUrl(String size) {
++	        if (iconUrl == null) {
++	            return Hudson.RESOURCE_PATH + "/images/" + size + "/" + HEALTH_UNKNOWN.getIconUrl();
++	        }
++	        if (iconUrl.startsWith("/")) {
++	            return iconUrl.replace("/32x32/", "/" + size + "/");
++	        }
++	        return Hudson.RESOURCE_PATH + "/images/" + size + "/" + iconUrl;
++	    }
++		
++		public String getDescription(){
++			return description;
++		}
++	}
++	
++	/**
++	 * Project statistics - number of projects with given health status
++	 */
++	public Map<HealthStatus, Integer> getJobStat() {
++		SortedMap<HealthStatus, Integer> colStatJobs = new TreeMap<HealthStatus, Integer>();
++		for(HealthStatus status : HealthStatus.values()){
++			colStatJobs.put(status, 0);
++		}
++		// Job and build statistics
++		Collection<TopLevelItem> jobs = Hudson.getInstance().getItems();
++		for (TopLevelItem job : jobs) {
++			if (job instanceof Job) {
++				HealthStatus status = HealthStatus.getHealthStatus(((Job) job)); 
++				colStatJobs.put(status, colStatJobs.get(status) + 1);
++			}
++		}
++		return colStatJobs;
++	}
++
++	@Extension
++    public static class DescriptorImpl extends Descriptor<DashboardPortlet> {
++
++		@Override
++		public String getDisplayName() {
++			return "Job statistics";
++		}
++	}
++	
++}
+Index: src/main/resources/hudson/plugins/view/dashboard/builds/LatestBuilds/main.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/view/dashboard/builds/LatestBuilds/main.jelly	(revision 0)
++++ src/main/resources/hudson/plugins/view/dashboard/builds/LatestBuilds/main.jelly	(revision 0)
+@@ -0,0 +1,33 @@
++<!--
++The MIT License
++
++Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in
++all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++THE SOFTWARE.
++-->
++
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:dp="/hudson/plugins/view/dashboard" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
++  <dp:decorate portlet="${it}">
++    <tr><td>
++      <div align="center">
++		<st:include page="latestbuilds.jelly"/>
++       </div>
++     </td></tr>
++  </dp:decorate>
++</j:jelly>
+\ No newline at end of file
+Index: src/main/resources/hudson/plugins/view/dashboard/builds/LatestBuilds/latestbuilds.properties
+===================================================================
+--- src/main/resources/hudson/plugins/view/dashboard/builds/LatestBuilds/latestbuilds.properties	(revision 0)
++++ src/main/resources/hudson/plugins/view/dashboard/builds/LatestBuilds/latestbuilds.properties	(revision 0)
+@@ -0,0 +1,25 @@
++# The MIT License
++# 
++# Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
++# 
++# Permission is hereby granted, free of charge, to any person obtaining a copy
++# of this software and associated documentation files (the "Software"), to deal
++# in the Software without restriction, including without limitation the rights
++# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++# copies of the Software, and to permit persons to whom the Software is
++# furnished to do so, subject to the following conditions:
++# 
++# The above copyright notice and this permission notice shall be included in
++# all copies or substantial portions of the Software.
++# 
++# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++# THE SOFTWARE.
++
++Build\ name=Job name / Build number
++Build\ time=Time
++Recent\ builds=Recent builds
+Index: src/main/resources/hudson/plugins/view/dashboard/stats/StatBuilds/main.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/view/dashboard/stats/StatBuilds/main.jelly	(revision 0)
++++ src/main/resources/hudson/plugins/view/dashboard/stats/StatBuilds/main.jelly	(revision 0)
+@@ -0,0 +1,33 @@
++<!--
++The MIT License
++
++Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in
++all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++THE SOFTWARE.
++-->
++
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:dp="/hudson/plugins/view/dashboard" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
++  <dp:decorate portlet="${it}">
++    <tr><td>
++      <div align="center">
++		<st:include page="statbuilds.jelly"/>
++       </div>
++     </td></tr>
++  </dp:decorate>
++</j:jelly>
+\ No newline at end of file
+Index: src/main/resources/hudson/plugins/view/dashboard/stats/StatJobs/main.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/view/dashboard/stats/StatJobs/main.jelly	(revision 0)
++++ src/main/resources/hudson/plugins/view/dashboard/stats/StatJobs/main.jelly	(revision 0)
+@@ -0,0 +1,33 @@
++<!--
++The MIT License
++
++Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in
++all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++THE SOFTWARE.
++-->
++
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:dp="/hudson/plugins/view/dashboard" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
++  <dp:decorate portlet="${it}">
++    <tr><td>
++      <div align="center">
++		<st:include page="statjobs.jelly"/>
++       </div>
++     </td></tr>
++  </dp:decorate>
++</j:jelly>
+\ No newline at end of file
+Index: src/main/resources/hudson/plugins/view/dashboard/stats/StatBuilds/portlet.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/view/dashboard/stats/StatBuilds/portlet.jelly	(revision 0)
++++ src/main/resources/hudson/plugins/view/dashboard/stats/StatBuilds/portlet.jelly	(revision 0)
+@@ -0,0 +1,33 @@
++<!--
++The MIT License
++
++Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in
++all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++THE SOFTWARE.
++-->
++
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:dp="/hudson/plugins/view/dashboard" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
++  <dp:decorate portlet="${it}">
++    <tr><td>
++      <div align="center">
++		<st:include page="statbuilds.jelly"/>
++       </div>
++     </td></tr>
++  </dp:decorate>
++</j:jelly>
+\ No newline at end of file
+Index: src/main/resources/hudson/plugins/view/dashboard/stats/StatJobs/statjobs.properties
+===================================================================
+--- src/main/resources/hudson/plugins/view/dashboard/stats/StatJobs/statjobs.properties	(revision 0)
++++ src/main/resources/hudson/plugins/view/dashboard/stats/StatJobs/statjobs.properties	(revision 0)
+@@ -0,0 +1,28 @@
++# The MIT License
++# 
++# Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
++# 
++# Permission is hereby granted, free of charge, to any person obtaining a copy
++# of this software and associated documentation files (the "Software"), to deal
++# in the Software without restriction, including without limitation the rights
++# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++# copies of the Software, and to permit persons to whom the Software is
++# furnished to do so, subject to the following conditions:
++# 
++# The above copyright notice and this permission notice shall be included in
++# all copies or substantial portions of the Software.
++# 
++# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++# THE SOFTWARE.
++
++ProjectStat=Job Statistics
++Project\ health=Job health
++Description=Description
++Number\ of\ projects=Number of jobs with this health status
++Total\ projects=Total jobs
++All\ projects=All jobs
+Index: src/main/resources/hudson/plugins/view/dashboard/stats/StatJobs/portlet.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/view/dashboard/stats/StatJobs/portlet.jelly	(revision 0)
++++ src/main/resources/hudson/plugins/view/dashboard/stats/StatJobs/portlet.jelly	(revision 0)
+@@ -0,0 +1,33 @@
++<!--
++The MIT License
++
++Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in
++all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++THE SOFTWARE.
++-->
++
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:dp="/hudson/plugins/view/dashboard" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
++  <dp:decorate portlet="${it}">
++    <tr><td>
++      <div align="center">
++		<st:include page="statjobs.jelly"/>
++       </div>
++     </td></tr>
++  </dp:decorate>
++</j:jelly>
+\ No newline at end of file
+Index: src/main/resources/hudson/plugins/view/dashboard/builds/LatestBuilds/latestbuilds.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/view/dashboard/builds/LatestBuilds/latestbuilds.jelly	(revision 0)
++++ src/main/resources/hudson/plugins/view/dashboard/builds/LatestBuilds/latestbuilds.jelly	(revision 0)
+@@ -0,0 +1,43 @@
++<!--
++The MIT License
++
++Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in
++all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++THE SOFTWARE.
++-->
++
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" 
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson"
++	xmlns:dp="/hudson/plugins/view/dashboard">
++	<j:set var="iconSize" value="16x16" />
++	<j:set var="builds" value="${it.finishedBuilds}" />
++			<table id="statistics" class="sortable pane bigtable"
++				style="margin-top: 0px;">
++				<tr style="border-top: 0px;">
++					<th tooltip="${%Build name}" align="left">${%Build name}</th>
++					<th tooltip="${%Build time}" align="left">${%Build time}</th>
++				</tr>
++				<j:forEach var="build" items="${builds}">
++					<tr>
++						<td style="border: 1px #bbb solid;"><dp:jobLink job="${build.parent}"/> / <a href="${rootURL}/job/${build.parent.displayName}/${build.number}">${build.displayName}</a></td>
++						<td>${build.timestampString2}</td>
++					</tr>
++				</j:forEach>
++			</table>
++</j:jelly>
+\ No newline at end of file
+Index: src/main/resources/hudson/plugins/view/dashboard/stats/StatBuilds/statbuilds.properties
+===================================================================
+--- src/main/resources/hudson/plugins/view/dashboard/stats/StatBuilds/statbuilds.properties	(revision 0)
++++ src/main/resources/hudson/plugins/view/dashboard/stats/StatBuilds/statbuilds.properties	(revision 0)
+@@ -0,0 +1,28 @@
++# The MIT License
++# 
++# Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
++# 
++# Permission is hereby granted, free of charge, to any person obtaining a copy
++# of this software and associated documentation files (the "Software"), to deal
++# in the Software without restriction, including without limitation the rights
++# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++# copies of the Software, and to permit persons to whom the Software is
++# furnished to do so, subject to the following conditions:
++# 
++# The above copyright notice and this permission notice shall be included in
++# all copies or substantial portions of the Software.
++# 
++# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++# THE SOFTWARE.
++
++BuildStat=Build Statistics
++Status\ of\ the\ build=Status of the build
++Number\ of\ builds\ with\ status=Number of builds with this status
++Total\ builds = Total builds
++All\ builds=All builds
++
+Index: src/main/resources/hudson/plugins/view/dashboard/stats/StatJobs/statjobs.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/view/dashboard/stats/StatJobs/statjobs.jelly	(revision 0)
++++ src/main/resources/hudson/plugins/view/dashboard/stats/StatJobs/statjobs.jelly	(revision 0)
+@@ -0,0 +1,53 @@
++<!--
++The MIT License
++
++Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in
++all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++THE SOFTWARE.
++-->
++
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" 
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
++	<j:set var="iconSize" value="16x16" />
++	<j:set var="statsJob" value="${it.jobStat}" />
++	<j:set var="nProjects" value="0" />
++			<table id="statistics" class="sortable pane bigtable"
++				style="margin-top: 0px;">
++				<tr style="border-top: 0px;">
++					<th tooltip="${%Project health}" align="left">${%Project health}</th>
++					<th tooltip="${%Description}" align="left">${%Description}</th>
++					<th tooltip="${%Number of projects}" align="left">${%Number of projects}</th>
++				</tr>
++				<j:forEach var="col" items="${statsJob}">
++					<tr>
++						<td><img src="${rootURL}${col.key.getIconUrl(iconSize)}"
++							alt="${col.key.description}" /></td>
++						<td>${col.key.description}</td>
++						<td>${col.value}</td>
++					</tr>
++					<j:set var="nProjects" value="${nProjects+col.value}" />
++				</j:forEach>
++				<tr>
++					<td><b>${%Total projects}</b></td>
++					<td>${%All projects}</td>
++					<!-- td>${items.size()}</td -->
++					<td>${nProjects}</td>
++				</tr>
++			</table>
++</j:jelly>
+\ No newline at end of file
+Index: src/main/resources/hudson/plugins/view/dashboard/stats/StatBuilds/statbuilds.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/view/dashboard/stats/StatBuilds/statbuilds.jelly	(revision 0)
++++ src/main/resources/hudson/plugins/view/dashboard/stats/StatBuilds/statbuilds.jelly	(revision 0)
+@@ -0,0 +1,53 @@
++<!--
++The MIT License
++
++Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in
++all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++THE SOFTWARE.
++-->
++
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" 
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
++	<j:set var="iconSize" value="16x16" />
++	<j:set var="statsBuild" value="${it.buildStat}" /> 
++	<j:set var="nBuilds" value="0" />
++			<table id="statistics" class="sortable pane bigtable"
++				style="margin-top: 0px;">
++				<tr style="border-top: 0px;">
++					<th tooltip="${%Status of the build}" align="left">${%Status
++					of the build}</th>
++					<th tooltip="${%Description}" align="left">${%Description}</th>
++					<th tooltip="${%Number of builds with status}" align="left">${%Number
++					of builds with status}</th>
++				</tr>
++				<j:forEach var="col" items="${statsBuild}">
++					<tr>
++						<t:ballColorTd it="${col.key}" />
++						<td>${col.key.description}</td>
++						<td>${col.value}</td>
++					</tr>
++					<j:set var="nBuilds" value="${nBuilds+col.value}" />
++				</j:forEach>
++				<tr>
++					<td><b>${%Total builds}</b></td>
++					<td>${%All builds}</td>
++					<td>${nBuilds}</td>
++				</tr>
++			</table>
++</j:jelly>
+\ No newline at end of file
+

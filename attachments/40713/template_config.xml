@@ -1,0 +1,157 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>...</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>30</daysToKeep>
+        <numToKeep>-1</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+ ...
+	  </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <com.joelj.jenkins.eztemplates.TemplateProperty plugin="ez-templates@1.3.1"/>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@3.5.1">
+...
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>if [ ${end_target} == &quot;deployToSWDepot&quot; ] || [ ${end_target} == &quot;dTSWD&quot; ]
+then
+	BLANK=&quot;ROOT&quot;
+else
+	BLANK=
+fi
+
+if [ &quot;$BLANK&quot; != &quot;${subProject}&quot; ]
+then 
+   SUBPROJ=`echo &quot;:${subProject}:&quot; | /bin/sed &apos;s|/|:|g&apos;`
+   RAWSUB=&quot;${subProject}&quot;
+else
+   SUBPROJ=
+   RAWSUB=
+fi
+CLEAN=&quot;${SUBPROJ}${clean}&quot;
+TEST_TARGET=&quot;${SUBPROJ}${test}&quot;
+END_TARGET=&quot;${SUBPROJ}${end_target}&quot;
+
+echo &quot;SUBPROJ=${SUBPROJ}&quot; &gt; &quot;${WORKSPACE}/newEnvVar.txt&quot; 
+echo &quot;RAWSUB=${RAWSUB}&quot; &gt;&gt; &quot;${WORKSPACE}/newEnvVar.txt&quot; 
+echo &quot;CLEAN=${CLEAN}&quot; &gt;&gt; &quot;${WORKSPACE}/newEnvVar.txt&quot; 
+echo &quot;TEST_TARGET=${TEST_TARGET}&quot; &gt;&gt; &quot;${WORKSPACE}/newEnvVar.txt&quot;
+echo &quot;END_TARGET=${END_TARGET}&quot; &gt;&gt; &quot;${WORKSPACE}/newEnvVar.txt&quot; 
+
+
+
+</command>
+    </hudson.tasks.Shell>
+    <EnvInjectBuilder plugin="envinject@2.0">
+      <info>
+        <propertiesFilePath>${WORKSPACE}/newEnvVar.txt</propertiesFilePath>
+      </info>
+    </EnvInjectBuilder>
+    <hudson.plugins.gradle.Gradle plugin="gradle@1.26">
+      <switches>-PbuildNumber=${BUILD_NUMBER}
+-PbuildTimestamp=&quot;${BUILD_TIMESTAMP}&quot;
+$gradle_switches</switches>
+      <tasks>$CLEAN
+$TEST_TARGET
+$END_TARGET</tasks>
+      <rootBuildScriptDir></rootBuildScriptDir>
+      <buildFile></buildFile>
+      <gradleName>(Default)</gradleName>
+      <useWrapper>true</useWrapper>
+      <makeExecutable>true</makeExecutable>
+      <useWorkspaceAsHome>false</useWorkspaceAsHome>
+      <wrapperLocation></wrapperLocation>
+      <passAsProperties>false</passAsProperties>
+    </hudson.plugins.gradle.Gradle>
+  </builders>
+  <publishers>
+    <hudson.plugins.emailext.ExtendedEmailPublisher plugin="email-ext@2.61">
+      <recipientList></recipientList>
+      <configuredTriggers>
+        <hudson.plugins.emailext.plugins.trigger.SuccessTrigger>
+          <email>
+            <recipientList>...</recipientList>
+            <subject>$PROJECT_DEFAULT_SUBJECT</subject>
+            <body>$PROJECT_DEFAULT_CONTENT</body>
+            <recipientProviders>
+              <hudson.plugins.emailext.plugins.recipients.DevelopersRecipientProvider/>
+              <hudson.plugins.emailext.plugins.recipients.ListRecipientProvider/>
+            </recipientProviders>
+            <attachmentsPattern></attachmentsPattern>
+            <attachBuildLog>false</attachBuildLog>
+            <compressBuildLog>false</compressBuildLog>
+            <replyTo>$PROJECT_DEFAULT_REPLYTO</replyTo>
+            <contentType>text/plain</contentType>
+          </email>
+        </hudson.plugins.emailext.plugins.trigger.SuccessTrigger>
+      </configuredTriggers>
+      <contentType>text/plain</contentType>
+      <defaultSubject>Software Depot Replacement Occurred!</defaultSubject>
+      <defaultContent>$DEFAULT_CONTENT</defaultContent>
+      <attachmentsPattern></attachmentsPattern>
+      <presendScript>import java.io.File;
+File getReplacementIndicatorFile(String subproject) {
+     if (subproject == null) { 
+          return build.getWorkspace().child(&apos;build&apos;).child(&apos;replaceInfo.txt&apos;)
+     } else {
+          return build.getWorkspace().child(subproject).child(&apos;build&apos;).child(&apos;replaceInfo.txt&apos;)
+     }
+}
+if (this.hasProperty(&quot;RAWSUB&quot;)) {
+    File replaceInfoFile = getReplacementIndicatorFile(&quot;${RAWSUB}&quot;)  
+    logger.println(&quot;replaceInfoFile=${replaceInfoFile}&quot;)
+    if (replaceInfoFile.exists()) {
+        msg.text = replaceInfoFile.readToString()
+    } else {
+        cancel = true
+    }
+} else {
+   cancel = true
+}</presendScript>
+      <postsendScript>$DEFAULT_POSTSEND_SCRIPT</postsendScript>
+      <classpath>
+        <hudson.plugins.emailext.GroovyScriptPath>
+          <path></path>
+        </hudson.plugins.emailext.GroovyScriptPath>
+      </classpath>
+      <attachBuildLog>false</attachBuildLog>
+      <compressBuildLog>false</compressBuildLog>
+      <replyTo>$DEFAULT_REPLYTO</replyTo>
+      <saveOutput>false</saveOutput>
+      <disabled>false</disabled>
+    </hudson.plugins.emailext.ExtendedEmailPublisher>
+  </publishers>
+  <buildWrappers>
+    <hudson.plugins.ws__cleanup.PreBuildCleanup plugin="ws-cleanup@0.32">
+      <deleteDirs>false</deleteDirs>
+      <cleanupParameter></cleanupParameter>
+      <externalDelete></externalDelete>
+    </hudson.plugins.ws__cleanup.PreBuildCleanup>
+    <EnvInjectBuildWrapper plugin="envinject@2.0">
+      <info>
+        <secureGroovyScript plugin="script-security@1.39">
+          <script></script>
+          <sandbox>false</sandbox>
+        </secureGroovyScript>
+        <loadFilesFromMaster>false</loadFilesFromMaster>
+      </info>
+    </EnvInjectBuildWrapper>
+  </buildWrappers>
+</project>

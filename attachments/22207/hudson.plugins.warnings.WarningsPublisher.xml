@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson.plugins.warnings.WarningsDescriptor>
+  <helpRedirect/>
+  <groovyParsers>
+    <hudson.plugins.warnings.GroovyParser>
+      <name>Microsoft C++ Warning Parser</name>
+      <regexp>^(.*)\((\d+)\)\:\s+warning\s+(\w*)\:(.*)\[(.*)\\\w+\.vcxproj\]$</regexp>
+      <script>import hudson.plugins.warnings.parser.Warning
+
+String fileName = matcher.group(5) + matcher.group(1)
+String lineNumber = matcher.group(2)
+String category = matcher.group(3)
+String message = matcher.group(4)
+
+return new Warning(fileName, Integer.parseInt(lineNumber), &quot;C++ Warning Parser&quot;, category, message);</script>
+      <example><__filename__>(6624): warning C4244:<__warning text__> [<__projectfilename__>.vcxproj]</example>
+      <linkName>Compiler Warnings (C++)</linkName>
+      <trendName>Compiler Warnings Trend (C++)</trendName>
+    </hudson.plugins.warnings.GroovyParser>
+    <hudson.plugins.warnings.GroovyParser>
+      <name>Microsoft C# Warning Parser</name>
+      <regexp>^(.*)\((\d+)\,\d+\)\:\s+warning\s+(\w+)\:\s+(.*)$</regexp>
+      <script>import hudson.plugins.warnings.parser.Warning
+
+String fileName = matcher.group(1)
+String lineNumber = matcher.group(2)
+String category = matcher.group(3)
+String message = matcher.group(4)
+
+return new Warning(fileName, Integer.parseInt(lineNumber), &quot;C# Warning Parser&quot;, category, message);</script>
+      <example><__filename__>(52,17): warning CS0168: The variable &apos;bbb&apos; is declared but never used</example>
+      <linkName>Compiler Warnings (C#)</linkName>
+      <trendName>Compiler Warnings Trend (C#)</trendName>
+    </hudson.plugins.warnings.GroovyParser>
+    <hudson.plugins.warnings.GroovyParser>
+      <name>FT Documentation Warning Parser</name>
+      <regexp>^(.*)\:(\d+)\:\s*(warning)\:\s*(.*)$</regexp>
+      <script>import hudson.plugins.warnings.parser.Warning
+
+String fileName = matcher.group(1)
+String lineNumber = matcher.group(2)
+String category = matcher.group(3)
+String message = matcher.group(4)
+
+return new Warning(fileName, Integer.parseInt(lineNumber), &quot;FT Documentation Warning Parser&quot;, category, message);</script>
+      <example><__filename__>:20: warning: <__warnin text__>.</example>
+      <linkName>FT Documentation Warnings </linkName>
+      <trendName>FT Documentation Warning Trend</trendName>
+    </hudson.plugins.warnings.GroovyParser>
+  </groovyParsers>
+</hudson.plugins.warnings.WarningsDescriptor>

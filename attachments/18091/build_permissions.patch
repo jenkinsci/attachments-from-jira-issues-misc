@@ -1,0 +1,64 @@
+Index: main/core/src/main/resources/hudson/model/Job/index.jelly
+===================================================================
+--- main/core/src/main/resources/hudson/model/Job/index.jelly   (revision 13501)
++++ main/core/src/main/resources/hudson/model/Job/index.jelly   (working copy)
+@@ -3,7 +3,7 @@
+     <st:include page="sidepanel.jelly" />
+     <l:main-panel>
+       <h1>${it.pronoun} ${it.displayName}</h1>
+-      <t:editableDescription permission="${app.ADMINISTER}"/>
++      <t:editableDescription permission="${it.CONFIGURE}"/>
+
+       <j:if test="${it.disabled}">
+         <div class="warning">
+@@ -18,4 +18,4 @@
+       <st:include page="permalinks.jelly" />
+     </l:main-panel>
+   </l:layout>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>
+Index: main/core/src/main/resources/hudson/widgets/HistoryWidget/entry.jelly
+===================================================================
+--- main/core/src/main/resources/hudson/widgets/HistoryWidget/entry.jelly       (revision 13501)
++++ main/core/src/main/resources/hudson/widgets/HistoryWidget/entry.jelly       (working copy)
+@@ -28,9 +28,10 @@
+         <tr><td>
+           <t:buildProgressBar build="${build}"/>
+         </td><td style="padding:0">
+-          <l:isAdmin>
++          <!-- Check ABORT permission for Project, Admin permission otherwise -->
++          <j:if test="${h.ifThenElse(empty(it.owner.ABORT),h.hasPermission(app.ADMINISTER),it.owner.hasPermission(it.owner.ABORT))}">
+             <a href="${link}stop"><img src="${imagesURL}/16x16/stop.gif" alt="[cancel]"/></a>
+-          </l:isAdmin>
++          </j:if>
+         </td></tr>
+       </table>
+     </td></tr>
+@@ -43,4 +44,4 @@
+       </td>
+     </tr>
+   </j:if>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>
+Index: main/core/src/main/resources/lib/hudson/buildCaption.jelly
+===================================================================
+--- main/core/src/main/resources/lib/hudson/buildCaption.jelly  (revision 13501)
++++ main/core/src/main/resources/lib/hudson/buildCaption.jelly  (working copy)
+@@ -11,7 +11,7 @@
+                </td><td>
+                  <t:buildProgressBar build="${it}"/>
+                </td><td>
+-            <j:if test="${parent.hasAbortPermission()}">
++            <j:if test="${it.project.hasAbortPermission()}">
+               <a href="stop"><img src="${imagesURL}/16x16/stop.gif" alt="[${%cancel}]" /></a>
+             </j:if>
+                </td>
+@@ -22,4 +22,4 @@
+          <img src="buildStatus" width="48" height="48" alt="${it.iconColor.description}" />
+          <d:invokeBody />
+        </h1>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>

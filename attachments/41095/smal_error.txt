@@ -1,0 +1,83 @@
+com.thoughtworks.xstream.mapper.CannotResolveClassException: org.jenkinsci.plugins.saml.SamlSecurityRealm
+	at com.thoughtworks.xstream.mapper.DefaultMapper.realClass(DefaultMapper.java:79)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+	at com.thoughtworks.xstream.mapper.DynamicProxyMapper.realClass(DynamicProxyMapper.java:55)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+	at com.thoughtworks.xstream.mapper.PackageAliasingMapper.realClass(PackageAliasingMapper.java:88)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+	at com.thoughtworks.xstream.mapper.ClassAliasingMapper.realClass(ClassAliasingMapper.java:79)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+	at com.thoughtworks.xstream.mapper.ArrayMapper.realClass(ArrayMapper.java:74)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+	at com.thoughtworks.xstream.mapper.SecurityMapper.realClass(SecurityMapper.java:71)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+	at hudson.util.XStream2$CompatibilityMapper.realClass(XStream2.java:362)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+	at org.jenkinsci.jruby.JRubyMapper.realClass(JRubyMapper.java:34)
+	at hudson.util.xstream.MapperDelegate.realClass(MapperDelegate.java:43)
+	at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+	at com.thoughtworks.xstream.mapper.CachingMapper.realClass(CachingMapper.java:48)
+	at hudson.util.RobustReflectionConverter.determineType(RobustReflectionConverter.java:461)
+	at hudson.util.RobustReflectionConverter.doUnmarshal(RobustReflectionConverter.java:327)
+Caused: jenkins.util.xstream.CriticalXStreamException: org.jenkinsci.plugins.saml.SamlSecurityRealm : org.jenkinsci.plugins.saml.SamlSecurityRealm
+---- Debugging information ----
+message             : org.jenkinsci.plugins.saml.SamlSecurityRealm
+cause-exception     : com.thoughtworks.xstream.mapper.CannotResolveClassException
+cause-message       : org.jenkinsci.plugins.saml.SamlSecurityRealm
+class               : hudson.model.Hudson
+required-type       : hudson.model.Hudson
+converter-type      : hudson.util.RobustReflectionConverter
+path                : /hudson/securityRealm
+line number         : 138
+version             : not available
+-------------------------------
+	at hudson.util.RobustReflectionConverter.doUnmarshal(RobustReflectionConverter.java:356)
+	at hudson.util.RobustReflectionConverter.unmarshal(RobustReflectionConverter.java:270)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:72)
+	at com.thoughtworks.xstream.core.AbstractReferenceUnmarshaller.convert(AbstractReferenceUnmarshaller.java:65)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:66)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:50)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.start(TreeUnmarshaller.java:134)
+	at com.thoughtworks.xstream.core.AbstractTreeMarshallingStrategy.unmarshal(AbstractTreeMarshallingStrategy.java:32)
+	at com.thoughtworks.xstream.XStream.unmarshal(XStream.java:1189)
+	at hudson.util.XStream2.unmarshal(XStream2.java:146)
+	at hudson.util.XStream2.unmarshal(XStream2.java:117)
+	at com.thoughtworks.xstream.XStream.unmarshal(XStream.java:1173)
+	at hudson.XmlFile.unmarshal(XmlFile.java:179)
+Caused: java.io.IOException: Unable to read /apps/Jenkins_HOME/config.xml
+	at hudson.XmlFile.unmarshal(XmlFile.java:182)
+	at hudson.XmlFile.unmarshal(XmlFile.java:162)
+	at jenkins.model.Jenkins.loadConfig(Jenkins.java:3031)
+	at jenkins.model.Jenkins.access$1200(Jenkins.java:303)
+	at jenkins.model.Jenkins$14.run(Jenkins.java:3049)
+	at org.jvnet.hudson.reactor.TaskGraphBuilder$TaskImpl.run(TaskGraphBuilder.java:169)
+	at org.jvnet.hudson.reactor.Reactor.runTask(Reactor.java:282)
+	at jenkins.model.Jenkins$5.runTask(Jenkins.java:1068)
+	at org.jvnet.hudson.reactor.Reactor$2.run(Reactor.java:210)
+	at org.jvnet.hudson.reactor.Reactor$Node.run(Reactor.java:117)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+Caused: org.jvnet.hudson.reactor.ReactorException
+	at org.jvnet.hudson.reactor.Reactor.execute(Reactor.java:269)
+	at jenkins.InitReactorRunner.run(InitReactorRunner.java:48)
+	at jenkins.model.Jenkins.executeReactor(Jenkins.java:1102)
+	at jenkins.model.Jenkins.<init>(Jenkins.java:904)
+	at hudson.model.Hudson.<init>(Hudson.java:85)
+	at hudson.model.Hudson.<init>(Hudson.java:81)
+	at hudson.WebAppMain$3.run(WebAppMain.java:233)
+Caused: hudson.util.HudsonFailedToLoad
+	at hudson.WebAppMain$3.run(WebAppMain.java:250)

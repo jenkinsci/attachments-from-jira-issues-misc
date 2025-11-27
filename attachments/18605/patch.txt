@@ -1,0 +1,182 @@
+Index: src/main/java/hudson/plugins/active_directory/ActiveDirectoryUnixAuthenticationProvider.java
+===================================================================
+--- src/main/java/hudson/plugins/active_directory/ActiveDirectoryUnixAuthenticationProvider.java	(revision 19032)
++++ src/main/java/hudson/plugins/active_directory/ActiveDirectoryUnixAuthenticationProvider.java	(working copy)
+@@ -40,10 +40,10 @@
+ public class ActiveDirectoryUnixAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider
+     implements UserDetailsService, GroupDetailsService {
+ 
+-    private final String domainName;
++    private final String[] domainNames;
+ 
+     public ActiveDirectoryUnixAuthenticationProvider(String domainName) {
+-        this.domainName = domainName;
++        this.domainNames = domainName.split(",");
+     }
+ 
+     /**
+@@ -61,6 +61,26 @@
+     }
+ 
+     protected UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
++        UserDetails userDetails = null;
++        for (String domainName : domainNames) {
++            try {
++                userDetails = retrieveUser(username, authentication, domainName);
++            }
++            catch (BadCredentialsException bce) {
++                LOGGER.log(Level.WARNING,"Credential exception tying to authenticate against " + domainName + " domain",bce);
++            }
++            if (userDetails != null) {
++                break;
++            }
++        }
++        if (userDetails == null) {
++            LOGGER.log(Level.WARNING,"Exhausted all configured domains and could not authenticat against any.");
++            throw new BadCredentialsException("Either no such user '"+username+"' or incorrect password");
++        }
++        return userDetails;
++    }
++    
++    private UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication, String domainName) throws AuthenticationException {
+         String password = null;
+         if(authentication!=null)
+             password = (String) authentication.getCredentials();
+@@ -90,8 +110,9 @@
+                 // failed to find it. Fall back to sAMAccountName.
+                 // see http://www.nabble.com/Re%3A-Hudson-AD-plug-in-td21428668.html
+                 renum = context.search(toDC(domainName),"(& (sAMAccountName="+username+")(objectClass=user))", controls);
+-                if(!renum.hasMore())
++                if(!renum.hasMore()) {
+                     throw new BadCredentialsException("Authentication was successful but cannot locate the user information for "+username);
++                }
+             }
+             SearchResult result = renum.next();
+ 
+Index: src/main/java/hudson/plugins/active_directory/ActiveDirectorySecurityRealm.java
+===================================================================
+--- src/main/java/hudson/plugins/active_directory/ActiveDirectorySecurityRealm.java	(revision 19032)
++++ src/main/java/hudson/plugins/active_directory/ActiveDirectorySecurityRealm.java	(working copy)
+@@ -86,50 +86,54 @@
+         public void doDomainCheck(StaplerRequest req, StaplerResponse rsp, @QueryParameter("value") final String value) throws IOException, ServletException {
+             new FormFieldValidator(req,rsp,true) {
+                 protected void check() throws IOException, ServletException {
+-                    String name = Util.fixEmptyAndTrim(value);
+-                    if(name==null) {// no value given yet
++                    String n = Util.fixEmptyAndTrim(value);
++                    if(n==null) {// no value given yet
+                         ok();
+                         return;
+                     }
+-                    if(!name.endsWith(".")) name+='.';
++                    
++                    String[] names = n.split(",");
++                    for (String name : names) {
++                    
++                        if(!name.endsWith(".")) name+='.';
+ 
+-                    DirContext ictx;
++                        DirContext ictx;
+ 
+-                    // first test the sanity of the domain name itself
+-                    try {
+-                        LOGGER.fine("Attempting to resolve "+name+" to A record");
+-                        ictx = createDNSLookupContext();
+-                        Attributes attributes = ictx.getAttributes(name, new String[]{"A"});
+-                        Attribute a = attributes.get("A");
+-                        if(a==null) throw new NamingException();
+-                        LOGGER.fine(name+" resolved to "+ a.get());
+-                    } catch (NamingException e) {
+-                        LOGGER.log(Level.WARNING,"Failed to resolve "+name+" to A record",e);
+-                        error(name+" doesn't look like a valid domain name");
+-                        return;
+-                    }
++                        // first test the sanity of the domain name itself
++                        try {
++                            LOGGER.fine("Attempting to resolve "+name+" to A record");
++                            ictx = createDNSLookupContext();
++                            Attributes attributes = ictx.getAttributes(name, new String[]{"A"});
++                            Attribute a = attributes.get("A");
++                            if(a==null) throw new NamingException();
++                            LOGGER.fine(name+" resolved to "+ a.get());
++                        } catch (NamingException e) {
++                            LOGGER.log(Level.WARNING,"Failed to resolve "+name+" to A record",e);
++                            error(name+" doesn't look like a valid domain name");
++                            return;
++                        }
+ 
+-                    // then look for the LDAP server
+-                    final String ldapServer = "_ldap._tcp."+name;
+-                    String serverHostName;
+-                    try {
+-                        serverHostName = obtainLDAPServer(ictx,name);
+-                    } catch (NamingException e) {
+-                        LOGGER.log(Level.WARNING,"Failed to resolve "+ldapServer+" to SRV record",e);
+-                        error("No LDAP server was found in "+name);
+-                        return;
+-                    }
++                        // then look for the LDAP server
++                        final String ldapServer = "_ldap._tcp."+name;
++                        String serverHostName;
++                        try {
++                            serverHostName = obtainLDAPServer(ictx,name);
++                        } catch (NamingException e) {
++                            LOGGER.log(Level.WARNING,"Failed to resolve "+ldapServer+" to SRV record",e);
++                            error("No LDAP server was found in "+name);
++                            return;
++                        }
+ 
+-                    // try to connect to LDAP port to make sure this machine has LDAP service
+-                    // TODO: honor the port number in SRV record
+-                    try {
+-                        new Socket(serverHostName,389).close();
+-                    } catch (IOException e) {
+-                        LOGGER.log(Level.WARNING,"Failed to connect to LDAP port",e);
+-                        error("Failed to connect to the LDAP port (389) of "+serverHostName);
+-                        return;
++                        // try to connect to LDAP port to make sure this machine has LDAP service
++                        // TODO: honor the port number in SRV record
++                        try {
++                            new Socket(serverHostName,389).close();
++                        } catch (IOException e) {
++                            LOGGER.log(Level.WARNING,"Failed to connect to LDAP port",e);
++                            error("Failed to connect to the LDAP port (389) of "+serverHostName);
++                            return;
++                        }
+                     }
+-
+                     // looks good
+                     ok();
+                 }
+Index: src/main/webapp/help/domain-name-windows.html
+===================================================================
+--- src/main/webapp/help/domain-name-windows.html	(revision 19032)
++++ src/main/webapp/help/domain-name-windows.html	(working copy)
+@@ -1,5 +1,5 @@
+ <div>
+-  Optionally specify the Active Directory domain name to authenticate against.
++  Optionally specify the Active Directory domain(s) name to authenticate against.
+ 
+   <p>
+   By default, Hudson uses <a  href="http://msdn.microsoft.com/en-us/library/aa772170.aspx">ADSI</a>
+@@ -10,4 +10,6 @@
+   that's running Hudson is not a domain user (which is the case if you install Hudson as a service,
+   for example.) In such a case, please specify the domain name explicitly here, and Hudson uses
+   standard LDAP protocol to talk to Active Directory.
++  <p>
++  It is also possible to specify multiple domains by separating them with a comma.
+ </div>
+\ No newline at end of file
+Index: src/main/webapp/help/domain-name-unix.html
+===================================================================
+--- src/main/webapp/help/domain-name-unix.html	(revision 19032)
++++ src/main/webapp/help/domain-name-unix.html	(working copy)
+@@ -1,4 +1,5 @@
+ <div>
+-    Specify the full domain name of Active Directory. Hudson uses this information to locate the LDAP service
+-    and performs authentication.
++    Specify the full domain name(s) of Active Directory. Hudson uses this information to locate the LDAP service
++    and performs authentication. If you wish to attempt authentication against multiple Active Directory domains 
++    the entries can be sepparated by a comma.
+ </div>
+\ No newline at end of file

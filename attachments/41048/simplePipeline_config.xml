@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.11">
+  <actions/>
+  <description>Run several tests in parallel</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.buildblocker.BuildBlockerProperty plugin="build-blocker-plugin@1.7.3">
+      <useBuildBlocker>false</useBuildBlocker>
+      <blockLevel>GLOBAL</blockLevel>
+      <scanQueueFor>DISABLED</scanQueueFor>
+      <blockingJobs></blockingJobs>
+    </hudson.plugins.buildblocker.BuildBlockerProperty>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers/>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.34">
+    <script>stage (&apos;test&apos;) {
+    def branches = [:]
+    def test_jobs = [:]
+    def  jobnames = [&quot;HW_run1&quot;, &quot;HW_run2&quot;, &quot;HW_run3&quot;, &quot;HW_run4&quot;]
+    
+    node (&apos;master&apos;) {
+        jobnames.each { jobname -&gt; 
+           branches [jobname] = { jj=build job: jobname;
+           test_jobs[jobname] = jj.getDuration()
+           }
+        }
+        
+        try {
+             parallel branches
+        } catch (e) {
+            println &quot;Unit test stage failed with error &quot; + e
+        }
+    }
+}</script>
+    <sandbox>false</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

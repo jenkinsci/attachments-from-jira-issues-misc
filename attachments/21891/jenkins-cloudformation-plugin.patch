@@ -1,0 +1,41 @@
+diff --git a/src/main/java/com/syncapse/jenkinsci/plugins/awscloudformationwrapper/CloudFormation.java b/src/main/java/com/syncapse/jenkinsci/plugins/awscloudformationwrapper/CloudFormation.java
+index 18e3b88..7766824 100644
+--- a/src/main/java/com/syncapse/jenkinsci/plugins/awscloudformationwrapper/CloudFormation.java
++++ b/src/main/java/com/syncapse/jenkinsci/plugins/awscloudformationwrapper/CloudFormation.java
+@@ -178,10 +178,10 @@
+ 	}
+ 	
+ 	private boolean waitForStackToBeDeleted() {
+-		
++		DescribeStacksRequest describeStacksRequest = new DescribeStacksRequest().withStackName(getExpandedStackName());
+ 		while (true){
+ 			
+-			stack = getStack(amazonClient.describeStacks());
++			stack = getStack(amazonClient.describeStacks(describeStacksRequest));
+ 			
+ 			if (stack == null) return true;
+ 			
+diff --git a/src/test/java/com/syncapse/jenkinsci/plugins/awscloudformationwrapper/CloudFormationTest.java b/src/test/java/com/syncapse/jenkinsci/plugins/awscloudformationwrapper/CloudFormationTest.java
+index bf70200..9524c34 100644
+--- a/src/test/java/com/syncapse/jenkinsci/plugins/awscloudformationwrapper/CloudFormationTest.java
++++ b/src/test/java/com/syncapse/jenkinsci/plugins/awscloudformationwrapper/CloudFormationTest.java
+@@ -85,16 +85,16 @@
+ 
+ 	@Test
+ 	public void delete_waits_for_stack_to_be_deleted() throws Exception {
+-		when(awsClient.describeStacks()).thenReturn(stackDeletingResult(),
++		when(awsClient.describeStacks(any(DescribeStacksRequest.class))).thenReturn(stackDeletingResult(),
+ 				stackDeletingResult(), stackDeleteSuccessfulResult());
+ 		cf.delete();
+-		verify(awsClient, times(3)).describeStacks();
++		verify(awsClient, times(3)).describeStacks(any(DescribeStacksRequest.class));
+ 	}
+ 
+ 	@Test
+ 	public void delete_returns_false_when_stack_fails_to_delete()
+ 			throws Exception {
+-		when(awsClient.describeStacks()).thenReturn(stackDeleteFailedResult());
++		when(awsClient.describeStacks(any(DescribeStacksRequest.class))).thenReturn(stackDeleteFailedResult());
+ 		assertFalse(cf.delete());
+ 	}
+ 

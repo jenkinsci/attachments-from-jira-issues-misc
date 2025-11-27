@@ -1,0 +1,54 @@
+{
+ insertId: "17ucwdzg1khdovh"  
+ 
+labels: {
+  compute.googleapis.com/resource_name: "gke-jenkins-cd-default-pool-b9663bfa-j9ql"   
+  container.googleapis.com/namespace_name: "default"   
+  container.googleapis.com/pod_name: "cd-jenkins-5d7ff4456d-88ldg"   
+  container.googleapis.com/stream: "stderr"   
+ }
+ logName: "projects/jenkins-test/logs/jenkins"  
+ receiveTimestamp: "2019-12-24T08:08:20.886779720Z"  
+ 
+resource: {
+  
+labels: {
+   cluster_name: "jenkins-cd"    
+   container_name: "jenkins"    
+   instance_id: "7717783983729167659"    
+   namespace_id: "default"    
+   pod_id: "cd-jenkins-5d7ff4456d-88ldg"    
+   project_id: "jenkins-test"    
+   zone: "us-west1-c"    
+  }
+  type: "container"   
+ }
+ severity: "ERROR"  
+ textPayload: "io.fabric8.kubernetes.client.KubernetesClientException: Failure executing: GET at: https://kubernetes.default/api/v1/namespaces/default/pods?labelSelector=jenkins%3Dslave%2Cjenkins%2Flabel%3Dpython%20python3.7. Message: found 'python3.7', expected: ',' or 'end of string'. Received status: Status(apiVersion=v1, code=400, details=null, kind=Status, message=found 'python3.7', expected: ',' or 'end of string', metadata=ListMeta(_continue=null, remainingItemCount=null, resourceVersion=null, selfLink=null, additionalProperties={}), reason=BadRequest, status=Failure, additionalProperties={}).
+	at io.fabric8.kubernetes.client.dsl.base.OperationSupport.requestFailure(OperationSupport.java:510)
+	at io.fabric8.kubernetes.client.dsl.base.OperationSupport.assertResponseCode(OperationSupport.java:449)
+	at io.fabric8.kubernetes.client.dsl.base.OperationSupport.handleResponse(OperationSupport.java:413)
+	at io.fabric8.kubernetes.client.dsl.base.OperationSupport.handleResponse(OperationSupport.java:372)
+	at io.fabric8.kubernetes.client.dsl.base.OperationSupport.handleResponse(OperationSupport.java:354)
+	at io.fabric8.kubernetes.client.dsl.base.BaseOperation.listRequestHelper(BaseOperation.java:153)
+	at io.fabric8.kubernetes.client.dsl.base.BaseOperation.list(BaseOperation.java:620)
+	at io.fabric8.kubernetes.client.dsl.base.BaseOperation.list(BaseOperation.java:69)
+	at org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud.getActiveSlavePods(KubernetesCloud.java:608)
+	at org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud.addProvisionedSlave(KubernetesCloud.java:593)
+	at org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud.provision(KubernetesCloud.java:535)
+	at io.jenkins.plugins.kubernetes.NoDelayProvisionerStrategy.apply(NoDelayProvisionerStrategy.java:64)
+	at hudson.slaves.NodeProvisioner.update(NodeProvisioner.java:332)
+	at hudson.slaves.NodeProvisioner.access$900(NodeProvisioner.java:63)
+	at hudson.slaves.NodeProvisioner$NodeProvisionerInvoker.doRun(NodeProvisioner.java:819)
+	at hudson.triggers.SafeTimerTask.run(SafeTimerTask.java:70)
+	at jenkins.security.ImpersonatingScheduledExecutorService$1.run(ImpersonatingScheduledExecutorService.java:58)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+	at java.util.concurrent.FutureTask.runAndReset(FutureTask.java:308)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$301(ScheduledThreadPoolExecutor.java:180)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:294)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+"  
+ timestamp: "2019-12-24T08:08:19.153033488Z"  
+}

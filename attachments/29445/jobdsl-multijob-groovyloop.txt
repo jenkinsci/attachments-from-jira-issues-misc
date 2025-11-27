@@ -1,0 +1,36 @@
+hudson.FilePath workspace_pipeline = hudson.model.Executor.currentExecutor().getCurrentWorkspace()
+
+job (type: Multijob) {
+    name('PIPELINE')
+    label ('master')
+    concurrentBuild (false)
+
+    scm {
+        svn ('hidden_url') { svnNode ->
+            (svnNode / workspaceUpdater).attributes().put 'class', 'hudson.scm.subversion.UpdateWithRevertUpdater'
+            svnNode / locations / 'hudson.scm.SubversionSCM_-ModuleLocation' / depthOption <<  'empty'
+            svnNode / locations / 'hudson.scm.SubversionSCM_-ModuleLocation' / credentialsId << 'e5d77da4-946e-4f7c-803f-b5435419e47c'
+        }
+    }
+
+    steps {
+    
+        environmentVariables {
+            env ('RELEASE_BUILD_NUMBER', '${BUILD_ID}_r${SVN_REVISION}')
+        }
+        
+        phase ('Build', 'COMPLETED') {
+            
+            new File( "${workspace_pipeline}/configurations.txt" ).splitEachLine( /,/ ) { it_pipeline ->
+                String PROJECT_NAME = it_pipeline[0]
+                String CONFIGURATION = it_pipeline[2]
+
+                job ("$PROJECT_NAME-$CONFIGURATION") {
+                    prop ('RELEASE_BUILD_NUMBER', '${RELEASE_BUILD_NUMBER}')
+                }
+            }
+
+        }
+
+    }
+}

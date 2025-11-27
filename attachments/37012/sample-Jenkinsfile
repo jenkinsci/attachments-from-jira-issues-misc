@@ -1,0 +1,47 @@
+#!/usr/bin/env groovy
+
+node {
+
+    currentBuild.result = "SUCCESS"
+    workspace = pwd()
+
+    app_id = 'appRepo'
+
+    wrap([$class: 'AnsiColorBuildWrapper']) {
+        // Checkout repos
+        stage('Checkout App Code') {
+            checkout([
+                $class: 'GitSCM',
+                branches: [[name: '*/master']],
+                doGenerateSubmoduleConfigurations: false,
+                submoduleCfg: [],
+                userRemoteConfigs: [[credentialsId: 'mygituser-creds-id', url: "git@github.com:myorg/${app_id}"]]
+            ])
+        }
+
+        try {
+
+            stage("${app_id}-build-test-publish") {
+                env.ARTIFACT_VERSION = env.BUILD_NUMBER
+
+                echo "${app_id.toUpperCase()} | Build & Test artifact [version ${env.ARTIFACT_VERSION}]"
+                try {
+                    sh "./gradlew clean build -Dorg.gradle.daemon=false"
+                } catch (err) {
+                    throw err
+                } finally {
+                    junit '**/test-results/**/*.xml'
+                }
+            }
+
+            // Other non-interesting steps trimmed
+
+        } catch (err) {
+            currentBuild.result = "FAILURE"
+            throw err
+        } 
+
+    } //AnsiColorBuildWrapper
+
+}
+

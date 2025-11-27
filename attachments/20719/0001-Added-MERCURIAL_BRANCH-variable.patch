@@ -1,0 +1,24 @@
+From fe048fe853adf61d391735a367ddb0b3870727d9 Mon Sep 17 00:00:00 2001
+From: Sergiu <sergiu.ivasenco@autodesk.com>
+Date: Mon, 15 Aug 2011 17:47:17 -0400
+Subject: [PATCH] Added MERCURIAL_BRANCH variable
+
+---
+ .../hudson/plugins/mercurial/MercurialSCM.java     |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/src/main/java/hudson/plugins/mercurial/MercurialSCM.java b/src/main/java/hudson/plugins/mercurial/MercurialSCM.java
+index 8727483..85cc9ac 100644
+--- a/src/main/java/hudson/plugins/mercurial/MercurialSCM.java
++++ b/src/main/java/hudson/plugins/mercurial/MercurialSCM.java
+@@ -611,6 +611,7 @@ public class MercurialSCM extends SCM implements Serializable {
+         MercurialTagAction a = build.getAction(MercurialTagAction.class);
+         if (a != null) {
+             env.put("MERCURIAL_REVISION", a.id);
++            env.put("MERCURIAL_BRANCH", getBranch());
+         }
+     }
+ 
+-- 
+1.7.6.msysgit.0
+

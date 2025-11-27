@@ -1,0 +1,35 @@
+34,35d33
+< import hudson.util.IOException2;
+< import hudson.util.StreamCopyThread;
+48,50d45
+< import java.io.PipedInputStream;
+< import java.io.PipedOutputStream;
+< import java.io.PrintStream;
+79,102c74,75
+< 		   PipedOutputStream pos = new PipedOutputStream();
+<                    StreamCopyThread sct = new StreamCopyThread("svn log copier", new PipedInputStream(pos), listener.getLogger());
+<                    sct.start();
+< 
+< 		   try {
+< 			listener.getLogger().println("Checking out " + l.remote + " because "+module+" doesn't exist");
+<                         File local = new File(ws, moduleName);
+< 			final SVNUpdateClient svnuc = manager.getUpdateClient();
+<                         //svnuc.setEventHandler(new SubversionUpdateEventHandler(new PrintStream(pos), local, moduleName));
+<                         svnuc.doCheckout(l.getSVNURL(), local.getCanonicalFile(), SVNRevision.HEAD, getRevision(l), SVNDepth.INFINITY, true);
+< 		   } catch (SVNException e) {
+< 		       e.printStackTrace(listener.error("Failed to check out " + l.remote));
+< 		       return false;
+< 		   } finally {
+<                        try {
+<                            pos.close();
+<                        } finally {
+<                            try {
+<                                sct.join(); // wait for all data to be piped.
+<                            } catch (InterruptedException e) {
+<                               throw new IOException2("interrupted", e);
+<                            }
+<                        }
+<                    }
+---
+>                     listener.getLogger().println("Checking out a fresh workspace because "+module+" doesn't exist");
+>                     return false;

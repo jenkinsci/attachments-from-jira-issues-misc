@@ -1,0 +1,14 @@
+This was just straight LDAP with no SSL 
+
+[07/Jan/2014:23:14:58 +0000] CONNECT conn=6724 from=10.1.1.34:49767 to=10.1.1.31:10389 protocol=LDAP
+[07/Jan/2014:23:14:58 +0000] BIND REQ conn=6724 op=0 msgID=1 version=3 type=SIMPLE dn="uid=e9cb01adfc62d7c3,ou=people,o=IdentityLabs,dc=enginebay,dc=net"
+[07/Jan/2014:23:14:58 +0000] BIND RES conn=6724 op=0 msgID=1 result=0 authDN="uid=e9cb01adfc62d7c3,ou=people,o=IdentityLabs,dc=enginebay,dc=net" etime=4
+[07/Jan/2014:23:14:58 +0000] SEARCH REQ conn=6724 op=1 msgID=2 base="uid=e9cb01adfc62d7c3,ou=people,o=IdentityLabs,dc=enginebay,dc=net" scope=baseObject filter="(objectClass=*)" attrs="ALL"
+[07/Jan/2014:23:14:58 +0000] SEARCH RES conn=6724 op=1 msgID=2 result=0 nentries=1 etime=3
+[07/Jan/2014:23:14:58 +0000] UNBIND REQ conn=6724 op=2 msgID=3
+[07/Jan/2014:23:14:58 +0000] DISCONNECT conn=6724 reason="Client Unbind"
+
+That was a successful bind, search for auth object and then unbind.  (Log looks so similar to SUN DS v5). Then Jenkins uses the successful DN above uid=e9cb01adfc62d7c3,ou=people,o=IdentityLabs,dc=enginebay,dc=net to search for groups and it finds 12 (nentries=12)
+
+[07/Jan/2014:23:14:58 +0000] SEARCH REQ conn=6708 op=8 msgID=9 base="ou=groups,o=EngineBay.NET,dc=enginebay,dc=net" scope=wholeSubtree filter="(member=uid=e9cb01adfc62d7c3,ou=people,o=IdentityLabs,dc=enginebay,dc=net)" attrs="cn"
+[07/Jan/2014:23:14:58 +0000] SEARCH RES conn=6708 op=8 msgID=9 result=0 nentries=12 etime=8

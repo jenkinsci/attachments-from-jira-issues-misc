@@ -1,0 +1,23 @@
+#!/usr/bin/env groovy
+
+pipeline {
+    agent {label 'azure-ps'}
+
+    stages {
+        stage('Checkout Repo') {
+            steps {
+                checkout scm
+            }
+        }
+        state('Run Pester Tests') {
+            steps {
+                powershell(". '.\\Test\\Invoke-Pester.ps1'")
+            }
+        }
+        stage('Hello World') {
+            steps {    
+                powerShell('Write-Host "Hello, World!"')
+            }
+        }
+    }
+}

@@ -1,0 +1,49 @@
+From 7c698a721f3522a6cbca9623280921d3b09f0359 Mon Sep 17 00:00:00 2001
+From: Dominik Stadler <dominik.stadler@gmx.at>
+Date: Mon, 26 Dec 2011 07:05:03 +0100
+Subject: [PATCH 3/4] update version and add second maven repository to get sqljet package
+
+---
+ deploy.sh |    4 ++--
+ pom.xml   |   11 +++++++++++
+ 2 files changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/deploy.sh b/deploy.sh
+index 3ad14d1..2fb69af 100755
+--- a/deploy.sh
++++ b/deploy.sh
+@@ -2,8 +2,8 @@
+ ./gradlew clean assemble
+ 
+ # be sure to update POM as well
+-version=1.3.6.1-jenkins-2
+-v=1.3.6-v1
++version=1.3.7-jenkins-2
++v=1.3.7
+ 
+ animal-sniffer -t Java5 svnkit/build/libs/svnkit-$v.jar
+ if [ $? != 0 ]; then
+diff --git a/pom.xml b/pom.xml
+index e22e71e..f4ff586 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -54,5 +54,16 @@
+         <enabled>false</enabled>
+       </snapshots>
+     </repository>
++    
++    <repository>
++      <id>m.t.c-releases</id>
++      <url>http://maven.tmatesoft.com/content/repositories/releases</url>
++      <releases>
++        <enabled>true</enabled>
++      </releases>
++      <snapshots>
++        <enabled>false</enabled>
++      </snapshots>
++    </repository>
+   </repositories>
+ </project>
+-- 
+1.7.1
+

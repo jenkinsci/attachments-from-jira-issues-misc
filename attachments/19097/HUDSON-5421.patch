@@ -1,0 +1,18 @@
+Index: src/main/java/hudson/plugins/bazaar/BazaarChangeLogParser.java
+===================================================================
+--- src/main/java/hudson/plugins/bazaar/BazaarChangeLogParser.java	(révision 27117)
++++ src/main/java/hudson/plugins/bazaar/BazaarChangeLogParser.java	(copie de travail)
+@@ -63,7 +63,12 @@
+                     break;
+                 case 2:
+                     if (ident == nident && s.startsWith("committer:")) {
+-                        entry.setAuthor(s.substring("committer:".length()).trim());
++                        int endIndex = s.indexOf('<');
++                        if (endIndex < 0) {
++                            endIndex = len;
++                        }
++                        String author = s.substring("committer:".length(), endIndex).trim();
++                        entry.setAuthor(author);
+                         ++state;
+                     }
+                     break;

@@ -1,0 +1,21 @@
+Started by upstream project "IllegalMonitor_Start" build number 2240
+originally caused by:
+ Started by user Mattias Åkesson
+[EnvInject] - Loading node environment variables.
+Building remotely on staging_node1_7 (copied_machine) in workspace /repo/catg2ci/workspace/CAT_staging_node1_7_-1
+FATAL: null
+java.lang.IllegalMonitorStateException
+	at java.util.concurrent.locks.ReentrantLock$Sync.tryRelease(ReentrantLock.java:151)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer.release(AbstractQueuedSynchronizer.java:1261)
+	at java.util.concurrent.locks.ReentrantLock.unlock(ReentrantLock.java:457)
+	at hudson.matrix.MatrixProject.getRunConfiguration(MatrixProject.java:696)
+	at hudson.matrix.MatrixBuild$MatrixBuildExecution.doRun(MatrixBuild.java:370)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.run(AbstractBuild.java:534)
+	at hudson.model.Run.execute(Run.java:1720)
+	at hudson.matrix.MatrixBuild.run(MatrixBuild.java:323)
+	at hudson.model.ResourceController.execute(ResourceController.java:98)
+	at hudson.model.Executor.run(Executor.java:404)
+Warning: you have no plugins providing access control for builds, so falling back to legacy behavior of permitting any downstream builds to be triggered
+define: [LabelParameterValue: label=copied_machine]
+Triggering a new build of IllegalMonitor_Matrix_Cleanup
+Finished: FAILURE

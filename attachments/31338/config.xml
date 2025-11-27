@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@1.11">
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@1.11">
+    <script>node(&apos;public&apos;)  {
+  git url: &apos;git@bitbucket.org:test/test.git&apos;, credentialsId: &apos;ffcb3c09-2cf5-4eb1-ba96-12f175d3a533&apos;
+  sh &quot;export&quot;
+  def mvnHome = tool &apos;M3&apos;
+  sh &quot;${mvnHome}/bin/mvn -B verify&quot;
+  
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers>
+    <bitbucketpullrequestbuilder.bitbucketpullrequestbuilder.BitbucketBuildTrigger plugin="bitbucket-pullrequest-builder@1.4.7">
+      <spec>* * * * *</spec>
+      <cron>* * * * *</cron>
+      <username>test</username>
+      <password>^q7t8ZYY$JmHjvD7Nd69</password>
+      <repositoryOwner>test</repositoryOwner>
+      <repositoryName>test</repositoryName>
+      <ciSkipPhrases></ciSkipPhrases>
+      <checkDestinationCommit>true</checkDestinationCommit>
+      <approveIfSuccess>true</approveIfSuccess>
+    </bitbucketpullrequestbuilder.bitbucketpullrequestbuilder.BitbucketBuildTrigger>
+  </triggers>
+</flow-definition>

@@ -1,0 +1,161 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><project>
+  <actions/>
+  <description/>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.buildblocker.BuildBlockerProperty plugin="build-blocker-plugin@166.vc82fc20b_a_ed6">
+      <useBuildBlocker>false</useBuildBlocker>
+      <blockLevel>GLOBAL</blockLevel>
+      <scanQueueFor>DISABLED</scanQueueFor>
+      <blockingJobs/>
+    </hudson.plugins.buildblocker.BuildBlockerProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@332.va_1ee476d8f6d">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>REGION</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>DROPLET_IP</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>DROPLET_TYPE</name>
+          <defaultValue>gp</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>HOST_TYPE</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>QUAL_TYPE</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>KEG_PATH</name>
+          <defaultValue>/local/cordite-jenkins/megakeg-latest/</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>CORDITE_TEST_NAME</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>SKIP_DECLINKER</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>SKIP_LIVE_UPDATE</name>
+          <defaultValue>True</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>EXTRA_THOR_PARAM</name>
+          <defaultValue>""</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>SKIP_LOGS</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>EMAIL_RECIPIENT</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers>
+    <hudson.triggers.TimerTrigger>
+      <spec>TZ=America/Los_Angeles
+H/15 * * * *</spec>
+    </hudson.triggers.TimerTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>export CODE_BASE=/local/cordite-jenkins/EC2CorditeCI
+#export DEBUG_USER=`whoami`
+#export CI_TOOLS_PATH=/local/cordite-jenkins/debug/$DEBUG_USER/cordite-test-$DEBUG_USER/ci/ci-tools
+export CI_TOOLS_PATH=/local/cordite-jenkins/ci-tools
+export CORDITE_TEST_PATH="/local/cordite-jenkins/cordite-test-latest/mjollnir/"
+
+if [[ ! -d ${WORKSPACE}/configs ]]; then
+  # mjollnir expect write permission for thor path and mjollnir cfg file
+  cp -Lr /local/cordite-jenkins/configs ${WORKSPACE}/
+  # disable mjollnir ami suggest for DEV teamplte
+  # /apollo/env/Mjollnir/bin/mjollnir -f ${WORKSPACE}/configs/cordite-ci/mj-ci-config.cfg -r ${REGION} ami suggest  --update-default-amis &gt;&gt; ${WORKSPACE}/mjollnir-cfg-update.log
+fi
+
+# mjollnir expect write permission for config file
+export THOR_CFG_PATH=${WORKSPACE}/configs/cordite-ci/ci-launch-terminate-io.thor
+export mj_config="-f ${WORKSPACE}/configs/cordite-ci/mj-ci-config.cfg"
+
+export BUILD_TYPE=megakeg
+
+
+#bash -c $CI_TOOLS_PATH/job-scripts/ci-regression-megakeg.sh</command>
+      <configuredLocalRules/>
+      <unstableReturn>39</unstableReturn>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.plugins.postbuildtask.PostbuildTask plugin="postbuild-task@1.9">
+      <tasks>
+        <hudson.plugins.postbuildtask.TaskProperties>
+          <logTexts>
+            <hudson.plugins.postbuildtask.LogProperties>
+              <logText/>
+              <operator>AND</operator>
+            </hudson.plugins.postbuildtask.LogProperties>
+          </logTexts>
+          <EscalateStatus>false</EscalateStatus>
+          <RunIfJobSuccessful>false</RunIfJobSuccessful>
+          <script>/apollo/env/EC2CorditeJarvvisClusterClient/bin/job_post_processor --server ${JENKINS_URL} --job-name ${JOB_NAME} --build-number ${BUILD_NUMBER}</script>
+        </hudson.plugins.postbuildtask.TaskProperties>
+      </tasks>
+    </hudson.plugins.postbuildtask.PostbuildTask>
+    <hudson.plugins.s3.S3BucketPublisher plugin="s3@466.vf5b_3db_8e3eb_2">
+      <profileName/>
+      <entries>
+        <hudson.plugins.s3.Entry>
+          <bucket>jarvvis-jenkins-artifacts</bucket>
+          <sourceFile>console.${BUILD_NUMBER}.log, artifacts.${BUILD_NUMBER}.tar.gz</sourceFile>
+          <excludedFile/>
+          <storageClass>STANDARD</storageClass>
+          <selectedRegion>us-west-2</selectedRegion>
+          <noUploadOnFailure>false</noUploadOnFailure>
+          <uploadFromSlave>false</uploadFromSlave>
+          <managedArtifacts>true</managedArtifacts>
+          <useServerSideEncryption>false</useServerSideEncryption>
+          <flatten>false</flatten>
+          <gzipFiles>false</gzipFiles>
+          <showDirectlyInBrowser>false</showDirectlyInBrowser>
+          <keepForever>true</keepForever>
+        </hudson.plugins.s3.Entry>
+      </entries>
+      <dontWaitForConcurrentBuildCompletion>false</dontWaitForConcurrentBuildCompletion>
+      <dontSetBuildResultOnFailure>false</dontSetBuildResultOnFailure>
+      <consoleLogLevelString>INFO</consoleLogLevelString>
+      <pluginFailureResultConstraint>
+        <name>FAILURE</name>
+        <ordinal>2</ordinal>
+        <color>RED</color>
+        <completeBuild>true</completeBuild>
+      </pluginFailureResultConstraint>
+      <userMetadata/>
+    </hudson.plugins.s3.S3BucketPublisher>
+  </publishers>
+  <buildWrappers/>
+</project>

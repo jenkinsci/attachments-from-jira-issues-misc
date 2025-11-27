@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.plugins.validating__string__parameter.ValidatingStringParameterDefinition plugin="validating-string-parameter@2.3">
+          <name>validStr</name>
+          <description></description>
+          <defaultValue>234</defaultValue>
+          <regex>.*</regex>
+          <failedValidationMessage></failedValidationMessage>
+        </hudson.plugins.validating__string__parameter.ValidatingStringParameterDefinition>
+        <org.biouno.unochoice.CascadeChoiceParameter plugin="uno-choice@1.0">
+          <name>choiceParam</name>
+          <description></description>
+          <randomName>choice-parameter-1029743258514277</randomName>
+          <script class="org.biouno.unochoice.model.GroovyScript">
+            <script>println(&quot;\n   ---------------------------------------------&quot; );
+println(&quot;   ---&gt; validStr= &quot; + validStr); //Provided by Active Choices plugin
+println(&quot;   ---&gt; validStr= ${validStr}&quot; ); //Provided by Active Choices plugin - try a different reference
+println(&quot;   ---&gt; binding.variables.get = &quot; + binding.variables.get(&quot;validStr&quot;) ); //Get from the script environment variables
+println(&quot;   ---&gt; binding = &quot; + binding ); //Check if available
+println(&quot;   ---&gt; binding.variables = &quot; + binding.variables ); //Check what is available in the script environment variables
+println(&quot;   ---&gt; binding.getProperty = &quot; + binding.getProperty(&quot;validStr&quot;) ); //Get from the script environment properties
+//println(&quot;   ---&gt; build = &quot; + build ); //Check if available - Throws an exception
+//println(&quot;   ---&gt; build.buildVariableResolver = &quot; + build.buildVariableResolver );
+//println(&quot;   ---&gt; build.buildVariableResolver.resolve = &quot; + build.buildVariableResolver.resolve(&quot;validStr&quot;) );
+
+//println this.getClass().metaClass.methods*.name.sort().unique(); //Check the available methods
+println(&quot;   ---&gt; getBinding = &quot; + getBinding() ); //Check if available
+//println getBinding().getClass().metaClass.methods*.name.sort().unique(); //Check the available methods
+println(&quot;   ---&gt; getProperty = &quot; + getProperty(&quot;validStr&quot;) ); //Get from the script environment properties
+
+return [];</script>
+            <fallbackScript>println( &quot; ---&gt; Err&quot; );
+
+return [];</fallbackScript>
+          </script>
+          <visibleItemCount>1</visibleItemCount>
+          <parameters class="linked-hash-map"/>
+          <referencedParameters>validStr</referencedParameters>
+          <choiceType>PT_RADIO</choiceType>
+          <filterable>false</filterable>
+        </org.biouno.unochoice.CascadeChoiceParameter>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders/>
+  <publishers/>
+  <buildWrappers/>
+</project>

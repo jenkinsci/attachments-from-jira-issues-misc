@@ -1,0 +1,163 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@1207.ve6191ff089f8">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2114.v2654ca_721309"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2114.v2654ca_721309">
+      <jobProperties/>
+      <triggers/>
+      <parameters/>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>5</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>PROJEC</name>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>INTEL</string>
+              <string>AMD</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <org.biouno.unochoice.DynamicReferenceParameter plugin="uno-choice@2.6.3">
+          <name>Test</name>
+          <randomName>choice-parameter-160014150798914</randomName>
+          <visibleItemCount>1</visibleItemCount>
+          <script class="org.biouno.unochoice.model.GroovyScript">
+            <secureScript plugin="script-security@1175.v4b_d517d6db_f0">
+              <script>def branchApp1 = [&quot;master&quot;, &quot;develop&quot;,&quot;feature&quot;]
+def branchApp2 = [&quot;er2&quot;, &quot;tep60&quot;,&quot;d1&quot;]
+def branchApp3 = [&quot;Volvlo&quot;, &quot;Scania&quot;,&quot;Saab&quot;]
+
+
+
+def services = [
+    &quot;App1&quot; : [&apos;branch&apos;: branchApp1],
+    &quot;App2&quot; : [&apos;branch&apos;: branchApp2],
+    &quot;App3&quot; : [&apos;branch&apos;: branchApp3]
+]
+
+html_to_be_rendered = &quot;&lt;table&gt;&lt;tr&gt;&quot;
+
+ 
+services.each { service -&gt;
+    def commitOptions = &quot;&quot;
+    for( String app_war_name : service.value.branch){
+        commitOptions += &quot;&lt;option value=&apos;${app_war_name}&apos;&gt;${app_war_name}&lt;/option&gt;&quot;
+    }
+    html_to_be_rendered = &quot;&quot;&quot;
+    ${html_to_be_rendered}
+    &lt;tr&gt;
+    &lt;td&gt;
+    &lt;input name=\&quot;value\&quot; alt=\&quot;${service.key}\&quot; json=\&quot;${service.key}\&quot; type=\&quot;checkbox\&quot; class=\&quot; \&quot;  id=\&quot;${service.key}\&quot;  onclick=&quot;myFunction(\&apos;${service.key}\&apos;)&quot;&gt;
+    &lt;label title=\&quot;${service.key}\&quot; id=\&quot;title_${service.key}\&quot; class=\&quot; \&quot;&gt;${service.key}&lt;/label&gt;
+    &lt;/td&gt;
+    &lt;td&gt;
+    &lt;select name=&quot;ebanyWas&quot; style=&quot;display:none&quot; id=&quot;select_${service.key}&quot; &gt; ${commitOptions}  &lt;/select&gt;
+    &lt;/td&gt;
+    &lt;/tr&gt;
+&quot;&quot;&quot;
+}
+
+
+html_to_be_rendered = &quot;${html_to_be_rendered}&lt;/tr&gt;&lt;/table&gt;&quot;
+
+html_to_be_rendered = &quot;&quot;&quot;${html_to_be_rendered}
+&lt;script&gt;
+
+function myFunction(index) {
+        var checkBox = document.getElementById(index);
+        var searhSelect = &quot;select_&quot; + index;
+        var elem = document.getElementById(searhSelect);
+        if (checkBox.checked == true) {
+            elem.setAttribute(&apos;name&apos;, &apos;value&apos;);
+            elem.style.display = &quot;block&quot;;
+       } else {
+            elem.setAttribute(&apos;name&apos;, &apos;ebanyWas&apos;);
+            elem.style.display = &quot;none&quot;;
+       }
+ }
+
+&lt;/script&gt;
+&quot;&quot;&quot;
+
+return html_to_be_rendered
+
+
+
+</script>
+              <sandbox>false</sandbox>
+            </secureScript>
+            <secureFallbackScript plugin="script-security@1175.v4b_d517d6db_f0">
+              <script></script>
+              <sandbox>false</sandbox>
+            </secureFallbackScript>
+          </script>
+          <projectName>testPipeline</projectName>
+          <projectFullName>testPipeline</projectFullName>
+          <parameters class="linked-hash-map"/>
+          <referencedParameters>PROJEC</referencedParameters>
+          <choiceType>ET_FORMATTED_HTML</choiceType>
+          <omitValueField>false</omitValueField>
+        </org.biouno.unochoice.DynamicReferenceParameter>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2759.v87459c4eea_ca_">
+    <script>pipeline {
+    agent any 
+    environment { 
+        her = &apos;clang&apos;
+    }
+    options{
+        timestamps()
+    }
+    stages {
+        stage(&apos;prepare&apos;) { 
+            steps {
+                
+                    script{
+                        
+                        sh&apos;echo gfh &apos;
+                        println(params.Test)
+                       String[] str;
+                        str = params.Test.split(&apos;,&apos;);
+                        size =  str.size();
+                        def serviceApp = [:]
+                        for (int i = 0; i &lt;= size-2; i += 2)
+                        {
+                        	serviceApp.put(str[i],str[i+1])
+                          	println(&quot;Services: &quot;+serviceApp)
+                          	//println(str[i+1]);
+                        }
+                        serviceApp.each { service -&gt;
+                        println(service.key)
+                          println(service.value)
+                        }
+
+                        println(&quot;Services: &quot;+serviceApp)
+                       
+                       println(serviceApp.get(&quot;RUFR&quot;)) 
+                    }
+               
+            }
+        }
+    }
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

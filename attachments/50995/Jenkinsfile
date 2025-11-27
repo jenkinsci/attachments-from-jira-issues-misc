@@ -1,0 +1,27 @@
+import groovy.json.JsonOutput
+pipeline {
+  agent none
+  options {
+    disableConcurrentBuilds()
+  }
+  stages {
+    stage("STEP1") {
+      agent { node { label 'master' } }
+      steps {
+        script {
+            sh "touch 評価版の制限事項.txt"
+            stash "src"
+        }
+      }
+    }
+    stage("STEP2") {
+      agent { node { label 'win10' } }
+      steps {
+        script {
+            unstash "src"
+            cleanWs()
+        }
+      }
+    }
+  }
+}

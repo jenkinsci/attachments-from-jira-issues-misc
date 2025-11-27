@@ -1,0 +1,25 @@
+Index: /home/dirk/Projects/Java/hudson/main/core/src/main/java/hudson/scm/RepositoryBrowsers.java
+===================================================================
+--- /home/dirk/Projects/Java/hudson/main/core/src/main/java/hudson/scm/RepositoryBrowsers.java	(revision 10165)
++++ /home/dirk/Projects/Java/hudson/main/core/src/main/java/hudson/scm/RepositoryBrowsers.java	(working copy)
+@@ -1,8 +1,11 @@
+ package hudson.scm;
+ 
++import hudson.StructuredForm;
+ import hudson.model.Descriptor;
+ import hudson.model.Descriptor.FormException;
+ import hudson.scm.browsers.*;
++import net.sf.json.JSONObject;
++
+ import org.kohsuke.stapler.StaplerRequest;
+ 
+ import java.util.ArrayList;
+@@ -48,6 +51,7 @@
+         if(value==null || value.equals("auto"))
+             return null;
+ 
+-        return type.cast(list.get(Integer.parseInt(value)).newInstance(req,null/*TODO*/));
++        JSONObject jsonObject = StructuredForm.get(req).getJSONObject("scm");
++        return type.cast(list.get(Integer.parseInt(value)).newInstance(req,jsonObject));
+     }
+ }

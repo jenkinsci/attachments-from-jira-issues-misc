@@ -1,0 +1,140 @@
+﻿<!-- ============================================================================================================ -->
+<!-- The following properties should be set externally either from the MSBuild command line or as env. variables: -->
+<!--   - Configuration: Debug/Release; CI build = Debug; Release build = Release                                  -->
+<!--                                                                                                              -->
+<!--   e.g.: msbuild.exe /p:Configuration=Debug fusion_auto_build.msbuild                                         -->
+<!-- ============================================================================================================ -->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- ========================================================= -->
+  <!--   check to see if the MSBuild extension pack is installed -->
+  <!-- ========================================================= -->
+  <PropertyGroup>
+    <TPath>$(MSBuildExtensionsPath)\ExtensionPack\4.0\MSBuild.ExtensionPack.tasks</TPath>
+    <TPath Condition="Exists('$(MSBuildProjectDirectory)\..\..\Common\MSBuild.ExtensionPack.tasks')">$(MSBuildProjectDirectory)\..\..\Common\MSBuild.ExtensionPack.tasks</TPath>
+    <ExtensionTasksPath Condition="'$(ExtensionTasksPath)' == ''">$(MSBuildProjectDirectory)\..\..\Common</ExtensionTasksPath>
+  </PropertyGroup>
+  <Import Project="$(TPath)"/>
+  <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
+  <!-- ======================================================= -->
+  <!--   application configuration files to update             -->
+  <!-- ======================================================= -->
+  <ItemGroup>
+    <AppConfigFiles Include=".\AdminManager\App.config" />
+    <AppConfigFiles Include=".\Display\Core\App.config" />
+  </ItemGroup>
+  <!-- ======================================================= -->
+  <!--   Fusion shared DLLs    (build steps)                   -->
+  <!-- ======================================================= -->
+  <ItemGroup>
+    <FusionSharedDLLsBuildSteps Include="BuildFlightLib" />
+    <FusionSharedDLLsBuildSteps Include="BuildFUL" />
+    <FusionSharedDLLsBuildSteps Include="BuildFusionServicesTypes" />
+    <FusionSharedDLLsBuildSteps Include="BuildFusionSettings" />
+    <FusionSharedDLLsBuildSteps Include="BuildSharedServicesProxy" />
+  </ItemGroup>
+  <!-- ========================================================== -->
+  <!--   ensures copy of both the DLL and the PDB (symbol files)  -->
+  <!-- ========================================================== -->
+  <ItemGroup>
+    <FusionSharedDLLs Include="..\FlightLib\obj\Debug\FlightLib.dll" />
+    <FusionSharedDLLs Include="..\FlightLib\obj\Debug\FlightLib.pdb" />
+    <FusionSharedDLLs Include="..\ful\obj\Debug\FUL.dll" />
+    <FusionSharedDLLs Include="..\ful\obj\Debug\FUL.pdb" />
+    <FusionSharedDLLs Include="..\FusionServicesTypes\obj\Debug\FusionServicesTypes.dll" />
+    <FusionSharedDLLs Include="..\FusionServicesTypes\obj\Debug\FusionServicesTypes.pdb" />
+    <FusionSharedDLLs Include="..\FusionSettings\obj\Debug\FusionSettings.dll" />
+    <FusionSharedDLLs Include="..\FusionSettings\obj\Debug\FusionSettings.pdb" />
+    <FusionSharedDLLs Include="..\SharedServicesProxy\obj\Debug\SharedServicesProxy.dll" />
+    <FusionSharedDLLs Include="..\SharedServicesProxy\obj\Debug\SharedServicesProxy.pdb" />
+  </ItemGroup>
+  <Target Name="Default">
+    <Message Text="Initializing build process..." />
+    <!-- default target which runs when no target is specified -->
+    <CallTarget Targets="Main" />
+  </Target>
+  <!-- ======================================================= -->
+  <!--   sets up the build environment and starts the build    -->
+  <!-- ======================================================= -->
+  <Target Name="Main">
+    <Attrib Files="$(AppConfigFile)" ReadOnly="false" />
+    <Message Text="Starting build..." />
+    <CallTarget Targets="@(FusionSharedDLLsBuildSteps)" />
+    <Message Text="Creating SharedDLLs sub-directory and populating with fresh files..." />
+    <MakeDir Directories="..\SharedDLLs" />
+    <Copy SourceFiles="@(FusionSharedDLLs)" DestinationFolder="..\SharedDLLs" />
+    <CallTarget Targets="BuildFusionFAST" />
+  </Target>
+  <!-- ======================================================= -->
+  <!--   updates AssemblyInfo.cs files with current info       -->
+  <!-- ======================================================= -->
+  <Target Name="AssemblyInformation">
+    <ItemGroup>
+      <AssemblyInfoFiles Include="$(SourceFolder)\**\AssemblyInfo.cs" />
+    </ItemGroup>
+    <Time Format="yyyy">
+      <Output TaskParameter="FormattedTime" PropertyName="CurrentYear" />
+    </Time>
+    <PropertyGroup>
+      <AssemblyCompany>The Weather Company, an IBM Business</AssemblyCompany>
+      <AssemblyCopyright>Copyright @ 2008-$(CurrentYear) $(AssemblyCompany)</AssemblyCopyright>
+      <AssemblyVersion>$(WSI_BASE_DISPLAY_VERSION).$(BUILD_NUMBER)</AssemblyVersion>
+      <AssemblyFileVersion>$(WSI_BASE_VERSION).$(BUILD_NUMBER)</AssemblyFileVersion>
+    </PropertyGroup>
+    <MSBuild.ExtensionPack.Framework.AssemblyInfo
+      AssemblyInfoFiles="@(AssemblyInfoFiles)"
+      AssemblyCompany="$(AssemblyCompany)"
+      AssemblyCopyright="$(AssemblyCopyright)"
+      AssemblyVersion="$(AssemblyVersion)"
+      AssemblyFileVersion="$(AssemblyFileVersion)"
+      />
+  </Target>
+  <!-- ======================================================= -->
+  <!--   builds Fusion FAST utility                         -->
+  <!-- ======================================================= -->
+  <Target Name="BuildFusionFAST" DependsOnTargets="BuildFlightViewUtils;BuildFUL;BuildFusionSettings">
+    <Message Text="  Building Fusion FAST utility..." />
+    <MSBuild Projects="..\FAST\FAST.csproj" />
+  </Target>
+  <!-- ======================================================= -->
+  <!--   builds FlightLib                                      -->
+  <!-- ======================================================= -->
+  <Target Name="BuildFlightLib">
+    <Message Text="  Building FlightLib..." />
+    <MSBuild Projects="..\FlightLib\FlightLib.csproj" />
+  </Target>
+  <!-- ======================================================= -->
+  <!--   builds FlightViewUtils                                -->
+  <!-- ======================================================= -->
+  <Target Name="BuildFlightViewUtils">
+    <Message Text="  Building FlightViewUtils..." />
+    <MSBuild Projects="..\FlightViewUtils\FlightViewUtils\FlightViewUtils\FlightViewUtils.csproj" />
+  </Target>
+  <!-- ======================================================= -->
+  <!--   builds FUL                                            -->
+  <!-- ======================================================= -->
+  <Target Name="BuildFUL" DependsOnTargets="BuildFusionSettings">
+    <Message Text="  Building FUL..." />
+    <MSBuild Projects="..\ful\FUL.csproj" Targets="Rebuild" Properties="Configuration=DEBUG" />
+  </Target>
+  <!-- ======================================================= -->
+  <!--   builds FusionServicesTypes                            -->
+  <!-- ======================================================= -->
+  <Target Name="BuildFusionServicesTypes">
+    <Message Text="  Building FusionServicesTypes..." />
+    <MSBuild Projects="..\FusionServicesTypes\FusionServicesTypes.csproj" />
+  </Target>
+  <!-- ======================================================= -->
+  <!--   builds FusionSettings                                 -->
+  <!-- ======================================================= -->
+  <Target Name="BuildFusionSettings">
+    <Message Text="  Building FusionSettings..." />
+    <MSBuild Projects="..\FusionSettings\FusionSettings.csproj" />
+  </Target>
+  <!-- ======================================================= -->
+  <!--   builds SharedServicesProxy                            -->
+  <!-- ======================================================= -->
+  <Target Name="BuildSharedServicesProxy">
+    <Message Text="  Building SharedServicesProxy..." />
+    <MSBuild Projects="..\SharedServicesProxy\SharedServicesProxy.csproj" />
+  </Target>
+</Project>

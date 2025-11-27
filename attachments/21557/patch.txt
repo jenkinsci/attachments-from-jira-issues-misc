@@ -1,0 +1,13 @@
+--- org/jfrog/hudson/maven2/ArtifactsDeployer.java.orig	2012-02-23 12:56:04.004316692 +0000
++++ org/jfrog/hudson/maven2/ArtifactsDeployer.java	2012-02-23 12:17:29.760840999 +0000
+@@ -168,6 +168,10 @@
+         File file = new File(new File(new File(new File(build.getArtifactsDir(), mavenArtifact.groupId),
+                 mavenArtifact.artifactId), mavenArtifact.version), mavenArtifact.fileName);
+         if (!file.exists()) {
++            file = new File(new File(new File(new File(build.getArtifactsDir(), mavenArtifact.groupId),
++                mavenArtifact.artifactId), mavenArtifact.version), mavenArtifact.canonicalName);
++        }
++        if (!file.exists()) {
+             throw new FileNotFoundException("Archived artifact is missing: " + file);
+         }
+         return file;

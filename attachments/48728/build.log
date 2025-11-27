@@ -1,0 +1,71 @@
+Started by user Allan BURDAJEWICZ
+Running in Durability level: MAX_SURVIVABILITY
+[Pipeline] Start of Pipeline
+[Pipeline] podTemplate
+[Pipeline] {
+[Pipeline] node
+Still waiting to schedule task
+‘dse-team-apac-aburdajewicz-testscenario-4-10xd4-558nc-5khzj’ is offline
+Agent dse-team-apac-aburdajewicz-testscenario-4-10xd4-558nc-5khzj is provisioned from template Kubernetes Pod Template
+---
+apiVersion: "v1"
+kind: "Pod"
+metadata:
+  annotations:
+    buildUrl: "http://teams-dse-team-apac.cje-support-general.svc.cluster.local/teams-dse-team-apac/job/dse-team-apac/job/aburdajewicz/job/testScenario/4/"
+  labels:
+    cloudbees.com/master: "dse-team-apac"
+    jenkins: "slave"
+    jenkins/stress: "true"
+    jenkins/dse-team-apac_aburdajewicz_testScenario_4-10xd4: "true"
+  name: "dse-team-apac-aburdajewicz-testscenario-4-10xd4-558nc-5khzj"
+spec:
+  containers:
+  - env:
+    - name: "JENKINS_SECRET"
+      value: "db264599058af06f0e5433931e0b5c3407b93a51cb396c8c9494b9f31e770b5b"
+    - name: "JENKINS_AGENT_NAME"
+      value: "dse-team-apac-aburdajewicz-testscenario-4-10xd4-558nc-5khzj"
+    - name: "JENKINS_NAME"
+      value: "dse-team-apac-aburdajewicz-testscenario-4-10xd4-558nc-5khzj"
+    - name: "JENKINS_URL"
+      value: "http://teams-dse-team-apac.cje-support-general.svc.cluster.local/teams-dse-team-apac/"
+    image: "dohbedoh/jnlp-stress-agent:alpine"
+    imagePullPolicy: "Always"
+    name: "jnlp"
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "0.2"
+      requests:
+        memory: "100Mi"
+        cpu: "0.2"
+    securityContext:
+      privileged: true
+    tty: true
+    volumeMounts:
+    - mountPath: "/home/jenkins"
+      name: "workspace-volume"
+      readOnly: false
+  nodeSelector: {}
+  restartPolicy: "Never"
+  volumes:
+  - emptyDir: {}
+    name: "workspace-volume"
+
+Running on dse-team-apac-aburdajewicz-testscenario-4-10xd4-558nc-5khzj in /home/jenkins/workspace/dse-team-apac/aburdajewicz/testScenario
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (stress)
+[Pipeline] sh
++ stress-ng --vm 2 --vm-bytes 1G --timeout 30s -v
+stress-ng: debug: [86] 2 processors online, 2 processors configured
+stress-ng: info:  [86] dispatching hogs: 2 vm
+stress-ng: debug: [86] cache allocate: default cache size: 46080K
+stress-ng: debug: [86] starting stressors
+stress-ng: debug: [86] 2 stressors spawned
+stress-ng: debug: [89] stress-ng-vm: started [89] (instance 1)
+stress-ng: debug: [89] stress-ng-vm using method 'all'
+stress-ng: debug: [88] stress-ng-vm: started [88] (instance 0)
+stress-ng: debug: [88] stress-ng-vm using method 'all'
+Cannot contact dse-team-apac-aburdajewicz-testscenario-4-10xd4-558nc-5khzj: hudson.remoting.RequestAbortedException: java.nio.channels.ClosedChannelException

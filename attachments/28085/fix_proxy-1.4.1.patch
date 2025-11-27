@@ -1,0 +1,264 @@
+From a2d5e9253ec610a61981d7f0f1ada8addccb6793 Mon Sep 17 00:00:00 2001
+From: alopez <angellopezcima@aurigae.com>
+Date: Wed, 26 Nov 2014 13:27:59 +0100
+Subject: [PATCH] Replaced commons-http:commons-http by
+ org.apache.httpcomponents:httpclient. Changed BitbucketApiClient to use the
+ org.apache.httpcomponents:httpclient and to use the SystemDefaultHttpClient,
+ an implementation that set the proxy as described in
+ https://docs.oracle.com/javase/7/docs/api/java/net/doc-files/net-properties.html.
+
+---
+ pom.xml                                            |   8 +-
+ .../BitbucketRepository.java                       |  10 +-
+ .../bitbucket/BitbucketApiClient.java              | 115 +++++++++++++++------
+ 3 files changed, 95 insertions(+), 38 deletions(-)
+
+diff --git a/pom.xml b/pom.xml
+index 902ab5d..404c277 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -8,7 +8,7 @@
+ 
+   <artifactId>bitbucket-pullrequest-builder</artifactId>
+   <name>Bitbucket Pullrequest Builder Plugin</name>
+-  <version>1.4.1</version>
++  <version>1.4.1-vector-1</version>
+   <description>This Jenkins plugin builds pull requests from Bitbucket.org and will report the test results.</description>
+   <packaging>hpi</packaging>
+   <url>https://wiki.jenkins-ci.org/display/JENKINS/Bitbucket+pullrequest+builder+plugin</url>
+@@ -42,9 +42,9 @@
+           <version>2.4</version>
+       </dependency>
+       <dependency>
+-          <groupId>commons-httpclient</groupId>
+-          <artifactId>commons-httpclient</artifactId>
+-          <version>3.1</version>
++          <groupId>org.apache.httpcomponents</groupId>
++          <artifactId>httpclient</artifactId>
++          <version>4.2.3</version>
+       </dependency>
+       <dependency>
+           <groupId>commons-codec</groupId>
+diff --git a/src/main/java/bitbucketpullrequestbuilder/bitbucketpullrequestbuilder/BitbucketRepository.java b/src/main/java/bitbucketpullrequestbuilder/bitbucketpullrequestbuilder/BitbucketRepository.java
+index 61d3702..2da6d01 100644
+--- a/src/main/java/bitbucketpullrequestbuilder/bitbucketpullrequestbuilder/BitbucketRepository.java
++++ b/src/main/java/bitbucketpullrequestbuilder/bitbucketpullrequestbuilder/BitbucketRepository.java
+@@ -5,6 +5,8 @@ import bitbucketpullrequestbuilder.bitbucketpullrequestbuilder.bitbucket.Bitbuck
+ import bitbucketpullrequestbuilder.bitbucketpullrequestbuilder.bitbucket.BitbucketPullRequestResponseValue;
+ import bitbucketpullrequestbuilder.bitbucketpullrequestbuilder.bitbucket.BitbucketPullRequestResponseValueRepository;
+ 
++import java.io.Closeable;
++import java.io.IOException;
+ import java.util.ArrayList;
+ import java.util.Collection;
+ import java.util.Collections;
+@@ -14,7 +16,7 @@ import java.util.logging.Logger;
+ /**
+  * Created by nishio
+  */
+-public class BitbucketRepository {
++public class BitbucketRepository implements Closeable {
+     private static final Logger logger = Logger.getLogger(BitbucketRepository.class.getName());
+     public static final String BUILD_START_MARKER = "[*BuildStarted*] %s";
+     public static final String BUILD_FINISH_MARKER = "[*BuildFinished*] %s";
+@@ -145,4 +147,10 @@ public class BitbucketRepository {
+         }
+         return false;
+     }
++
++    public void close() throws IOException {
++        if (this.client != null) {
++            this.client.close();
++        }
++    }
+ }
+diff --git a/src/main/java/bitbucketpullrequestbuilder/bitbucketpullrequestbuilder/bitbucket/BitbucketApiClient.java b/src/main/java/bitbucketpullrequestbuilder/bitbucketpullrequestbuilder/bitbucket/BitbucketApiClient.java
+index af43408..abb2b51 100644
+--- a/src/main/java/bitbucketpullrequestbuilder/bitbucketpullrequestbuilder/bitbucket/BitbucketApiClient.java
++++ b/src/main/java/bitbucketpullrequestbuilder/bitbucketpullrequestbuilder/bitbucket/BitbucketApiClient.java
+@@ -1,35 +1,61 @@
+ package bitbucketpullrequestbuilder.bitbucketpullrequestbuilder.bitbucket;
+ 
+-import org.apache.commons.httpclient.*;
+-import org.apache.commons.httpclient.auth.AuthScope;
+-import org.apache.commons.httpclient.methods.GetMethod;
+-import org.apache.commons.httpclient.methods.PostMethod;
+-import org.apache.commons.httpclient.methods.DeleteMethod;
+-import org.codehaus.jackson.map.ObjectMapper;
+-import org.codehaus.jackson.type.TypeReference;
+-
++import java.io.Closeable;
+ import java.io.IOException;
+ import java.io.UnsupportedEncodingException;
++import java.util.Arrays;
+ import java.util.List;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+ 
++import org.apache.http.HttpHost;
++import org.apache.http.HttpResponse;
++import org.apache.http.NameValuePair;
++import org.apache.http.auth.AuthScope;
++import org.apache.http.auth.Credentials;
++import org.apache.http.auth.UsernamePasswordCredentials;
++import org.apache.http.client.AuthCache;
++import org.apache.http.client.CredentialsProvider;
++import org.apache.http.client.HttpClient;
++import org.apache.http.client.entity.UrlEncodedFormEntity;
++import org.apache.http.client.methods.HttpDelete;
++import org.apache.http.client.methods.HttpGet;
++import org.apache.http.client.methods.HttpPost;
++import org.apache.http.client.protocol.ClientContext;
++import org.apache.http.client.utils.HttpClientUtils;
++import org.apache.http.impl.auth.BasicScheme;
++import org.apache.http.impl.client.BasicAuthCache;
++import org.apache.http.impl.client.BasicCredentialsProvider;
++import org.apache.http.impl.client.SystemDefaultHttpClient;
++import org.apache.http.message.BasicNameValuePair;
++import org.apache.http.protocol.BasicHttpContext;
++import org.apache.http.protocol.HttpContext;
++import org.apache.http.util.EntityUtils;
++import org.codehaus.jackson.map.ObjectMapper;
++import org.codehaus.jackson.type.TypeReference;
++
+ /**
+  * Created by nishio
+  */
+-public class BitbucketApiClient {
++public class BitbucketApiClient implements Closeable {
+     private static final Logger logger = Logger.getLogger(BitbucketApiClient.class.getName());
+-    private static final String BITBUCKET_HOST = "bitbucket.org";
++    private static final HttpHost BITBUCKET_HOST = new HttpHost("bitbucket.org", 443, "https");
+     private static final String V1_API_BASE_URL = "https://bitbucket.org/api/1.0/repositories/";
+     private static final String V2_API_BASE_URL = "https://bitbucket.org/api/2.0/repositories/";
+     private String owner;
+     private String repositoryName;
+     private Credentials credentials;
++    private HttpClient httpClient;
+ 
+     public BitbucketApiClient(String username, String password, String owner, String repositoryName) {
+         this.credentials = new UsernamePasswordCredentials(username, password);
+         this.owner = owner;
+         this.repositoryName = repositoryName;
++
++        CredentialsProvider credsProvider = new BasicCredentialsProvider();
++        credsProvider.setCredentials(new AuthScope(BITBUCKET_HOST), this.credentials);
++        this.httpClient = new SystemDefaultHttpClient();
++        ((SystemDefaultHttpClient) this.httpClient).setCredentialsProvider(credsProvider);
+     }
+ 
+     public List<BitbucketPullRequestResponseValue> getPullRequests() {
+@@ -63,7 +89,7 @@ public class BitbucketApiClient {
+     public BitbucketPullRequestComment postPullRequestComment(String pullRequestId, String comment) {
+         String path = V1_API_BASE_URL + this.owner + "/" + this.repositoryName + "/pullrequests/" + pullRequestId + "/comments";
+         try {
+-            NameValuePair content = new NameValuePair("content", comment);
++            NameValuePair content = new BasicNameValuePair("content", comment);
+             String response = postRequest(path, new NameValuePair[]{ content });
+             return parseSingleCommentJson(response);
+ 
+@@ -77,50 +103,67 @@ public class BitbucketApiClient {
+     }
+ 
+     private String getRequest(String path) {
+-        HttpClient client = new HttpClient();
+-        client.getState().setCredentials(AuthScope.ANY, credentials);
+-        GetMethod httpget = new GetMethod(path);
+-        client.getParams().setAuthenticationPreemptive(true);
++        HttpContext context = createContext();
++        
++        HttpResponse httpResponse = null;
+         String response = null;
+         try {
+-            client.executeMethod(httpget);
+-            response = httpget.getResponseBodyAsString();
+-        } catch (HttpException e) {
+-            e.printStackTrace();
++            HttpGet httpget = new HttpGet(path);
++            httpResponse = this.httpClient.execute(httpget, context);
++            response = EntityUtils.toString(httpResponse.getEntity());
+         } catch (IOException e) {
+             e.printStackTrace();
++        } finally {
++            if (httpResponse != null) {
++                HttpClientUtils.closeQuietly(httpResponse);
++            }
+         }
+         return response;
+     }
+ 
++    private HttpContext createContext() {
++        HttpContext context = new BasicHttpContext();
++        AuthCache authCache = new BasicAuthCache();
++        authCache.put(BITBUCKET_HOST, new BasicScheme());
++        context.setAttribute(ClientContext.AUTH_CACHE, authCache);
++        return context;
++    }
++
+     public void deleteRequest(String path) {
+-        HttpClient client = new HttpClient();
+-        client.getState().setCredentials(AuthScope.ANY, credentials);
+-        DeleteMethod httppost = new DeleteMethod(path);
+-        client.getParams().setAuthenticationPreemptive(true);
++        HttpContext context = createContext();
++
++        HttpResponse httpResponse = null;
+         String response = "";
+         try {
+-            client.executeMethod(httppost);
++            HttpDelete httpdelete = new HttpDelete(path);
++            httpResponse = this.httpClient.execute(httpdelete, context);
++            response = EntityUtils.toString(httpResponse.getEntity());
+         } catch (IOException e) {
+             e.printStackTrace();
++        } finally {
++            if (httpResponse != null) {
++                HttpClientUtils.closeQuietly(httpResponse);
++            }
+         }
+     }
+ 
+     private String postRequest(String path, NameValuePair[] params) throws UnsupportedEncodingException {
+-        HttpClient client = new HttpClient();
+-        client.getState().setCredentials(AuthScope.ANY, credentials);
+-        PostMethod httppost = new PostMethod(path);
+-        httppost.setRequestBody(params);
+-        client.getParams().setAuthenticationPreemptive(true);
++        HttpContext context = createContext();
++
++        HttpResponse httpResponse = null;
+         String response = "";
+         try {
+-            client.executeMethod(httppost);
+-            response = httppost.getResponseBodyAsString();
++            HttpPost httppost = new HttpPost(path);
++            httppost.setEntity(new UrlEncodedFormEntity(Arrays.asList(params)));
++            httpResponse = this.httpClient.execute(httppost, context);
++            response = EntityUtils.toString(httpResponse.getEntity());
+             logger.info("API Request Response: " + response);
+-        } catch (HttpException e) {
+-            e.printStackTrace();
+         } catch (IOException e) {
+             e.printStackTrace();
++        } finally {
++            if (httpResponse != null) {
++                HttpClientUtils.closeQuietly(httpResponse);
++            }
+         }
+         return response;
+ 
+@@ -151,5 +194,11 @@ public class BitbucketApiClient {
+                 BitbucketPullRequestComment.class);
+         return parsedResponse;
+     }
++
++    public void close() throws IOException {
++        if (this.httpClient != null) {
++            HttpClientUtils.closeQuietly(this.httpClient);
++        }
++    }
+ }
+ 
+-- 
+1.9.0.msysgit.0
+

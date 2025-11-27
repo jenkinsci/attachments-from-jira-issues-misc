@@ -1,0 +1,492 @@
+From cdffcdac3c56ae2db229db8020df1a38aa8ea6e4 Mon Sep 17 00:00:00 2001
+From: Sergio Ahumada <sahumada@gmail.com>
+Date: Wed, 22 Jan 2014 12:08:19 +0100
+Subject: qtestlib: Fix reporting skip messages
+
+Also update qtestlib-to-junit-4.xsl while we are it.
+
+Fix JENKINS-21883
+---
+ .../plugins/xunit/types/QTestLibInputMetric.java   |    2 +-
+ .../plugins/xunit/types/qtestlib-to-junit-4.xsl    |  101 ++++---
+ .../xunit/types/qtestlib/testcase1/result.xml      |  278 ++++++++++----------
+ .../xunit/types/qtestlib/testcase2/result.xml      |    8 +-
+ 4 files changed, 210 insertions(+), 179 deletions(-)
+
+diff --git a/src/main/java/org/jenkinsci/plugins/xunit/types/QTestLibInputMetric.java b/src/main/java/org/jenkinsci/plugins/xunit/types/QTestLibInputMetric.java
+index dc7ae4e..0627215 100644
+--- a/src/main/java/org/jenkinsci/plugins/xunit/types/QTestLibInputMetric.java
++++ b/src/main/java/org/jenkinsci/plugins/xunit/types/QTestLibInputMetric.java
+@@ -42,6 +42,6 @@ public class QTestLibInputMetric extends InputMetricXSL {
+ 
+     @Override
+     public OutputMetric getOutputFormatType() {
+-        return JUnitModel.OUTPUT_JUNIT_4;
++        return JUnitModel.OUTPUT_JUNIT_5;
+     }
+ }
+diff --git a/src/main/resources/org/jenkinsci/plugins/xunit/types/qtestlib-to-junit-4.xsl b/src/main/resources/org/jenkinsci/plugins/xunit/types/qtestlib-to-junit-4.xsl
+index 5c25ef8..076c94e 100644
+--- a/src/main/resources/org/jenkinsci/plugins/xunit/types/qtestlib-to-junit-4.xsl
++++ b/src/main/resources/org/jenkinsci/plugins/xunit/types/qtestlib-to-junit-4.xsl
+@@ -1,12 +1,13 @@
++<?xml version="1.0" encoding="utf-8"?>
+ <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+-
++  <!-- for details interpreting unit test results http://qt-project.org/wiki/Writing_Unit_Tests -->
+   <xsl:output method="xml" indent="yes" />
+   <xsl:decimal-format decimal-separator="." grouping-separator="," />
+ 
+   <!-- misc variables -->
+   <xsl:variable name="classname" select="/TestCase/@name" />
+   <xsl:variable name="total-tests" select="count(/TestCase/TestFunction)" />
+-  <xsl:variable name="total-failures" select="count(/TestCase/TestFunction/Incident[@type='fail'])" />
++  <xsl:variable name="total-failures" select="count(/TestCase/TestFunction/Incident[@type='fail'])+count(/TestCase/TestFunction/Incident[@type='xpass'])" />
+ 
+   <!-- main template call -->
+   <xsl:template match="/">
+@@ -44,39 +45,46 @@
+       </xsl:choose>
+     </xsl:variable>
+     <testcase classname="{$classname}" name="{@name}" time="{format-number($msecsFunction div 1000,'0.000')}">
+-
+-      <!-- handle skip -->
+-      <xsl:if test="Message/@type = 'skip'">
+-        <!-- will be used to generate "nice" error message -->
+-        <xsl:variable name="file" select="Message[@type='skip']/@file" />
+-        <xsl:variable name="line" select="Message[@type='skip']/@line" />
+-        <xsl:variable name="description">
+-          <xsl:value-of select="Message[@type='skip']/Description" />
+-        </xsl:variable>
+-
+-        <!-- display a reasonable skipped message -->
+-        <xsl:element name="skipped">
+-            <xsl:value-of select="concat($file,':',$line,' :: ',$description)" />
+-        </xsl:element>
+-      </xsl:if>
+-
+-      <!-- handle fail -->
+-      <xsl:if test="Incident/@type = 'fail'">
+-        <!-- will be used to generate "nice" error message -->
+-        <xsl:variable name="file" select="Incident[@type='fail']/@file" />
+-        <xsl:variable name="line" select="Incident[@type='fail']/@line" />
+-        <xsl:variable name="description">
+-          <xsl:value-of select="Incident[@type='fail']/Description" />
+-        </xsl:variable>
+-
+-        <!-- display a reasonable error message -->
+-        <xsl:element name="failure">
+-          <xsl:attribute name="type">failure</xsl:attribute>
+-          <xsl:attribute name="message">
+-            <xsl:value-of select="concat($file,':',$line,' :: ',$description)" />
+-          </xsl:attribute>
+-        </xsl:element>
+-      </xsl:if>
++      <!-- we need to use choose here, because jenkins cannot not handle fail and afterwards skip -->
++      <xsl:choose>
++        <!-- handle fail -->
++        <xsl:when test="Incident/@type = 'fail'">
++          <!-- will be used to generate "nice" error message -->
++          <xsl:variable name="file" select="Incident[@type='fail']/@file" />
++          <xsl:variable name="line" select="Incident[@type='fail']/@line" />
++          <xsl:variable name="description">
++            <xsl:value-of select="Incident[@type='fail']/Description" />
++          </xsl:variable>
++          <xsl:variable name="datatag">
++            <xsl:value-of select="Incident[@type='fail']/DataTag" />
++          </xsl:variable>
++          <!-- display a reasonable error message -->
++          <xsl:element name="failure">
++            <xsl:attribute name="type">failure</xsl:attribute>
++            <xsl:attribute name="message">
++              <xsl:value-of select="concat($file,':',$line,' :: [',$datatag,'] ',$description)" />
++            </xsl:attribute>
++          </xsl:element>
++        </xsl:when>
++        <!-- handle skip -->
++        <xsl:when test="Message/@type = 'skip'">
++          <!-- will be used to generate "nice" error message -->
++          <xsl:variable name="file" select="Message[@type='skip']/@file"/>
++          <xsl:variable name="line" select="Message[@type='skip']/@line"/>
++          <xsl:variable name="description">
++            <xsl:value-of select="Message[@type='skip']/Description"/>
++          </xsl:variable>
++          <xsl:variable name="datatag">
++            <xsl:value-of select="Message[@type='skip']/DataTag"/>
++          </xsl:variable>
++          <!-- display a reasonable skipped message -->
++          <xsl:element name="skipped">
++            <xsl:attribute name="message">
++              <xsl:value-of select="concat($file,':',$line,' :: [',$datatag,'] ',$description)"/>
++            </xsl:attribute>
++          </xsl:element>
++        </xsl:when>
++      </xsl:choose>
+ 
+       <!-- handle xfail -->
+       <xsl:if test="Incident/@type = 'xfail'">
+@@ -88,10 +96,33 @@
+             <xsl:variable name="description">
+               <xsl:value-of select="Description" />
+             </xsl:variable>
++            <xsl:variable name="datatag">
++              <xsl:value-of select="DataTag"/>
++            </xsl:variable>
+ 
+             <!-- display a reasonable error message -->
+             <xsl:text>&#10;</xsl:text>
+             <xsl:text disable-output-escaping="yes">&lt;![CDATA[XFAIL : </xsl:text>
++            <xsl:value-of select="concat($file,':',$line,' :: [',$datatag,'] ',$description)" disable-output-escaping="yes"/>
++            <xsl:text disable-output-escaping="yes">]]&gt;</xsl:text>
++          </xsl:for-each>
++        </system-out>
++      </xsl:if>
++
++      <!-- handle xpass -->
++      <xsl:if test="Incident/@type = 'xpass'">
++        <system-out>
++          <xsl:for-each select="Incident[@type='xpass']">
++            <!-- will be used to generate "nice" error message -->
++            <xsl:variable name="file" select="@file" />
++            <xsl:variable name="line" select="@line" />
++            <xsl:variable name="description">
++              <xsl:value-of select="Description" />
++            </xsl:variable>
++
++            <!-- display a reasonable error message -->
++            <xsl:text>&#10;</xsl:text>
++            <xsl:text disable-output-escaping="yes">&lt;![CDATA[XPASS : </xsl:text>
+             <xsl:value-of select="concat($file,':',$line,' :: ',$description)" disable-output-escaping="yes"/>
+             <xsl:text disable-output-escaping="yes">]]&gt;</xsl:text>
+           </xsl:for-each>
+diff --git a/src/test/resources/org/jenkinsci/plugins/xunit/types/qtestlib/testcase1/result.xml b/src/test/resources/org/jenkinsci/plugins/xunit/types/qtestlib/testcase1/result.xml
+index 317fb7e..2337fe8 100644
+--- a/src/test/resources/org/jenkinsci/plugins/xunit/types/qtestlib/testcase1/result.xml
++++ b/src/test/resources/org/jenkinsci/plugins/xunit/types/qtestlib/testcase1/result.xml
+@@ -1,148 +1,148 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <testsuite name="tst_QString" tests="118" failures="0" errors="0" time="0.000">
+-   <properties>
+-      <property name="QtVersion" value="5.0.0"/>
+-      <property name="QTestVersion" value="5.0.0"/>
+-   </properties>
+-   <testcase classname="tst_QString" name="initTestCase" time="0.000"/>
+-   <testcase classname="tst_QString" name="fromStdString" time="0.000"/>
+-   <testcase classname="tst_QString" name="toStdString" time="0.000"/>
+-   <testcase classname="tst_QString" name="check_QTextIOStream" time="0.000"/>
+-   <testcase classname="tst_QString" name="check_QTextStream" time="0.000"/>
+-   <testcase classname="tst_QString" name="check_QDataStream" time="0.000"/>
+-   <testcase classname="tst_QString" name="fromRawData" time="0.000"/>
+-   <testcase classname="tst_QString" name="setRawData" time="0.000"/>
+-   <testcase classname="tst_QString" name="endsWith" time="0.000"/>
+-   <testcase classname="tst_QString" name="startsWith" time="0.000"/>
+-   <testcase classname="tst_QString" name="setNum" time="0.000"/>
+-   <testcase classname="tst_QString" name="toDouble" time="0.000"/>
+-   <testcase classname="tst_QString" name="toFloat" time="0.000"/>
+-   <testcase classname="tst_QString" name="toLong" time="0.000"/>
+-   <testcase classname="tst_QString" name="toULong" time="0.000"/>
+-   <testcase classname="tst_QString" name="toLongLong" time="0.000"/>
+-   <testcase classname="tst_QString" name="toULongLong" time="0.000"/>
+-   <testcase classname="tst_QString" name="toUInt" time="0.000"/>
+-   <testcase classname="tst_QString" name="toInt" time="0.000"/>
+-   <testcase classname="tst_QString" name="toShort" time="0.000"/>
+-   <testcase classname="tst_QString" name="toUShort" time="0.000"/>
+-   <testcase classname="tst_QString" name="replace_qchar_qchar" time="0.000"/>
+-   <testcase classname="tst_QString" name="replace_qchar_qstring" time="0.000"/>
+-   <testcase classname="tst_QString" name="replace_uint_uint" time="0.000"/>
+-   <testcase classname="tst_QString" name="replace_uint_uint_extra" time="0.000"/>
+-   <testcase classname="tst_QString" name="replace_string" time="0.000"/>
+-   <testcase classname="tst_QString" name="replace_regexp" time="0.000"/>
+-   <testcase classname="tst_QString" name="remove_uint_uint" time="0.000"/>
+-   <testcase classname="tst_QString" name="remove_string" time="0.000"/>
+-   <testcase classname="tst_QString" name="remove_regexp" time="0.000"/>
+-   <testcase classname="tst_QString" name="swap" time="0.000"/>
+-   <testcase classname="tst_QString" name="prepend" time="0.000"/>
+-   <testcase classname="tst_QString" name="prepend_bytearray" time="0.000"/>
+-   <testcase classname="tst_QString" name="append" time="0.000"/>
+-   <testcase classname="tst_QString" name="append_bytearray" time="0.000"/>
+-   <testcase classname="tst_QString" name="operator_pluseq_bytearray" time="0.000"/>
+-   <testcase classname="tst_QString" name="operator_eqeq_bytearray" time="0.000"/>
+-   <testcase classname="tst_QString" name="operator_eqeq_nullstring" time="0.000"/>
+-   <testcase classname="tst_QString" name="operator_smaller" time="0.000"/>
+-   <testcase classname="tst_QString" name="insert" time="0.000"/>
+-   <testcase classname="tst_QString" name="simplified" time="0.000"/>
+-   <testcase classname="tst_QString" name="trimmed" time="0.000"/>
+-   <testcase classname="tst_QString" name="toUpper" time="0.000">
+-      <system-out>
+-<![CDATA[XFAIL : tst_qstring.cpp:1807 :: test doesn't work with ICU support, since QChar is unaware of any locale]]></system-out>
+-   </testcase>
+-   <testcase classname="tst_QString" name="toLower" time="0.000">
+-      <system-out>
+-<![CDATA[XFAIL : tst_qstring.cpp:1866 :: test doesn't work with ICU support, since QChar is unaware of any locale]]></system-out>
+-   </testcase>
+-   <testcase classname="tst_QString" name="toCaseFolded" time="0.000"/>
+-   <testcase classname="tst_QString" name="rightJustified" time="0.000"/>
+-   <testcase classname="tst_QString" name="leftJustified" time="0.000"/>
+-   <testcase classname="tst_QString" name="mid" time="0.000"/>
+-   <testcase classname="tst_QString" name="right" time="0.000"/>
+-   <testcase classname="tst_QString" name="left" time="0.000"/>
+-   <testcase classname="tst_QString" name="midRef" time="0.000"/>
+-   <testcase classname="tst_QString" name="rightRef" time="0.000"/>
+-   <testcase classname="tst_QString" name="leftRef" time="0.000"/>
+-   <testcase classname="tst_QString" name="stringRef" time="0.000"/>
+-   <testcase classname="tst_QString" name="contains" time="0.000"/>
+-   <testcase classname="tst_QString" name="count" time="0.000"/>
+-   <testcase classname="tst_QString" name="lastIndexOf" time="0.000"/>
+-   <testcase classname="tst_QString" name="indexOf" time="0.000">
+-      <system-out>
+-<![CDATA[XFAIL : tst_qstring.cpp:1167 :: QRegularExpression does not support case folding]]>
+-<![CDATA[XFAIL : tst_qstring.cpp:1167 :: QRegularExpression does not support case folding]]></system-out>
+-   </testcase>
+-   <testcase classname="tst_QString" name="indexOf2" time="0.000"/>
+-   <testcase classname="tst_QString" name="sprintf" time="0.000"/>
+-   <testcase classname="tst_QString" name="fill" time="0.000"/>
+-   <testcase classname="tst_QString" name="truncate" time="0.000"/>
+-   <testcase classname="tst_QString" name="constructor" time="0.000"/>
+-   <testcase classname="tst_QString" name="constructorQByteArray" time="0.000"/>
+-   <testcase classname="tst_QString" name="STL" time="0.000"/>
+-   <testcase classname="tst_QString" name="isEmpty" time="0.000"/>
+-   <testcase classname="tst_QString" name="isNull" time="0.000"/>
+-   <testcase classname="tst_QString" name="acc_01" time="0.000"/>
+-   <testcase classname="tst_QString" name="length" time="0.000"/>
+-   <testcase classname="tst_QString" name="utf8" time="0.000"/>
+-   <testcase classname="tst_QString" name="fromUtf8" time="0.000"/>
+-   <testcase classname="tst_QString" name="nullFromUtf8" time="0.000"/>
+-   <testcase classname="tst_QString" name="fromLocal8Bit" time="0.000"/>
+-   <testcase classname="tst_QString" name="local8Bit" time="0.000"/>
+-   <testcase classname="tst_QString" name="fromLatin1Roundtrip" time="0.000"/>
+-   <testcase classname="tst_QString" name="toLatin1Roundtrip" time="0.000"/>
+-   <testcase classname="tst_QString" name="stringRef_toLatin1Roundtrip" time="0.000"/>
+-   <testcase classname="tst_QString" name="stringRef_utf8" time="0.000"/>
+-   <testcase classname="tst_QString" name="stringRef_local8Bit" time="0.000"/>
+-   <testcase classname="tst_QString" name="fromLatin1" time="0.000"/>
+-   <testcase classname="tst_QString" name="fromAscii" time="0.000"/>
+-   <testcase classname="tst_QString" name="arg" time="0.000">
+-      <system-err>
++  <properties>
++    <property name="QtVersion" value="5.0.0"/>
++    <property name="QTestVersion" value="5.0.0"/>
++  </properties>
++  <testcase classname="tst_QString" name="initTestCase" time="0.000"/>
++  <testcase classname="tst_QString" name="fromStdString" time="0.000"/>
++  <testcase classname="tst_QString" name="toStdString" time="0.000"/>
++  <testcase classname="tst_QString" name="check_QTextIOStream" time="0.000"/>
++  <testcase classname="tst_QString" name="check_QTextStream" time="0.000"/>
++  <testcase classname="tst_QString" name="check_QDataStream" time="0.000"/>
++  <testcase classname="tst_QString" name="fromRawData" time="0.000"/>
++  <testcase classname="tst_QString" name="setRawData" time="0.000"/>
++  <testcase classname="tst_QString" name="endsWith" time="0.000"/>
++  <testcase classname="tst_QString" name="startsWith" time="0.000"/>
++  <testcase classname="tst_QString" name="setNum" time="0.000"/>
++  <testcase classname="tst_QString" name="toDouble" time="0.000"/>
++  <testcase classname="tst_QString" name="toFloat" time="0.000"/>
++  <testcase classname="tst_QString" name="toLong" time="0.000"/>
++  <testcase classname="tst_QString" name="toULong" time="0.000"/>
++  <testcase classname="tst_QString" name="toLongLong" time="0.000"/>
++  <testcase classname="tst_QString" name="toULongLong" time="0.000"/>
++  <testcase classname="tst_QString" name="toUInt" time="0.000"/>
++  <testcase classname="tst_QString" name="toInt" time="0.000"/>
++  <testcase classname="tst_QString" name="toShort" time="0.000"/>
++  <testcase classname="tst_QString" name="toUShort" time="0.000"/>
++  <testcase classname="tst_QString" name="replace_qchar_qchar" time="0.000"/>
++  <testcase classname="tst_QString" name="replace_qchar_qstring" time="0.000"/>
++  <testcase classname="tst_QString" name="replace_uint_uint" time="0.000"/>
++  <testcase classname="tst_QString" name="replace_uint_uint_extra" time="0.000"/>
++  <testcase classname="tst_QString" name="replace_string" time="0.000"/>
++  <testcase classname="tst_QString" name="replace_regexp" time="0.000"/>
++  <testcase classname="tst_QString" name="remove_uint_uint" time="0.000"/>
++  <testcase classname="tst_QString" name="remove_string" time="0.000"/>
++  <testcase classname="tst_QString" name="remove_regexp" time="0.000"/>
++  <testcase classname="tst_QString" name="swap" time="0.000"/>
++  <testcase classname="tst_QString" name="prepend" time="0.000"/>
++  <testcase classname="tst_QString" name="prepend_bytearray" time="0.000"/>
++  <testcase classname="tst_QString" name="append" time="0.000"/>
++  <testcase classname="tst_QString" name="append_bytearray" time="0.000"/>
++  <testcase classname="tst_QString" name="operator_pluseq_bytearray" time="0.000"/>
++  <testcase classname="tst_QString" name="operator_eqeq_bytearray" time="0.000"/>
++  <testcase classname="tst_QString" name="operator_eqeq_nullstring" time="0.000"/>
++  <testcase classname="tst_QString" name="operator_smaller" time="0.000"/>
++  <testcase classname="tst_QString" name="insert" time="0.000"/>
++  <testcase classname="tst_QString" name="simplified" time="0.000"/>
++  <testcase classname="tst_QString" name="trimmed" time="0.000"/>
++  <testcase classname="tst_QString" name="toUpper" time="0.000">
++    <system-out>
++<![CDATA[XFAIL : tst_qstring.cpp:1807 :: [] test doesn't work with ICU support, since QChar is unaware of any locale]]></system-out>
++  </testcase>
++  <testcase classname="tst_QString" name="toLower" time="0.000">
++    <system-out>
++<![CDATA[XFAIL : tst_qstring.cpp:1866 :: [] test doesn't work with ICU support, since QChar is unaware of any locale]]></system-out>
++  </testcase>
++  <testcase classname="tst_QString" name="toCaseFolded" time="0.000"/>
++  <testcase classname="tst_QString" name="rightJustified" time="0.000"/>
++  <testcase classname="tst_QString" name="leftJustified" time="0.000"/>
++  <testcase classname="tst_QString" name="mid" time="0.000"/>
++  <testcase classname="tst_QString" name="right" time="0.000"/>
++  <testcase classname="tst_QString" name="left" time="0.000"/>
++  <testcase classname="tst_QString" name="midRef" time="0.000"/>
++  <testcase classname="tst_QString" name="rightRef" time="0.000"/>
++  <testcase classname="tst_QString" name="leftRef" time="0.000"/>
++  <testcase classname="tst_QString" name="stringRef" time="0.000"/>
++  <testcase classname="tst_QString" name="contains" time="0.000"/>
++  <testcase classname="tst_QString" name="count" time="0.000"/>
++  <testcase classname="tst_QString" name="lastIndexOf" time="0.000"/>
++  <testcase classname="tst_QString" name="indexOf" time="0.000">
++    <system-out>
++<![CDATA[XFAIL : tst_qstring.cpp:1167 :: [data58] QRegularExpression does not support case folding]]>
++<![CDATA[XFAIL : tst_qstring.cpp:1167 :: [data59] QRegularExpression does not support case folding]]></system-out>
++  </testcase>
++  <testcase classname="tst_QString" name="indexOf2" time="0.000"/>
++  <testcase classname="tst_QString" name="sprintf" time="0.000"/>
++  <testcase classname="tst_QString" name="fill" time="0.000"/>
++  <testcase classname="tst_QString" name="truncate" time="0.000"/>
++  <testcase classname="tst_QString" name="constructor" time="0.000"/>
++  <testcase classname="tst_QString" name="constructorQByteArray" time="0.000"/>
++  <testcase classname="tst_QString" name="STL" time="0.000"/>
++  <testcase classname="tst_QString" name="isEmpty" time="0.000"/>
++  <testcase classname="tst_QString" name="isNull" time="0.000"/>
++  <testcase classname="tst_QString" name="acc_01" time="0.000"/>
++  <testcase classname="tst_QString" name="length" time="0.000"/>
++  <testcase classname="tst_QString" name="utf8" time="0.000"/>
++  <testcase classname="tst_QString" name="fromUtf8" time="0.000"/>
++  <testcase classname="tst_QString" name="nullFromUtf8" time="0.000"/>
++  <testcase classname="tst_QString" name="fromLocal8Bit" time="0.000"/>
++  <testcase classname="tst_QString" name="local8Bit" time="0.000"/>
++  <testcase classname="tst_QString" name="fromLatin1Roundtrip" time="0.000"/>
++  <testcase classname="tst_QString" name="toLatin1Roundtrip" time="0.000"/>
++  <testcase classname="tst_QString" name="stringRef_toLatin1Roundtrip" time="0.000"/>
++  <testcase classname="tst_QString" name="stringRef_utf8" time="0.000"/>
++  <testcase classname="tst_QString" name="stringRef_local8Bit" time="0.000"/>
++  <testcase classname="tst_QString" name="fromLatin1" time="0.000"/>
++  <testcase classname="tst_QString" name="fromAscii" time="0.000"/>
++  <testcase classname="tst_QString" name="arg" time="0.000">
++    <system-err>
+ <![CDATA[QWARN : QString::arg: Argument missing: "" , 0 ]]>
+ <![CDATA[QWARN : QString::arg: Argument missing: "" , 0 ]]>
+ <![CDATA[QWARN : QString::arg: Argument missing: " " , 0 ]]>
+ <![CDATA[QWARN : QString::arg: Argument missing: "%" , 0 ]]>
+ <![CDATA[QWARN : QString::arg: Argument missing: "%%" , 0 ]]>
+ <![CDATA[QWARN : QString::arg: Argument missing: "%%%" , 0 ]]></system-err>
+-   </testcase>
+-   <testcase classname="tst_QString" name="number" time="0.000"/>
+-   <testcase classname="tst_QString" name="arg_fillChar" time="0.000"/>
+-   <testcase classname="tst_QString" name="capacity" time="0.000"/>
+-   <testcase classname="tst_QString" name="section" time="0.000"/>
+-   <testcase classname="tst_QString" name="double_conversion" time="0.000"/>
+-   <testcase classname="tst_QString" name="integer_conversion" time="0.000"/>
+-   <testcase classname="tst_QString" name="tortureSprintfDouble" time="0.000"/>
+-   <testcase classname="tst_QString" name="toNum" time="0.000"/>
+-   <testcase classname="tst_QString" name="localeAwareCompare" time="0.000">
+-      <system-out>
+-<![CDATA[XFAIL : tst_qstring.cpp:4615 :: ICU disagrees with test]]></system-out>
+-   </testcase>
+-   <testcase classname="tst_QString" name="split" time="0.000"/>
+-   <testcase classname="tst_QString" name="split_regexp" time="0.000"/>
+-   <testcase classname="tst_QString" name="fromUtf16" time="0.000"/>
+-   <testcase classname="tst_QString" name="latin1String" time="0.000"/>
+-   <testcase classname="tst_QString" name="nanAndInf" time="0.000"/>
+-   <testcase classname="tst_QString" name="compare" time="0.000"/>
+-   <testcase classname="tst_QString" name="resizeAfterFromRawData" time="0.000"/>
+-   <testcase classname="tst_QString" name="resizeAfterReserve" time="0.000"/>
+-   <testcase classname="tst_QString" name="resizeWithNegative" time="0.000"/>
+-   <testcase classname="tst_QString" name="truncateWithNegative" time="0.000"/>
+-   <testcase classname="tst_QString" name="QCharRefMutableUnicode" time="0.000"/>
+-   <testcase classname="tst_QString" name="QCharRefDetaching" time="0.000"/>
+-   <testcase classname="tst_QString" name="sprintfZU" time="0.000"/>
+-   <testcase classname="tst_QString" name="repeatedSignature" time="0.000"/>
+-   <testcase classname="tst_QString" name="repeated" time="0.000"/>
+-   <testcase classname="tst_QString" name="compareRef" time="0.000"/>
+-   <testcase classname="tst_QString" name="arg_locale" time="0.000"/>
+-   <testcase classname="tst_QString" name="toUpperLower_icu" time="0.000"/>
+-   <testcase classname="tst_QString" name="eightBitLiterals" time="0.000"/>
+-   <testcase classname="tst_QString" name="reserve" time="0.000"/>
+-   <testcase classname="tst_QString" name="toHtmlEscaped" time="0.000"/>
+-   <testcase classname="tst_QString" name="operatorGreaterWithQLatin1String" time="0.000"/>
+-   <testcase classname="tst_QString" name="compareQLatin1Strings" time="0.000"/>
+-   <testcase classname="tst_QString" name="fromQLatin1StringWithLength" time="0.000"/>
+-   <testcase classname="tst_QString" name="assignQLatin1String" time="0.000"/>
+-   <testcase classname="tst_QString" name="isRightToLeft" time="0.000"/>
+-   <testcase classname="tst_QString" name="cleanupTestCase" time="0.000"/>
+-   <system-out/>
+-   <system-err/>
++  </testcase>
++  <testcase classname="tst_QString" name="number" time="0.000"/>
++  <testcase classname="tst_QString" name="arg_fillChar" time="0.000"/>
++  <testcase classname="tst_QString" name="capacity" time="0.000"/>
++  <testcase classname="tst_QString" name="section" time="0.000"/>
++  <testcase classname="tst_QString" name="double_conversion" time="0.000"/>
++  <testcase classname="tst_QString" name="integer_conversion" time="0.000"/>
++  <testcase classname="tst_QString" name="tortureSprintfDouble" time="0.000"/>
++  <testcase classname="tst_QString" name="toNum" time="0.000"/>
++  <testcase classname="tst_QString" name="localeAwareCompare" time="0.000">
++    <system-out>
++<![CDATA[XFAIL : tst_qstring.cpp:4615 :: [c1] ICU disagrees with test]]></system-out>
++  </testcase>
++  <testcase classname="tst_QString" name="split" time="0.000"/>
++  <testcase classname="tst_QString" name="split_regexp" time="0.000"/>
++  <testcase classname="tst_QString" name="fromUtf16" time="0.000"/>
++  <testcase classname="tst_QString" name="latin1String" time="0.000"/>
++  <testcase classname="tst_QString" name="nanAndInf" time="0.000"/>
++  <testcase classname="tst_QString" name="compare" time="0.000"/>
++  <testcase classname="tst_QString" name="resizeAfterFromRawData" time="0.000"/>
++  <testcase classname="tst_QString" name="resizeAfterReserve" time="0.000"/>
++  <testcase classname="tst_QString" name="resizeWithNegative" time="0.000"/>
++  <testcase classname="tst_QString" name="truncateWithNegative" time="0.000"/>
++  <testcase classname="tst_QString" name="QCharRefMutableUnicode" time="0.000"/>
++  <testcase classname="tst_QString" name="QCharRefDetaching" time="0.000"/>
++  <testcase classname="tst_QString" name="sprintfZU" time="0.000"/>
++  <testcase classname="tst_QString" name="repeatedSignature" time="0.000"/>
++  <testcase classname="tst_QString" name="repeated" time="0.000"/>
++  <testcase classname="tst_QString" name="compareRef" time="0.000"/>
++  <testcase classname="tst_QString" name="arg_locale" time="0.000"/>
++  <testcase classname="tst_QString" name="toUpperLower_icu" time="0.000"/>
++  <testcase classname="tst_QString" name="eightBitLiterals" time="0.000"/>
++  <testcase classname="tst_QString" name="reserve" time="0.000"/>
++  <testcase classname="tst_QString" name="toHtmlEscaped" time="0.000"/>
++  <testcase classname="tst_QString" name="operatorGreaterWithQLatin1String" time="0.000"/>
++  <testcase classname="tst_QString" name="compareQLatin1Strings" time="0.000"/>
++  <testcase classname="tst_QString" name="fromQLatin1StringWithLength" time="0.000"/>
++  <testcase classname="tst_QString" name="assignQLatin1String" time="0.000"/>
++  <testcase classname="tst_QString" name="isRightToLeft" time="0.000"/>
++  <testcase classname="tst_QString" name="cleanupTestCase" time="0.000"/>
++  <system-out/>
++  <system-err/>
+ </testsuite>
+diff --git a/src/test/resources/org/jenkinsci/plugins/xunit/types/qtestlib/testcase2/result.xml b/src/test/resources/org/jenkinsci/plugins/xunit/types/qtestlib/testcase2/result.xml
+index 095879d..898bbb3 100644
+--- a/src/test/resources/org/jenkinsci/plugins/xunit/types/qtestlib/testcase2/result.xml
++++ b/src/test/resources/org/jenkinsci/plugins/xunit/types/qtestlib/testcase2/result.xml
+@@ -51,11 +51,11 @@
+   <testcase classname="tst_QString" name="trimmed" time="0.000"/>
+   <testcase classname="tst_QString" name="toUpper" time="0.000">
+     <system-out>
+-<![CDATA[XFAIL : /home/frederik/dev/qt/qt-src-stable/qtbase/tests/auto/corelib/tools/qstring/tst_qstring.cpp:1876 :: test doesn't work with ICU support, since QChar is unaware of any locale]]></system-out>
++<![CDATA[XFAIL : /home/frederik/dev/qt/qt-src-stable/qtbase/tests/auto/corelib/tools/qstring/tst_qstring.cpp:1876 :: [] test doesn't work with ICU support, since QChar is unaware of any locale]]></system-out>
+   </testcase>
+   <testcase classname="tst_QString" name="toLower" time="0.000">
+     <system-out>
+-<![CDATA[XFAIL : /home/frederik/dev/qt/qt-src-stable/qtbase/tests/auto/corelib/tools/qstring/tst_qstring.cpp:1935 :: test doesn't work with ICU support, since QChar is unaware of any locale]]></system-out>
++<![CDATA[XFAIL : /home/frederik/dev/qt/qt-src-stable/qtbase/tests/auto/corelib/tools/qstring/tst_qstring.cpp:1935 :: [] test doesn't work with ICU support, since QChar is unaware of any locale]]></system-out>
+   </testcase>
+   <testcase classname="tst_QString" name="toCaseFolded" time="0.071"/>
+   <testcase classname="tst_QString" name="rightJustified" time="0.000"/>
+@@ -80,7 +80,7 @@
+   <testcase classname="tst_QString" name="constructorQByteArray" time="0.000"/>
+   <testcase classname="tst_QString" name="STL" time="0.000"/>
+   <testcase classname="tst_QString" name="macTypes" time="0.000">
+-    <skipped>/home/frederik/dev/qt/qt-src-stable/qtbase/tests/auto/corelib/tools/qstring/tst_qstring.cpp:946 :: This is a Mac-only test</skipped>
++    <skipped message="/home/frederik/dev/qt/qt-src-stable/qtbase/tests/auto/corelib/tools/qstring/tst_qstring.cpp:946 :: [] This is a Mac-only test"/>
+   </testcase>
+   <testcase classname="tst_QString" name="isEmpty" time="0.000"/>
+   <testcase classname="tst_QString" name="isNull" time="0.000"/>
+@@ -122,7 +122,7 @@
+   <testcase classname="tst_QString" name="toNum" time="0.000"/>
+   <testcase classname="tst_QString" name="localeAwareCompare" time="0.070">
+     <system-out>
+-<![CDATA[XFAIL : /home/frederik/dev/qt/qt-src-stable/qtbase/tests/auto/corelib/tools/qstring/tst_qstring.cpp:4755 :: ICU disagrees with test]]></system-out>
++<![CDATA[XFAIL : /home/frederik/dev/qt/qt-src-stable/qtbase/tests/auto/corelib/tools/qstring/tst_qstring.cpp:4755 :: [c1] ICU disagrees with test]]></system-out>
+   </testcase>
+   <testcase classname="tst_QString" name="split" time="0.000"/>
+   <testcase classname="tst_QString" name="split_regexp" time="0.000"/>
+-- 
+1.7.9.5
+

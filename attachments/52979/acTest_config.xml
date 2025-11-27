@@ -1,0 +1,83 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>ActiveChoice test</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>TEAM_UID</name>
+          <description>Team name (UID)</description>
+          <defaultValue>foo</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ENVIRONMENT</name>
+          <description>The environment name to use for this stack (default: dev)</description>
+          <defaultValue>bar</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <org.biouno.unochoice.CascadeChoiceParameter plugin="uno-choice@2.4">
+          <name>BACKUP_FILENAME</name>
+          <description>Description here.</description>
+          <randomName>choice-parameter-1857366698276196</randomName>
+          <visibleItemCount>1</visibleItemCount>
+          <script class="org.biouno.unochoice.model.GroovyScript">
+            <secureScript plugin="script-security@1.75">
+              <script>Map getOptions(String teamId, String enviro) {
+    def found_snapshots = [&quot;&quot;:&quot;Select a backup file or snapshot to restore for &quot; + teamId + &quot; enviro &quot; + enviro]; // value =&gt; selection text
+    found_snapshots[&quot;one&quot;] = &quot;snapshot e&quot;;
+    found_snapshots[&quot;two&quot;] = &quot;snapshot d&quot;;
+    found_snapshots[&quot;three&quot;] = &quot;snapshot c&quot;;
+    found_snapshots[&quot;four&quot;] = &quot;snapshot b&quot;;
+    found_snapshots[&quot;five&quot;] = &quot;snapshot a&quot;;
+    return found_snapshots;
+}
+
+// get the choice parameters
+if (binding.variables.get(&quot;TEAM_UID&quot;) == null) { return [&apos;&apos;] }
+def team_uid = binding.variables.get(&quot;TEAM_UID&quot;)
+if (binding.variables.get(&quot;ENVIRONMENT&quot;) == null) { return [&apos;&apos;] }
+def environment = binding.variables.get(&quot;ENVIRONMENT&quot;)
+if(environment == &apos;&apos; || team_uid == &apos;&apos;) { return [&apos;&apos;] }
+def snapshots;
+snapshots = getOptions(team_uid, environment);
+return snapshots;</script>
+              <sandbox>true</sandbox>
+            </secureScript>
+            <secureFallbackScript plugin="script-security@1.75">
+              <script>return [&quot;ERROR - backupFileParam ActiveChoice script failed&quot;]</script>
+              <sandbox>true</sandbox>
+            </secureFallbackScript>
+          </script>
+          <projectName>acTest</projectName>
+          <projectFullName>acTest</projectFullName>
+          <parameters class="linked-hash-map"/>
+          <referencedParameters>TEAM_UID,ENVIRONMENT</referencedParameters>
+          <choiceType>PT_SINGLE_SELECT</choiceType>
+          <filterable>false</filterable>
+          <filterLength>1</filterLength>
+        </org.biouno.unochoice.CascadeChoiceParameter>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>echo &quot;TEAM_UID=$TEAM_UID&quot;
+echo &quot;ENVIRONMENT=$ENVIRONMENT&quot;
+echo &quot;BACKUP_FILENAME=$BACKUP_FILENAME&quot;
+</command>
+      <configuredLocalRules/>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

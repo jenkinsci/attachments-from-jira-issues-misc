@@ -1,0 +1,54 @@
+13:50:25 2018-07-20T13:50:25.156 INFO   AnchoreWorker   Jenkins version: 2.125
+13:50:25 2018-07-20T13:50:25.157 INFO   AnchoreWorker   Anchore Container Image Scanner Plugin version: 1.0.16
+13:50:25 2018-07-20T13:50:25.157 INFO   AnchoreWorker   [global] debug: false
+13:50:25 2018-07-20T13:50:25.157 INFO   AnchoreWorker   [global] enginemode: anchoreengine
+13:50:25 2018-07-20T13:50:25.157 INFO   AnchoreWorker   [build] engineurl: http://anchore.platform.vivint.com/v1
+13:50:25 2018-07-20T13:50:25.157 INFO   AnchoreWorker   [build] engineuser: admin
+13:50:25 2018-07-20T13:50:25.157 INFO   AnchoreWorker   [build] enginepass: ****
+13:50:25 2018-07-20T13:50:25.157 INFO   AnchoreWorker   [build] engineverify: false
+13:50:25 2018-07-20T13:50:25.157 INFO   AnchoreWorker   [build] name: anchore_images
+13:50:25 2018-07-20T13:50:25.157 INFO   AnchoreWorker   [build] engineRetries: 1000
+13:50:25 2018-07-20T13:50:25.157 INFO   AnchoreWorker   [build] policyBundleId: 2c53a13c-1765-11e8-82ef-23527761d060
+13:50:25 2018-07-20T13:50:25.157 INFO   AnchoreWorker   [build] bailOnFail: true
+13:50:25 2018-07-20T13:50:25.157 INFO   AnchoreWorker   [build] bailOnPluginFail: true
+13:50:25 2018-07-20T13:50:25.163 INFO   AnchoreWorker   Submitting tp-registry.vivint.com:5005/test/vivint-base-prod:15.feature-pl-5600-anchore-3268de8 for analysis
+13:50:25 2018-07-20T13:50:25.771 INFO   AnchoreWorker   Analysis request accepted, received image digest sha256:69fc9c86d7f6c1555109a666b5989d31619bef2f98d499d8dafda917f81325f1
+13:50:25 2018-07-20T13:50:25.771 INFO   AnchoreWorker   Waiting for analysis of tp-registry.vivint.com:5005/test/vivint-base-prod:15.feature-pl-5600-anchore-3268de8, polling status periodically
+13:56:25 2018-07-20T13:56:25.143 INFO   AnchoreWorker   Completed analysis and processed policy evaluation result
+13:56:25 2018-07-20T13:56:25.147 INFO   AnchoreWorker   Policy evaluation summary for tp-registry.vivint.com:5005/test/vivint-base-prod:15.feature-pl-5600-anchore-3268de8 - stop: 1 (+0 whitelisted), warn: 3 (+0 whitelisted), go: 0 (+0 whitelisted), final: stop
+13:56:25 2018-07-20T13:56:25.149 INFO   AnchoreWorker   Anchore Container Image Scanner Plugin step result - FAIL
+13:56:25 2018-07-20T13:56:25.151 INFO   AnchoreWorker   Querying vulnerability listing for tp-registry.vivint.com:5005/test/vivint-base-prod:15.feature-pl-5600-anchore-3268de8
+13:56:25 2018-07-20T13:56:25.178 ERROR  AnchoreWorker   Failed to fetch vulnerability listing from anchore-engine due to an unexpected error
+13:56:25 net.sf.json.JSONException: JSONObject["vulnerabilities"] is not a JSONArray.
+13:56:25 	at net.sf.json.JSONObject.getJSONArray(JSONObject.java:1986)
+13:56:25 	at com.anchore.jenkins.plugins.anchore.BuildWorker.runVulnerabilityListing(BuildWorker.java:556)
+13:56:25 	at com.anchore.jenkins.plugins.anchore.BuildWorker.runQueries(BuildWorker.java:846)
+13:56:25 	at com.anchore.jenkins.plugins.anchore.AnchoreBuilder.perform(AnchoreBuilder.java:341)
+13:56:25 	at org.jenkinsci.plugins.workflow.steps.CoreStep$Execution.run(CoreStep.java:80)
+13:56:25 	at org.jenkinsci.plugins.workflow.steps.CoreStep$Execution.run(CoreStep.java:67)
+13:56:25 	at org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution$1$1.call(SynchronousNonBlockingStepExecution.java:50)
+13:56:25 	at hudson.security.ACL.impersonate(ACL.java:290)
+13:56:25 	at org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution$1.run(SynchronousNonBlockingStepExecution.java:47)
+13:56:25 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+13:56:25 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+13:56:25 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
+13:56:25 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+13:56:25 	at java.lang.Thread.run(Thread.java:745)
+13:56:25 2018-07-20T13:56:25.179 WARN   AnchorePlugin   Recording failure to execute Anchore queries and moving on with plugin operation
+13:56:25 hudson.AbortException: Failed to fetch vulnerability listing from anchore-engine due to an unexpected error. Please refer to above logs for more information
+13:56:25 	at com.anchore.jenkins.plugins.anchore.BuildWorker.runVulnerabilityListing(BuildWorker.java:592)
+13:56:25 	at com.anchore.jenkins.plugins.anchore.BuildWorker.runQueries(BuildWorker.java:846)
+13:56:25 	at com.anchore.jenkins.plugins.anchore.AnchoreBuilder.perform(AnchoreBuilder.java:341)
+13:56:25 	at org.jenkinsci.plugins.workflow.steps.CoreStep$Execution.run(CoreStep.java:80)
+13:56:25 	at org.jenkinsci.plugins.workflow.steps.CoreStep$Execution.run(CoreStep.java:67)
+13:56:25 	at org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution$1$1.call(SynchronousNonBlockingStepExecution.java:50)
+13:56:25 	at hudson.security.ACL.impersonate(ACL.java:290)
+13:56:25 	at org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution$1.run(SynchronousNonBlockingStepExecution.java:47)
+13:56:25 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+13:56:25 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+13:56:25 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
+13:56:25 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+13:56:25 	at java.lang.Thread.run(Thread.java:745)
+13:56:25 Archiving artifacts
+13:56:25 2018-07-20T13:56:25.186 WARN   AnchorePlugin   Failing Anchore Container Image Scanner Plugin step due to final result FAIL
+13:56:25 2018-07-20T13:56:25.188 INFO   AnchorePlugin   Completed Anchore Container Image Scanner step

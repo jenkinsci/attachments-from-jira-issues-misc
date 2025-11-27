@@ -1,0 +1,141 @@
+Started by user X Y
+Querying the current revision of branch PWams-1292-pipeline-tests...
+Current revision of branch PWams-1292-pipeline-tests is 00f80ba0184b775adfe5fe920f3124ccbb1d9ad4
+Obtained Jenkinsfile from 00f80ba0184b775adfe5fe920f3124ccbb1d9ad4
+Resume disabled by user, switching to high-performance, low-durability mode.
+[Pipeline] Start of Pipeline
+[Pipeline] properties
+[Pipeline] node
+Running on Jenkins in C:\projects\BuildSystem\jenkins\workspace\rella_PWams-1292-pipeline-tests
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (checkout)
+[Pipeline] timeout
+Timeout set to expire in 5 min 0 sec
+[Pipeline] {
+[Pipeline] checkout
+The recommended git tool is: NONE
+using credential bsadmin-gitlab
+ > git.exe rev-parse --resolve-git-dir C:\projects\BuildSystem\jenkins\workspace\rella_PWams-1292-pipeline-tests\.git # timeout=10
+Fetching changes from the remote Git repository
+ > git.exe config remote.origin.url git@git.xyz.com:team/ams-brella.git # timeout=10
+Cleaning workspace
+ > git.exe rev-parse --verify HEAD # timeout=10
+Resetting working tree
+ > git.exe reset --hard # timeout=10
+ > git.exe clean -fdx # timeout=10
+Fetching without tags
+Fetching upstream changes from git@git.xyz.com:team/ams-brella.git
+ > git.exe --version # timeout=10
+ > git --version # 'git version 2.24.1.windows.2'
+using GIT_SSH to set credentials bsadmin-gitlab
+ > git.exe fetch --no-tags --force --progress -- git@git.xyz.com:team/ams-brella.git +refs/heads/PWams-1292-pipeline-tests:refs/remotes/origin/PWams-1292-pipeline-tests # timeout=10
+Checking out Revision 00f80ba0184b775adfe5fe920f3124ccbb1d9ad4 (PWams-1292-pipeline-tests)
+ > git.exe config core.sparsecheckout # timeout=10
+ > git.exe checkout -f 00f80ba0184b775adfe5fe920f3124ccbb1d9ad4 # timeout=10
+Commit message: "changed node to built-in"
+ > git.exe rev-list --no-walk 00f80ba0184b775adfe5fe920f3124ccbb1d9ad4 # timeout=10
+[GitLab Pipeline Status] Notifying branch build status: RUNNING brella/PWams-1292-pipeline-tests #7: Build started...
+[GitLab Pipeline Status] Notified
+[Pipeline] }
+[Pipeline] // timeout
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (build .net)
+[Pipeline] timeout
+Timeout set to expire in 5 min 0 sec
+[Pipeline] {
+[Pipeline] bat
+
+C:\projects\BuildSystem\jenkins\workspace\rella_PWams-1292-pipeline-tests>dotnet build -c release /WarnAsError 
+Microsoft (R) Build Engine version 16.11.0+0538acc04 for .NET
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+  Determining projects to restore...
+  Restored C:\projects\BuildSystem\jenkins\workspace\rella_PWams-1292-pipeline-tests\My.Extensions\My.Extensions.csproj (in 245 ms).
+  Restored C:\projects\BuildSystem\jenkins\workspace\rella_PWams-1292-pipeline-tests\My.Extensions.Tests\My.Extensions.Tests.csproj (in 481 ms).
+  My.Extensions -> C:\projects\BuildSystem\jenkins\workspace\rella_PWams-1292-pipeline-tests\My.Extensions\bin\Release\net5.0\My.Extensions.dll
+  My.Extensions.Tests -> C:\projects\BuildSystem\jenkins\workspace\rella_PWams-1292-pipeline-tests\My.Extensions.Tests\bin\Release\net5.0\My.Extensions.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.63
+[Pipeline] }
+[Pipeline] // timeout
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (standard .net tests)
+[Pipeline] timeout
+Timeout set to expire in 10 min
+[Pipeline] {
+[Pipeline] catchError
+[Pipeline] {
+[Pipeline] bat
+
+C:\projects\BuildSystem\jenkins\workspace\rella_PWams-1292-pipeline-tests>dotnet test -c release -r ./TestResults --runtime win-x64 --logger "xunit;LogFileName={assembly}.results.xml"  
+  Determining projects to restore...
+  Restored C:\projects\BuildSystem\jenkins\workspace\rella_PWams-1292-pipeline-tests\My.Extensions\My.Extensions.csproj (in 260 ms).
+  Restored C:\projects\BuildSystem\jenkins\workspace\rella_PWams-1292-pipeline-tests\My.Extensions.Tests\My.Extensions.Tests.csproj (in 553 ms).
+  My.Extensions -> C:\projects\BuildSystem\jenkins\workspace\rella_PWams-1292-pipeline-tests\My.Extensions\bin\Release\net5.0\My.Extensions.dll
+  My.Extensions.Tests -> C:\projects\BuildSystem\jenkins\workspace\rella_PWams-1292-pipeline-tests\My.Extensions.Tests\bin\Release\net5.0\win-x64\My.Extensions.Tests.dll
+Test run for C:\projects\BuildSystem\jenkins\workspace\rella_PWams-1292-pipeline-tests\My.Extensions.Tests\bin\Release\net5.0\win-x64\My.Extensions.Tests.dll (.NETCoreApp,Version=v5.0)
+Microsoft (R) Test Execution Command Line Tool Version 16.11.0
+Copyright (c) Microsoft Corporation.  All rights reserved.
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[WARNING][13/07/2022 07:30:32][Thread 0060][My://test/deadLetters] DeadLetter from [My://test/temp/c] to [My://test/deadLetters]: <Received dead letter from [My://test/temp/c]: test>
+Results File: C:\projects\BuildSystem\jenkins\workspace\rella_PWams-1292-pipeline-tests\TestResults\My.Extensions.Tests.results.xml
+
+Passed!  - Failed:     0, Passed:     8, Skipped:     0, Total:     8, Duration: 315 ms - My.Extensions.Tests.dll (net5.0)
+[Pipeline] }
+[Pipeline] // catchError
+[Pipeline] xunit
+WARNING: Unknown parameter(s) found for class type 'org.jenkinsci.plugins.xunit.pipeline.XUnitResultsStep': checksName
+INFO: Processing xUnit.Net-v2 (default)
+INFO: [xUnit.Net-v2 (default)] - 1 test report file(s) were found with the pattern 'TestResults\*.results.xml' relative to 'C:\projects\BuildSystem\jenkins\workspace\rella_PWams-1292-pipeline-tests' for the testing framework 'xUnit.Net-v2 (default)'.
+[Pipeline] }
+[Pipeline] // timeout
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (testing checkout)
+[Pipeline] timeout
+Timeout set to expire in 5 min 0 sec
+[Pipeline] {
+[Pipeline] checkout
+The recommended git tool is: NONE
+using credential bsadmin-gitlab
+ > git.exe rev-parse --resolve-git-dir C:\projects\BuildSystem\jenkins\workspace\rella_PWams-1292-pipeline-tests\.git # timeout=10
+Fetching changes from the remote Git repository
+ > git.exe config remote.origin.url git@git.xyz.com:team/ams-brella.git # timeout=10
+Cleaning workspace
+ > git.exe rev-parse --verify HEAD # timeout=10
+Resetting working tree
+ > git.exe reset --hard # timeout=10
+ > git.exe clean -fdx # timeout=10
+Fetching without tags
+Fetching upstream changes from git@git.xyz.com:team/ams-brella.git
+ > git.exe --version # timeout=10
+ > git --version # 'git version 2.24.1.windows.2'
+using GIT_SSH to set credentials bsadmin-gitlab
+ > git.exe fetch --no-tags --force --progress -- git@git.xyz.com:team/ams-brella.git +refs/heads/PWams-1292-pipeline-tests:refs/remotes/origin/PWams-1292-pipeline-tests # timeout=10
+Checking out Revision 00f80ba0184b775adfe5fe920f3124ccbb1d9ad4 (PWams-1292-pipeline-tests)
+ > git.exe config core.sparsecheckout # timeout=10
+ > git.exe checkout -f 00f80ba0184b775adfe5fe920f3124ccbb1d9ad4 # timeout=10
+Commit message: "changed node to built-in"
+[GitLab Pipeline Status] Notifying branch build status: RUNNING brella/PWams-1292-pipeline-tests #7: Build started...
+[Pipeline] }
+[Pipeline] // timeout
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+[GitLab Pipeline Status] Notifying branch build status: SUCCESS brella/PWams-1292-pipeline-tests #7: This commit looks good.
+[GitLab Pipeline Status] Notified
+Finished: SUCCESS

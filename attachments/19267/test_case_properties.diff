@@ -1,0 +1,166 @@
+--- core/src/main/java/hudson/tasks/test/AbstractTestResultAction.java	(revision 6890)
++++ core/src/main/java/hudson/tasks/test/AbstractTestResultAction.java	(working copy)
+@@ -48,6 +48,7 @@
+ import java.io.IOException;
+ import java.util.Collections;
+ import java.util.List;
++import java.util.ArrayList;
+ import java.util.Map;
+ import java.util.concurrent.ConcurrentHashMap;
+ 
+@@ -192,6 +193,10 @@
+         return Collections.emptyList();
+     }
+ 
++    public List<String> getProperties() {
++        return new ArrayList<String>();
++    }
++
+     /**
+      * Generates a PNG image for the test result trend.
+      */
+Index: core/src/main/java/hudson/tasks/junit/SuiteResult.java
+===================================================================
+--- core/src/main/java/hudson/tasks/junit/SuiteResult.java	(revision 6890)
++++ core/src/main/java/hudson/tasks/junit/SuiteResult.java	(working copy)
+@@ -78,6 +78,15 @@
+     }
+ 
+     /**
++     * System properties
++     */
++    private final List<String> properties = new ArrayList<String>();
++
++    public List<String> getProperties() {
++        return properties;
++    }
++
++    /**
+      * Parses the JUnit XML file into {@link SuiteResult}s.
+      * This method returns a collection, as a single XML may have multiple &lt;testsuite>
+      * elements wrapped into the top-level &lt;testsuites>.
+@@ -148,6 +157,14 @@
+ 
+             addCase(new CaseResult(this, e, classname));
+         }
++        Element p = suite.element("properties");
++        for (Element e : (List<Element>)p.elements("property")) {
++            String propertyName = e.attributeValue("name");
++            if (propertyName != null) {
++                String propertyValue = e.attributeValue("value");
++                properties.add(propertyName + " : " + propertyValue);
++            }
++        }
+     }
+ 
+     /*package*/ void addCase(CaseResult cr) {
+Index: core/src/main/java/hudson/tasks/junit/TestResultAction.java
+===================================================================
+--- core/src/main/java/hudson/tasks/junit/TestResultAction.java	(revision 6890)
++++ core/src/main/java/hudson/tasks/junit/TestResultAction.java	(working copy)
+@@ -140,6 +140,11 @@
+           return getResult().getFailedTests();
+      }
+ 
++     @Override
++     public List<String> getProperties() {
++         return getResult().getProperties();
++     }
++
+     /**
+      * Loads a {@link TestResult} from disk.
+      */
+Index: core/src/main/java/hudson/tasks/junit/TestResult.java
+===================================================================
+--- core/src/main/java/hudson/tasks/junit/TestResult.java	(revision 6890)
++++ core/src/main/java/hudson/tasks/junit/TestResult.java	(working copy)
+@@ -73,6 +73,7 @@
+ 
+     private transient TestObject parent;
+ 
++    private transient List<String> properties;
+     /**
+      * Number of all tests.
+      */
+@@ -533,6 +534,7 @@
+                     byPackages.put(spkg,pr=new PackageResult(this,pkg));
+                 pr.add(cr);
+             }
++	    properties = s.getProperties();
+         }
+ 
+         Collections.sort(failedTests,CaseResult.BY_AGE);
+@@ -541,6 +543,10 @@
+             pr.freeze();
+     }
+ 
++    public List<String> getProperties() {
++        return properties;
++     }
++
+     private static final long serialVersionUID = 1L;
+     private static final boolean checkTimestamps = true; // TODO: change to System.getProperty  
+ 
+Index: core/src/main/resources/hudson/tasks/test/MetaTabulatedResult/body.jelly
+===================================================================
+--- core/src/main/resources/hudson/tasks/test/MetaTabulatedResult/body.jelly	(revision 6890)
++++ core/src/main/resources/hudson/tasks/test/MetaTabulatedResult/body.jelly	(working copy)
+@@ -45,6 +45,32 @@
+ 		}
+   </script>
+ 
++    <script type="text/javascript">
++    function showProperties() {
++
++    var elms = document.getElementsByClassName("hidden");
++    for(var i = 0; i &lt; elms.length; i++) {
++    elms[i].style.display = "";
++    }
++    elm = document.getElementById("showLink");
++    elm.style.display = "none";
++    elm = document.getElementById("hideLink");
++    elm  .style.display = "";
++    }
++    function hideProperties() {
++
++    var elms = document.getElementsByClassName("hidden");
++    for(var i = 0; i &lt; elms.length; i++) {
++    elms[i].style.display = "none";
++    }
++    elm = document.getElementById("showLink");
++    elm.style.display = "";
++    elm = document.getElementById("hideLink");
++    elm.style.display = "none";
++    }
++    </script>
++
++
+   <j:if test="${it.failCount!=0}">
+     <h2>${%All Failed Tests}</h2>
+     <table class="pane sortable">
+@@ -124,4 +150,25 @@
+       </tbody>
+     </table>
+   </j:if>
++    <j:if test="${it.properties != null}">
++    <br/>
++    <a id="showLink" name="editPropertiesLink"
++           href="#showPropertiesLink"
++           onclick="javascript:showProperties()">${%Show system properties} ${">>>"}
++    </a>
++    <a id="hideLink" name="hidePropertiesLink"
++           href="#hidePropertiesLink"
++           onclick="javascript:hideProperties()" style="display:none">${%Hide system properties} ${"&lt;&lt;&lt;"}
++    </a>
++    <ul style="list-style-type: none; margin: 0;">
++        <j:set var="elementClass" value="hidden" />
++        <j:set var="elementStyle" value="display:none" />
++       <h3 class="${elementClass}" style="${elementStyle}">${%System properties}</h3>
++        <j:forEach var="p" items="${it.properties}" varStatus="i">
++            <li class="${elementClass}" style="${elementStyle}">
++                <st:out value="${p}"/>
++            </li>
++        </j:forEach>
++    </ul>
++    </j:if>
+ </j:jelly>

@@ -1,0 +1,22 @@
+Index: src/main/java/hudson/scm/SubversionTagAction.java
+===================================================================
+--- src/main/java/hudson/scm/SubversionTagAction.java	(revision 20379)
++++ src/main/java/hudson/scm/SubversionTagAction.java	(working copy)
+@@ -204,7 +204,7 @@
+                             SVNCopySource csrc = new SVNCopySource(sourceRevision, sourceRevision, src);
+                             svncc.doCopy(
+                                     new SVNCopySource[]{csrc},
+-                                    dst, false, true, false, "Tagged from "+build, null );
++                                    dst, false, true, false, "Tagged from "+getBuild(), null );
+                         } catch (SVNException x) {
+                             x.printStackTrace(listener.error("Failed to tag"));
+                             return;
+@@ -214,7 +214,7 @@
+                     // completed successfully
+                     for (Entry<SvnInfo,String> e : tagSet.entrySet())
+                         SubversionTagAction.this.tags.get(e.getKey()).add(e.getValue());
+-                    build.save();
++                    getBuild().save();
+                     workerThread = null;
+                 } finally {
+                     cm.dispose();

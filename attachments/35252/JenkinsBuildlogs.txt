@@ -1,0 +1,136 @@
+Started by user anonymous
+ > git rev-parse --is-inside-work-tree # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url http://bharath.kumar@192.168.16.166:7990/scm/jen/pipelines.git # timeout=10
+Fetching upstream changes from http://bharath.kumar@192.168.16.166:7990/scm/jen/pipelines.git
+ > git --version # timeout=10
+using GIT_ASKPASS to set credentials local trident git credentials
+ > git fetch --tags --progress http://bharath.kumar@192.168.16.166:7990/scm/jen/pipelines.git +refs/heads/*:refs/remotes/origin/*
+ > git rev-parse refs/remotes/origin/master^{commit} # timeout=10
+ > git rev-parse refs/remotes/origin/refs/heads/master^{commit} # timeout=10
+Checking out Revision bca7df56421ae21b465d81ec01c5ba0e61b4e785 (refs/remotes/origin/master)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f bca7df56421ae21b465d81ec01c5ba0e61b4e785
+ > git rev-list bca7df56421ae21b465d81ec01c5ba0e61b4e785 # timeout=10
+[Pipeline] node
+Running on Centos in /home/jenkins/workspace/QA_DEVOPS_CICD_TridentInstance
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Checkout qadevops repo)
+[Pipeline] git
+ > git rev-parse --is-inside-work-tree # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url http://bharath.kumar@192.168.16.166:7990/scm/qad/devops.git # timeout=10
+Fetching upstream changes from http://bharath.kumar@192.168.16.166:7990/scm/qad/devops.git
+ > git --version # timeout=10
+using GIT_ASKPASS to set credentials local trident git credentials
+ > git fetch --tags --progress http://bharath.kumar@192.168.16.166:7990/scm/qad/devops.git +refs/heads/*:refs/remotes/origin/*
+ > git rev-parse refs/remotes/origin/master^{commit} # timeout=10
+ > git rev-parse refs/remotes/origin/origin/master^{commit} # timeout=10
+Checking out Revision b4b643a340e6c00e85e19d35bea673e7ed35f508 (refs/remotes/origin/master)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f b4b643a340e6c00e85e19d35bea673e7ed35f508
+ > git branch -a -v --no-abbrev # timeout=10
+ > git branch -D master # timeout=10
+ > git checkout -b master b4b643a340e6c00e85e19d35bea673e7ed35f508
+ > git rev-list b4b643a340e6c00e85e19d35bea673e7ed35f508 # timeout=10
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Build qadevops portal)
+[Pipeline] sh
+[QA_DEVOPS_CICD_TridentInstance] Running shell script
++ pwd
+[Pipeline] sh
+[QA_DEVOPS_CICD_TridentInstance] Running shell script
++ cat pwd.current
+/home/jenkins/workspace/QA_DEVOPS_CICD_TridentInstance
+[Pipeline] readFile
+[Pipeline] echo
+Activating nodeenv and virtualenv
+[Pipeline] dir
+Running in /home/jenkins/workspace
+[Pipeline] {
+[Pipeline] sh
+[workspace] Running shell script
++ source ./venv/bin/activate
+++ deactivate nondestructive
+++ unset -f pydoc
+++ '[' -z '' ']'
+++ '[' -z '' ']'
+++ '[' -n /bin/sh ']'
+++ hash -r
+++ '[' -z '' ']'
+++ unset VIRTUAL_ENV
+++ '[' '!' nondestructive = nondestructive ']'
+++ VIRTUAL_ENV=/home/jenkins/workspace/venv
+++ export VIRTUAL_ENV
+++ _OLD_VIRTUAL_PATH=/usr/local/bin:/usr/bin
+++ PATH=/home/jenkins/workspace/venv/bin:/usr/local/bin:/usr/bin
+++ export PATH
+++ '[' -z '' ']'
+++ '[' -z '' ']'
+++ _OLD_VIRTUAL_PS1=
+++ '[' x '!=' x ']'
++++ basename /home/jenkins/workspace/venv
+++ PS1='(venv) '
+++ export PS1
+++ alias pydoc
+++ '[' -n /bin/sh ']'
+++ hash -r
+[Pipeline] sh
+[workspace] Running shell script
++ source ./env/bin/activate
+++ deactivate_node nondestructive
+++ '[' -n '' ']'
+++ '[' -n /bin/sh -o -n '' ']'
+++ hash -r
+++ '[' -n '' ']'
+++ unset NODE_VIRTUAL_ENV
+++ '[' '!' nondestructive = nondestructive ']'
+++ '[' ./env/bin/activate ']'
+++ SOURCE=./env/bin/activate
+++ '[' -h ./env/bin/activate ']'
+++++ dirname ./env/bin/activate
++++ command cd -P ./env/bin
++++ cd -P ./env/bin
++++ pwd
+++ DIR=/home/jenkins/workspace/env/bin
++++ dirname /home/jenkins/workspace/env/bin
+++ NODE_VIRTUAL_ENV=/home/jenkins/workspace/env
+++ export NODE_VIRTUAL_ENV
+++ _OLD_NODE_VIRTUAL_PATH=/usr/local/bin:/usr/bin
+++ PATH=/home/jenkins/workspace/env/lib/node_modules/.bin:/home/jenkins/workspace/env/bin:/usr/local/bin:/usr/bin
+++ export PATH
+++ _OLD_NODE_PATH=
+++ NODE_PATH=/home/jenkins/workspace/env/lib/node_modules
+++ export NODE_PATH
+++ _OLD_NPM_CONFIG_PREFIX=
+++ _OLD_npm_config_prefix=
+++ NPM_CONFIG_PREFIX=/home/jenkins/workspace/env
+++ npm_config_prefix=/home/jenkins/workspace/env
+++ export NPM_CONFIG_PREFIX
+++ export npm_config_prefix
+++ '[' -z '' ']'
+++ _OLD_NODE_VIRTUAL_PS1=
+++ '[' 'x(env)' '!=' x ']'
+++ PS1='(env)'
+++ export PS1
+++ '[' -n /bin/sh -o -n '' ']'
+++ hash -r
+[Pipeline] sh
+[workspace] Running shell script
++ cd QA_DEVOPS_CICD_TridentInstance
+[Pipeline] sh
+[workspace] Running shell script
++ npm install -g pm2 bower grunt-cli
+/home/jenkins/workspace@tmp/durable-4bc2d7ea/script.sh: line 2: npm: command not found
+[Pipeline] }
+[Pipeline] // dir
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+ERROR: script returned exit code 127
+Finished: FAILURE

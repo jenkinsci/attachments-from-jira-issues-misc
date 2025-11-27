@@ -1,0 +1,129 @@
+Index: src/main/java/hudson/plugins/jabber/im/transport/JabberPublisherDescriptor.java
+===================================================================
+--- src/main/java/hudson/plugins/jabber/im/transport/JabberPublisherDescriptor.java	(revision 36597)
++++ src/main/java/hudson/plugins/jabber/im/transport/JabberPublisherDescriptor.java	(working copy)
+@@ -533,8 +533,9 @@
+             iPort = Integer.parseInt(port);
+         }
+         
+-        Socket s = new Socket(address, iPort);
+-        s.close();
++        //remove this check as it can't succeed
++        //Socket s = new Socket(address, iPort);
++        //s.close();
+     }
+ 
+     /**
+Index: src/main/java/hudson/plugins/jabber/im/transport/JabberIMConnection.java
+===================================================================
+--- src/main/java/hudson/plugins/jabber/im/transport/JabberIMConnection.java	(revision 36597)
++++ src/main/java/hudson/plugins/jabber/im/transport/JabberIMConnection.java	(working copy)
+@@ -3,7 +3,13 @@
+  */
+ package hudson.plugins.jabber.im.transport;
+ 
++import java.io.IOException;
++import java.io.InputStream;
++import java.io.PrintStream;
+ import java.lang.ref.WeakReference;
++import java.net.InetAddress;
++import java.net.Socket;
++import java.net.UnknownHostException;
+ import java.util.HashMap;
+ import java.util.HashSet;
+ import java.util.Map;
+@@ -12,6 +18,8 @@
+ import java.util.concurrent.TimeUnit;
+ import java.util.logging.Logger;
+ 
++import javax.net.SocketFactory;
++import javax.net.ssl.SSLSocket;
+ import javax.net.ssl.SSLSocketFactory;
+ 
+ import org.jivesoftware.smack.Chat;
+@@ -225,6 +233,11 @@
+ 					this.hostname, this.port,
+ 					serviceName);
+ 		}
++		
++		if ("talk.google.com".equals(this.hostname) && 443 == this.port) {
++			cfg.setSocketFactory(new GTalkSocketFactory());
++		}
++		
+ 		// Currently, we handle reconnects ourself.
+ 		// Maybe we should change it in the future, but currently I'm
+ 		// not sure what Smack's reconnect feature really does.
+@@ -589,4 +602,73 @@
+ 			}
+ 		}
+ 	};
++
++	public static class GTalkSocketFactory extends SocketFactory {
++		
++		static Logger logger = Logger.getLogger(GTalkSocketFactory.class.getName());
++	
++		/**
++		 * {@inheritDoc}
++		 */
++		@Override
++		public Socket createSocket(String host, int port) throws IOException, UnknownHostException {
++		    String request = "CONNECT " + host + ":" + port + " HTTP/1.0\r\n\r\n";
++		    logger.fine(request);
++		    Socket sock = new Socket("192.168.105.3", 3128);
++		    PrintStream ps = new PrintStream(sock.getOutputStream());
++		    ps.print(request);
++		    ps.flush();
++		    
++		    InputStream in = sock.getInputStream();
++	        int c = 0;
++	        //looking for \r\n\r\n sequence
++	        int look = '\r';
++	        int count = 0;
++	        while (count != 4) {
++	            c = in.read();
++	            if (c == look) {
++	                look = (look == '\r' ? '\n' : '\r');
++	                count++;
++	            } else {
++	                //reset to 0
++	                count = 0;
++	            }
++	            //System.out.print((char) c);
++	        }
++	        
++	        SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
++	        SSLSocket ssl = (SSLSocket) ssf.createSocket(sock, host, port, true);
++	        ssl.startHandshake();
++	        logger.info("Completed SSL Handshake");            
++			return ssl;
++		}
++	
++		/**
++		 * {@inheritDoc}
++		 */
++		@Override
++		public Socket createSocket(InetAddress host, int port) throws IOException {
++			return null;
++		}
++	
++		/**
++		 * {@inheritDoc}
++		 */
++		@Override
++		public Socket createSocket(String arg0, int arg1, InetAddress arg2, int arg3)
++				throws IOException, UnknownHostException {
++			return null;
++		}
++	
++		/**
++		 * {@inheritDoc}
++		 */
++		@Override
++		public Socket createSocket(InetAddress arg0, int arg1, InetAddress arg2, int arg3)
++				throws IOException {
++			return null;
++		}
++	
+ }
++
++}

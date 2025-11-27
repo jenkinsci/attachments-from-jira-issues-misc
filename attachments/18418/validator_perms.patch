@@ -1,0 +1,346 @@
+Index: main/core/src/main/java/hudson/util/FormFieldValidator.java
+===================================================================
+--- main/core/src/main/java/hudson/util/FormFieldValidator.java (revision 13501)
++++ main/core/src/main/java/hudson/util/FormFieldValidator.java (working copy)
+@@ -6,6 +6,7 @@
+ import hudson.Util;
+ import hudson.model.AbstractProject;
+ import hudson.model.Hudson;
++import hudson.model.TopLevelItem;
+ import hudson.security.Permission;
+ import hudson.security.AccessControlled;
+
+@@ -56,6 +57,25 @@
+         this(request, response, adminOnly?Hudson.getInstance():null, adminOnly?CHECK:null);
+     }
+
++    /**
++     * @param projectName
++     *      Name of TopLevelItem to check permission against.  If null or invalid,
++     *      then checks for admin permission instead.
++     * @param permission Permission to check if a valid projectName is given.
++     */
++    protected FormFieldValidator(StaplerRequest request, StaplerResponse response, String projectName, Permission permission) {
++        this.request = request;
++        this.response = response;
++        TopLevelItem project = projectName != null ? Hudson.getInstance().getItem(projectName) : null;
++        if (project instanceof AccessControlled) {
++            this.subject = (AccessControlled)project;
++            this.permission = permission;
++        } else {
++            this.subject = Hudson.getInstance();
++            this.permission = CHECK;
++        }
++    }
++
+     protected FormFieldValidator(StaplerRequest request, StaplerResponse response, Permission permission) {
+         this(request,response,Hudson.getInstance(),permission);
+     }
+Index: main/core/src/main/java/hudson/scm/SubversionSCM.java
+===================================================================
+--- main/core/src/main/java/hudson/scm/SubversionSCM.java       (revision 13501)
++++ main/core/src/main/java/hudson/scm/SubversionSCM.java       (working copy)
+@@ -13,6 +13,7 @@
+ import hudson.model.AbstractProject;
+ import hudson.model.BuildListener;
+ import hudson.model.Hudson;
++import hudson.model.Item;
+ import hudson.model.ParameterValue;
+ import hudson.model.ParametersAction;
+ import hudson.model.TaskListener;
+@@ -1258,8 +1259,8 @@
+          * validate the value for a remote (repository) location.
+          */
+         public void doSvnRemoteLocationCheck(final StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+-            // this can be used to hit any accessible URL, so limit that to admins
+-            new FormFieldValidator(req, rsp, true) {
++            // this can be used to hit any accessible URL, do only basic check for non-admins
++            new FormFieldValidator(req, rsp, req.getParameter("project"), Item.CONFIGURE) {
+                 protected void check() throws IOException, ServletException {
+                     // syntax check first
+                     String url = Util.nullify(request.getParameter("value"));
+@@ -1277,8 +1278,10 @@
+                         return;
+                     }
+
+-                    // test the connection
+-                    try {
++                    // test the connection (admins only)
++                    if (!Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) {
++                        ok();
++                    } else try {
+                         SVNURL repoURL = SVNURL.parseURIDecoded(url);
+                         if (checkRepositoryPath(repoURL)==SVNNodeKind.NONE) {
+                             SVNRepository repository = null;
+Index: main/core/src/main/java/hudson/scm/browsers/FishEyeSVN.java
+===================================================================
+--- main/core/src/main/java/hudson/scm/browsers/FishEyeSVN.java (revision 13501)
++++ main/core/src/main/java/hudson/scm/browsers/FishEyeSVN.java (working copy)
+@@ -2,6 +2,8 @@
+
+ import static hudson.Util.fixEmpty;
+ import hudson.model.Descriptor;
++import hudson.model.Hudson;
++import hudson.model.Item;
+ import hudson.scm.RepositoryBrowser;
+ import hudson.scm.SubversionChangeLogSet.LogEntry;
+ import hudson.scm.SubversionChangeLogSet.Path;
+@@ -116,7 +118,8 @@
+          * Performs on-the-fly validation of the URL.
+          */
+         public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+-            new FormFieldValidator.URLCheck(req,rsp) {
++            new FormFieldValidator(req,rsp,req.getParameter("project"),Item.CONFIGURE) {
++                @Override
+                 protected void check() throws IOException, ServletException {
+                     String value = fixEmpty(request.getParameter("value"));
+                     if(value==null) {// nothing entered yet
+@@ -130,14 +133,25 @@
+                         return;
+                     }
+
+-                    try {
+-                        if(findText(open(new URL(value)),"FishEye")) {
+-                            ok();
+-                        } else {
+-                            error("This is a valid URL but it doesn't look like FishEye");
+-                        }
+-                    } catch (IOException e) {
+-                        handleIOException(value,e);
++                    // Connect to URL and check content only if we have admin permission
++                    if (Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) {
++                        final String finalValue = value;
++                        new FormFieldValidator.URLCheck(request,response) {
++                            @Override
++                            protected void check() throws IOException, ServletException {
++                                try {
++                                    if(findText(open(new URL(finalValue)),"FishEye")) {
++                                        ok();
++                                    } else {
++                                        error("This is a valid URL but it doesn't look like FishEye");
++                                    }
++                                } catch (IOException e) {
++                                    handleIOException(finalValue,e);
++                                }
++                            }
++                        }.process();
++                    } else {
++                        ok();
+                     }
+                 }
+             }.process();
+Index: main/core/src/main/java/hudson/scm/browsers/FishEyeCVS.java
+===================================================================
+--- main/core/src/main/java/hudson/scm/browsers/FishEyeCVS.java (revision 13501)
++++ main/core/src/main/java/hudson/scm/browsers/FishEyeCVS.java (working copy)
+@@ -2,6 +2,8 @@
+
+ import hudson.Util;
+ import hudson.model.Descriptor;
++import hudson.model.Hudson;
++import hudson.model.Item;
+ import hudson.scm.CVSChangeLogSet;
+ import hudson.scm.CVSChangeLogSet.File;
+ import hudson.scm.CVSChangeLogSet.Revision;
+@@ -70,7 +72,7 @@
+         }
+
+         public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+-            new FormFieldValidator.URLCheck(req,rsp) {
++            new FormFieldValidator(req,rsp,req.getParameter("project"),Item.CONFIGURE) {
+                 @Override
+                 protected void check() throws IOException, ServletException {
+                     String value = Util.fixEmpty(request.getParameter("value"));
+@@ -85,14 +87,25 @@
+                         errorWithMarkup("The URL should end like <tt>.../browse/foobar/</tt>");
+                         return;
+                     }
+-                    try {
+-                        if (findText(open(new URL(value)), "FishEye")) {
+-                            ok();
+-                        } else {
+-                            error("This is a valid URL but it doesn't look like FishEye");
+-                        }
+-                    } catch (IOException e) {
+-                        handleIOException(value, e);
++                    // Connect to URL and check content only if we have admin permission
++                    if (Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) {
++                        final String finalValue = value;
++                        new FormFieldValidator.URLCheck(request,response) {
++                            @Override
++                            protected void check() throws IOException, ServletException {
++                                try {
++                                    if (findText(open(new URL(finalValue)), "FishEye")) {
++                                        ok();
++                                    } else {
++                                        error("This is a valid URL but it doesn't look like FishEye");
++                                    }
++                                } catch (IOException e) {
++                                    handleIOException(finalValue, e);
++                                }
++                            }
++                        }.process();
++                    } else {
++                        ok();
+                     }
+                 }
+             }.process();
+Index: main/core/src/main/java/hudson/tasks/BuildTrigger.java
+===================================================================
+--- main/core/src/main/java/hudson/tasks/BuildTrigger.java      (revision 13501)
++++ main/core/src/main/java/hudson/tasks/BuildTrigger.java      (working copy)
+@@ -272,7 +272,7 @@
+          * Form validation method.
+          */
+         public void doCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+-            new FormFieldValidator(req,rsp,true) {
++            new FormFieldValidator(req,rsp,req.getParameter("project"),Item.CONFIGURE) {
+                 protected void check() throws IOException, ServletException {
+                     String list = request.getParameter("value");
+
+Index: main/core/src/main/java/hudson/triggers/TimerTrigger.java
+===================================================================
+--- main/core/src/main/java/hudson/triggers/TimerTrigger.java   (revision 13501)
++++ main/core/src/main/java/hudson/triggers/TimerTrigger.java   (working copy)
+@@ -59,7 +59,8 @@
+          * Performs syntax check.
+          */
+         public void doCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+-            new FormFieldValidator(req,rsp,true) {
++            new FormFieldValidator(req,rsp,req.getParameter("project"),Item.CONFIGURE) {
++                @Override
+                 protected void check() throws IOException, ServletException {
+                     try {
+                         String msg = CronTabList.create(fixNull(request.getParameter("value"))).checkSanity();
+Index: main/core/src/main/resources/hudson/scm/SubversionSCM/config.jelly
+===================================================================
+--- main/core/src/main/resources/hudson/scm/SubversionSCM/config.jelly  (revision 13501)
++++ main/core/src/main/resources/hudson/scm/SubversionSCM/config.jelly  (working copy)
+@@ -4,7 +4,7 @@
+       <table width="100%">
+         <f:entry title="${%Repository URL}" help="/scm/SubversionSCM/url-help">
+           <f:textbox name="svn.location_remote" value="${loc.remote}"
+-            checkUrl="'${rootURL}/scm/SubversionSCM/svnRemoteLocationCheck?value='+encode(this.value)"/>
++            checkUrl="'${rootURL}/scm/SubversionSCM/svnRemoteLocationCheck?project=${it.name}&amp;value='+encode(this.value)"/>
+         </f:entry>
+         <f:entry title="${%Local module directory} (${%optional})" help="/help/subversion/local.html">
+           <f:textbox name="svn.location_local" value="${loc.local}"
+@@ -24,4 +24,4 @@
+   </f:entry>
+
+   <t:listScmBrowsers name="svn.browser" />
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>
+Index: main/core/src/main/resources/hudson/scm/browsers/FishEyeSVN/config.jelly
+===================================================================
+--- main/core/src/main/resources/hudson/scm/browsers/FishEyeSVN/config.jelly    (revision 13501)
++++ main/core/src/main/resources/hudson/scm/browsers/FishEyeSVN/config.jelly    (working copy)
+@@ -1,9 +1,9 @@
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+   <f:entry title="${%URL}" help="/help/scm-browsers/fisheye-svn/url.html">
+     <f:textbox name="fisheye.svn.url" value="${browser.url}"
+-        checkUrl="'${rootURL}/repositoryBrowser/FishEyeSVN/check?value='+escape(this.value)"/>
++        checkUrl="'${rootURL}/repositoryBrowser/FishEyeSVN/check?project=${it.name}&amp;value='+escape(this.value)"/>
+   </f:entry>
+   <f:entry title="${%Root module}" help="/help/scm-browsers/fisheye-svn/root-module.html">
+     <f:textbox name="fisheye.svn.rootModule" value="${browser.rootModule}" />
+   </f:entry>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>
+Index: main/core/src/main/resources/hudson/scm/browsers/FishEyeCVS/config.jelly
+===================================================================
+--- main/core/src/main/resources/hudson/scm/browsers/FishEyeCVS/config.jelly    (revision 13501)
++++ main/core/src/main/resources/hudson/scm/browsers/FishEyeCVS/config.jelly    (working copy)
+@@ -1,6 +1,6 @@
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+   <f:entry title="URL" help="/help/scm-browsers/fisheye-cvs/url.html">
+     <f:textbox name="fisheye.cvs.url" value="${browser.url}"
+-        checkUrl="'${rootURL}/repositoryBrowser/FishEyeCVS/check?value='+escape(this.value)"/>
++        checkUrl="'${rootURL}/repositoryBrowser/FishEyeCVS/check?project=${it.name}&amp;value='+escape(this.value)"/>
+   </f:entry>
+ </j:jelly>
+Index: main/core/src/main/resources/hudson/scm/browsers/Sventon/config.jelly
+===================================================================
+--- main/core/src/main/resources/hudson/scm/browsers/Sventon/config.jelly       (revision 13501)
++++ main/core/src/main/resources/hudson/scm/browsers/Sventon/config.jelly       (working copy)
+@@ -1,9 +1,12 @@
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
++  <j:set var="checkURL" value="" />
++  <l:isAdmin>
++    <j:set var="checkURL" value="'${rootURL}/repositoryBrowser/Sventon/check?value='+escape(this.value)" />
++  </l:isAdmin>
+   <f:entry title="${%URL}" help="/help/scm-browsers/sventon/url.html">
+-    <f:textbox name="sventon.svn.url" value="${browser.url}"
+-        checkUrl="'${rootURL}/repositoryBrowser/Sventon/check?value='+escape(this.value)"/>
++    <f:textbox name="sventon.svn.url" value="${browser.url}" checkUrl="${checkURL}"/>
+   </f:entry>
+   <f:entry title="${%Repository Instance}" help="/help/scm-browsers/sventon/repository-instance.html">
+     <f:textbox name="sventon.svn.repositoryInstance" value="${browser.repositoryInstance}" />
+   </f:entry>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>
+Index: main/core/src/main/resources/hudson/tasks/BuildTrigger/config.jelly
+===================================================================
+--- main/core/src/main/resources/hudson/tasks/BuildTrigger/config.jelly (revision 13501)
++++ main/core/src/main/resources/hudson/tasks/BuildTrigger/config.jelly (working copy)
+@@ -1,7 +1,7 @@
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+        <f:entry title="${%Projects to build}">
+          <f:textbox name="buildTrigger.childProjects" value="${instance.childProjectsValue}"
+-      checkUrl="'${rootURL}/publisher/BuildTrigger/check?value='+escape(this.value)"/>
++      checkUrl="'${rootURL}/publisher/BuildTrigger/check?project=${it.name}&amp;value='+escape(this.value)"/>
+        </f:entry>
+   <j:if test="${descriptor.showEvenIfUnstableOption(targetType)}">
+     <f:entry title="">
+@@ -9,4 +9,4 @@
+       <label for="buildTrigger.evenIfUnstable">${%Trigger even if the build is unstable}</label>
+     </f:entry>
+   </j:if>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>
+Index: main/core/src/main/resources/hudson/triggers/TimerTrigger/config.jelly
+===================================================================
+--- main/core/src/main/resources/hudson/triggers/TimerTrigger/config.jelly      (revision 13501)
++++ main/core/src/main/resources/hudson/triggers/TimerTrigger/config.jelly      (working copy)
+@@ -1,5 +1,5 @@
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+   <f:entry title="${%Schedule}" help="/help/project-config/timer-format.html">
+-    <f:textarea name="timer_spec" checkUrl="'${rootURL}/trigger/TimerTrigger/check?value='+escape(this.value)" value="${instance.spec}"/>
++    <f:textarea name="timer_spec" checkUrl="'${rootURL}/trigger/TimerTrigger/check?project=${it.name}&amp;value='+escape(this.value)" value="${instance.spec}"/>
+   </f:entry>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>
+Index: main/core/src/main/resources/hudson/triggers/SCMTrigger/config.jelly
+===================================================================
+--- main/core/src/main/resources/hudson/triggers/SCMTrigger/config.jelly        (revision 13501)
++++ main/core/src/main/resources/hudson/triggers/SCMTrigger/config.jelly        (working copy)
+@@ -1,5 +1,5 @@
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+   <f:entry title="${%Schedule}" help="/help/project-config/timer-format.html">
+-    <f:textarea name="scmpoll_spec" checkUrl="'${rootURL}/trigger/TimerTrigger/check?value='+escape(this.value)" value="${instance.spec}"/>
++    <f:textarea name="scmpoll_spec" checkUrl="'${rootURL}/trigger/TimerTrigger/check?project=${it.name}&amp;value='+escape(this.value)" value="${instance.spec}"/>
+   </f:entry>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>
+Index: main/core/src/main/resources/lib/hudson/project/config-upstream-pseudo-trigger.jelly
+===================================================================
+--- main/core/src/main/resources/lib/hudson/project/config-upstream-pseudo-trigger.jelly        (revision 13501)
++++ main/core/src/main/resources/lib/hudson/project/config-upstream-pseudo-trigger.jelly        (working copy)
+@@ -13,8 +13,8 @@
+     <f:entry title="${%Projects names}"
+              description="${%Multiple projects can be specified like 'abc, def'}">
+       <input class="setting-input validated" name="upstreamProjects"
+-        checkUrl="'${rootURL}/publisher/BuildTrigger/check?value='+escape(this.value)"
++        checkUrl="'${rootURL}/publisher/BuildTrigger/check?project=${it.name}&amp;value='+escape(this.value)"
+         type="text" value="${h.getProjectListString(up)}"/>
+     </f:entry>
+   </f:optionalBlock>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>

@@ -1,0 +1,84 @@
+Index: UcmMakeBaseline.java
+===================================================================
+--- UcmMakeBaseline.java	(revision 12534)
++++ UcmMakeBaseline.java	(working copy)
+@@ -39,7 +39,7 @@
+ 
+     private static final String ENV_CC_BASELINE_NAME = "CC_BASELINE_NAME";
+ 
+-    private transient String baselineName = null;
++    private transient List<String> baselineNames = null;
+ 
+     public final static Descriptor<Publisher> DESCRIPTOR = new UcmMakeBaselineDescriptor();
+ 
+@@ -151,7 +151,7 @@
+         }
+         try {
+             makeBaseline(build, clearToolLauncher, filePath);
+-            this.baselineName = getLatestBaselineName(clearToolLauncher,
++            this.baselineNames = getLatestBaselineNames(clearToolLauncher,
+                     filePath);
+             addBuildParameter(build);
+         } catch (Exception ex) {
+@@ -185,14 +185,16 @@
+                     launcher);
+ 
+             if (build.getResult().equals(Result.SUCCESS)) {
+-                promoteBaselineToBuiltLevel(scm.getStream(), clearToolLauncher,
+-                        filePath, this.baselineName);
++				for (String baselineName : this.baselineNames) {
++					promoteBaselineToBuiltLevel(scm.getStream(), clearToolLauncher,
++							filePath, baselineName);
++				}
+                 if (this.recommend) {
+                     recommedBaseline(scm.getStream(), clearToolLauncher,
+                             filePath);
+                 }
+             }
+-
++            
+             if (this.lockStream && this.streamSuccessfullyLocked) {
+                 unlockStream(scm.getStream(), clearToolLauncher, filePath);
+             }
+@@ -203,7 +205,6 @@
+         return true;
+     }
+ 
+-    @Override
+     public Descriptor<Publisher> getDescriptor() {
+         return DESCRIPTOR;
+     }
+@@ -317,7 +318,7 @@
+         clearToolLauncher.run(cmd.toCommandArray(), null, null, filePath);
+     }
+ 
+-    private String getLatestBaselineName(
++    private List<String> getLatestBaselineNames(
+             HudsonClearToolLauncher clearToolLauncher, FilePath filePath)
+             throws Exception {
+ 
+@@ -325,7 +326,7 @@
+ 
+         cmd.add("lsstream");
+         cmd.add("-fmt");
+-        cmd.add("%[latest_bls]CXp");
++        cmd.add("%[latest_bls]Xp");
+         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+ 
+         clearToolLauncher.run(cmd.toCommandArray(), null, baos, filePath);
+@@ -333,7 +334,14 @@
+         String cleartoolResult = baos.toString();
+         String prefix = "baseline:";
+         if (cleartoolResult != null && cleartoolResult.startsWith(prefix)) {
+-            return cleartoolResult.substring(prefix.length());
++			List<String> baselineNames = new ArrayList<String>();
++			String[] baselineNamesSplit = cleartoolResult.split("baseline:");
++			for (String baselineName : baselineNamesSplit) {
++				if (!baselineName.trim().equals("")) {
++					baselineNames.add(baselineName);
++				}
++			}
++            return baselineNames;
+         }
+         throw new Exception("Failed to get baselinename, reason: "
+                 + cleartoolResult);

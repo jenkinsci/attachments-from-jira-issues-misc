@@ -1,0 +1,16 @@
+pipeline {
+    agent { label 'master' }
+
+    options {
+        disableConcurrentBuilds()
+        timestamps()
+    }
+
+    stages {
+        stage('sync') {
+            steps {
+                checkout([$class: 'PerforceScm', credential: 'perforce_jenkins_ticket_auth', populate: [$class: 'AutoCleanImpl', delete: true, modtime: false, parallel: [enable: false, minbytes: '1024', minfiles: '1', path: '/usr/local/bin/p4', threads: '4'], pin: '', quiet: true, replace: true], workspace: [$class: 'ManualWorkspaceImpl', charset: 'none', name: 'jenkins-${NODE_NAME}-demo', pinHost: false, spec: [allwrite: false, clobber: false, compress: false, line: 'LOCAL', locked: false, modtime: false, rmdir: false, streamName: '', view: '//depot/TradingEdge/Administrator/... //jenkins-${NODE_NAME}-demo/...']]])
+            }
+        }
+    }
+}

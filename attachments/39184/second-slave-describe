@@ -1,0 +1,74 @@
+$ kubectl describe pod jenkins-build-slave-9s49h
+Name:		jenkins-build-slave-9s49h
+Namespace:	default
+Node:		gke-default-gci-pool-0e10fc26-hrcj/10.240.0.4
+Start Time:	Mon, 07 Aug 2017 13:01:32 +0000
+Labels:		jenkins=slave
+		jenkins/jenkins-build-slave=true
+Annotations:	kubernetes.io/limit-ranger=LimitRanger plugin set: cpu request for container jnlp
+Status:		Failed
+IP:		10.248.1.14
+Containers:
+  jnlp:
+    Container ID:	docker://1c3a035441df146da2badc591c72cf71c9b2027e846a553352af07e4e9307922
+    Image:		gcr.io/cloud-solutions-images/jenkins-k8s-slave
+    Image ID:		docker://sha256:a3f51422197c75f12c673f351c3da04a79d1c1508b8f5899eeb5005156f0c719
+    Port:		<none>
+    State:		Terminated
+      Reason:		Error
+      Exit Code:	255
+      Started:		Mon, 07 Aug 2017 13:01:33 +0000
+      Finished:		Mon, 07 Aug 2017 13:04:41 +0000
+    Ready:		False
+    Restart Count:	0
+    Requests:
+      cpu:	100m
+      memory:	2600Mi
+    Environment:
+      JENKINS_LOCATION_URL:	https://jenkins/
+      JENKINS_SECRET:		eb19c9cb221133c9d25558a314f35bcaed58dc76a042376bebe4c8550d58037d
+      JENKINS_JNLP_URL:		http://jenkins-service/computer/jenkins-build-slave-9s49h/slave-agent.jnlp
+      JENKINS_TUNNEL:		jenkins-service:50000
+      JENKINS_NAME:		jenkins-build-slave-9s49h
+      JENKINS_URL:		http://jenkins-service
+      HOME:			/home/jenkins
+    Mounts:
+      /home/jenkins from workspace-volume (rw)
+      /home/jenkins/.m2 from volume-0 (rw)
+      /var/run/docker.sock from volume-1 (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-j3cga (ro)
+Conditions:
+  Type		Status
+  Initialized 	True 
+  Ready 	False 
+  PodScheduled 	True 
+Volumes:
+  volume-0:
+    Type:	HostPath (bare host directory volume)
+    Path:	/var/tmp
+  volume-1:
+    Type:	HostPath (bare host directory volume)
+    Path:	/var/run/docker.sock
+  workspace-volume:
+    Type:	EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:	
+  default-token-j3cga:
+    Type:	Secret (a volume populated by a Secret)
+    SecretName:	default-token-j3cga
+    Optional:	false
+QoS Class:	Burstable
+Node-Selectors:	<none>
+Tolerations:	node.alpha.kubernetes.io/notReady:NoExecute for 300s
+		node.alpha.kubernetes.io/unreachable:NoExecute for 300s
+Events:
+  FirstSeen	LastSeen	Count	From								SubObjectPath		Type		Reason			Message
+  ---------	--------	-----	----								-------------		--------	------			-------
+  3m		3m		1	default-scheduler									Normal		Scheduled		Successfully assigned jenkins-build-slave-9s49h to gke-default-gci-pool-0e10fc26-hrcj
+  3m		3m		1	kubelet, gke-default-gci-pool-0e10fc26-hrcj				Normal		SuccessfulMountVolume	MountVolume.SetUp succeeded for volume "workspace-volume" 
+  3m		3m		1	kubelet, gke-default-gci-pool-0e10fc26-hrcj				Normal		SuccessfulMountVolume	MountVolume.SetUp succeeded for volume "volume-0" 
+  3m		3m		1	kubelet, gke-default-gci-pool-0e10fc26-hrcj				Normal		SuccessfulMountVolume	MountVolume.SetUp succeeded for volume "volume-1" 
+  3m		3m		1	kubelet, gke-default-gci-pool-0e10fc26-hrcj				Normal		SuccessfulMountVolume	MountVolume.SetUp succeeded for volume "default-token-j3cga" 
+  3m		3m		1	kubelet, gke-default-gci-pool-0e10fc26-hrcj	spec.containers{jnlp}	Normal		Pulling			pulling image "gcr.io/cloud-solutions-images/jenkins-k8s-slave"
+  3m		3m		1	kubelet, gke-default-gci-pool-0e10fc26-hrcj	spec.containers{jnlp}	Normal		Pulled			Successfully pulled image "gcr.io/cloud-solutions-images/jenkins-k8s-slave"
+  3m		3m		1	kubelet, gke-default-gci-pool-0e10fc26-hrcj	spec.containers{jnlp}	Normal		Created			Created container
+  3m		3m		1	kubelet, gke-default-gci-pool-0e10fc26-hrcj	spec.containers{jnlp}	Normal		Started			Started container

@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson.plugins.promoted__builds.PromotionProcess>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector"/>
+  <concurrentBuild>false</concurrentBuild>
+  <conditions>
+    <hudson.plugins.promoted__builds.conditions.ManualCondition>
+      <users></users>
+      <parameterDefinitions>
+        <hudson.model.TextParameterDefinition>
+          <name>myversion2</name>
+          <description></description>
+          <defaultValue>1000</defaultValue>
+        </hudson.model.TextParameterDefinition>
+      </parameterDefinitions>
+    </hudson.plugins.promoted__builds.conditions.ManualCondition>
+  </conditions>
+  <icon>star-gold</icon>
+  <buildSteps>
+    <hudson.plugins.svn__tag.SvnTagPublisher>
+      <tagBaseURL>http://subversion/svn/repos_sw_sys/User/Aberer/common/testing/tags/${env[&apos;myversion2&apos;]}</tagBaseURL>
+      <tagComment>Tag erzeugt durch SvnTag Plugin. Build:${env[&apos;BUILD_TAG&apos;]}.</tagComment>
+      <tagDeleteComment>Tag gelöscht durch SvnTag Plugin.</tagDeleteComment>
+    </hudson.plugins.svn__tag.SvnTagPublisher>
+  </buildSteps>
+</hudson.plugins.promoted__builds.PromotionProcess>

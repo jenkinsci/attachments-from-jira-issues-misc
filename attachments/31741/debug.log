@@ -1,0 +1,165 @@
+2016-02-03 08:49:44,012 DEBUG gerrit.GerritWatcher: Received data from Gerrit event stream: 
+{u'change': {u'branch': u'master',
+             u'commitMessage': u'first_project_commit\n\nChange-Id: I51bdd9eae3e2cd08e6666dc364a9914d11db0c55\n',
+             u'id': u'I51bdd9eae3e2cd08e6666dc364a9914d11db0c55',
+             u'number': u'1',
+             u'owner': {u'email': u'hdumcke@marlysys.lab',
+                        u'name': u'hdumcke',
+                        u'username': u'hdumcke'},
+             u'project': u'example',
+             u'status': u'NEW',
+             u'subject': u'first_project_commit',
+             u'topic': u'1454489383',
+             u'url': u'https://review.marlysys.lab/gerrit/1'},
+ u'patchSet': {u'author': {u'email': u'hdumcke@marlysys.lab',
+                           u'name': u'hdumcke',
+                           u'username': u'hdumcke'},
+               u'createdOn': 1454489383,
+               u'isDraft': False,
+               u'number': u'1',
+               u'parents': [u'cc5f456d0a97243b064a8a9b167741b321c775c2'],
+               u'ref': u'refs/changes/01/1/1',
+               u'revision': u'a07c5653e72fb4154e0e8842b6418e886236ad73',
+               u'sizeDeletions': 0,
+               u'sizeInsertions': 21078,
+               u'uploader': {u'email': u'hdumcke@marlysys.lab',
+                             u'name': u'hdumcke',
+                             u'username': u'hdumcke'}},
+ u'type': u'patchset-created',
+ u'uploader': {u'email': u'hdumcke@marlysys.lab',
+               u'name': u'hdumcke',
+               u'username': u'hdumcke'}}
+2016-02-03 08:49:44,213 DEBUG gerrit.GerritWatcher: SSH exit status: -1
+2016-02-03 08:49:49,018 DEBUG zuul.Scheduler: Adding trigger event: <TriggerEvent patchset-created example master 1,1>
+2016-02-03 08:49:49,018 DEBUG zuul.Scheduler: Done adding trigger event: <TriggerEvent patchset-created example master 1,1>
+2016-02-03 08:49:49,018 DEBUG zuul.Scheduler: Run handler awake
+2016-02-03 08:49:49,020 DEBUG zuul.Scheduler: Fetching trigger event
+2016-02-03 08:49:49,020 DEBUG zuul.Scheduler: Processing trigger event <TriggerEvent patchset-created example master 1,1>
+2016-02-03 08:49:49,021 INFO zuul.source.Gerrit: Updating information for 1,1
+2016-02-03 08:49:49,022 DEBUG zuul.Scheduler: Prepare to reconfigure
+2016-02-03 08:49:49,023 DEBUG zuul.Scheduler: Waiting for reconfiguration
+2016-02-03 08:49:49,955 DEBUG zuul.source.Gerrit: Change <Change 0x7f4f34051610 1,1> status: NEW
+2016-02-03 08:49:49,956 DEBUG zuul.source.Gerrit: Running query message:I51bdd9eae3e2cd08e6666dc364a9914d11db0c55 to find changes needed-by
+2016-02-03 08:49:50,116 DEBUG zuul.Scheduler: Project example not found
+2016-02-03 08:49:50,116 DEBUG zuul.Scheduler: Project example not found
+2016-02-03 08:49:50,116 DEBUG zuul.Scheduler: Project example not found
+2016-02-03 08:49:50,116 DEBUG zuul.Scheduler: Project example not found
+2016-02-03 08:49:50,116 DEBUG zuul.IndependentPipelineManager: Starting queue processor: check
+2016-02-03 08:49:50,116 DEBUG zuul.IndependentPipelineManager: Finished queue processor: check (changed: False)
+2016-02-03 08:49:50,116 DEBUG zuul.IndependentPipelineManager: Starting queue processor: tests
+2016-02-03 08:49:50,116 DEBUG zuul.IndependentPipelineManager: Finished queue processor: tests (changed: False)
+2016-02-03 08:49:50,116 DEBUG zuul.IndependentPipelineManager: Starting queue processor: post
+2016-02-03 08:49:50,116 DEBUG zuul.IndependentPipelineManager: Finished queue processor: post (changed: False)
+2016-02-03 08:49:50,117 DEBUG zuul.DependentPipelineManager: Starting queue processor: gate
+2016-02-03 08:49:50,117 DEBUG zuul.DependentPipelineManager: Finished queue processor: gate (changed: False)
+2016-02-03 08:49:50,117 DEBUG zuul.Scheduler: Run handler sleeping
+2016-02-03 08:49:50,117 DEBUG zuul.Scheduler: Run handler awake
+2016-02-03 08:49:50,117 DEBUG zuul.Scheduler: Fetching management event
+2016-02-03 08:49:50,117 DEBUG zuul.Scheduler: Processing management event <zuul.scheduler.ReconfigureEvent object at 0x7f4f34051a90>
+2016-02-03 08:49:50,117 DEBUG zuul.Scheduler: Performing reconfiguration
+2016-02-03 08:49:50,140 INFO zuul.IndependentPipelineManager: Configured Pipeline Manager check
+2016-02-03 08:49:50,141 INFO zuul.IndependentPipelineManager:   Source: <zuul.source.gerrit.GerritSource object at 0x7f4f1c5b8150>
+2016-02-03 08:49:50,141 INFO zuul.IndependentPipelineManager:   Requirements:
+2016-02-03 08:49:50,141 INFO zuul.IndependentPipelineManager:     <ChangeishFilter open: True current-patchset: True>
+2016-02-03 08:49:50,141 INFO zuul.IndependentPipelineManager:   Events:
+2016-02-03 08:49:50,141 INFO zuul.IndependentPipelineManager:     <EventFilter types: patchset-created ignore_deletes: True>
+2016-02-03 08:49:50,141 INFO zuul.IndependentPipelineManager:     <EventFilter types: change-restored ignore_deletes: True>
+2016-02-03 08:49:50,141 INFO zuul.IndependentPipelineManager:     <EventFilter types: comment-added ignore_deletes: True comments: (?i)^(Patch Set [0-9]+:)?( [\w\\+-]*)*(\n\n)?\s*(recheck|reverify)>
+2016-02-03 08:49:50,141 INFO zuul.IndependentPipelineManager:     <EventFilter types: comment-added ignore_deletes: True event_approvals: workflow:1 required_approvals: {'username': 'jenkins', 'verified': [-1, -2]}>
+2016-02-03 08:49:50,141 INFO zuul.IndependentPipelineManager:   Projects:
+2016-02-03 08:49:50,141 INFO zuul.IndependentPipelineManager:     example
+2016-02-03 08:49:50,141 INFO zuul.IndependentPipelineManager:       <Job gate-example-pep8>
+2016-02-03 08:49:50,141 INFO zuul.IndependentPipelineManager:   On start:
+2016-02-03 08:49:50,141 INFO zuul.IndependentPipelineManager:     []
+2016-02-03 08:49:50,141 INFO zuul.IndependentPipelineManager:   On success:
+2016-02-03 08:49:50,141 INFO zuul.IndependentPipelineManager:     [<zuul.reporter.gerrit.GerritReporter object at 0x7f4f1c5b82d0>]
+2016-02-03 08:49:50,141 INFO zuul.IndependentPipelineManager:   On failure:
+2016-02-03 08:49:50,141 INFO zuul.IndependentPipelineManager:     [<zuul.reporter.smtp.SMTPReporter object at 0x7f4f1c5b8290>, <zuul.reporter.gerrit.GerritReporter object at 0x7f4f1c5b83d0>]
+2016-02-03 08:49:50,142 INFO zuul.IndependentPipelineManager:   On merge-failure:
+2016-02-03 08:49:50,142 INFO zuul.IndependentPipelineManager:     [<zuul.reporter.smtp.SMTPReporter object at 0x7f4f1c5b8290>, <zuul.reporter.gerrit.GerritReporter object at 0x7f4f1c5b83d0>]
+2016-02-03 08:49:50,142 INFO zuul.IndependentPipelineManager:   When disabled:
+2016-02-03 08:49:50,142 INFO zuul.IndependentPipelineManager:     []
+2016-02-03 08:49:50,142 INFO zuul.DependentPipelineManager: Configured Pipeline Manager gate
+2016-02-03 08:49:50,142 INFO zuul.DependentPipelineManager:   Source: <zuul.source.gerrit.GerritSource object at 0x7f4f1c5b8490>
+2016-02-03 08:49:50,142 INFO zuul.DependentPipelineManager:   Requirements:
+2016-02-03 08:49:50,142 INFO zuul.DependentPipelineManager:     <ChangeishFilter open: True current-patchset: True required_approvals: [{'username': 'jenkins', 'verified': [1, 2]}, {'workflow': 1}]>
+2016-02-03 08:49:50,142 INFO zuul.DependentPipelineManager:   Events:
+2016-02-03 08:49:50,142 INFO zuul.DependentPipelineManager:     <EventFilter types: comment-added ignore_deletes: True event_approvals: workflow:1>
+2016-02-03 08:49:50,142 INFO zuul.DependentPipelineManager:     <EventFilter types: comment-added ignore_deletes: True event_approvals: verified:1 username_filters: jenkins>
+2016-02-03 08:49:50,142 INFO zuul.DependentPipelineManager:   Projects:
+2016-02-03 08:49:50,142 INFO zuul.DependentPipelineManager:     example
+2016-02-03 08:49:50,142 INFO zuul.DependentPipelineManager:       <Job gate-example-unittests>
+2016-02-03 08:49:50,142 INFO zuul.DependentPipelineManager:   On start:
+2016-02-03 08:49:50,142 INFO zuul.DependentPipelineManager:     [<zuul.reporter.gerrit.GerritReporter object at 0x7f4f1c5b87d0>]
+2016-02-03 08:49:50,142 INFO zuul.DependentPipelineManager:   On success:
+2016-02-03 08:49:50,142 INFO zuul.DependentPipelineManager:     [<zuul.reporter.smtp.SMTPReporter object at 0x7f4f1c5b8790>, <zuul.reporter.gerrit.GerritReporter object at 0x7f4f1c5b8850>]
+2016-02-03 08:49:50,142 INFO zuul.DependentPipelineManager:   On failure:
+2016-02-03 08:49:50,142 INFO zuul.DependentPipelineManager:     [<zuul.reporter.smtp.SMTPReporter object at 0x7f4f1c5b8810>, <zuul.reporter.gerrit.GerritReporter object at 0x7f4f1c5b88d0>]
+2016-02-03 08:49:50,142 INFO zuul.DependentPipelineManager:   On merge-failure:
+2016-02-03 08:49:50,142 INFO zuul.DependentPipelineManager:     [<zuul.reporter.smtp.SMTPReporter object at 0x7f4f1c5b8810>, <zuul.reporter.gerrit.GerritReporter object at 0x7f4f1c5b88d0>]
+2016-02-03 08:49:50,142 INFO zuul.DependentPipelineManager:   When disabled:
+2016-02-03 08:49:50,143 INFO zuul.DependentPipelineManager:     []
+2016-02-03 08:49:50,143 DEBUG zuul.DependentPipelineManager: Building shared change queues
+2016-02-03 08:49:50,143 DEBUG zuul.DependentPipelineManager: Created queue: <ChangeQueue gate: example>
+2016-02-03 08:49:50,143 DEBUG zuul.DependentPipelineManager: Combining shared queues
+2016-02-03 08:49:50,143 DEBUG zuul.DependentPipelineManager: Keeping queue <ChangeQueue gate: example>
+2016-02-03 08:49:50,143 INFO zuul.DependentPipelineManager:   Shared change queues:
+2016-02-03 08:49:50,143 INFO zuul.DependentPipelineManager:     <ChangeQueue gate: example> containing example
+2016-02-03 08:49:50,143 INFO zuul.IndependentPipelineManager: Configured Pipeline Manager post
+2016-02-03 08:49:50,143 INFO zuul.IndependentPipelineManager:   Source: <zuul.source.gerrit.GerritSource object at 0x7f4f1c5b8910>
+2016-02-03 08:49:50,143 INFO zuul.IndependentPipelineManager:   Requirements:
+2016-02-03 08:49:50,143 INFO zuul.IndependentPipelineManager:   Events:
+2016-02-03 08:49:50,143 INFO zuul.IndependentPipelineManager:     <EventFilter types: ref-updated refs: ^(?!refs/).*$ ignore_deletes: True>
+2016-02-03 08:49:50,143 INFO zuul.IndependentPipelineManager:   Projects:
+2016-02-03 08:49:50,143 INFO zuul.IndependentPipelineManager:     example
+2016-02-03 08:49:50,143 INFO zuul.IndependentPipelineManager:       <Job example-publish-doc>
+2016-02-03 08:49:50,143 INFO zuul.IndependentPipelineManager:   On start:
+2016-02-03 08:49:50,143 INFO zuul.IndependentPipelineManager:     []
+2016-02-03 08:49:50,144 INFO zuul.IndependentPipelineManager:   On success:
+2016-02-03 08:49:50,144 INFO zuul.IndependentPipelineManager:     [<zuul.reporter.smtp.SMTPReporter object at 0x7f4f1c5b8a50>]
+2016-02-03 08:49:50,144 INFO zuul.IndependentPipelineManager:   On failure:
+2016-02-03 08:49:50,144 INFO zuul.IndependentPipelineManager:     []
+2016-02-03 08:49:50,144 INFO zuul.IndependentPipelineManager:   On merge-failure:
+2016-02-03 08:49:50,144 INFO zuul.IndependentPipelineManager:     []
+2016-02-03 08:49:50,144 INFO zuul.IndependentPipelineManager:   When disabled:
+2016-02-03 08:49:50,144 INFO zuul.IndependentPipelineManager:     []
+2016-02-03 08:49:50,144 INFO zuul.IndependentPipelineManager: Configured Pipeline Manager periodic
+2016-02-03 08:49:50,144 INFO zuul.IndependentPipelineManager:   Source: <zuul.source.gerrit.GerritSource object at 0x7f4f1c5b8a90>
+2016-02-03 08:49:50,144 INFO zuul.IndependentPipelineManager:   Requirements:
+2016-02-03 08:49:50,144 INFO zuul.IndependentPipelineManager:   Events:
+2016-02-03 08:49:50,144 INFO zuul.IndependentPipelineManager:     <EventFilter types: timer ignore_deletes: True timespecs: 0 6 * * *>
+2016-02-03 08:49:50,144 INFO zuul.IndependentPipelineManager:   Projects:
+2016-02-03 08:49:50,144 INFO zuul.IndependentPipelineManager:   On start:
+2016-02-03 08:49:50,144 INFO zuul.IndependentPipelineManager:     []
+2016-02-03 08:49:50,144 INFO zuul.IndependentPipelineManager:   On success:
+2016-02-03 08:49:50,144 INFO zuul.IndependentPipelineManager:     []
+2016-02-03 08:49:50,144 INFO zuul.IndependentPipelineManager:   On failure:
+2016-02-03 08:49:50,144 INFO zuul.IndependentPipelineManager:     [<zuul.reporter.smtp.SMTPReporter object at 0x7f4f1c5b8b90>]
+2016-02-03 08:49:50,144 INFO zuul.IndependentPipelineManager:   On merge-failure:
+2016-02-03 08:49:50,145 INFO zuul.IndependentPipelineManager:     [<zuul.reporter.smtp.SMTPReporter object at 0x7f4f1c5b8b90>]
+2016-02-03 08:49:50,145 INFO zuul.IndependentPipelineManager:   When disabled:
+2016-02-03 08:49:50,145 INFO zuul.IndependentPipelineManager:     []
+2016-02-03 08:49:50,145 DEBUG zuul.Scheduler: Re-enqueueing changes for pipeline check
+2016-02-03 08:49:50,145 DEBUG zuul.Scheduler: Re-enqueueing changes for pipeline gate
+2016-02-03 08:49:50,145 DEBUG zuul.Scheduler: Re-enqueueing changes for pipeline post
+2016-02-03 08:49:50,145 WARNING zuul.Scheduler: No old pipeline matching periodic found when reconfiguring
+2016-02-03 08:49:50,145 DEBUG zuul.Scheduler: Start maintain trigger cache for: <Pipeline check>
+2016-02-03 08:49:50,145 DEBUG zuul.Scheduler: End maintain trigger cache for: <Pipeline check>
+2016-02-03 08:49:50,145 DEBUG zuul.Scheduler: Start maintain trigger cache for: <Pipeline gate>
+2016-02-03 08:49:50,145 DEBUG zuul.Scheduler: End maintain trigger cache for: <Pipeline gate>
+2016-02-03 08:49:50,145 DEBUG zuul.Scheduler: Start maintain trigger cache for: <Pipeline post>
+2016-02-03 08:49:50,145 DEBUG zuul.Scheduler: End maintain trigger cache for: <Pipeline post>
+2016-02-03 08:49:50,145 DEBUG zuul.Scheduler: Start maintain trigger cache for: <Pipeline periodic>
+2016-02-03 08:49:50,145 DEBUG zuul.Scheduler: End maintain trigger cache for: <Pipeline periodic>
+2016-02-03 08:49:50,145 DEBUG zuul.Scheduler: Trigger cache size: 0
+2016-02-03 08:49:50,146 DEBUG zuul.Scheduler: Reconfiguration complete
+2016-02-03 08:49:50,146 DEBUG zuul.IndependentPipelineManager: Starting queue processor: check
+2016-02-03 08:49:50,146 DEBUG zuul.IndependentPipelineManager: Finished queue processor: check (changed: False)
+2016-02-03 08:49:50,146 DEBUG zuul.DependentPipelineManager: Starting queue processor: gate
+2016-02-03 08:49:50,147 DEBUG zuul.DependentPipelineManager: Finished queue processor: gate (changed: False)
+2016-02-03 08:49:50,147 DEBUG zuul.IndependentPipelineManager: Starting queue processor: post
+2016-02-03 08:49:50,147 DEBUG zuul.IndependentPipelineManager: Finished queue processor: post (changed: False)
+2016-02-03 08:49:50,147 DEBUG zuul.IndependentPipelineManager: Starting queue processor: periodic
+2016-02-03 08:49:50,147 DEBUG zuul.IndependentPipelineManager: Finished queue processor: periodic (changed: False)
+2016-02-03 08:49:50,147 DEBUG zuul.Scheduler: Run handler sleeping
+2016-02-03 08:50:33,253 DEBUG zuul.Gearman: Looking for lost builds

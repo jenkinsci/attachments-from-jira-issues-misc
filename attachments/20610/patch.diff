@@ -1,0 +1,292 @@
+diff --git a/pom.xml b/pom.xml
+index 71ed960..f602346 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -1,9 +1,9 @@
+ <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <parent>
+-    <groupId>org.jvnet.hudson.plugins</groupId>
++    <groupId>org.jenkins-ci.plugins</groupId>
+     <artifactId>plugin</artifactId>
+-    <version>1.324</version>
++    <version>1.420</version>
+     <relativePath>../pom.xml</relativePath>
+   </parent>
+   <artifactId>svn-tag</artifactId>
+diff --git a/src/main/java/hudson/plugins/svn_tag/SvnTagPlugin.java b/src/main/java/hudson/plugins/svn_tag/SvnTagPlugin.java
+index 1348e1e..8aa84ae 100644
+--- a/src/main/java/hudson/plugins/svn_tag/SvnTagPlugin.java
++++ b/src/main/java/hudson/plugins/svn_tag/SvnTagPlugin.java
+@@ -28,15 +28,13 @@ import java.util.HashMap;
+ import java.util.List;
+ import java.util.Map;
+ 
+-
+ /**
+  * Consolidates the work common in Publisher and MavenReporter.
+- *
++ * 
+  * @author Kenji Nakamura
+  */
+-@SuppressWarnings(
+-        {"UtilityClass", "ImplicitCallToSuper", "MethodReturnOfConcreteClass",
+-                "MethodParameterOfConcreteClass", "InstanceofInterfaces"})
++@SuppressWarnings({ "UtilityClass", "ImplicitCallToSuper", "MethodReturnOfConcreteClass",
++    "MethodParameterOfConcreteClass", "InstanceofInterfaces" })
+ public class SvnTagPlugin {
+ 
+     /**
+@@ -47,21 +45,23 @@ public class SvnTagPlugin {
+ 
+     /**
+      * True if the operation was successful.
+-     *
+-     * @param abstractBuild build
+-     * @param launcher      launcher
+-     * @param buildListener build listener
+-     * @param tagBaseURLStr tag base URL string
+-     * @param tagComment    tag comment
++     * 
++     * @param abstractBuild
++     *            build
++     * @param launcher
++     *            launcher
++     * @param buildListener
++     *            build listener
++     * @param tagBaseURLStr
++     *            tag base URL string
++     * @param tagComment
++     *            tag comment
+      * @return true if the operation was successful
++     * @throws
+      */
+-    @SuppressWarnings({"FeatureEnvy", "UnusedDeclaration", "TypeMayBeWeakened",
+-            "LocalVariableOfConcreteClass"})
+-    public static boolean perform(AbstractBuild<?,?> abstractBuild,
+-                                  Launcher launcher,
+-                                  BuildListener buildListener,
+-                                  String tagBaseURLStr, String tagComment,
+-                                  String tagDeleteComment) {
++    @SuppressWarnings({ "FeatureEnvy", "UnusedDeclaration", "TypeMayBeWeakened", "LocalVariableOfConcreteClass" })
++    public static boolean perform(AbstractBuild< ? , ? > abstractBuild, Launcher launcher, BuildListener buildListener,
++        String tagBaseURLStr, String tagComment, String tagDeleteComment) throws InterruptedException, IOException {
+         PrintStream logger = buildListener.getLogger();
+ 
+         if (!Result.SUCCESS.equals(abstractBuild.getResult())) {
+@@ -69,10 +69,9 @@ public class SvnTagPlugin {
+             return true;
+         }
+ 
+-        AbstractProject<?, ?> rootProject =
+-                abstractBuild.getProject().getRootProject();
++        AbstractProject< ? , ? > rootProject = abstractBuild.getProject().getRootProject();
+ 
+-        Map<String, String> env;
++        Map< String , String > env;
+ 
+         if (!(rootProject.getScm() instanceof SubversionSCM)) {
+             logger.println(Messages.NotSubversion(rootProject.getScm().toString()));
+@@ -83,8 +82,7 @@ public class SvnTagPlugin {
+         try {
+             env = abstractBuild.getEnvironment(buildListener);
+         } catch (Exception e) {
+-            logger.println(
+-                    "Failed to get environment. " + e.getLocalizedMessage());
++            logger.println("Failed to get environment. " + e.getLocalizedMessage());
+             return false;
+         }
+ 
+@@ -96,70 +94,71 @@ public class SvnTagPlugin {
+         // the build associated with the root level project.
+         scm.buildEnvVars(rootProject.getBuilds().get(0), env);
+ 
+-        SubversionSCM.ModuleLocation[] moduleLocations = scm.getLocations();
++        SubversionSCM.ModuleLocation[] moduleLocations =
++            scm.getLocations(abstractBuild.getEnvironment(buildListener), abstractBuild);
+ 
+         // environment variable "SVN_REVISION" doesn't contain revision number when multiple modules are
+         // specified. Instead, parse revision.txt and obtain the corresponding revision numbers.
+-        Map<String, Long> revisions;
++        Map< String , Long > revisions;
+         try {
+             revisions = parseRevisionFile(abstractBuild);
+         } catch (IOException e) {
+-            logger.println(
+-                    "Failed to parse revision.txt. " + e.getLocalizedMessage());
++            logger.println("Failed to parse revision.txt. " + e.getLocalizedMessage());
+             return false;
+         }
+ 
+-        ISVNAuthenticationProvider sap =
+-                scm.getDescriptor().createAuthenticationProvider();
++        ISVNAuthenticationProvider sap = scm.getDescriptor().createAuthenticationProvider(rootProject);
+         if (sap == null) {
+             logger.println("Subversion authentication info is not set.");
+             return false;
+         }
+ 
+-        ISVNAuthenticationManager sam =
+-                SVNWCUtil.createDefaultAuthenticationManager();
++        ISVNAuthenticationManager sam = SVNWCUtil.createDefaultAuthenticationManager();
+         sam.setAuthenticationProvider(sap);
+ 
+         SVNCommitClient commitClient = new SVNCommitClient(sam, null);
+ 
+-
+         for (SubversionSCM.ModuleLocation ml : moduleLocations) {
+-            logger.println("moduleLocation: Remote ->" + ml.remote);
++            String mlUrl = null;
++            try {
++                mlUrl = ml.getSVNURL().toString();
++            } catch (SVNException e) {
++                logger.println("Failed to parse SVN repo URL. " + e.getLocalizedMessage());
++                return false;
++            }
++            logger.println("moduleLocation: Remote ->" + mlUrl);
+ 
+-            List locationPathElements =
+-                    Arrays.asList(StringUtils.split(ml.remote, "/"));
++            List locationPathElements = Arrays.asList(StringUtils.split(mlUrl, "/"));
+ 
+-            String evaledTagBaseURLStr =
+-                    evalGroovyExpression(env, tagBaseURLStr,
+-                            locationPathElements);
++            String evaledTagBaseURLStr = null;
++            try {
++                evaledTagBaseURLStr =
++                    SVNURL.parseURIDecoded(evalGroovyExpression(env, tagBaseURLStr, locationPathElements)).toString();
++            } catch (SVNException e) {
++                logger.println("Failed to parse SVN Tag Base URL. " + e.getLocalizedMessage());
++                return false;
++            }
+ 
+             URI repoURI;
+             try {
+-                repoURI = new URI(StringUtils.replace(ml.remote, " ", "%20"));
++                repoURI = new URI(mlUrl);
+             } catch (URISyntaxException e) {
+-                logger.println("Failed to parse SVN repo URL. " +
+-                        e.getLocalizedMessage());
++                logger.println("Failed to parse SVN repo URL. " + e.getLocalizedMessage());
+                 return false;
+             }
+ 
+             SVNURL parsedTagBaseURL = null;
+             try {
+-                parsedTagBaseURL = SVNURL.parseURIEncoded(
+-                        repoURI.resolve(evaledTagBaseURLStr).toString());
+-                logger.println(
+-                        "Tag Base URL: '" + parsedTagBaseURL.toString() + "'.");
++                parsedTagBaseURL = SVNURL.parseURIEncoded(repoURI.resolve(evaledTagBaseURLStr).toString());
++                logger.println("Tag Base URL: '" + parsedTagBaseURL.toString() + "'.");
+             } catch (SVNException e) {
+-                logger.println(
+-                        "Failed to parse tag base URL '" + evaledTagBaseURLStr +
+-                                "'. " + e.getLocalizedMessage());
++                logger
++                    .println("Failed to parse tag base URL '" + evaledTagBaseURLStr + "'. " + e.getLocalizedMessage());
+             }
+ 
+             try {
+-                String evalDeleteComment = evalGroovyExpression(
+-                        env, tagDeleteComment, locationPathElements);
+-                SVNCommitInfo deleteInfo =
+-                        commitClient.doDelete(new SVNURL[]{parsedTagBaseURL},
+-                                evalDeleteComment);
++                String evalDeleteComment = evalGroovyExpression(env, tagDeleteComment, locationPathElements);
++                SVNCommitInfo deleteInfo = commitClient.doDelete(new SVNURL[] { parsedTagBaseURL }, evalDeleteComment);
+                 SVNErrorMessage deleteErrMsg = deleteInfo.getErrorMessage();
+ 
+                 if (null != deleteErrMsg) {
+@@ -175,15 +174,13 @@ public class SvnTagPlugin {
+             SVNCopyClient copyClient = new SVNCopyClient(sam, null);
+ 
+             try {
+-                String evalComment = evalGroovyExpression(
+-                        env, tagComment, locationPathElements);
+-                SVNRevision rev = SVNRevision.create(Long.valueOf(revisions.get(ml.remote)));
++                String evalComment = evalGroovyExpression(env, tagComment, locationPathElements);
++                SVNRevision rev = SVNRevision.create(Long.valueOf(revisions.get(mlUrl)));
+ 
+                 SVNCommitInfo commitInfo =
+-                        copyClient.doCopy(new SVNCopySource[] {
+-                                    new SVNCopySource(rev, rev, SVNURL.parseURIEncoded(ml.remote)) },
+-                                parsedTagBaseURL, false,
+-                                true, false, evalComment, new SVNProperties());
++                    copyClient.doCopy(
++                        new SVNCopySource[] { new SVNCopySource(rev, rev, SVNURL.parseURIEncoded(mlUrl)) },
++                        parsedTagBaseURL, false, true, false, evalComment, new SVNProperties());
+                 SVNErrorMessage errorMsg = commitInfo.getErrorMessage();
+ 
+                 if (null != errorMsg) {
+@@ -201,16 +198,14 @@ public class SvnTagPlugin {
+         return true;
+     }
+ 
+-    @SuppressWarnings({"StaticMethodOnlyUsedInOneClass", "TypeMayBeWeakened"})
+-    static String evalGroovyExpression(Map<String, String> env, String evalText,
+-                                       List locationPathElements) {
++    @SuppressWarnings({ "StaticMethodOnlyUsedInOneClass", "TypeMayBeWeakened" })
++    static String evalGroovyExpression(Map< String , String > env, String evalText, List locationPathElements) {
+         Binding binding = new Binding();
+         binding.setVariable("env", env);
+         binding.setVariable("sys", System.getProperties());
+         if (locationPathElements == null) {
+-            binding.setVariable("repoURL", Arrays.asList(StringUtils.split(
+-                    "http://svn.example.com/path1/path2/path3/path4/path5/path6/path7/path8/path9/path10"),
+-                    "/"));
++            binding.setVariable("repoURL", Arrays.asList(StringUtils
++                .split("http://svn.example.com/path1/path2/path3/path4/path5/path6/path7/path8/path9/path10"), "/"));
+         } else {
+             binding.setVariable("repoURL", locationPathElements);
+         }
+@@ -224,20 +219,19 @@ public class SvnTagPlugin {
+         }
+     }
+ 
+-
+     /**
+      * Reads the revision file of the specified build.
+-     *
+-     * @param build build object
++     * 
++     * @param build
++     *            build object
+      * @return map from Subversion URL to its revision.
+-     * @throws java.io.IOException thrown when operation failed
++     * @throws java.io.IOException
++     *             thrown when operation failed
+      */
+-    /*package*/
+-    @SuppressWarnings({"NestedAssignment"})
+-    static Map<String, Long> parseRevisionFile(AbstractBuild build)
+-            throws IOException {
+-        Map<String, Long> revisions =
+-                new HashMap<String, Long>(); // module -> revision
++    /* package */
++    @SuppressWarnings({ "NestedAssignment" })
++    static Map< String , Long > parseRevisionFile(AbstractBuild build) throws IOException {
++        Map< String , Long > revisions = new HashMap< String , Long >(); // module -> revision
+         // read the revision file of the last build
+         File file = SubversionSCM.getRevisionFile(build);
+         if (!file.exists()) // nothing to compare against
+@@ -251,13 +245,15 @@ public class SvnTagPlugin {
+             while ((line = br.readLine()) != null) {
+                 int index = line.lastIndexOf('/');
+                 if (index < 0) {
+-                    continue;   // invalid line?
++                    continue; // invalid line?
+                 }
+                 try {
+-                    revisions.put(line.substring(0, index),
+-                            Long.parseLong(line.substring(index + 1)));
++                    revisions.put(SVNURL.parseURIEncoded(line.substring(0, index)).toString(),
++                        Long.parseLong(line.substring(index + 1)));
+                 } catch (NumberFormatException e) {
+                     // perhaps a corrupted line. ignore
++                } catch (SVNException e) {
++                    // perhaps a corrupted line. ignore
+                 }
+             }
+         } finally {

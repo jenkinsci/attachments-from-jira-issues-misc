@@ -1,0 +1,140 @@
+<matrix-project plugin="matrix-project@1.13">
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.buildblocker.BuildBlockerProperty plugin="build-blocker-plugin@1.7.3">
+      <useBuildBlocker>false</useBuildBlocker>
+      <blockLevel>GLOBAL</blockLevel>
+      <scanQueueFor>DISABLED</scanQueueFor>
+      <blockingJobs></blockingJobs>
+    </hudson.plugins.buildblocker.BuildBlockerProperty>
+    <com.synopsys.arc.jenkinsci.plugins.jobrestrictions.jobs.JobRestrictionProperty plugin="job-restrictions@0.8"/>
+    <org.jenkinsci.plugins.sharedworkspace.SharedWorkspace plugin="shared-workspace@1.0.2">
+      <name>NONE</name>
+    </org.jenkinsci.plugins.sharedworkspace.SharedWorkspace>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <axes>
+    <hudson.matrix.LabelAxis>
+      <name>label</name>
+      <values>
+        <string>slave-1</string>
+        <string>slave-2</string>
+      </values>
+    </hudson.matrix.LabelAxis>
+  </axes>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>echo &quot;Stop server $NODE_NAME&quot;
+</command>
+    </hudson.tasks.Shell>
+    <org.jenkinsci.plugins.conditionalbuildstep.ConditionalBuilder plugin="conditional-buildstep@1.3.6">
+      <runner class="org.jenkins_ci.plugins.run_condition.BuildStepRunner$DontRun" plugin="run-condition@1.2"/>
+      <runCondition class="org.jenkins_ci.plugins.run_condition.core.ExpressionCondition" plugin="run-condition@1.2">
+        <expression>^.+\-02$</expression>
+        <label>$NODE_NAME</label>
+      </runCondition>
+      <conditionalbuilders>
+        <hudson.tasks.Shell>
+          <command>sleep 20s</command>
+        </hudson.tasks.Shell>
+      </conditionalbuilders>
+    </org.jenkinsci.plugins.conditionalbuildstep.ConditionalBuilder>
+  </builders>
+  <publishers>
+    <org.jenkinsci.plugins.postbuildscript.MatrixPostBuildScript plugin="postbuildscript@2.8.1">
+      <config>
+        <scriptFiles/>
+        <groovyScripts/>
+        <buildSteps>
+          <org.jenkinsci.plugins.postbuildscript.model.PostBuildStep>
+            <results>
+              <string>SUCCESS</string>
+              <string>NOT_BUILT</string>
+              <string>ABORTED</string>
+              <string>FAILURE</string>
+              <string>UNSTABLE</string>
+            </results>
+            <role>MASTER</role>
+            <executeOn>MATRIX</executeOn>
+            <buildSteps>
+              <jenkins.plugins.publish__over__ssh.BapSshBuilderPlugin plugin="publish-over-ssh@1.20.1">
+                <delegate>
+                  <consolePrefix>SSH: </consolePrefix>
+                  <delegate plugin="publish-over@0.22">
+                    <publishers>
+                      <jenkins.plugins.publish__over__ssh.BapSshPublisher plugin="publish-over-ssh@1.20.1">
+                        <configName>slave-1</configName>
+                        <verbose>false</verbose>
+                        <transfers>
+                          <jenkins.plugins.publish__over__ssh.BapSshTransfer>
+                            <remoteDirectory></remoteDirectory>
+                            <sourceFiles></sourceFiles>
+                            <excludes></excludes>
+                            <removePrefix></removePrefix>
+                            <remoteDirectorySDF>false</remoteDirectorySDF>
+                            <flatten>false</flatten>
+                            <cleanRemote>false</cleanRemote>
+                            <noDefaultExcludes>false</noDefaultExcludes>
+                            <makeEmptyDirs>false</makeEmptyDirs>
+                            <patternSeparator>[, ]+</patternSeparator>
+                            <execCommand>echo &quot;start server slave 1&quot;</execCommand>
+                            <execTimeout>120000</execTimeout>
+                            <usePty>false</usePty>
+                            <useAgentForwarding>false</useAgentForwarding>
+                          </jenkins.plugins.publish__over__ssh.BapSshTransfer>
+                        </transfers>
+                        <useWorkspaceInPromotion>false</useWorkspaceInPromotion>
+                        <usePromotionTimestamp>false</usePromotionTimestamp>
+                      </jenkins.plugins.publish__over__ssh.BapSshPublisher>
+                      <jenkins.plugins.publish__over__ssh.BapSshPublisher plugin="publish-over-ssh@1.20.1">
+                        <configName>slave-2</configName>
+                        <verbose>false</verbose>
+                        <transfers>
+                          <jenkins.plugins.publish__over__ssh.BapSshTransfer>
+                            <remoteDirectory></remoteDirectory>
+                            <sourceFiles></sourceFiles>
+                            <excludes></excludes>
+                            <removePrefix></removePrefix>
+                            <remoteDirectorySDF>false</remoteDirectorySDF>
+                            <flatten>false</flatten>
+                            <cleanRemote>false</cleanRemote>
+                            <noDefaultExcludes>false</noDefaultExcludes>
+                            <makeEmptyDirs>false</makeEmptyDirs>
+                            <patternSeparator>[, ]+</patternSeparator>
+                            <execCommand>echo &quot;start server slave-2&quot;</execCommand>
+                            <execTimeout>120000</execTimeout>
+                            <usePty>false</usePty>
+                            <useAgentForwarding>false</useAgentForwarding>
+                          </jenkins.plugins.publish__over__ssh.BapSshTransfer>
+                        </transfers>
+                        <useWorkspaceInPromotion>false</useWorkspaceInPromotion>
+                        <usePromotionTimestamp>false</usePromotionTimestamp>
+                      </jenkins.plugins.publish__over__ssh.BapSshPublisher>
+                    </publishers>
+                    <continueOnError>false</continueOnError>
+                    <failOnError>false</failOnError>
+                    <alwaysPublishFromMaster>false</alwaysPublishFromMaster>
+                    <hostConfigurationAccess class="jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin" reference="../.."/>
+                  </delegate>
+                </delegate>
+              </jenkins.plugins.publish__over__ssh.BapSshBuilderPlugin>
+            </buildSteps>
+              </org.jenkinsci.plugins.postbuildscript.model.PostBuildStep>
+        </buildSteps>
+        <markBuildUnstable>false</markBuildUnstable>
+      </config>
+    </org.jenkinsci.plugins.postbuildscript.MatrixPostBuildScript>
+  </publishers>
+  <buildWrappers/>
+  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+    <runSequentially>false</runSequentially>
+  </executionStrategy>
+</matrix-project>

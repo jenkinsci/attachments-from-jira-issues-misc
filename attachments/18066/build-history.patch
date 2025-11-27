@@ -1,0 +1,239 @@
+Index: src/main/java/hudson/model/Computer.java
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/java/hudson/model/Computer.java,v
+retrieving revision 1.25
+diff -u -r1.25 Computer.java
+--- src/main/java/hudson/model/Computer.java	20 Jan 2008 19:20:33 -0000	1.25
++++ src/main/java/hudson/model/Computer.java	27 Jan 2008 15:46:54 -0000
+@@ -171,6 +171,10 @@
+     public List<AbstractProject> getTiedJobs() {
+         return getNode().getSelfLabel().getTiedJobs();
+     }
++    
++    public RunList getBuilds() {
++    	return new RunList(Hudson.getInstance().getAllItems(Job.class)).node(getNode());
++    }
+ 
+     /**
+      * Called to notify {@link Computer} that its corresponding {@link Node}
+Index: src/main/java/hudson/model/View.java
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/java/hudson/model/View.java,v
+retrieving revision 1.27
+diff -u -r1.27 View.java
+--- src/main/java/hudson/model/View.java	16 Jan 2008 04:48:56 -0000	1.27
++++ src/main/java/hudson/model/View.java	27 Jan 2008 15:46:54 -0000
+@@ -247,6 +247,10 @@
+     public void doRssFailed( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+         rss(req, rsp, " failed builds", new RunList(this).failureOnly());
+     }
++    
++    public RunList getBuilds() {
++    	return new RunList(this);
++    }
+ 
+     private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {
+         RSS.forwardToRss(getDisplayName()+ suffix, getUrl(),
+Index: src/main/java/hudson/util/RunList.java
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/java/hudson/util/RunList.java,v
+retrieving revision 1.4
+diff -u -r1.4 RunList.java
+--- src/main/java/hudson/util/RunList.java	20 Jan 2007 02:10:57 -0000	1.4
++++ src/main/java/hudson/util/RunList.java	27 Jan 2008 15:46:54 -0000
+@@ -1,10 +1,12 @@
+ package hudson.util;
+ 
++import hudson.model.AbstractBuild;
++import hudson.model.Item;
+ import hudson.model.Job;
++import hudson.model.Node;
+ import hudson.model.Result;
+ import hudson.model.Run;
+ import hudson.model.View;
+-import hudson.model.Item;
+ 
+ import java.util.ArrayList;
+ import java.util.Calendar;
+@@ -60,6 +62,21 @@
+     }
+ 
+     /**
++     * Filter the list to builds on a single node only
++     */
++    public RunList node(Node node) {
++        for (Iterator<Run> itr = iterator(); itr.hasNext();) {
++            Run r = itr.next();
++            if (r instanceof AbstractBuild) {
++            	if (!((AbstractBuild) r).getBuiltOn().equals(node)) {
++            		itr.remove();
++            	}
++            }
++        }
++        return this;
++    }
++
++    /**
+      * Filter the list to regression builds only.
+      */
+     public RunList regressionOnly() {
+Index: src/main/resources/hudson/model/Computer/sidepanel.jelly
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/resources/hudson/model/Computer/sidepanel.jelly,v
+retrieving revision 1.3
+diff -u -r1.3 sidepanel.jelly
+--- src/main/resources/hudson/model/Computer/sidepanel.jelly	29 Jul 2007 23:52:03 -0000	1.3
++++ src/main/resources/hudson/model/Computer/sidepanel.jelly	27 Jan 2008 15:46:54 -0000
+@@ -6,6 +6,7 @@
+   <l:side-panel>
+     <l:tasks>
+       <l:task icon="images/24x24/up.gif" href=".." title="Back to List" />
++      <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}/builds" title="Build History" />
+     </l:tasks>
+   </l:side-panel>
+ </j:jelly>
+\ No newline at end of file
+Index: src/main/resources/hudson/model/Slave/ComputerImpl/sidepanel.jelly
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/resources/hudson/model/Slave/ComputerImpl/sidepanel.jelly,v
+retrieving revision 1.5
+diff -u -r1.5 sidepanel.jelly
+--- src/main/resources/hudson/model/Slave/ComputerImpl/sidepanel.jelly	29 Jul 2007 23:52:04 -0000	1.5
++++ src/main/resources/hudson/model/Slave/ComputerImpl/sidepanel.jelly	27 Jan 2008 15:46:54 -0000
+@@ -7,6 +7,7 @@
+     <l:tasks>
+       <l:task icon="images/24x24/up.gif" href=".." title="Back to List" />
+       <l:task icon="images/24x24/search.gif" href="${rootURL}/computer/${it.displayName}/" title="Status" />
++      <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}/builds" title="Build History" />
+       <l:isAdmin>
+         <l:task icon="images/24x24/clipboard.gif" href="log" title="Log" />
+         <l:task icon="images/24x24/computer.gif" href="systemInfo" title="System Information" />
+Index: src/main/resources/hudson/model/View/sidepanel.jelly
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/resources/hudson/model/View/sidepanel.jelly,v
+retrieving revision 1.13
+diff -u -r1.13 sidepanel.jelly
+--- src/main/resources/hudson/model/View/sidepanel.jelly	19 Jan 2008 06:01:12 -0000	1.13
++++ src/main/resources/hudson/model/View/sidepanel.jelly	27 Jan 2008 15:46:54 -0000
+@@ -15,6 +15,7 @@
+       <j:if test="${it.hasPeople()}">
+         <l:task icon="images/24x24/user.gif" href="${rootURL}/people/" title="${%People}" />
+       </j:if>
++      <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}builds" title="Build History"/>
+       <st:include page="sidepanel2.jelly" />
+       <t:actions />
+     </l:tasks>
+Index: src/main/resources/hudson/model/View/builds.jelly
+===================================================================
+RCS file: src/main/resources/hudson/model/View/builds.jelly
+diff -N src/main/resources/hudson/model/View/builds.jelly
+--- /dev/null	1 Jan 1970 00:00:00 -0000
++++ src/main/resources/hudson/model/View/builds.jelly	1 Jan 1970 00:00:00 -0000
+@@ -0,0 +1,50 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
++  <l:layout title="${it.displayName}">
++    <st:include page="sidepanel.jelly" />
++    <l:main-panel>
++      <h1>
++        <img src="${imagesURL}/48x48/notepad.gif" />
++        Build History for ${it.displayName}
++      </h1>
++
++      <t:setIconSize/>
++
++      <table class="pane sortable" id="projectStatus">
++        <tr>
++          <th><st:nbsp/></th>
++          <th>Build</th>
++          <th initialSortDir="up">Date</th>
++          <th>Status</th>
++          <th><st:nbsp/></th>
++        </tr>
++        <j:forEach var="b" items="${it.builds}">
++          <tr>
++            <td data="${b.iconColor.ordinal()}">
++              <a href="${rootURL}/${b.url}">
++                <img src="${imagesURL}/${iconSize}/${b.buildStatusUrl}"
++                     alt="${b.iconColor.description}"/>
++              </a>
++            </td>
++            <td>
++              <a href="${rootURL}/${b.project.url}">${b.project.name}</a>
++              <st:nbsp/>
++              <a href="${rootURL}/${b.url}">#${b.number}</a>
++            </td>
++            <td data="${b.timestampString2}">
++              ${b.timestampString}
++            </td>
++            <td>
++              <t:buildStatusSummary build="${b}" />
++            </td>
++            <td>
++              <a href="${rootURL}/${b.url}console">
++                <img src="${imagesURL}/${subIconSize}/terminal.gif" title="Console output" border="0" />
++              </a>
++            </td>
++          </tr>
++        </j:forEach>
++      </table>
++      <t:rssBar-with-iconSize/>
++    </l:main-panel>
++  </l:layout>
++</j:jelly>
+Index: src/main/resources/hudson/model/Computer/builds.jelly
+===================================================================
+RCS file: src/main/resources/hudson/model/Computer/builds.jelly
+diff -N src/main/resources/hudson/model/Computer/builds.jelly
+--- /dev/null	1 Jan 1970 00:00:00 -0000
++++ src/main/resources/hudson/model/Computer/builds.jelly	1 Jan 1970 00:00:00 -0000
+@@ -0,0 +1,50 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
++  <l:layout title="${it.displayName}">
++    <st:include page="sidepanel.jelly" />
++    <l:main-panel>
++      <h1>
++        <img src="${imagesURL}/48x48/notepad.gif" />
++        Build History for ${it.displayName}
++      </h1>
++
++      <t:setIconSize/>
++
++      <table class="pane sortable" id="projectStatus">
++        <tr>
++          <th><st:nbsp/></th>
++          <th>Build</th>
++          <th initialSortDir="up">Date</th>
++          <th>Status</th>
++          <th><st:nbsp/></th>
++        </tr>
++        <j:forEach var="b" items="${it.builds}">
++          <tr>
++            <td data="${b.iconColor.ordinal()}">
++              <a href="${rootURL}/${b.url}">
++                <img src="${imagesURL}/${iconSize}/${b.buildStatusUrl}"
++                     alt="${b.iconColor.description}"/>
++              </a>
++            </td>
++            <td>
++              <a href="${rootURL}/${b.project.url}">${b.project.name}</a>
++              <st:nbsp/>
++              <a href="${rootURL}/${b.url}">#${b.number}</a>
++            </td>
++            <td data="${b.timestampString2}">
++              ${b.timestampString}
++            </td>
++            <td>
++              <t:buildStatusSummary build="${b}" />
++            </td>
++            <td>
++              <a href="${rootURL}/${b.url}console">
++                <img src="${imagesURL}/${subIconSize}/terminal.gif" title="Console output" border="0" />
++              </a>
++            </td>
++          </tr>
++        </j:forEach>
++      </table>
++      <t:rssBar-with-iconSize/>
++    </l:main-panel>
++  </l:layout>
++</j:jelly>

@@ -1,0 +1,14 @@
+Index: AbstractClearCaseScm.java
+===================================================================
+--- AbstractClearCaseScm.java	(revision 25725)
++++ AbstractClearCaseScm.java	(working copy)
+@@ -479,8 +479,7 @@
+         HistoryAction historyAction = createHistoryAction(variableResolver,
+                                                           createClearToolLauncher(listener, workspace, launcher));
+ 
+-        String poNormalizedViewName = generateNormalizedViewName(
+-                                                                 (AbstractBuild) lastBuild);
++        String poNormalizedViewName = generateNormalizedViewName((BuildVariableResolver) variableResolver);
+ 
+         return historyAction.hasChanges(buildTime, poNormalizedViewName,
+                                         getBranchNames(), getViewPaths());

@@ -1,0 +1,77 @@
+Lanzada por el usuario admin
+[Pipeline] stage
+[Pipeline] { (Build)
+[Pipeline] node
+Running on principal in /var/jenkins/jenkins-home/workspace/Parallels
+[Pipeline] {
+[Pipeline] sh
+[Parallels] Running shell script
++ echo Building things
+Building things
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Post Build)
+[Pipeline] parallel
+[Pipeline] [integration tests] { (Branch: integration tests)
+[Pipeline] [consumer tests] { (Branch: consumer tests)
+[Pipeline] [integration tests] node
+[integration tests] Running on principal in /var/jenkins/jenkins-home/workspace/Parallels
+[Pipeline] [consumer tests] echo
+[consumer tests] consumer tests
+[Pipeline] [consumer tests] parallel
+[Pipeline] [consumer-subtest-1] { (Branch: consumer-subtest-1)
+[Pipeline] [consumer-subtest-2] { (Branch: consumer-subtest-2)
+[Pipeline] [consumer-subtest-3] { (Branch: consumer-subtest-3)
+[Pipeline] [integration tests] {
+[Pipeline] [consumer-subtest-1] node
+[consumer-subtest-1] Running on principal in /var/jenkins/jenkins-home/workspace/Parallels@3
+[Pipeline] [consumer-subtest-2] node
+[consumer-subtest-2] Running on principal in /var/jenkins/jenkins-home/workspace/Parallels@4
+[Pipeline] [consumer-subtest-3] node
+[consumer-subtest-3] Running on principal in /var/jenkins/jenkins-home/workspace/Parallels@5
+[Pipeline] [integration tests] sh
+[integration tests] [Parallels] Running shell script
+[Pipeline] [consumer-subtest-1] {
+[Pipeline] [consumer-subtest-2] {
+[Pipeline] [consumer-subtest-3] {
+[Pipeline] [consumer-subtest-1] sh
+[consumer-subtest-1] [Parallels@3] Running shell script
+[Pipeline] [consumer-subtest-2] input
+[consumer-subtest-2] Abort?
+[consumer-subtest-2] Proceed or Abort
+[Pipeline] [consumer-subtest-3] sh
+[integration tests] + echo integrations tests
+[integration tests] integrations tests
+[consumer-subtest-3] [Parallels@5] Running shell script
+[Pipeline] [integration tests] }
+[Pipeline] [integration tests] // node
+[Pipeline] [integration tests] }
+[consumer-subtest-1] + echo consumer-subtest-1
+[consumer-subtest-1] consumer-subtest-1
+[Pipeline] [consumer-subtest-1] }
+[Pipeline] [consumer-subtest-1] // node
+[Pipeline] [consumer-subtest-1] }
+[consumer-subtest-3] + echo consumer-subtest-3
+[consumer-subtest-3] consumer-subtest-3
+[Pipeline] [consumer-subtest-3] }
+[Pipeline] [consumer-subtest-3] // node
+[Pipeline] [consumer-subtest-3] }
+[Pipeline] [consumer-subtest-2] }
+[Pipeline] [consumer-subtest-2] // node
+[Pipeline] [consumer-subtest-2] }
+[consumer-subtest-2] Failed in branch consumer-subtest-2
+[Pipeline] [consumer tests] // parallel
+[Pipeline] [consumer tests] }
+[consumer tests] Failed in branch consumer tests
+[Pipeline] // parallel
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] End of Pipeline
+[BFA] Scanning build for known causes...
+[BFA] No failure causes found
+[BFA] Done. 0s
+Rejected by admin
+Finished: ABORTED

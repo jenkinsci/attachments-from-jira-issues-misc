@@ -1,0 +1,27 @@
+3.434 [id=28]    WARNING    hudson.ClassicPluginStrategy#createClassJarFromWebInfClasses: Created /usr/share/jenkins/ref/plugins/jsch/WEB-INF/lib/classes.jar; update plugin to a version created with a newer harness
+   3.446 [id=28]    WARNING    hudson.ClassicPluginStrategy#createClassJarFromWebInfClasses: Created /usr/share/jenkins/ref/plugins/authentication-tokens/WEB-INF/lib/classes.jar; update plugin to a version created with a newer harness
+   3.820 [id=27]    WARNING    hudson.ClassicPluginStrategy#createClassJarFromWebInfClasses: Created /usr/share/jenkins/ref/plugins/icon-shim/WEB-INF/lib/classes.jar; update plugin to a version created with a newer harness
+  12.844 [id=30]    SEVERE    jenkins.InitReactorRunner$1#onTaskFailed: Failed KubernetesCredentialProvider.startWatchingForSecrets
+java.lang.NullPointerException
+    at com.cloudbees.jenkins.plugins.kubernetes_credentials_provider.SecretUtils.getKeyName(SecretUtils.java:186)
+    at com.cloudbees.jenkins.plugins.kubernetes_credentials_provider.SecretUtils.getNonNullSecretData(SecretUtils.java:167)
+    at com.cloudbees.jenkins.plugins.kubernetes_credentials_provider.convertors.UsernamePasswordCredentialsConvertor.convert(UsernamePasswordCredentialsConvertor.java:49)
+    at com.cloudbees.jenkins.plugins.kubernetes_credentials_provider.convertors.UsernamePasswordCredentialsConvertor.convert(UsernamePasswordCredentialsConvertor.java:37)
+    at com.cloudbees.jenkins.plugins.kubernetes_credentials_provider.KubernetesCredentialProvider.convertSecret(KubernetesCredentialProvider.java:194)
+    at com.cloudbees.jenkins.plugins.kubernetes_credentials_provider.KubernetesCredentialProvider.startWatchingForSecrets(KubernetesCredentialProvider.java:90)
+Caused: java.lang.reflect.InvocationTargetException
+    at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+    at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+    at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+    at java.lang.reflect.Method.invoke(Method.java:498)
+    at hudson.init.TaskMethodFinder.invoke(TaskMethodFinder.java:104)
+Caused: java.lang.Error
+    at hudson.init.TaskMethodFinder.invoke(TaskMethodFinder.java:110)
+    at hudson.init.TaskMethodFinder$TaskImpl.run(TaskMethodFinder.java:175)
+    at org.jvnet.hudson.reactor.Reactor.runTask(Reactor.java:296)
+    at jenkins.model.Jenkins$5.runTask(Jenkins.java:1068)
+    at org.jvnet.hudson.reactor.Reactor$2.run(Reactor.java:214)
+    at org.jvnet.hudson.reactor.Reactor$Node.run(Reactor.java:117)
+    at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+    at java.lang.Thread.run(Thread.java:748)

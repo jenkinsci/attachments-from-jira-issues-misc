@@ -1,0 +1,119 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@1546.v62a_c59c112dd">
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>-1</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+        <removeLastBuild>false</removeLastBuild>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.9.9">
+      <gitLabConnection>gitlab</gitLabConnection>
+      <jobCredentialId></jobCredentialId>
+      <useAlternativeCredential>false</useAlternativeCredential>
+    </com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@338.va_0a_b_50e29397">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <org.biouno.unochoice.CascadeChoiceParameter plugin="uno-choice@2.8.8">
+          <name>SELECTOR</name>
+          <randomName>choice-parameter-2158226180247884</randomName>
+          <visibleItemCount>1</visibleItemCount>
+          <script class="org.biouno.unochoice.model.GroovyScript">
+            <secureScript plugin="script-security@1378.vf25626395f49">
+              <script>def result = [&apos;no:selected&apos;, &apos;a&apos;, &apos;b&apos;, &apos;c&apos;]
+return result</script>
+              <sandbox>true</sandbox>
+            </secureScript>
+            <secureFallbackScript plugin="script-security@1378.vf25626395f49">
+              <script></script>
+              <sandbox>true</sandbox>
+            </secureFallbackScript>
+          </script>
+          <projectName>test-active-choice-plugin</projectName>
+          <projectFullName>test-active-choice-plugin</projectFullName>
+          <parameters class="linked-hash-map"/>
+          <referencedParameters></referencedParameters>
+          <choiceType>PT_RADIO</choiceType>
+          <filterable>false</filterable>
+          <filterLength>1</filterLength>
+        </org.biouno.unochoice.CascadeChoiceParameter>
+        <org.biouno.unochoice.DynamicReferenceParameter plugin="uno-choice@2.8.8">
+          <name>VALUE1</name>
+          <randomName>choice-parameter-2158226182262085</randomName>
+          <visibleItemCount>1</visibleItemCount>
+          <script class="org.biouno.unochoice.model.GroovyScript">
+            <secureScript plugin="script-security@1378.vf25626395f49">
+              <script>def result
+if (SELECTOR.equals(&quot;no&quot;)) {
+    result = &quot;&quot;
+} else {
+    result = &quot;&quot;&quot;&lt;input type=&quot;text&quot; class=&quot;setting-input&quot; required onkeyup=&quot;this.value = this.value.trim()&quot; name=&quot;value&quot; value=&quot;${SELECTOR}&quot;&gt;&quot;&quot;&quot;
+}
+return result</script>
+              <sandbox>true</sandbox>
+            </secureScript>
+            <secureFallbackScript plugin="script-security@1378.vf25626395f49">
+              <script></script>
+              <sandbox>true</sandbox>
+            </secureFallbackScript>
+          </script>
+          <projectName>test-active-choice-plugin</projectName>
+          <projectFullName>test-active-choice-plugin</projectFullName>
+          <parameters class="linked-hash-map"/>
+          <referencedParameters>SELECTOR</referencedParameters>
+          <choiceType>ET_FORMATTED_HTML</choiceType>
+          <omitValueField>true</omitValueField>
+        </org.biouno.unochoice.DynamicReferenceParameter>
+        <org.biouno.unochoice.DynamicReferenceParameter plugin="uno-choice@2.8.8">
+          <name>VALUE2</name>
+          <randomName>choice-parameter-2158226183959651</randomName>
+          <visibleItemCount>1</visibleItemCount>
+          <script class="org.biouno.unochoice.model.GroovyScript">
+            <secureScript plugin="script-security@1378.vf25626395f49">
+              <script>def result
+if (SELECTOR.equals(&quot;no&quot;)) {
+    result = &quot;&quot;
+} else {
+    result = &quot;&quot;&quot;&lt;input type=&quot;text&quot; class=&quot;setting-input&quot; required onkeyup=&quot;this.value = this.value.trim()&quot; name=&quot;value&quot; value=&quot;${VALUE1}&quot;&gt;&quot;&quot;&quot;
+}
+return result</script>
+              <sandbox>true</sandbox>
+            </secureScript>
+            <secureFallbackScript plugin="script-security@1378.vf25626395f49">
+              <script></script>
+              <sandbox>true</sandbox>
+            </secureFallbackScript>
+          </script>
+          <projectName>test-active-choice-plugin</projectName>
+          <projectFullName>test-active-choice-plugin</projectFullName>
+          <parameters class="linked-hash-map"/>
+          <referencedParameters>SELECTOR, VALUE1</referencedParameters>
+          <choiceType>ET_FORMATTED_HTML</choiceType>
+          <omitValueField>true</omitValueField>
+        </org.biouno.unochoice.DynamicReferenceParameter>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@4183.v94b_6fd39da_c1">
+    <script>node {
+    timestamps {
+        stage(&quot;test&quot;) {
+            sh &quot;echo hello world&quot;
+        }
+    }
+}
+</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>

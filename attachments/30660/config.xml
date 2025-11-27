@@ -1,0 +1,170 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.advancedqueue.priority.strategy.PriorityJobProperty plugin="PrioritySorter@3.4">
+      <useJobPriority>true</useJobPriority>
+      <priority>1</priority>
+    </jenkins.advancedqueue.priority.strategy.PriorityJobProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers>
+    <hudson.triggers.TimerTrigger>
+      <spec>*/1 * * * *</spec>
+    </hudson.triggers.TimerTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <javaposse.jobdsl.plugin.ExecuteDslScripts plugin="job-dsl@1.38">
+      <scriptText>import hudson.model.*
+import hudson.views.*
+import au.com.centrumsystems.hudson.plugin.buildpipeline.*
+
+def repositories = [&quot;repo1&quot;, &quot;repo2&quot;, &quot;repo3&quot;, &quot;repo4&quot;]
+def branches = [&quot;branch1&quot;, &quot;branch2&quot;, &quot;branch3&quot;, &quot;branch4&quot;]
+
+repositories.each { repository -&gt;
+  branches.each { branchName -&gt;
+
+    job(&quot;${repository}_${branchName}_build&quot;) {
+      deliveryPipelineConfiguration(&apos;Build&apos;)
+      configure { project -&gt;
+        project / &apos;properties&apos; / &apos;jenkins.advancedqueue.priority.strategy.PriorityJobProperty&apos; {
+          useJobPriority(true)
+          priority(5)
+        }
+      }
+
+      wrappers {
+        colorizeOutput()
+        timestamps()
+      }
+
+      publishers {
+        downstreamParameterized{
+          trigger(&quot;${repository}_${branchName}_unit-test,${repository}_${branchName}_push&quot;) {
+            condition(&apos;SUCCESS&apos;)
+            parameters {
+              predefinedProp(&apos;GIT_URL&apos;, &quot;https://bitbucket.org/organisation/${repository}&quot;)
+              predefinedProp(&apos;GIT_COMMIT&apos;, &apos;${GIT_COMMIT}&apos;)
+              currentBuild()
+            }
+          }
+        }
+      }
+    }
+
+    job(&quot;${repository}_${branchName}_unit-test&quot;) {
+      deliveryPipelineConfiguration(&apos;Unit-test&apos;)
+      configure { project -&gt;
+        project / &apos;properties&apos; / &apos;jenkins.advancedqueue.priority.strategy.PriorityJobProperty&apos; {
+          useJobPriority(true)
+          priority(4)
+        }
+      }
+      parameters {
+        stringParam(&apos;GIT_URL&apos;)
+        stringParam(&apos;GIT_COMMIT&apos;)
+      }
+
+      wrappers {
+        colorizeOutput()
+        timestamps()
+      }
+
+      publishers {
+        archiveJunit(&apos;test-reports/*.xml&apos;)
+      }
+    }
+
+
+    job(&quot;${repository}_${branchName}_push&quot;) {
+      configure { project -&gt;
+        project / &apos;properties&apos; / &apos;jenkins.advancedqueue.priority.strategy.PriorityJobProperty&apos; {
+          useJobPriority(true)
+          priority(3)
+        }
+      }
+      deliveryPipelineConfiguration(&apos;Push&apos;)
+      parameters {
+        stringParam(&apos;GIT_URL&apos;)
+        stringParam(&apos;GIT_COMMIT&apos;)
+      }
+
+      wrappers {
+        colorizeOutput()
+        timestamps()
+      }
+
+      publishers {
+        downstreamParameterized{
+          trigger(&quot;${repository}_${branchName}_deploy&quot;) {
+            condition(&apos;SUCCESS&apos;)
+            parameters {
+              predefinedProp(&apos;GIT_URL&apos;, &quot;https://bitbucket.org/organisation/${repository}&quot;)
+              predefinedProp(&apos;GIT_COMMIT&apos;, &apos;${GIT_COMMIT}&apos;)
+              currentBuild()
+            }
+          }
+        }
+      }
+    }
+
+    job(&quot;${repository}_${branchName}_deploy&quot;) {
+      deliveryPipelineConfiguration(&apos;Deploy&apos;)
+      configure { project -&gt;
+        project / &apos;properties&apos; / &apos;jenkins.advancedqueue.priority.strategy.PriorityJobProperty&apos; {
+          useJobPriority(true)
+          priority(1)
+        }
+      }
+      parameters {
+        stringParam(&apos;GIT_URL&apos;)
+        stringParam(&apos;GIT_COMMIT&apos;)
+      }
+
+      environmentVariables {
+        env(&apos;REPOSITORY&apos;, repository)
+        env(&apos;BRANCH&apos;, branchName)
+      }
+
+      wrappers {
+        colorizeOutput()
+        timestamps()
+      }
+    }
+  }
+
+  deliveryPipelineView(repository) {
+    allowRebuild(true)
+    allowPipelineStart(true)
+    showAggregatedPipeline(false)
+    pipelineInstances(1)
+    pipelines {
+      regex(/(${repository}_[^_]+)_build/)
+    }
+    sorting(Sorting.TITLE)
+  }
+}</scriptText>
+      <usingScriptText>true</usingScriptText>
+      <ignoreExisting>false</ignoreExisting>
+      <removedJobAction>DELETE</removedJobAction>
+      <removedViewAction>DELETE</removedViewAction>
+      <lookupStrategy>JENKINS_ROOT</lookupStrategy>
+      <additionalClasspath></additionalClasspath>
+    </javaposse.jobdsl.plugin.ExecuteDslScripts>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.7.2"/>
+    <hudson.plugins.ansicolor.AnsiColorBuildWrapper plugin="ansicolor@0.4.1">
+      <colorMapName>xterm</colorMapName>
+    </hudson.plugins.ansicolor.AnsiColorBuildWrapper>
+  </buildWrappers>
+</project>

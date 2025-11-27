@@ -1,0 +1,57 @@
+### Eclipse Workspace Patch 1.0
+#P hudson-core
+Index: src/main/java/hudson/model/Run.java
+===================================================================
+--- src/main/java/hudson/model/Run.java	(revision 33078)
++++ src/main/java/hudson/model/Run.java	(working copy)
+@@ -654,7 +654,9 @@
+      */
+     public RunT getPreviousBuiltBuild() {
+         RunT r=previousBuild;
+-        while( r!=null && r.getResult()==Result.NOT_BUILT )
++        
++        // in certain situations (aborted m2 builds) r.getResult() can still be null, although it should theoretically never happen
++        while( r!=null && (r.getResult() == null || r.getResult()==Result.NOT_BUILT) )
+             r=r.previousBuild;
+         return r;
+     }
+@@ -704,7 +706,8 @@
+      *      This method is only intended for the remote API clients who cannot resolve relative references
+      *      (even this won't work for the same reason, which should be fixed.)
+      */
+-    @Exported(visibility=2,name="url")
++    @Deprecated
++	@Exported(visibility=2,name="url")
+     public final String getAbsoluteUrl() {
+         return project.getAbsoluteUrl()+getNumber()+'/';
+     }
+@@ -1557,7 +1560,8 @@
+      * @deprecated as of 1.352
+      *      Use {@code getLogText().doProgressiveText(req,rsp)}
+      */
+-    public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
++    @Deprecated
++	public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
+         getLogText().doProgressText(req,rsp);
+     }
+ 
+@@ -1620,7 +1624,8 @@
+      * @deprecated as of 1.292
+      *      Use {@link #getEnvironment()} instead.
+      */
+-    public Map<String,String> getEnvVars() {
++    @Deprecated
++	public Map<String,String> getEnvVars() {
+         try {
+             return getEnvironment();
+         } catch (IOException e) {
+@@ -1633,7 +1638,8 @@
+     /**
+      * @deprecated as of 1.305 use {@link #getEnvironment(TaskListener)}
+      */
+-    public EnvVars getEnvironment() throws IOException, InterruptedException {
++    @Deprecated
++	public EnvVars getEnvironment() throws IOException, InterruptedException {
+         return getEnvironment(new LogTaskListener(LOGGER, Level.INFO));
+     }
+ 

@@ -1,0 +1,26 @@
+diff --git a/plugin/src/main/java/hudson/plugins/findbugs/parser/FindBugsParser.java b/plugin/src/main/java/hudson/plugins/findbugs/parser/FindBugsParser.java
+index a55d7c5..e2fee47 100644
+--- a/plugin/src/main/java/hudson/plugins/findbugs/parser/FindBugsParser.java
++++ b/plugin/src/main/java/hudson/plugins/findbugs/parser/FindBugsParser.java
+@@ -54,6 +54,7 @@
+ 
+     private static final String DOT = ".";
+     private static final String SLASH = "/";
++    private static final String CLOUD_DETAILS_URL_PROPERTY = "detailsUrl";
+ 
+     private static final int DAY_IN_MSEC = 1000 * 60 * 60 * 24;
+     private static final int HIGH_PRIORITY_LOWEST_RANK = 4;
+@@ -288,6 +289,13 @@
+         bug.setShouldBeInCloud(cloud.isOnlineCloud());
+         // FIXME: This method has been removed in findbugs 2.0.0
+         // bug.setDetailsUrlTemplate(cloud.getBugDetailsUrlTemplate());
++        // Trying to fix:
++        Map<String, String> cloudDetails= collection.getXmlCloudDetails();
++        String bugDetailsUrl = cloudDetails.get(CLOUD_DETAILS_URL_PROPERTY);
++        if (bugDetailsUrl != null) {
++        	bug.setDetailsUrlTemplate(bugDetailsUrl);
++        }
++        
+         long firstSeen = cloud.getFirstSeen(warning);
+         bug.setInCloud(cloud.isInCloud(warning));
+         bug.setFirstSeen(firstSeen);

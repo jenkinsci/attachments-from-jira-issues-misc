@@ -1,0 +1,83 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><matrix-project plugin="matrix-project@1.18">
+  <actions/>
+  <description/>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.buildblocker.BuildBlockerProperty plugin="build-blocker-plugin@1.7.6">
+      <useBuildBlocker>false</useBuildBlocker>
+      <blockLevel>GLOBAL</blockLevel>
+      <scanQueueFor>DISABLED</scanQueueFor>
+      <blockingJobs/>
+    </hudson.plugins.buildblocker.BuildBlockerProperty>
+    <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.5.19">
+      <gitLabConnection/>
+      <jobCredentialId/>
+      <useAlternativeCredential>false</useAlternativeCredential>
+    </com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.31">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    
+  </properties>
+  <scm class="org.jenkinsci.plugins.p4.PerforceScm" plugin="p4@1.11.3">
+    <credential>p4cggdev</credential>
+    <workspace class="org.jenkinsci.plugins.p4.workspace.ManualWorkspaceImpl">
+      <charset>none</charset>
+      <pinHost>false</pinHost>
+      <cleanup>false</cleanup>
+      <name>jenkins-${JENKINS_INSTANCE_NAME}-${NODE_NAME}-${JOB_NAME}-${EXECUTOR_NUMBER}</name>
+      <spec>
+        <allwrite>false</allwrite>
+        <clobber>true</clobber>
+        <compress>false</compress>
+        <locked>false</locked>
+        <modtime>false</modtime>
+        <rmdir>true</rmdir>
+        <streamName/>
+        <line>LOCAL</line>
+        <view>//dev/nobili/monitoring/...  //jenkins-${JENKINS_INSTANCE_NAME}-${NODE_NAME}-${JOB_NAME}-${EXECUTOR_NUMBER}/dev/nobili/monitoring/...</view>
+        <changeView/>
+        <type>WRITABLE</type>
+        <serverID/>
+        <backup>true</backup>
+      </spec>
+    </workspace>
+    <populate class="org.jenkinsci.plugins.p4.populate.CheckOnlyImpl">
+      <have>false</have>
+      <force>false</force>
+      <modtime>false</modtime>
+      <quiet>true</quiet>
+    </populate>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <axes>
+    <hudson.matrix.LabelAxis>
+      <name>platform</name>
+      <values>
+        <string>db7</string>
+        <string>db9</string>
+      </values>
+    </hudson.matrix.LabelAxis>
+  </axes>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#!/bin/sh
+
+env | sort | grep P4_</command>
+      <configuredLocalRules/>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <org.jenkinsci.plugins.builduser.BuildUser plugin="build-user-vars-plugin@1.7"/>
+  </buildWrappers>
+  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+    <runSequentially>false</runSequentially>
+  </executionStrategy>
+</matrix-project>

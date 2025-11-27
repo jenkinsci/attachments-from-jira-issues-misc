@@ -1,0 +1,304 @@
+? patch
+Index: model/AbstractBuildTrigger.java
+===================================================================
+RCS file: model/AbstractBuildTrigger.java
+diff -N model/AbstractBuildTrigger.java
+--- /dev/null	1 Jan 1970 00:00:00 -0000
++++ model/AbstractBuildTrigger.java	22 Nov 2007 07:14:08 -0000
+@@ -0,0 +1,82 @@
++package hudson.model;
++
++import hudson.Launcher;
++import hudson.tasks.Publisher;
++
++import java.io.PrintStream;
++import java.util.List;
++
++/**
++ * Trigger the build of other projects, depending of the result of the current
++ * build.
++ */
++public abstract class AbstractBuildTrigger extends Publisher {
++
++	/**
++	 * Threshold status to trigger other builds.
++	 * 
++	 * For compatibility reasons, this field could be null, in which case it
++	 * should read as "SUCCESS".
++	 */
++	private Result threshold = null;
++
++	/**
++	 * Set the threashold result for triggering builds
++	 * 
++	 * @param threshold
++	 *            the minimum result where the child builds should be triggered (<code>null</code>
++	 *            is equivalent to {@link Result#SUCCESS})
++	 */
++	public void setThreshold(Result threshold) {
++		this.threshold = threshold;
++	}
++
++	/**
++	 * The threashold result for triggering builds
++	 * 
++	 * @return the minimum result (never <code>null</code>)
++	 */
++	public Result getThreshold() {
++		if (threshold == null) {
++			return Result.SUCCESS;
++		}
++		return threshold;
++	}
++
++	/**
++	 * Get the project to build after this one.
++	 * 
++	 * @return the list of project to build
++	 */
++	public abstract List<AbstractProject> getChildProjects();
++
++	/**
++	 * Trigger the child build if the result status of the build is greater or
++	 * equal to the threadshold result status.
++	 */
++	@Override
++	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
++			BuildListener listener) {
++		if (!build.getResult().isWorseThan(getThreshold())) {
++			PrintStream logger = listener.getLogger();
++			for (AbstractProject<?, ?> p : getChildProjects()) {
++				if (p.isDisabled()) {
++					logger.println(p.getName()
++							+ " is disabled. Triggering skipped");
++					continue;
++				}
++
++				// this is not completely accurate, as a new build might be
++				// triggered between these calls
++				String name = p.getName() + " #" + p.getNextBuildNumber();
++				if (p.scheduleBuild()) {
++					logger.println("Triggering a new build of " + name);
++				} else {
++					logger.println(name + " is already in the queue");
++				}
++			}
++		}
++
++		return true;
++	}
++}
+Index: model/Project.java
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/java/hudson/model/Project.java,v
+retrieving revision 1.49
+diff -u -8 -p -r1.49 Project.java
+--- model/Project.java	6 Oct 2007 03:48:11 -0000	1.49
++++ model/Project.java	22 Nov 2007 07:14:08 -0000
+@@ -1,31 +1,32 @@
+ package hudson.model;
+ 
+ import hudson.Util;
+ import hudson.model.Descriptor.FormException;
+ import hudson.tasks.BuildStep;
+-import hudson.tasks.BuildTrigger;
+ import hudson.tasks.BuildWrapper;
+ import hudson.tasks.BuildWrappers;
+ import hudson.tasks.Builder;
+ import hudson.tasks.Fingerprinter;
+ import hudson.tasks.Publisher;
+ import hudson.triggers.Trigger;
+-import org.kohsuke.stapler.StaplerRequest;
+-import org.kohsuke.stapler.StaplerResponse;
+ 
+-import javax.servlet.ServletException;
+ import java.io.IOException;
+ import java.util.HashSet;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.Set;
+ import java.util.Vector;
+ 
++import javax.servlet.ServletException;
++
++import org.kohsuke.stapler.StaplerRequest;
++import org.kohsuke.stapler.StaplerResponse;
++
+ /**
+  * Buildable software project.
+  *
+  * @author Kohsuke Kawaguchi
+  */
+ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
+     extends AbstractProject<P,B> implements SCMedItem {
+ 
+@@ -105,21 +106,29 @@ public abstract class Project<P extends 
+     public Publisher getPublisher(Descriptor<Publisher> descriptor) {
+         for (Publisher p : publishers) {
+             if(p.getDescriptor()==descriptor)
+                 return p;
+         }
+         return null;
+     }
+ 
+-    protected void buildDependencyGraph(DependencyGraph graph) {
+-        BuildTrigger buildTrigger = (BuildTrigger) getPublishers().get(BuildTrigger.DESCRIPTOR);
+-        if(buildTrigger!=null)
+-             graph.addDependency(this,buildTrigger.getChildProjects());
+-    }
++    /**
++	 * The dependency graph is build form every existing AbstractBuildTrigger in
++	 * the set of publishers
++	 */
++    @Override
++	protected void buildDependencyGraph(DependencyGraph graph) {
++		for (Publisher publisher : publishers) {
++			if (publisher instanceof AbstractBuildTrigger) {
++				graph.addDependency(this, ((AbstractBuildTrigger) publisher)
++						.getChildProjects());
++			}
++		}
++	}
+ 
+     @Override
+     public boolean isFingerprintConfigured() {
+         synchronized(publishers) {
+             for (Publisher p : publishers) {
+                 if(p instanceof Fingerprinter)
+                     return true;
+             }
+Index: tasks/BuildTrigger.java
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/java/hudson/tasks/BuildTrigger.java,v
+retrieving revision 1.19
+diff -u -8 -p -r1.19 BuildTrigger.java
+--- tasks/BuildTrigger.java	6 Nov 2007 15:12:45 -0000	1.19
++++ tasks/BuildTrigger.java	22 Nov 2007 07:14:08 -0000
+@@ -1,118 +1,79 @@
+ package hudson.tasks;
+ 
+-import hudson.Launcher;
+-import hudson.model.AbstractBuild;
+ import hudson.model.AbstractProject;
+-import hudson.model.BuildListener;
+ import hudson.model.Descriptor;
+ import hudson.model.Hudson;
+ import hudson.model.Item;
+ import hudson.model.Items;
+ import hudson.model.Job;
++import hudson.model.AbstractBuildTrigger;
+ import hudson.model.Project;
+ import hudson.model.Result;
+ import hudson.model.listeners.ItemListener;
+ import hudson.util.FormFieldValidator;
+-import org.kohsuke.stapler.DataBoundConstructor;
+-import org.kohsuke.stapler.StaplerRequest;
+-import org.kohsuke.stapler.StaplerResponse;
+ 
+-import javax.servlet.ServletException;
+ import java.io.IOException;
+-import java.io.PrintStream;
+ import java.util.Collection;
+ import java.util.List;
+ import java.util.StringTokenizer;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+ 
++import javax.servlet.ServletException;
++
+ import net.sf.json.JSONObject;
+ 
++import org.kohsuke.stapler.DataBoundConstructor;
++import org.kohsuke.stapler.StaplerRequest;
++import org.kohsuke.stapler.StaplerResponse;
++
+ /**
+  * Triggers builds of other projects.
+  *
+  * @author Kohsuke Kawaguchi
+  */
+-public class BuildTrigger extends Publisher {
++public class BuildTrigger extends AbstractBuildTrigger {
+ 
+     /**
+      * Comma-separated list of other projects to be scheduled.
+      */
+     private String childProjects;
+ 
+-    /**
+-     * Threshold status to trigger other builds.
+-     *
+-     * For compatibility reasons, this field could be null, in which case
+-     * it should read as "SUCCESS".
+-     */
+-    private final Result threshold;
+-
+     @DataBoundConstructor
+     public BuildTrigger(String childProjects, boolean evenIfUnstable) {
+         this(childProjects,evenIfUnstable ? Result.UNSTABLE : Result.SUCCESS);
+     }
+ 
+     public BuildTrigger(String childProjects, Result threshold) {
+         this.childProjects = childProjects;
+-        this.threshold = threshold;
++        setThreshold(threshold);
+     }
+ 
+     public BuildTrigger(List<AbstractProject> childProjects, Result threshold) {
+         this(Items.toNameList(childProjects),threshold);
+     }
+ 
+     public String getChildProjectsValue() {
+         return childProjects;
+     }
+ 
+-    public Result getThreshold() {
+-        if(threshold==null)
+-            return Result.SUCCESS;
+-        else
+-            return threshold;
+-    }
+-
+     public List<AbstractProject> getChildProjects() {
+         return Items.fromNameList(childProjects,AbstractProject.class);
+     }
+ 
+     /**
+      * Checks if this trigger has the exact same set of children as the given list.
+      */
+     public boolean hasSame(Collection<? extends AbstractProject> projects) {
+         List<AbstractProject> children = getChildProjects();
+         return children.size()==projects.size() && children.containsAll(projects);
+     }
+ 
+-    public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
+-        if(!build.getResult().isWorseThan(getThreshold())) {
+-            PrintStream logger = listener.getLogger();
+-            for (AbstractProject p : getChildProjects()) {
+-                if(p.isDisabled()) {
+-                    logger.println(p.getName()+" is disabled. Triggering skipped");
+-                    continue;
+-                }
+-
+-                // this is not completely accurate, as a new build might be triggered
+-                // between these calls
+-                String name = p.getName()+" #"+p.getNextBuildNumber();
+-                if(p.scheduleBuild()) {
+-                    logger.println("Triggering a new build of "+name);
+-                } else {
+-                    logger.println(name+" is already in the queue");
+-                }
+-            }
+-        }
+-
+-        return true;
+-    }
+-
+     @Override
+     public boolean needsToRunAfterFinalized() {
+         return true;
+     }
+ 
+     /**
+      * Called from {@link Job#renameTo(String)} when a job is renamed.
+      *

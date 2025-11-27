@@ -1,0 +1,126 @@
+Started by user USER
+[EnvInject] - Loading node environment variables.
+Building remotely on xcambldm1p.q (linux bld zosconnect) in workspace <workspace>
+[WS-CLEANUP] Deleting project workspace...
+[WS-CLEANUP] Deferred wipeout is used...
+[WS-CLEANUP] Done
+[mf_test_proj] $ /bin/sh -xe <temp>
++ cd /<workspace>
++ USER=<user>
++ PASS=<pass>
++ HOST=<addr>
++ ftp -inv <addr>
+Connected to <addr> (<addr>).
+220-FTPD1 IBM FTP CS V2R3 at <env>, 07:39:59 on 2019-04-26.
+220 Connection will close if idle for more than 5 minutes.
+Remote system type is MVS.
+331 Send password please.
+230 <user> is logged on.  Working directory is "<user>.".
+local: SAMPJCL.txt remote: '<user>.COBOL.SAMP.JCL(SORTTST1)'
+227 Entering Passive Mode (nodes)
+125 Sending data set <user>.COBOL.SAMP.JCL(SORTTST1) FIXrecfm 80
+250 Transfer completed successfully.
+507 bytes received in 0.00194 secs (260.80 Kbytes/sec)
+221 Quit command received. Goodbye.
+FTP: connected to <addr>:21
+Submitted job [JOB06273]
+Found job JOB06273 with name <user>A in JES
+Will check JOB status in 'OUTPUT    3 Spool Files                             '
+Found job <user>A in OUTPUT, will fetch log for additional scan
+Found HASP395: 'null'
+ERROR: Unexpected rc part: 'FROM_JOB_LOG null FROM_JOB_LOG'
+Found job JOB06273 with name <user>A in JES
+Will check JOB status in 'OUTPUT    3 Spool Files                             '
+Found job <user>A in OUTPUT, will fetch log for additional scan
+Found HASP395: 'null'
+ERROR: Unexpected rc part: 'FROM_JOB_LOG null FROM_JOB_LOG'
+Found job JOB06273 with name <user>A in JES
+Will check JOB status in 'OUTPUT    3 Spool Files                             '
+Found job <user>A in OUTPUT, will fetch log for additional scan
+Found HASP395: 'null'
+ERROR: Unexpected rc part: 'FROM_JOB_LOG null FROM_JOB_LOG'
+Found job JOB06273 with name <user>A in JES
+Will check JOB status in 'OUTPUT    3 Spool Files                             '
+Found job <user>A in OUTPUT, will fetch log for additional scan
+Found HASP395: 'null'
+ERROR: Unexpected rc part: 'FROM_JOB_LOG null FROM_JOB_LOG'
+Found job JOB06273 with name <user>A in JES
+Will check JOB status in 'OUTPUT    3 Spool Files                             '
+Found job <user>A in OUTPUT, will fetch log for additional scan
+Found HASP395: 'null'
+ERROR: Unexpected rc part: 'FROM_JOB_LOG null FROM_JOB_LOG'
+Found job JOB06273 with name <user>A in JES
+Will check JOB status in 'OUTPUT    3 Spool Files                             '
+Found job <user>A in OUTPUT, will fetch log for additional scan
+Found HASP395: 'null'
+ERROR: Unexpected rc part: 'FROM_JOB_LOG null FROM_JOB_LOG'
+Job [JOB06273] processing failed. Reason: [WAIT_ERROR]
+1                   J E S 2  J O B  L O G  --  S Y S T E M  A E 5 1  --  N O D E  A E P L E X 0 7        
+0 
+ 07.39.59 JOB06273 ---- FRIDAY,    26 APR 2019 ----
+ 07.39.59 JOB06273  TSS7000I <user> Last-Used 26 Apr 19 03:14 System=<env> Facility=OPENMVS
+ 07.39.59 JOB06273  TSS7001I Count=00088 Mode=Fail Locktime=None Name=USER
+ 07.39.59 JOB06273  $HASP373 <user>A STARTED - INIT 14   - CLASS A        - SYS <env>
+ 07.39.59 JOB06273  IEF403I <user>A - STARTED - TIME=07.39.59
+ 07.39.59 JOB06273  -                                              --TIMINGS (MINS.)--            -----PAGING COUNTS----
+ 07.39.59 JOB06273  -STEPNAME PROCSTEP    RC   EXCP   CONN    TCB    SRB  CLOCK   SERV  WORKLOAD  PAGE  SWAP   VIO SWAPS
+ 07.39.59 JOB06273  -STEP1             FLUSH      0      0    .00    .00     .0      0  BATCH        0     0     0     0
+ 07.39.59 JOB06273  IEF453I <user>A - JOB FAILED - JCL ERROR - TIME=07.39.59
+ 07.39.59 JOB06273  -<user>A ENDED.  NAME-UPDATE               TOTAL TCB CPU TIME=    .00 TOTAL ELAPSED TIME=    .0
+ 07.39.59 JOB06273  $HASP395 <user>A ENDED
+0------ JES2 JOB STATISTICS ------
+-  26 APR 2019 JOB EXECUTION DATE
+-           16 CARDS READ
+-           64 SYSOUT PRINT RECORDS
+-            0 SYSOUT PUNCH RECORDS
+-            7 SYSOUT SPOOL KBYTES
+-         0.00 MINUTES EXECUTION TIME
+ !! END OF JES SPOOL FILE !!
+        1 //<user>A JOB (1G890820),'UPDATE',CLASS=A,                             JOB06273
+          //            MSGCLASS=H,REGION=0M,NOTIFY=&SYSUID                               
+          //*<user>X JOB (8CA82309),,                                                    
+          //*       MSGLEVEL=(1,1),MSGCLASS=J,CLASS=J,NOTIFY=&SYSUID                      
+          //*                                                                             
+          //*INCLUDE COND=(1,1,CH,NE,C'1')                                                
+          //*STEP1 EXEC PGM=SORT,PARM='NULLOUT=RC4'                                       
+          IEFC653I SUBSTITUTION JCL - (1G890820),'UPDATE',CLASS=A,MSGCLASS=H,REGION=0M,NOTIFY=<user>
+        2 //STEP1 EXEC PGM=SORT                                                           
+        3 //SYSPRINT DD  SYSOUT=*                                                         
+        4 //SYSOUT   DD  SYSOUT=*                                                         
+        5 //ABEND    DD  SYSOUT=*                                                         
+        6 //SORTIN   DD  DSN=<user>.SAMP.SORT.INPUT,DISP=SHR                             
+        7 //SORTOUT  DD DSN=<user>.SAMP.SORT.OUT2,DISP=NEW                               
+        8 //SYSIN DD *                                                                    
+ !! END OF JES SPOOL FILE !!
+ TSS7000I <user> Last-Used 26 Apr 19 03:14 System=<env> Facility=OPENMVS
+ TSS7001I Count=00088 Mode=Fail Locktime=None Name=USER
+ IEFA111I <user>A IS USING THE FOLLOWING JOB RELATED SETTINGS:
+          SWA=ABOVE,TIOT SIZE=32K,DSENQSHR=DISALLOW,GDGBIAS=JOB
+ IEF344I <user>A STEP1 SORTOUT - ALLOCATION FAILED DUE TO DATA FACILITY SYSTEM ERROR
+ IGD17001I DUPLICATE DATA SET NAME ON VOLUME LRGE0I
+ FOR DATA SET <user>.SAMP.SORT.OUT2
+ IGD17101I DATA SET <user>.SAMP.SORT.OUT2
+ NOT DEFINED BECAUSE DUPLICATE NAME EXISTS IN CATALOG
+ RETURN CODE IS 8 REASON CODE IS 38 IGG0CLEH
+ IEF272I <user>A STEP1 - STEP WAS NOT EXECUTED.
+ IEF285I   <user>.<user>A.JOB06273.D0000102.?         SYSOUT        
+ IEF285I   <user>.<user>A.JOB06273.D0000103.?         SYSOUT        
+ IEF285I   <user>.<user>A.JOB06273.D0000104.?         SYSOUT        
+ IEF285I   <user>.<user>A.JOB06273.D0000101.?         SYSIN         
+ IGD104I <user>.SAMP.SORT.INPUT                      RETAINED,  DDNAME=SORTIN  
+ IEF373I STEP/STEP1   /START 2019116.0739
+ IEF032I STEP/STEP1   /STOP  2019116.0739 
+         CPU:     0 HR  00 MIN  00.00 SEC    SRB:     0 HR  00 MIN  00.00 SEC    
+         VIRT:     0K  SYS:     0K  EXT:        0K  SYS:        0K
+         ATB- REAL:                  1044K  SLOTS:                     0K
+              VIRT- ALLOC:      11M SHRD:       0M
+ IEF375I  JOB/<user>A/START 2019116.0739
+ IEF033I  JOB/<user>A/STOP  2019116.0739 
+         CPU:     0 HR  00 MIN  00.00 SEC    SRB:     0 HR  00 MIN  00.00 SEC    
+ !! END OF JES SPOOL FILE !!
+
+ERROR: z/OS job failed with CC WAIT_ERROR
+[BFA] Scanning build for known causes...
+[BFA] No failure causes found
+[BFA] Done. 0s
+Finished: FAILURE

@@ -1,0 +1,62 @@
+Index: main/java/hudson/model/JobViewEntry.java
+===================================================================
+--- main/java/hudson/model/JobViewEntry.java	(revision 39856)
++++ main/java/hudson/model/JobViewEntry.java	(working copy)
+@@ -98,14 +98,22 @@
+ 	}
+ 
+ 	public String getStatus() {
++	    Result result = RadiatorUtil.getLastFinishedResult(job);
++	
+ 		if (getBroken() || getFailCount() > 0)
+ 			if (!StringUtils.isEmpty(getClaim())
+ 					&& !getClaim().equals(NOT_CLAIMED + "."))
+ 				return "claimed";
+ 			else
+-				return "failing";
+-		else
++			{
++			    return "failing";
++			}
++		else if (result.ordinal == Result.UNSTABLE.ordinal){
++		    return "unstable";
++		}
++		else {
+ 			return "successful";
++		}
+ 	}
+ 
+ 	/*
+@@ -455,4 +463,4 @@
+ 	public boolean hasChildren() {
+ 		return false;
+ 	}
+-}
+\ No newline at end of file
++}
+Index: main/resources/hudson/model/RadiatorView/main.jelly
+===================================================================
+--- main/resources/hudson/model/RadiatorView/main.jelly	(revision 39856)
++++ main/resources/hudson/model/RadiatorView/main.jelly	(working copy)
+@@ -158,6 +158,21 @@
+ 		);
+ 		}
+ 
++        .unstable {
++		background-image: -webkit-gradient(
++		linear,
++		left bottom,
++		left top,
++		color-stop(0.25, rgb(196,172,53)),
++		color-stop(0.82, rgb(240,172,0))
++		);
++		background-image: -moz-linear-gradient(
++		center bottom,
++		rgb(196,172,53) 25%,
++		rgb(240,172,0) 82%
++		);
++		}
++
+ 		.claimed {
+ 		background-image: -webkit-gradient(
+ 		linear,

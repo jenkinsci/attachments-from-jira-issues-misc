@@ -1,0 +1,360 @@
+Index: src/main/java/hudson/plugins/emailext/plugins/trigger/RegressionTrigger.java
+===================================================================
+--- src/main/java/hudson/plugins/emailext/plugins/trigger/RegressionTrigger.java	(revision 0)
++++ src/main/java/hudson/plugins/emailext/plugins/trigger/RegressionTrigger.java	(revision 0)
+@@ -0,0 +1,65 @@
++package hudson.plugins.emailext.plugins.trigger;
++
++import hudson.model.AbstractBuild;
++import hudson.model.AbstractProject;
++import hudson.model.Result;
++import hudson.plugins.emailext.plugins.EmailTrigger;
++import hudson.plugins.emailext.plugins.EmailTriggerDescriptor;
++
++public class RegressionTrigger extends EmailTrigger {
++	
++	public static final String TRIGGER_NAME = "Regression";
++	
++	public RegressionTrigger() {
++		
++	}
++
++	@Override
++	public <P extends AbstractProject<P,B>,B extends AbstractBuild<P,B>>
++	boolean trigger(B build) {
++		if (build.getPreviousBuild() == null)
++			return build.getResult() == Result.FAILURE;
++		if (build.getTestResultAction() == null) return false;
++		if (build.getPreviousBuild().getTestResultAction() == null)
++			return build.getTestResultAction().getFailCount() > 0;
++		return getNumFailures(build) > 
++				getNumFailures(build.getPreviousBuild());
++	}
++
++	@Override
++	public EmailTriggerDescriptor getDescriptor() {
++		return DESCRIPTOR;
++	}
++	
++	public static DescriptorImpl DESCRIPTOR = new DescriptorImpl();
++	
++	public static final class DescriptorImpl extends EmailTriggerDescriptor {
++
++		@Override
++		public String getTriggerName() {
++			return TRIGGER_NAME;
++		}
++
++		@Override
++		public EmailTrigger newInstance() {
++			return new RegressionTrigger();
++		}
++
++		@Override
++		public String getHelpText() {
++			return "An email will be sent any time there is a regression. A build is considered" +
++					"to regress whenever it has more failures than the previous build.";
++		}
++		
++	}
++
++	@Override
++	public boolean getDefaultSendToDevs() {
++		return true;
++	}
++
++	@Override
++	public boolean getDefaultSendToList() {
++		return true;
++	}
++}
+Index: src/main/java/hudson/plugins/emailext/plugins/trigger/ImprovementTrigger.java
+===================================================================
+--- src/main/java/hudson/plugins/emailext/plugins/trigger/ImprovementTrigger.java	(revision 0)
++++ src/main/java/hudson/plugins/emailext/plugins/trigger/ImprovementTrigger.java	(revision 0)
+@@ -0,0 +1,69 @@
++package hudson.plugins.emailext.plugins.trigger;
++
++import java.util.logging.Logger;
++
++import hudson.model.AbstractBuild;
++import hudson.model.AbstractProject;
++import hudson.model.Result;
++import hudson.plugins.emailext.plugins.EmailTrigger;
++import hudson.plugins.emailext.plugins.EmailTriggerDescriptor;
++import hudson.tasks.junit.CaseResult;
++
++public class ImprovementTrigger extends EmailTrigger {
++	
++	public static final String TRIGGER_NAME = "Improvement";
++	
++	@Override
++	public <P extends AbstractProject<P,B>,B extends AbstractBuild<P,B>>
++	boolean trigger(B build) {
++		if (build.getPreviousBuild() == null)
++			return false;
++		if (build.getTestResultAction() == null) return false;
++		if (build.getPreviousBuild().getTestResultAction() == null)
++			return false;
++		
++		// The first part of the condition avoids accidental triggering for
++		// builds that aggregate downstream test results before those test
++		// results are available...
++		return build.getTestResultAction().getTotalCount() > 0 &&
++			getNumFailures(build) < 
++				getNumFailures(build.getPreviousBuild());
++	}
++
++	@Override
++	public EmailTriggerDescriptor getDescriptor() {
++		return DESCRIPTOR;
++	}
++	
++	public static DescriptorImpl DESCRIPTOR = new DescriptorImpl();
++	
++	public static final class DescriptorImpl extends EmailTriggerDescriptor {
++
++		@Override
++		public String getTriggerName() {
++			return TRIGGER_NAME;
++		}
++
++		@Override
++		public EmailTrigger newInstance() {
++			return new ImprovementTrigger();
++		}
++
++		@Override
++		public String getHelpText() {
++			return "An email will be sent any time there is an improvement. A build is considered" +
++					"to have improved whenever it has fewer failures than the previous build.";
++		}
++		
++	}
++
++	@Override
++	public boolean getDefaultSendToDevs() {
++		return true;
++	}
++
++	@Override
++	public boolean getDefaultSendToList() {
++		return true;
++	}
++}
+Index: src/main/java/hudson/plugins/emailext/plugins/content/FailedTestsContent.java
+===================================================================
+--- src/main/java/hudson/plugins/emailext/plugins/content/FailedTestsContent.java	(revision 16755)
++++ src/main/java/hudson/plugins/emailext/plugins/content/FailedTestsContent.java	(working copy)
+@@ -8,6 +8,7 @@
+ import hudson.tasks.junit.CaseResult;
+ import hudson.tasks.test.AbstractTestResultAction;
+ 
++import java.util.Arrays;
+ import java.util.Collections;
+ import java.util.List;
+ import java.util.Map;
+@@ -21,16 +22,25 @@
+ 	
+ 	private static final String TOKEN = "FAILED_TESTS";
+ 	
++	private static final String SHOW_STACK_NAME = "showStack";
++	private static final boolean SHOW_STACK_DEFAULT = true;
++	
+ 	public String getToken() {
+ 		return TOKEN;
+ 	}
+ 	
+ 	public List<String> getArguments() {
+-		return Collections.emptyList();
++		return Arrays.asList(SHOW_STACK_NAME);
+ 	}
+ 	
+ 	public String getHelpText() {
+-		return "Displays failing unit test information, if any tests have failed.";
++		return "Displays failing unit test information, if any tests have failed." +
++		"<ul>\n" +
++		
++		"<li><i>" + SHOW_STACK_NAME + "</i> - indicates that " +
++		"most recent builds should be at the top.<br>\n" +
++		"Defaults to " + SHOW_STACK_DEFAULT + ".\n" +
++		"</ul>\n";
+ 	}
+ 	
+ 	public <P extends AbstractProject<P, B>, B extends AbstractBuild<P, B>>
+@@ -46,6 +56,8 @@
+ 		
+ 		int failCount = testResult.getFailCount();
+ 		
++		boolean showStacks = Args.get(args, SHOW_STACK_NAME, SHOW_STACK_DEFAULT);
++		
+ 		if (failCount == 0){
+ 			buffer.append("All tests passed");
+ 		} else {
+@@ -55,22 +67,24 @@
+ 			
+ 			List<CaseResult> failedTests = testResult.getFailedTests();
+ 			for (CaseResult failedTest: failedTests) {
+-				outputTest(buffer, failedTest);
++				outputTest(buffer, failedTest, showStacks);
+ 			}
+ 		}
+ 		
+ 		return buffer.toString();
+ 	}
+ 	
+-	private void outputTest(StringBuffer buffer, CaseResult failedTest) {
++	private void outputTest(StringBuffer buffer, CaseResult failedTest, boolean showStack) {
+ 		buffer.append(failedTest.getStatus().toString());
+ 		buffer.append(":  ");
+ 		buffer.append(failedTest.getClassName());
+ 		buffer.append("\n\n");
+ 		buffer.append("Error Message:\n");
+ 		buffer.append(failedTest.getErrorDetails());
+-		buffer.append("\n\nStack Trace:\n");
+-		buffer.append(failedTest.getErrorStackTrace());
++		if (showStack) {
++			buffer.append("\n\nStack Trace:\n");
++			buffer.append(failedTest.getErrorStackTrace());
++		}
+ 		buffer.append("\n\n");
+ 	}
+ 	
+Index: src/main/java/hudson/plugins/emailext/plugins/content/ChangesSinceLastBuildContent.java
+===================================================================
+--- src/main/java/hudson/plugins/emailext/plugins/content/ChangesSinceLastBuildContent.java	(revision 16755)
++++ src/main/java/hudson/plugins/emailext/plugins/content/ChangesSinceLastBuildContent.java	(working copy)
+@@ -2,6 +2,8 @@
+ 
+ import hudson.model.AbstractBuild;
+ import hudson.model.AbstractProject;
++import hudson.model.Build;
++import hudson.model.AbstractBuild.DependencyChange;
+ import hudson.plugins.emailext.EmailType;
+ import hudson.plugins.emailext.ExtendedEmailPublisher;
+ import hudson.plugins.emailext.Util;
+@@ -15,6 +17,7 @@
+ import java.util.Collection;
+ import java.util.List;
+ import java.util.Map;
++import java.util.Map.Entry;
+ 
+ public class ChangesSinceLastBuildContent implements EmailContent {
+ 	
+@@ -23,6 +26,9 @@
+ 	private static final String SHOW_PATHS_ARG_NAME = "showPaths";
+ 	private static final boolean SHOW_PATHS_DEFAULT_VALUE = false;
+ 	
++	private static final String SHOW_DEPENDENCIES_NAME = "showDependencies";
++	private static final boolean SHOW_DEPENDENCIES_VALUE = false;
++	
+ 	private static final String FORMAT_ARG_NAME = "format";
+ 	private static final String FORMAT_DEFAULT_VALUE = "[%a] %m\\n";
+ 	private static final String FORMAT_DEFAULT_VALUE_WITH_PATHS = "[%a] %m%p\\n";
+@@ -35,13 +41,17 @@
+ 	}
+ 	
+ 	public List<String> getArguments() {
+-		return Arrays.asList(SHOW_PATHS_ARG_NAME, FORMAT_ARG_NAME, PATH_FORMAT_ARG_NAME);
++		return Arrays.asList(SHOW_PATHS_ARG_NAME, SHOW_DEPENDENCIES_NAME, FORMAT_ARG_NAME, PATH_FORMAT_ARG_NAME);
+ 	}
+ 	
+ 	public String getHelpText() {
+ 		return "Displays the changes since the last build.\n" +
+ 		"<ul>\n" +
+ 		
++		"<li><i>" + SHOW_DEPENDENCIES_NAME + "</i> - if true, changes to " +
++				"projects this build depends on are shown.<br>\n" +
++		"Defaults to " + SHOW_DEPENDENCIES_VALUE + ".\n" +
++		
+ 		"<li><i>" + SHOW_PATHS_ARG_NAME + "</i> - if true, the paths " +
+ 		"modified by a commit are shown.<br>\n" +
+ 		"Defaults to " + SHOW_PATHS_DEFAULT_VALUE + ".\n" +
+@@ -72,6 +82,18 @@
+ 		for (ChangeLogSet.Entry entry : build.getChangeSet()) {
+ 			appendEntry(buf, entry, formatString, pathFormatString);
+ 		}
++		boolean showDependencies = Args.get(args, SHOW_DEPENDENCIES_NAME, SHOW_DEPENDENCIES_VALUE);
++		if (showDependencies && build.getPreviousBuild() != null)
++			for (Entry<AbstractProject, DependencyChange> e : 
++					build.getDependencyChanges(build.getPreviousBuild()).entrySet()) {
++				buf.append("\n=======================\n");
++				buf.append("\nChanges in ").append(e.getKey().getName()).append(":\n");
++				for (AbstractBuild<P, B> b : e.getValue().getBuilds()) {
++					for (ChangeLogSet.Entry entry : b.getChangeSet()) {
++						appendEntry(buf, entry, formatString, pathFormatString);
++					}
++				}
++			}
+ 		
+ 		return buf.toString();
+ 	}
+Index: src/main/java/hudson/plugins/emailext/plugins/EmailTrigger.java
+===================================================================
+--- src/main/java/hudson/plugins/emailext/plugins/EmailTrigger.java	(revision 16755)
++++ src/main/java/hudson/plugins/emailext/plugins/EmailTrigger.java	(working copy)
+@@ -4,6 +4,10 @@
+ import hudson.model.AbstractProject;
+ import hudson.plugins.emailext.EmailType;
+ import hudson.plugins.emailext.ExtendedEmailPublisher;
++import hudson.tasks.junit.TestResult;
++import hudson.tasks.test.AbstractTestResultAction;
++import hudson.tasks.test.AggregatedTestResultAction;
++import hudson.tasks.test.AggregatedTestResultAction.ChildReport;
+ 
+ public abstract class EmailTrigger {
+ 	
+@@ -44,5 +48,31 @@
+ 	public boolean getDefaultSendToDevs() {
+ 		return false;
+ 	}
++
++	/**
++	 * Determine the number of direct failures in the given build. If it aggregates
++	 * downstream results, ignore contributed failures. This is because at the time
++	 * this trigger runs, the current build's aggregated results aren't available
++	 * yet, but those of the previous build may be.
++	 */
++	protected <P extends AbstractProject<P, B>, B extends AbstractBuild<P, B>> int getNumFailures(
++			B build) {
++				AbstractTestResultAction a = build.getTestResultAction();
++				if (a instanceof AggregatedTestResultAction) {
++					int result = 0;
++					AggregatedTestResultAction action = 
++						(AggregatedTestResultAction) a;
++					for (ChildReport cr : action.getChildReports()) {
++						if (cr.child.getParent().equals(build.getParent())) {
++							if (cr.result instanceof TestResult) {
++								TestResult tr = (TestResult) cr.result;
++								result += tr.getFailCount();
++							}
++						}
++					}
++					return result;
++				}
++				return a.getFailCount();
++			}
+ 	
+ }
+Index: src/main/java/hudson/plugins/emailext/EmailExtensionPlugin.java
+===================================================================
+--- src/main/java/hudson/plugins/emailext/EmailExtensionPlugin.java	(revision 16755)
++++ src/main/java/hudson/plugins/emailext/EmailExtensionPlugin.java	(working copy)
+@@ -17,6 +17,8 @@
+ import hudson.plugins.emailext.plugins.content.ProjectURLContent;
+ import hudson.plugins.emailext.plugins.trigger.FailureTrigger;
+ import hudson.plugins.emailext.plugins.trigger.FixedTrigger;
++import hudson.plugins.emailext.plugins.trigger.ImprovementTrigger;
++import hudson.plugins.emailext.plugins.trigger.RegressionTrigger;
+ import hudson.plugins.emailext.plugins.trigger.StillFailingTrigger;
+ import hudson.plugins.emailext.plugins.trigger.StillUnstableTrigger;
+ import hudson.plugins.emailext.plugins.trigger.SuccessTrigger;
+@@ -61,6 +63,8 @@
+ 		addEmailTriggerPlugin(StillUnstableTrigger.DESCRIPTOR);
+ 		addEmailTriggerPlugin(SuccessTrigger.DESCRIPTOR);
+ 		addEmailTriggerPlugin(FixedTrigger.DESCRIPTOR);
++		addEmailTriggerPlugin(ImprovementTrigger.DESCRIPTOR);
++		addEmailTriggerPlugin(RegressionTrigger.DESCRIPTOR);
+ 	}
+ 	
+ 	private void addEmailContentPlugin(EmailContent content) {

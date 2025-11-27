@@ -1,0 +1,137 @@
+Connected to Kubernetes Kubernetes_POC_NOT_FOR_PRODUCTION_USE URL <redacted> namespace <redacted>-jenkins-spawn
+Aug 31, 2021 1:08:24 PM FINEST org.csanchez.jenkins.plugins.kubernetes.PodTemplateBuilder
+Pod built: ---
+apiVersion: "v1"
+kind: "Pod"
+metadata:
+  labels:
+    jenkins: "agent"
+    jenkins/label-digest: "0f7682da1d49c30aaefcdc9f10c2056fc6ed75d3"
+    jenkins/label: "k8s_ubuntu2004"
+  name: "jenkins-agent-llbrg"
+spec:
+  containers:
+  - args:
+    - "9999999"
+    command:
+    - "sleep"
+    env:
+    - name: "no_proxy"
+      value: "<redacted>"
+    - name: "http_proxy"
+      value: "<redacted>"
+    image: "jenkins/inbound-agent"
+    imagePullPolicy: "IfNotPresent"
+    name: "jenkins-agent-container"
+    resources:
+      limits: {}
+      requests:
+        memory: "4GB"
+        ephemeral-storage: "40GB"
+        cpu: "4"
+    tty: false
+    volumeMounts:
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+    workingDir: "/home/jenkins/agent"
+  - env:
+    - name: "JENKINS_SECRET"
+      value: "<redacted>"
+    - name: "no_proxy"
+      value: "<redacted>"
+    - name: "http_proxy"
+      value: "<redacted>"
+    - name: "JENKINS_AGENT_NAME"
+      value: "jenkins-agent-llbrg"
+    - name: "JENKINS_WEB_SOCKET"
+      value: "true"
+    - name: "JENKINS_NAME"
+      value: "jenkins-agent-llbrg"
+    - name: "JENKINS_AGENT_WORKDIR"
+      value: "/home/jenkins/agent"
+    - name: "JENKINS_URL"
+      value: "<redacted>"
+    image: "jenkins/inbound-agent:4.3-4"
+    name: "jnlp"
+    resources:
+      limits: {}
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+    volumeMounts:
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+  hostNetwork: false
+  imagePullSecrets:
+  - name: "<redacted>"
+  nodeSelector:
+    kubernetes.io/os: "linux"
+  restartPolicy: "Never"
+  volumes:
+  - emptyDir:
+      medium: ""
+    name: "workspace-volume"
+
+Aug 31, 2021 1:08:24 PM FINE org.csanchez.jenkins.plugins.kubernetes.KubernetesLauncher
+Creating Pod: Kubernetes_POC_NOT_FOR_PRODUCTION_USE <redacted>-jenkins-spawn/jenkins-agent-llbrg
+Aug 31, 2021 1:08:24 PM WARNING org.csanchez.jenkins.plugins.kubernetes.KubernetesLauncher launch
+Kubernetes returned unhandled HTTP code 0 null
+Aug 31, 2021 1:08:24 PM WARNING org.csanchez.jenkins.plugins.kubernetes.KubernetesLauncher launch
+Error in provisioning; agent=KubernetesSlave name: jenkins-agent-llbrg, template=PodTemplate{id='7c0e83ee-9022-4e42-b482-603d1f46d6f6', name='jenkins-agent', namespace='<redacted>-jenkins-spawn', label='k8s_ubuntu2004', containers=[ContainerTemplate{name='jenkins-agent-container', image='jenkins/inbound-agent', workingDir='/home/jenkins/agent', command='sleep', args='9999999', resourceRequestCpu='4', resourceRequestMemory='4GB', resourceRequestEphemeralStorage='40GB', resourceLimitCpu='', resourceLimitMemory='', resourceLimitEphemeralStorage='', livenessProbe=ContainerLivenessProbe{execArgs='', timeoutSeconds=0, initialDelaySeconds=0, failureThreshold=0, periodSeconds=0, successThreshold=0}}], imagePullSecrets=[PodImagePullSecret{name='<redacted>'}]}
+java.io.IOException: Unexpected response code for CONNECT: 503
+	at okhttp3.internal.connection.RealConnection.createTunnel(RealConnection.java:419)
+	at okhttp3.internal.connection.RealConnection.connectTunnel(RealConnection.java:220)
+	at okhttp3.internal.connection.RealConnection.connect(RealConnection.java:161)
+	at okhttp3.internal.connection.StreamAllocation.findConnection(StreamAllocation.java:258)
+	at okhttp3.internal.connection.StreamAllocation.findHealthyConnection(StreamAllocation.java:135)
+	at okhttp3.internal.connection.StreamAllocation.newStream(StreamAllocation.java:114)
+	at okhttp3.internal.connection.ConnectInterceptor.intercept(ConnectInterceptor.java:42)
+	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147)
+	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:121)
+	at okhttp3.internal.cache.CacheInterceptor.intercept(CacheInterceptor.java:93)
+	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147)
+	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:121)
+	at okhttp3.internal.http.BridgeInterceptor.intercept(BridgeInterceptor.java:93)
+	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147)
+	at okhttp3.internal.http.RetryAndFollowUpInterceptor.intercept(RetryAndFollowUpInterceptor.java:127)
+	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147)
+	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:121)
+	at io.fabric8.kubernetes.client.utils.BackwardsCompatibilityInterceptor.intercept(BackwardsCompatibilityInterceptor.java:133)
+	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147)
+	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:121)
+	at io.fabric8.kubernetes.client.utils.TokenRefreshInterceptor.intercept(TokenRefreshInterceptor.java:42)
+	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147)
+	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:121)
+	at io.fabric8.kubernetes.client.utils.ImpersonatorInterceptor.intercept(ImpersonatorInterceptor.java:68)
+	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147)
+	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:121)
+	at io.fabric8.kubernetes.client.utils.HttpClientUtils.lambda$createApplicableInterceptors$6(HttpClientUtils.java:281)
+	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147)
+	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:121)
+	at okhttp3.RealCall.getResponseWithInterceptorChain(RealCall.java:257)
+	at okhttp3.RealCall.execute(RealCall.java:93)
+	at io.fabric8.kubernetes.client.dsl.base.OperationSupport.handleResponse(OperationSupport.java:541)
+	at io.fabric8.kubernetes.client.dsl.base.OperationSupport.handleResponse(OperationSupport.java:504)
+	at io.fabric8.kubernetes.client.dsl.base.OperationSupport.handleCreate(OperationSupport.java:292)
+	at io.fabric8.kubernetes.client.dsl.base.BaseOperation.handleCreate(BaseOperation.java:893)
+	at io.fabric8.kubernetes.client.dsl.base.BaseOperation.create(BaseOperation.java:372)
+Caused: io.fabric8.kubernetes.client.KubernetesClientException: Operation: [create]  for kind: [Pod]  with name: [null]  in namespace: [<redacted>-jenkins-spawn]  failed.
+	at io.fabric8.kubernetes.client.KubernetesClientException.launderThrowable(KubernetesClientException.java:64)
+	at io.fabric8.kubernetes.client.KubernetesClientException.launderThrowable(KubernetesClientException.java:72)
+	at io.fabric8.kubernetes.client.dsl.base.BaseOperation.create(BaseOperation.java:380)
+	at io.fabric8.kubernetes.client.dsl.base.BaseOperation.create(BaseOperation.java:86)
+	at org.csanchez.jenkins.plugins.kubernetes.KubernetesLauncher.launch(KubernetesLauncher.java:132)
+	at hudson.slaves.SlaveComputer.lambda$_connect$0(SlaveComputer.java:294)
+	at jenkins.util.ContextResettingExecutorService$2.call(ContextResettingExecutorService.java:46)
+	at jenkins.security.ImpersonatingExecutorService$2.call(ImpersonatingExecutorService.java:80)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at java.base/java.lang.Thread.run(Thread.java:829)
+
+Aug 31, 2021 1:08:24 PM FINER org.csanchez.jenkins.plugins.kubernetes.KubernetesLauncher
+Removing Jenkins node: jenkins-agent-llbrg
+Aug 31, 2021 1:08:24 PM INFO org.csanchez.jenkins.plugins.kubernetes.KubernetesSlave _terminate
+Terminating Kubernetes instance for agent jenkins-agent-llbrg

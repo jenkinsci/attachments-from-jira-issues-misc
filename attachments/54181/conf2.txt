@@ -1,0 +1,24 @@
+timestamps {
+    try{
+        stage('Build') {
+            def rhj = build job: 'pg3', parameters: [booleanParam(name: 'WHITESOURCE_SCAN', value: "${WHITESOURCE_SCAN}")]
+              def tasks = [:]
+              tasks["T1"] = { build job: 'pg4', parameters: [string(name: 'SOURCE_BUILD_NUMBER', value: rhj.getNumber().toString())] }
+              tasks["T2"] = { build job: 'pg5', parameters: [string(name: 'SOURCE_BUILD_NUMBER', value: rhj.getNumber().toString())] }
+              parallel tasks        
+        }
+        stage('Sanity') {
+            build job: 'pg6', parameters: [string(name: 'ENVIRONMENT', value: 'securityManager'), string(name: 'SM_JOB', value: 'Main'), string(name: 'Group', value: 'Security_Manager'), string(name: 'Folder', value: 'Security_Manager/Testing')]
+            if (currentBuild.resultIsBetterOrEqualTo('SUCCESS')) {
+            	build job: 'pg7', parameters: [string(name: 'ENVIRONMENT', value: 'securityManager'), string(name: 'SM_TO_TEST', value: 'issuing')],propagate: false
+            }
+        }
+        stage('Notify') {
+            emailext body: '${JOB_NAME} has finished ${BUILD_URL}', replyTo: 'loadbuilders@entrust.com', subject: '${JOB_NAME} has finished', to: 'matt.wilson@entrust.com'
+        }
+    } catch (err) {
+        echo "Caught: ${err}"
+        currentBuild.result = 'FAILURE'
+        emailext attachLog: true, body: '${JOB_NAME} Build has failed ${BUILD_URL}', replyTo: 'loadbuilders@entrust.com', subject: 'Entrust Certificate Authority 10.1.0 RHEL Pipeline Failure', to: 'matt.wilson@entrust.com'
+    }    
+}

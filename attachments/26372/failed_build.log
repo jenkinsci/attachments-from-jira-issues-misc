@@ -1,0 +1,76 @@
+Parsing POMs
+[xjsp] $ java -Djava.awt.headless=true -cp /opt/jenkins/plugins/maven-plugin/WEB-INF/lib/maven3-agent-1.5.jar:/usr/share/maven/boot/plexus-classworlds-2.x.jar org.jvnet.hudson.maven3.agent.Maven3Main /usr/share/maven /var/lib/tomcat7/webapps/jenkins/WEB-INF/lib/remoting-2.43.jar /opt/jenkins/plugins/maven-plugin/WEB-INF/lib/maven3-interceptor-1.5.jar /opt/jenkins/plugins/maven-plugin/WEB-INF/lib/maven3-interceptor-commons-1.5.jar 58076
+<===[JENKINS REMOTING CAPACITY]===>channel started
+Executing Maven:  -B -f /opt/jenkins/jobs/PubSub_XJSP/workspace/xjsp/pom.xml install
+[INFO] Scanning for projects...
+java.lang.reflect.InvocationTargetException
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.launchStandard(Launcher.java:330)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.launch(Launcher.java:238)
+	at org.jvnet.hudson.maven3.agent.Maven3Main.launch(Maven3Main.java:178)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at hudson.maven.Maven3Builder.call(Maven3Builder.java:134)
+	at hudson.maven.Maven3Builder.call(Maven3Builder.java:69)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:118)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:48)
+	at hudson.remoting.Request$2.run(Request.java:328)
+	at hudson.remoting.InterceptingExecutorService$1.call(InterceptingExecutorService.java:72)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:262)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+	at java.lang.Thread.run(Thread.java:745)
+Caused by: java.lang.NoSuchMethodError: com.google.common.io.Closeables.closeQuietly(Ljava/io/Closeable;)V
+	at org.jfrog.build.extractor.BuildInfoExtractorUtils.mergePropertiesWithSystemAndPropertyFile(BuildInfoExtractorUtils.java:83)
+	at org.jfrog.build.extractor.maven.BuildInfoRecorderLifecycleParticipant.getConfiguration(BuildInfoRecorderLifecycleParticipant.java:77)
+	at org.jfrog.build.extractor.maven.BuildInfoRecorderLifecycleParticipant.afterProjectsRead(BuildInfoRecorderLifecycleParticipant.java:48)
+	at org.apache.maven.DefaultMaven.doExecute(DefaultMaven.java:274)
+	at org.apache.maven.DefaultMaven.execute(DefaultMaven.java:156)
+	at org.jvnet.hudson.maven3.launcher.Maven3Launcher.main(Maven3Launcher.java:117)
+	... 21 more
+channel stopped
+ERROR: Failed to parse POMs
+hudson.util.IOException2: java.lang.reflect.InvocationTargetException
+	at hudson.maven.Maven3Builder.call(Maven3Builder.java:178)
+	at hudson.maven.Maven3Builder.call(Maven3Builder.java:69)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:118)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:48)
+	at hudson.remoting.Request$2.run(Request.java:328)
+	at hudson.remoting.InterceptingExecutorService$1.call(InterceptingExecutorService.java:72)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:262)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+	at java.lang.Thread.run(Thread.java:745)
+Caused by: java.lang.reflect.InvocationTargetException
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at hudson.maven.Maven3Builder.call(Maven3Builder.java:134)
+	... 9 more
+Caused by: java.lang.Exception: java.lang.reflect.InvocationTargetException
+	at org.jvnet.hudson.maven3.agent.Maven3Main.launch(Maven3Main.java:181)
+	... 14 more
+Caused by: java.lang.reflect.InvocationTargetException
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.launchStandard(Launcher.java:330)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.launch(Launcher.java:238)
+	at org.jvnet.hudson.maven3.agent.Maven3Main.launch(Maven3Main.java:178)
+	... 14 more
+Caused by: java.lang.NoSuchMethodError: com.google.common.io.Closeables.closeQuietly(Ljava/io/Closeable;)V
+	at org.jfrog.build.extractor.BuildInfoExtractorUtils.mergePropertiesWithSystemAndPropertyFile(BuildInfoExtractorUtils.java:83)
+	at org.jfrog.build.extractor.maven.BuildInfoRecorderLifecycleParticipant.getConfiguration(BuildInfoRecorderLifecycleParticipant.java:77)
+	at org.jfrog.build.extractor.maven.BuildInfoRecorderLifecycleParticipant.afterProjectsRead(BuildInfoRecorderLifecycleParticipant.java:48)
+	at org.apache.maven.DefaultMaven.doExecute(DefaultMaven.java:274)
+	at org.apache.maven.DefaultMaven.execute(DefaultMaven.java:156)
+	at org.jvnet.hudson.maven3.launcher.Maven3Launcher.main(Maven3Launcher.java:117)
+	... 21 more
+Finished: FAILURE

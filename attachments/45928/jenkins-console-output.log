@@ -1,0 +1,109 @@
+Started by GitLab push by dtronche
+Obtained Jenkinsfile from git ssh://my-project.git
+Running in Durability level: MAX_SURVIVABILITY
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/jenkins_home/workspace/docker-test
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Declarative: Checkout SCM)
+[Pipeline] checkout
+using credential jenkins-ssh-key
+[...]
+ > git checkout -f f3750a88f3d3a72c1a3806a5a0f86eb562a320b9 # timeout=10
+Commit message: "my commit"
+First time build. Skipping changelog.
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Build)
+[Pipeline] gitlabCommitStatus
+[Pipeline] {
+[Pipeline] script
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] withDockerRegistry
+$ docker login -u blob_downloader -p ******** my-nexus
+WARNING! Using --password via the CLI is insecure. Use --password-stdin.
+WARNING! Your password will be stored unencrypted in /var/jenkins_home/workspace/docker-test@tmp/43f186d5-c07b-44cd-bc87-79f2c7d52795/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
+[Pipeline] {
+[Pipeline] sh
++ docker build -t my-project --no-cache --build-arg 'http_proxy=my-proxy --build-arg 'https_proxy=my-proxy --build-arg .
+Sending build context to Docker daemon  117.2kB
+
+[...]
+
+OK: 4 MiB in 13 packages
+Removing intermediate container e56e76aabe96
+ ---> 64aee94ade9d
+Successfully built 64aee94ade9d
+Successfully tagged my-project:latest
+[Pipeline] dockerFingerprintFrom
+[Pipeline] }
+[Pipeline] // withDockerRegistry
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // gitlabCommitStatus
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Push image)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] withDockerRegistry
+$ docker login -u admin -p ******** http://my-nexus
+WARNING! Using --password via the CLI is insecure. Use --password-stdin.
+WARNING! Your password will be stored unencrypted in /var/jenkins_home/workspace/docker-test@tmp/69418481-b2a1-4685-a5b2-df2e056380eb/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
+[Pipeline] {
+[Pipeline] sh
++ docker tag my-project my-nexus/my-project:todelete
+[Pipeline] sh
++ docker push my-nexus/my-project:todelete
+The push refers to repository [my-nexus/my-project]
+80cfcb36924d: Preparing
+1235c24e08e0: Preparing
+a60033406732: Preparing
+45afb6e286a8: Preparing
+df64d3292fd6: Preparing
+df64d3292fd6: Layer already exists
+45afb6e286a8: Layer already exists
+a60033406732: Layer already exists
+1235c24e08e0: Pushed
+80cfcb36924d: Pushed
+todelete: digest: sha256:aa98634f1f8a5d3daf8f4a79b528e8622501d7025ec392ced2a81a2c5debda6a size: 1364
+[Pipeline] }
+[Pipeline] // withDockerRegistry
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Push tag image)
+Stage "Push tag image" skipped due to when conditional
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Triggering a new build of docker-jdk #34
+Finished: SUCCESS

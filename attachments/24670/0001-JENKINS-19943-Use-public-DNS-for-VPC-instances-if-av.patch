@@ -1,0 +1,37 @@
+From e73967bd196158454024f4f137401667269e0009 Mon Sep 17 00:00:00 2001
+From: Nathan Kinder <nkinder@redhat.com>
+Date: Wed, 13 Nov 2013 18:19:55 -0800
+Subject: [PATCH] JENKINS-19943 - Use public DNS for VPC instances if available
+
+If VPC instances have a public DNS name available, the EC2 plug-in
+ignores it and tries to SSH to the instance using it's internal IP
+address.  This doesn't work if the Jenkins master is outside of AWS.
+
+This patch tries to get a public DNS name for the instance, even if
+it is a VPC instance.  If we fail to get a pubic DNS name, we just
+use the private IP instead.
+---
+ src/main/java/hudson/plugins/ec2/ssh/EC2UnixLauncher.java | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/src/main/java/hudson/plugins/ec2/ssh/EC2UnixLauncher.java b/src/main/java/hudson/plugins/ec2/ssh/EC2UnixLauncher.java
+index 511ee3b..2b0d6af 100644
+--- a/src/main/java/hudson/plugins/ec2/ssh/EC2UnixLauncher.java
++++ b/src/main/java/hudson/plugins/ec2/ssh/EC2UnixLauncher.java
+@@ -220,10 +220,9 @@ public class EC2UnixLauncher extends EC2ComputerLauncher {
+                 if (computer.getNode().usePrivateDnsName) {
+                     host = instance.getPrivateDnsName();
+                 } else {
+-                    /* VPC hosts don't have public DNS names, so we need to use an IP address instead */
+-                    if (vpc_id == null || vpc_id.equals("")) {
+-                        host = instance.getPublicDnsName();
+-                    } else {
++                    host = instance.getPublicDnsName();
++                    // If we fail to get a public DNS name, use the private IP.
++                    if (host == null || host.equals("")) {
+                         host = instance.getPrivateIpAddress();
+                     }
+                 }
+-- 
+1.8.1.4
+

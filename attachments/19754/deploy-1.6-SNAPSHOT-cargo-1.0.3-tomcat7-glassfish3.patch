@@ -1,0 +1,1176 @@
+Index: ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/jboss/JBoss3xAdapter.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/jboss/JBoss3xAdapter.java	(revision 19018)
++++ ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/jboss/JBoss3xAdapter.java	(revision )
+@@ -1,10 +1,7 @@
+ package hudson.plugins.deploy.jboss;
+ 
+-import hudson.model.Descriptor;
+-import hudson.plugins.deploy.ContainerAdapter;
+-import hudson.plugins.deploy.ContainerAdapterDescriptor;
+ import hudson.Extension;
+-
++import hudson.plugins.deploy.ContainerAdapterDescriptor;
+ import org.kohsuke.stapler.DataBoundConstructor;
+ 
+ /**
+Index: ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/jboss/JBossAdapter.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/jboss/JBossAdapter.java	(revision 13432)
++++ ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/jboss/JBossAdapter.java	(revision )
+@@ -1,14 +1,13 @@
+ package hudson.plugins.deploy.jboss;
+ 
+ import hudson.plugins.deploy.PasswordProtectedAdapterCargo;
+-
+-import java.net.MalformedURLException;
+-import java.net.URL;
+-
+ import org.codehaus.cargo.container.configuration.Configuration;
+ import org.codehaus.cargo.container.property.GeneralPropertySet;
+ import org.codehaus.cargo.container.property.ServletPropertySet;
+ 
++import java.net.MalformedURLException;
++import java.net.URL;
++
+ /**
+  * Base class for JBoss adapters.
+  *
+Index: ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/LoggerImpl.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/LoggerImpl.java	(revision 13432)
++++ ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/LoggerImpl.java	(revision )
+@@ -1,11 +1,11 @@
+ package hudson.plugins.deploy;
+ 
+-import java.io.PrintStream;
+-
+ import org.codehaus.cargo.util.internal.log.AbstractLogger;
+ import org.codehaus.cargo.util.log.LogLevel;
+ import org.codehaus.cargo.util.log.Logger;
+ 
++import java.io.PrintStream;
++
+ /**
+  * Adapter to Cargo {@link Logger}.
+  *
+Index: ../../../hudson/deploy-plugin/src/test/java/hudson/plugins/deploy/glassfish/GlassFish2xAdapterTest.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/test/java/hudson/plugins/deploy/glassfish/GlassFish2xAdapterTest.java	(revision )
++++ ../../../hudson/deploy-plugin/src/test/java/hudson/plugins/deploy/glassfish/GlassFish2xAdapterTest.java	(revision )
+@@ -0,0 +1,47 @@
++package hudson.plugins.deploy.glassfish;
++
++import org.codehaus.cargo.container.Container;
++import org.codehaus.cargo.container.glassfish.GlassFish2xInstalledLocalContainer;
++import org.codehaus.cargo.generic.ContainerFactory;
++import org.codehaus.cargo.generic.DefaultContainerFactory;
++import org.codehaus.cargo.generic.configuration.ConfigurationFactory;
++import org.codehaus.cargo.generic.configuration.DefaultConfigurationFactory;
++import org.junit.Assert;
++import org.junit.Before;
++import org.junit.Test;
++
++/**
++ * @author soudmaijer
++ */
++public class GlassFish2xAdapterTest {
++
++    private GlassFish2xAdapter adapter;
++    private static final String home = "/dev/null";
++    private static final String username = "username";
++    private static final String password = "password";
++    private static int port = 1234;
++
++    @Before
++    public void setup() {
++        adapter = new GlassFish2xAdapter(home, password, username, port);
++    }
++
++    @Test
++    public void testContainerId() {
++        Assert.assertEquals(adapter.getContainerId(), new GlassFish2xInstalledLocalContainer(null).getId());
++    }
++
++    @Test
++    public void testConfigure() {
++        Assert.assertEquals(adapter.home, home);
++        Assert.assertEquals(adapter.adminPort, port);
++        Assert.assertEquals(adapter.userName, username);
++        Assert.assertEquals(adapter.password, password);
++
++        ConfigurationFactory configFactory = new DefaultConfigurationFactory();
++        ContainerFactory containerFactory = new DefaultContainerFactory();
++
++        Container container = adapter.getContainer(configFactory, containerFactory, adapter.getContainerId());
++        Assert.assertNotNull(container);
++    }
++}
+Index: ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/tomcat/TomcatAdapter.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/tomcat/TomcatAdapter.java	(revision 24008)
++++ ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/tomcat/TomcatAdapter.java	(revision )
+@@ -1,22 +1,15 @@
+ package hudson.plugins.deploy.tomcat;
+ 
+-import hudson.model.BuildListener;
+-import hudson.plugins.deploy.LoggerImpl;
+ import hudson.plugins.deploy.PasswordProtectedAdapterCargo;
+-
+-import java.io.File;
+-import java.net.MalformedURLException;
+-import java.net.URL;
+-
+-import org.codehaus.cargo.container.Container;
+ import org.codehaus.cargo.container.configuration.Configuration;
+ import org.codehaus.cargo.container.deployable.Deployable;
+-import org.codehaus.cargo.container.deployable.WAR;
+-import org.codehaus.cargo.container.deployer.Deployer;
+ import org.codehaus.cargo.container.tomcat.TomcatPropertySet;
+ import org.codehaus.cargo.container.tomcat.TomcatWAR;
+-import org.codehaus.cargo.generic.deployer.DeployerFactory;
+ 
++import java.io.File;
++import java.net.MalformedURLException;
++import java.net.URL;
++
+ /**
+  * Base class for Tomcat adapters.
+  * 
+Index: ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/glassfish/GlassFishAdapter.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/glassfish/GlassFishAdapter.java	(revision 19111)
++++ ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/glassfish/GlassFishAdapter.java	(revision )
+@@ -3,27 +3,55 @@
+ import hudson.plugins.deploy.PasswordProtectedAdapterCargo;
+ import org.codehaus.cargo.container.Container;
+ import org.codehaus.cargo.container.ContainerType;
+-import org.codehaus.cargo.container.configuration.Configuration;
+ import org.codehaus.cargo.container.configuration.ConfigurationType;
+ import org.codehaus.cargo.container.glassfish.GlassFishPropertySet;
++import org.codehaus.cargo.container.spi.AbstractInstalledLocalContainer;
++import org.codehaus.cargo.container.spi.configuration.AbstractStandaloneLocalConfiguration;
+ import org.codehaus.cargo.generic.ContainerFactory;
+ import org.codehaus.cargo.generic.configuration.ConfigurationFactory;
+ 
++/**
++ * GlassFishAdapterTest, configures the cargo GlassFish container.
++ */
+ public abstract class GlassFishAdapter extends PasswordProtectedAdapterCargo {
++
++    /**
++     * Property home is required for GlassFish local containers.
++     */
+-	public final String home;
++    public final String home;
+     @Property(GlassFishPropertySet.ADMIN_PORT)
+     public final Integer adminPort;
+ 
++    /**
++     * GlassFishAdapterTest, supports local glassfish deployments.
++     *
++     * @param home location of the GlassFish installation
++     * @param password admin password
++     * @param userName admin username
++     * @param adminPort admin server port
++     */
+     protected GlassFishAdapter(String home, String password, String userName, Integer adminPort) {
+         super(userName, password);        
+         this.home = home;
+         this.adminPort = adminPort;
+     }
+-    
++
++    /**
++     * {@inheritDoc}
++     */
+     @Override
+     protected Container getContainer(ConfigurationFactory configFactory, ContainerFactory containerFactory, String id) {
+-        Configuration config = configFactory.createConfiguration(id, ContainerType.INSTALLED, ConfigurationType.STANDALONE, home);
++
++        AbstractStandaloneLocalConfiguration config = (AbstractStandaloneLocalConfiguration)configFactory.createConfiguration(id, ContainerType.INSTALLED, ConfigurationType.STANDALONE, home);
+         configure(config);
+-        return containerFactory.createContainer(id, ContainerType.INSTALLED, config);
++
++        AbstractInstalledLocalContainer container = (AbstractInstalledLocalContainer)containerFactory.createContainer(id, ContainerType.INSTALLED, config);
++
++        /**
++         * Explicitly sets the home on the LocalContainer.
++         */
++        container.setHome(home);
++
++        return container;
+     }
+ }
+Index: ../../../hudson/deploy-plugin/src/test/java/hudson/plugins/deploy/tomcat/Tomcat7xAdapterTest.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/test/java/hudson/plugins/deploy/tomcat/Tomcat7xAdapterTest.java	(revision )
++++ ../../../hudson/deploy-plugin/src/test/java/hudson/plugins/deploy/tomcat/Tomcat7xAdapterTest.java	(revision )
+@@ -0,0 +1,34 @@
++package hudson.plugins.deploy.tomcat;
++
++import org.codehaus.cargo.container.tomcat.Tomcat7xRemoteContainer;
++import org.junit.Assert;
++import org.junit.Before;
++import org.junit.Test;
++
++/**
++ * @author soudmaijer
++ */
++public class Tomcat7xAdapterTest {
++
++    private Tomcat7xAdapter adapter;
++    private static final String url = "http://localhost:8080";
++    private static final String username = "username";
++    private static final String password = "password";
++
++    @Before
++    public void setup() {
++        adapter = new  Tomcat7xAdapter(url, password, username);
++    }
++
++    @Test
++    public void testContainerId() {
++        Assert.assertEquals(adapter.getContainerId(), Tomcat7xRemoteContainer.ID);            
++    }
++
++    @Test
++    public void testConfigure() {
++        Assert.assertEquals(adapter.url,url);
++        Assert.assertEquals(adapter.userName,username);
++        Assert.assertEquals(adapter.password,password);
++    }
++}
+Index: ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/tomcat/Tomcat4xAdapter.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/tomcat/Tomcat4xAdapter.java	(revision 19018)
++++ ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/tomcat/Tomcat4xAdapter.java	(revision )
+@@ -1,14 +1,11 @@
+ package hudson.plugins.deploy.tomcat;
+ 
+-import hudson.model.Descriptor;
+-import hudson.plugins.deploy.ContainerAdapter;
+-import hudson.plugins.deploy.ContainerAdapterDescriptor;
+ import hudson.Extension;
+-
++import hudson.plugins.deploy.ContainerAdapterDescriptor;
+ import org.kohsuke.stapler.DataBoundConstructor;
+ 
+ /**
+- * Tomcat 5.x.
++ * Tomcat 4.x.
+  *
+  * @author Kohsuke Kawaguchi
+  */
+Index: ../../../hudson/deploy-plugin/src/test/java/hudson/plugins/deploy/glassfish/GlassFishAdapterTest.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/test/java/hudson/plugins/deploy/glassfish/GlassFishAdapterTest.java	(revision )
++++ ../../../hudson/deploy-plugin/src/test/java/hudson/plugins/deploy/glassfish/GlassFishAdapterTest.java	(revision )
+@@ -0,0 +1,34 @@
++package hudson.plugins.deploy.glassfish;
++
++import org.codehaus.cargo.container.ContainerType;
++import org.codehaus.cargo.container.configuration.Configuration;
++import org.codehaus.cargo.container.configuration.ConfigurationType;
++import org.codehaus.cargo.generic.configuration.ConfigurationFactory;
++import org.codehaus.cargo.generic.configuration.DefaultConfigurationFactory;
++import org.junit.Assert;
++import org.junit.Before;
++import org.junit.Test;
++
++/**
++ * @author soudmaijer
++ */
++public class GlassFishAdapterTest {
++
++    private GlassFish3xAdapter glassFish3xAdapter;
++    private static final String home = "/dev/null";
++    private static final String username = "username";
++    private static final String password = "password";
++    private static int port = 1234;
++
++    @Before
++    public void setup() {
++        glassFish3xAdapter = new GlassFish3xAdapter(home, password, username, port);
++    }
++
++    @Test
++    public void testConfigureGlassFish3x() {
++        ConfigurationFactory configFactory = new DefaultConfigurationFactory();
++        Configuration config = configFactory.createConfiguration(glassFish3xAdapter.getContainerId(), ContainerType.INSTALLED, ConfigurationType.STANDALONE, glassFish3xAdapter.home);
++        Assert.assertNotNull(config);
++    }
++}
+Index: ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/weblogic/WebLogicAdapter.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/weblogic/WebLogicAdapter.java	(revision 19111)
++++ ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/weblogic/WebLogicAdapter.java	(revision )
+@@ -1,15 +1,12 @@
+ package hudson.plugins.deploy.weblogic;
+ 
+-import hudson.plugins.deploy.DefaultCargoContainerAdapterImpl;
+ import hudson.plugins.deploy.ContainerAdapterDescriptor;
+-import hudson.Extension;
++import hudson.plugins.deploy.DefaultCargoContainerAdapterImpl;
+ import hudson.util.FormValidation;
+ import org.codehaus.cargo.container.Container;
+ import org.codehaus.cargo.container.ContainerType;
+ import org.codehaus.cargo.container.configuration.Configuration;
+ import org.codehaus.cargo.container.configuration.ConfigurationType;
+-import org.codehaus.cargo.container.property.ServletPropertySet;
+-import org.codehaus.cargo.container.weblogic.WebLogicPropertySet;
+ import org.codehaus.cargo.generic.ContainerFactory;
+ import org.codehaus.cargo.generic.configuration.ConfigurationFactory;
+ import org.kohsuke.stapler.DataBoundConstructor;
+Index: ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/jboss/JBoss4xAdapter.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/jboss/JBoss4xAdapter.java	(revision 19018)
++++ ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/jboss/JBoss4xAdapter.java	(revision )
+@@ -1,10 +1,7 @@
+ package hudson.plugins.deploy.jboss;
+ 
+-import hudson.model.Descriptor;
+-import hudson.plugins.deploy.ContainerAdapter;
+-import hudson.plugins.deploy.ContainerAdapterDescriptor;
+ import hudson.Extension;
+-
++import hudson.plugins.deploy.ContainerAdapterDescriptor;
+ import org.kohsuke.stapler.DataBoundConstructor;
+ 
+ /**
+Index: ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/tomcat/Tomcat5xAdapter.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/tomcat/Tomcat5xAdapter.java	(revision 19018)
++++ ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/tomcat/Tomcat5xAdapter.java	(revision )
+@@ -1,10 +1,7 @@
+ package hudson.plugins.deploy.tomcat;
+ 
+-import hudson.model.Descriptor;
+-import hudson.plugins.deploy.ContainerAdapter;
+-import hudson.plugins.deploy.ContainerAdapterDescriptor;
+ import hudson.Extension;
+-
++import hudson.plugins.deploy.ContainerAdapterDescriptor;
+ import org.kohsuke.stapler.DataBoundConstructor;
+ 
+ /**
+Index: ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/tomcat/Tomcat6xAdapter.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/tomcat/Tomcat6xAdapter.java	(revision 19018)
++++ ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/tomcat/Tomcat6xAdapter.java	(revision )
+@@ -1,10 +1,7 @@
+ package hudson.plugins.deploy.tomcat;
+ 
+-import hudson.model.Descriptor;
+-import hudson.plugins.deploy.ContainerAdapter;
+-import hudson.plugins.deploy.ContainerAdapterDescriptor;
+ import hudson.Extension;
+-
++import hudson.plugins.deploy.ContainerAdapterDescriptor;
+ import org.kohsuke.stapler.DataBoundConstructor;
+ 
+ /**
+Index: ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/glassfish/GlassFish2xAdapter.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/glassfish/GlassFish2xAdapter.java	(revision 19018)
++++ ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/glassfish/GlassFish2xAdapter.java	(revision )
+@@ -1,12 +1,12 @@
+ package hudson.plugins.deploy.glassfish;
+ 
+-import hudson.model.Descriptor;
+-import hudson.plugins.deploy.ContainerAdapter;
+-import hudson.plugins.deploy.ContainerAdapterDescriptor;
+ import hudson.Extension;
+-
++import hudson.plugins.deploy.ContainerAdapterDescriptor;
+ import org.kohsuke.stapler.DataBoundConstructor;
+ 
++/**
++ * GlassFish 2.x support.
++ */
+ public class GlassFish2xAdapter extends GlassFishAdapter {
+ 	@DataBoundConstructor
+ 	public GlassFish2xAdapter(String home, String password, String userName, Integer adminPort) {
+@@ -15,7 +15,7 @@
+ 
+ 	@Override
+ 	protected String getContainerId() {
+-		return "glassfish2";
++		return "glassfish2x";
+ 	}
+ 
+     @Extension
+@@ -24,6 +24,4 @@
+             return "GlassFish 2.x";
+         }
+     }
+-        
+-    private static final long serialVersionUID = 2872067827725333149L;
+ }
+Index: ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/ContainerAdapter.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/ContainerAdapter.java	(revision 19018)
++++ ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/ContainerAdapter.java	(revision )
+@@ -7,7 +7,6 @@
+ import hudson.model.AbstractBuild;
+ import hudson.model.BuildListener;
+ import hudson.model.Describable;
+-import hudson.model.Descriptor;
+ import hudson.model.Hudson;
+ 
+ import java.io.IOException;
+Index: ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/glassfish/GlassFish3xAdapter.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/glassfish/GlassFish3xAdapter.java	(revision )
++++ ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/glassfish/GlassFish3xAdapter.java	(revision )
+@@ -0,0 +1,46 @@
++package hudson.plugins.deploy.glassfish;
++
++import hudson.Extension;
++import hudson.plugins.deploy.ContainerAdapterDescriptor;
++import org.codehaus.cargo.container.glassfish.GlassFishStandaloneLocalConfiguration;
++import org.kohsuke.stapler.DataBoundConstructor;
++
++/**
++ * GlassFish 3.x support
++ * 
++ * @author soudmaijer
++ */
++public class GlassFish3xAdapter extends GlassFishAdapter {
++
++    /**
++     * GlassFish 3.x
++     *
++     * @param home GlassFish home directory
++     * @param password glassfish admin password
++     * @param userName glassfish admin username
++     */
++    @DataBoundConstructor
++	public GlassFish3xAdapter(String home, String password, String userName, Integer adminPort) {
++		super(home, password, userName, adminPort);
++        GlassFishStandaloneLocalConfiguration conf;
++	}
++
++    /**
++     * GlassFish Cargo containerId
++     * @return glassfish3x
++     */
++	@Override
++	protected String getContainerId() {
++		return "glassfish3x";
++	}
++
++    /**
++     * {@inheritDoc}
++     */
++    @Extension
++	public static final class DescriptorImpl extends ContainerAdapterDescriptor {
++        public String getDisplayName() {
++            return "GlassFish 3.x";
++        }
++    }
++}
+Index: ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/tomcat/Tomcat7xAdapter.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/tomcat/Tomcat7xAdapter.java	(revision )
++++ ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/tomcat/Tomcat7xAdapter.java	(revision )
+@@ -0,0 +1,41 @@
++package hudson.plugins.deploy.tomcat;
++
++import hudson.Extension;
++import hudson.plugins.deploy.ContainerAdapterDescriptor;
++import org.kohsuke.stapler.DataBoundConstructor;
++
++/**
++ * Tomcat 7.x
++ *
++ * @author soudmaijer
++ */
++public class Tomcat7xAdapter extends TomcatAdapter {
++
++    /**
++     * Tomcat 7 support
++     * 
++     * @param url Tomcat server location (for example: http://localhost:8080)
++     * @param password tomcat manager password
++     * @param userName tomcat manager username
++     */
++    @DataBoundConstructor
++    public Tomcat7xAdapter(String url, String password, String userName) {
++        super(url, password, userName);
++    }
++
++    /**
++     * Tomcat Cargo containerId
++     * @return tomcat7x
++     */
++    public String getContainerId() {
++        return "tomcat7x";
++    }
++    
++    @Extension
++	public static final class DescriptorImpl extends ContainerAdapterDescriptor {
++        public String getDisplayName() {
++            return "Tomcat 7.x";
++        }
++    }
++}
++
+Index: ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/DeployPublisher.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/DeployPublisher.java	(revision 25966)
++++ ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/DeployPublisher.java	(revision )
+@@ -1,8 +1,8 @@
+ package hudson.plugins.deploy;
+ 
++import hudson.Extension;
+ import hudson.FilePath;
+ import hudson.Launcher;
+-import hudson.Extension;
+ import hudson.model.AbstractBuild;
+ import hudson.model.AbstractProject;
+ import hudson.model.BuildListener;
+@@ -11,16 +11,15 @@
+ import hudson.tasks.BuildStepMonitor;
+ import hudson.tasks.Notifier;
+ import hudson.tasks.Publisher;
++import org.kohsuke.stapler.DataBoundConstructor;
+ 
+ import java.io.IOException;
+ import java.io.Serializable;
+-import java.util.List;
+ import java.util.ArrayList;
+ import java.util.Collections;
+ import java.util.Comparator;
++import java.util.List;
+ 
+-import org.kohsuke.stapler.DataBoundConstructor;
+-
+ /**
+  * Deploys WAR to a continer.
+  * 
+Index: ../../../hudson/deploy-plugin/pom.xml
+===================================================================
+--- ../../../hudson/deploy-plugin/pom.xml	(revision 25971)
++++ ../../../hudson/deploy-plugin/pom.xml	(revision )
+@@ -1,111 +1,116 @@
+-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
++<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+-  <modelVersion>4.0.0</modelVersion>
+-  
+-  <parent>
+-    <groupId>org.jvnet.hudson.plugins</groupId>
+-    <artifactId>plugin</artifactId>
+-    <version>1.319</version>
+-    <relativePath>../pom.xml</relativePath>
+-  </parent>
++    <modelVersion>4.0.0</modelVersion>
++
++    <parent>
++        <groupId>org.jvnet.hudson.plugins</groupId>
++        <artifactId>plugin</artifactId>
++        <version>1.319</version>
++        <relativePath>../pom.xml</relativePath>
++    </parent>
+ 
+-  <artifactId>deploy</artifactId>
+-  <version>1.6-SNAPSHOT</version>
+-  <packaging>hpi</packaging>
+-  <name>Deploy to container Plugin</name>
+-  <url>http://wiki.hudson-ci.org/display/HUDSON/Deploy+Plugin</url>
+-  <developers>
+-    <developer>
+-      <id>kohsuke</id>
+-      <name>Kohsuke Kawaguchi</name>
+-    </developer>
+-  </developers>
++    <artifactId>deploy</artifactId>
++    <version>1.6-SNAPSHOT</version>
++    <packaging>hpi</packaging>
++    <name>Deploy to container Plugin</name>
++    <url>http://wiki.hudson-ci.org/display/HUDSON/Deploy+Plugin</url>
++    <developers>
++        <developer>
++            <id>kohsuke</id>
++            <name>Kohsuke Kawaguchi</name>
++        </developer>
++    </developers>
+ 
+-  <build>
+-    <plugins>
+-      <plugin>
+-        <artifactId>maven-release-plugin</artifactId>
+-        <configuration>
+-          <allowTimestampedSnapshots>true</allowTimestampedSnapshots>
+-        </configuration>
+-      </plugin>
+-    </plugins>
+-  </build>
+-  
+-  <dependencies>
+-    <dependency>
+-      <groupId>org.codehaus.cargo</groupId>
+-      <artifactId>cargo-core-api-generic</artifactId>
+-      <version>${cargo.version}</version>
+-      <exclusions>
+-        <exclusion>
+-          <groupId>dom4j</groupId>
+-          <artifactId>dom4j</artifactId>
+-        </exclusion>
+-        <exclusion>
+-          <groupId>jaxen</groupId>
+-          <artifactId>jaxen</artifactId>
+-        </exclusion>
+-        <exclusion>
+-          <groupId>ant</groupId>
+-          <artifactId>ant</artifactId>
+-        </exclusion>
+-      </exclusions>
+-    </dependency>
+-    <!--dependency>
+-      <groupId>org.codehaus.cargo</groupId>
+-      <artifactId>cargo-core-container-geronimo</artifactId>
+-      <version>0.9</version>
+-    </dependency-->
+-    <dependency>
+-      <groupId>org.codehaus.cargo</groupId>
+-      <artifactId>cargo-core-container-jboss</artifactId>
+-      <version>${cargo.version}</version>
+-    </dependency>
+-    <!--dependency>
+-      <groupId>org.codehaus.cargo</groupId>
+-      <artifactId>cargo-core-container-jetty</artifactId>
+-      <version>0.9</version>
+-    </dependency>
+-    <dependency>
+-      <groupId>org.codehaus.cargo</groupId>
+-      <artifactId>cargo-core-container-jo</artifactId>
+-      <version>0.9</version>
+-    </dependency>
+-    <dependency>
+-      <groupId>org.codehaus.cargo</groupId>
+-      <artifactId>cargo-core-container-orion</artifactId>
+-      <version>0.9</version>
+-    </dependency>
+-    <dependency>
+-      <groupId>org.codehaus.cargo</groupId>
+-      <artifactId>cargo-core-container-resin</artifactId>
+-      <version>0.9</version>
+-    </dependency-->
+-    <dependency>
+-      <groupId>org.codehaus.cargo</groupId>
+-      <artifactId>cargo-core-container-tomcat</artifactId>
+-      <version>${cargo.version}</version>
+-    </dependency>
+-    <dependency>
+-      <groupId>org.codehaus.cargo</groupId>
+-      <artifactId>cargo-core-container-glassfish</artifactId>
++    <build>
++        <plugins>
++            <plugin>
++                <artifactId>maven-release-plugin</artifactId>
++                <configuration>
++                    <allowTimestampedSnapshots>true</allowTimestampedSnapshots>
++                </configuration>
++            </plugin>
++        </plugins>
++    </build>
++
++    <dependencies>
++        <dependency>
++            <groupId>org.codehaus.cargo</groupId>
++            <artifactId>cargo-core-api-generic</artifactId>
++            <version>${cargo.version}</version>
++            <exclusions>
++                <exclusion>
++                    <groupId>dom4j</groupId>
++                    <artifactId>dom4j</artifactId>
++                </exclusion>
++                <exclusion>
++                    <groupId>jaxen</groupId>
++                    <artifactId>jaxen</artifactId>
++                </exclusion>
++                <exclusion>
++                    <groupId>ant</groupId>
++                    <artifactId>ant</artifactId>
++                </exclusion>
++            </exclusions>
++        </dependency>
++        <!--dependency>
++          <groupId>org.codehaus.cargo</groupId>
++          <artifactId>cargo-core-container-geronimo</artifactId>
++          <version>0.9</version>
++        </dependency-->
++        <dependency>
++            <groupId>org.codehaus.cargo</groupId>
++            <artifactId>cargo-core-container-jboss</artifactId>
++            <version>${cargo.version}</version>
++        </dependency>
++        <!--dependency>
++          <groupId>org.codehaus.cargo</groupId>
++          <artifactId>cargo-core-container-jetty</artifactId>
++          <version>0.9</version>
++        </dependency>
++        <dependency>
++          <groupId>org.codehaus.cargo</groupId>
++          <artifactId>cargo-core-container-jo</artifactId>
++          <version>0.9</version>
++        </dependency>
++        <dependency>
++          <groupId>org.codehaus.cargo</groupId>
++          <artifactId>cargo-core-container-orion</artifactId>
++          <version>0.9</version>
++        </dependency>
++        <dependency>
++          <groupId>org.codehaus.cargo</groupId>
++          <artifactId>cargo-core-container-resin</artifactId>
++          <version>0.9</version>
++        </dependency-->
++        <dependency>
++            <groupId>org.codehaus.cargo</groupId>
++            <artifactId>cargo-core-container-tomcat</artifactId>
++            <version>${cargo.version}</version>
++        </dependency>
++        <dependency>
++            <groupId>org.codehaus.cargo</groupId>
++            <artifactId>cargo-core-container-glassfish</artifactId>
+-      <version>1.0-alpha-6</version>
++            <version>${cargo.version}</version>
+-    </dependency>
+-    <dependency>
+-      <groupId>org.codehaus.cargo</groupId>
+-      <artifactId>cargo-core-container-weblogic</artifactId>
+-      <version>${cargo.version}</version>
+-    </dependency>
+-  </dependencies>
++        </dependency>
++        <dependency>
++            <groupId>org.codehaus.cargo</groupId>
++            <artifactId>cargo-core-container-weblogic</artifactId>
++            <version>${cargo.version}</version>
++        </dependency>
++    </dependencies>
+ 
+-  <repositories>
+-    <repository>
+-      <id>codehaus-snapshot</id>
+-      <url>http://snapshots.repository.codehaus.org/</url>
+-    </repository>
++    <repositories>
++        <repository>
++            <id>codehaus-snapshot</id>
++            <url>http://snapshots.repository.codehaus.org/</url>
++        </repository>
++        <repository>
++            <id>codehaus-release</id>
++            <url>http://repository.codehaus.org/</url>
++        </repository>
+-  </repositories>
++    </repositories>
+ 
+-  <properties>
++    <properties>
+-    <cargo.version>1.0</cargo.version>
++        <cargo.version>1.0.3</cargo.version>
+-  </properties>
++    </properties>
+ </project>
+Index: ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/jboss/JBoss5xAdapter.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/jboss/JBoss5xAdapter.java	(revision 19018)
++++ ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/jboss/JBoss5xAdapter.java	(revision )
+@@ -1,10 +1,7 @@
+ package hudson.plugins.deploy.jboss;
+ 
+-import hudson.model.Descriptor;
+-import hudson.plugins.deploy.ContainerAdapter;
+-import hudson.plugins.deploy.ContainerAdapterDescriptor;
+ import hudson.Extension;
+-
++import hudson.plugins.deploy.ContainerAdapterDescriptor;
+ import org.kohsuke.stapler.DataBoundConstructor;
+ 
+ /**
+Index: ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/Foo.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/Foo.java	(revision 19111)
++++ ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/Foo.java	(revision 19111)
+@@ -1,102 +0,0 @@
+-package hudson.plugins.deploy;
+-
+-import javax.management.remote.JMXConnectorFactory;
+-import javax.management.remote.JMXServiceURL;
+-import javax.management.remote.JMXConnector;
+-import javax.management.MBeanServerConnection;
+-import javax.management.ObjectName;
+-import javax.management.MBeanInfo;
+-import javax.management.ObjectInstance;
+-import javax.management.MBeanServerInvocationHandler;
+-import javax.naming.Context;
+-import java.util.Hashtable;
+-import java.net.URLClassLoader;
+-import java.net.URL;
+-
+-/**
+- *
+- * JMX documentation:
+- *      http://edocs.bea.com/wls/docs100/wlsmbeanref/core/index.html
+- *
+- * @author Kohsuke Kawaguchi
+- */
+-public class Foo {
+-
+-    public static void main(String[] args) throws Exception {
+-        JMXServiceURL serviceURL = new JMXServiceURL("t3", "127.0.0.1", 7001, "/jndi/weblogic.management.mbeanservers.domainruntime");
+-
+-        URLClassLoader cl = new URLClassLoader(new URL[]{
+-                new URL("file:///home/kohsuke/bea/wlserver_10.3/server/lib/weblogic.jar")});
+-
+-        // otherwise JNDI fails to find an InitialContextFactory
+-        Thread.currentThread().setContextClassLoader(cl);
+-
+-        Hashtable h = new Hashtable();
+-        h.put(Context.SECURITY_PRINCIPAL, "admin");
+-        h.put(Context.SECURITY_CREDENTIALS, "adminadmin");
+-        h.put(JMXConnectorFactory.PROTOCOL_PROVIDER_CLASS_LOADER,cl);
+-        h.put(JMXConnectorFactory.PROTOCOL_PROVIDER_PACKAGES,"weblogic.management.remote");
+-        
+-        JMXConnector connector = JMXConnectorFactory.connect(serviceURL, h);
+-        MBeanServerConnection con = connector.getMBeanServerConnection();
+-
+-        
+-    }
+-
+-    interface DeployerRuntime {
+-        ObjectName activate(String source, String name, String stagingMode, Object info, String id);
+-    }
+-
+-    interface DeploymentTaskRuntimeMBean {
+-
+-    }
+-
+-    /**
+-     * Trying to access mbeans fail, apparently because CORBA fails to unmarshal a WL-specific exception class
+-     */
+-    public static void jmain(String[] args) throws Exception {
+-        // http://download.oracle.com/docs/cd/E11035_01/wls100/jmx/accessWLS.html#wp1118690
+-        String hostname = "localhost";
+-        int port = 7001;
+-        String protocol = "rmi";
+-        String jndiroot = new String("/jndi/iiop://" + hostname + ":" +
+-                port + "/");
+-        // weblogic.management.mbeanservers.domainruntime
+-        // weblogic.management.mbeanservers.runtime
+-        // weblogic.management.mbeanservers.edit
+-        String mserver = "weblogic.management.mbeanservers.domainruntime";
+-
+-        JMXServiceURL serviceURL = new JMXServiceURL(protocol, hostname, port,
+-                jndiroot + mserver);
+-
+-        Hashtable h = new Hashtable();
+-        h.put(Context.SECURITY_PRINCIPAL, "admin");
+-        h.put(Context.SECURITY_CREDENTIALS, "adminadmin");
+-
+-        JMXConnector connector = JMXConnectorFactory.connect(serviceURL, h);
+-        MBeanServerConnection con = connector.getMBeanServerConnection();
+-//        for(ObjectName on : con.queryNames(null,null))
+-//            System.out.println(on);
+-
+-        ObjectName on = new ObjectName("com.bea:Name=DeployerRuntime,Type=DeployerRuntime");
+-        DeployerRuntime dr = MBeanServerInvocationHandler.newProxyInstance(con, on, DeployerRuntime.class, false);
+-        System.out.println(con.invoke(on,"activate",new Object[]{"src/test/simple.war","simple",null,null,null},
+-                new String [] { "java.lang.String", "java.lang.String", "java.lang.String", "weblogic.management.deploy.DeploymentData", "java.lang.String" })); 
+-
+-        // see http://90kts.com/blog/2008/monitoring-weblogic-using-jmx-in-sitescope/
+-        // the trick is:
+-        /*
+-Setting up IIOP access on monitored machines
+-SiteScope relies on the IIOP protocol to talk to the WL server. In order to get remote access with JMX via IIOP you need to provide a default username and password for the IIOP user.
+-
+-This can be done via the WL admin console as in:
+-domServiceBus->Environment->Servers->server01_nn->Protocols [tab]\->IIOP->advanced
+-
+-Then provide a default username and password for the IIOP user.
+-
+-Note: IIOP is already enabled by default, but a username and pwd is not. This change requires a server restart for WL. You must make sure that the username and password is >= 8 digits, otherwise the CORBA connection will fail when using SiteScope.
+-
+-        
+-         */
+-    }
+-}
+Index: ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/CargoContainerAdapter.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/CargoContainerAdapter.java	(revision 24008)
++++ ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/CargoContainerAdapter.java	(revision )
+@@ -1,16 +1,11 @@
+ package hudson.plugins.deploy;
+ 
+ import hudson.FilePath;
+-import hudson.Launcher;
+ import hudson.FilePath.FileCallable;
++import hudson.Launcher;
+ import hudson.model.AbstractBuild;
+ import hudson.model.BuildListener;
+ import hudson.remoting.VirtualChannel;
+-
+-import java.io.File;
+-import java.io.IOException;
+-import java.io.Serializable;
+-
+ import org.codehaus.cargo.container.Container;
+ import org.codehaus.cargo.container.ContainerType;
+ import org.codehaus.cargo.container.configuration.Configuration;
+@@ -25,6 +20,10 @@
+ import org.codehaus.cargo.generic.deployer.DefaultDeployerFactory;
+ import org.codehaus.cargo.generic.deployer.DeployerFactory;
+ 
++import java.io.File;
++import java.io.IOException;
++import java.io.Serializable;
++
+ /**
+  * Provides container-specific glue code.
+  *
+@@ -35,16 +34,18 @@
+  */
+ public abstract class CargoContainerAdapter extends ContainerAdapter implements Serializable {
+     /**
+-     * Returns the container ID used by Cargo. 
++     * Returns the container ID used by Cargo.
++     * @return
+      */
+     protected abstract String getContainerId();
+ 
+     /**
+      * Fills in the {@link Configuration} object.
++     * @param config
+      */
+     protected abstract void configure(Configuration config);
+-    
+-    protected Container getContainer(ConfigurationFactory configFactory, ContainerFactory containerFactory, String id) {    	
++
++    protected Container getContainer(ConfigurationFactory configFactory, ContainerFactory containerFactory, String id) {
+         Configuration config = configFactory.createConfiguration(id, ContainerType.REMOTE, ConfigurationType.RUNTIME);
+         configure(config);
+         return containerFactory.createContainer(id, ContainerType.REMOTE, config);
+@@ -54,9 +55,10 @@
+     	Deployer deployer = deployerFactory.createDeployer(container);
+ 
+         listener.getLogger().println("Deploying "+f);
++        listener.getLogger().println("Container "+ container.getName() );
++        
+         deployer.setLogger(new LoggerImpl(listener.getLogger()));
+         deployer.redeploy(createDeployable(f));
+-        
+     }
+ 
+     /**
+Index: ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/DefaultCargoContainerAdapterImpl.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/DefaultCargoContainerAdapterImpl.java	(revision 19018)
++++ ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/DefaultCargoContainerAdapterImpl.java	(revision )
+@@ -1,15 +1,15 @@
+ package hudson.plugins.deploy;
+ 
+-import static java.lang.annotation.ElementType.FIELD;
+-import static java.lang.annotation.RetentionPolicy.RUNTIME;
++import org.apache.commons.beanutils.ConvertUtils;
++import org.codehaus.cargo.container.configuration.Configuration;
+ 
+ import java.lang.annotation.Documented;
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.Target;
+ import java.lang.reflect.Field;
+ 
+-import org.apache.commons.beanutils.ConvertUtils;
+-import org.codehaus.cargo.container.configuration.Configuration;
++import static java.lang.annotation.ElementType.FIELD;
++import static java.lang.annotation.RetentionPolicy.RUNTIME;
+ 
+ /**
+  * @author Kohsuke Kawaguchi
+Index: ../../../hudson/deploy-plugin/src/test/java/hudson/plugins/deploy/glassfish/GlassFish3xAdapterTest.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/test/java/hudson/plugins/deploy/glassfish/GlassFish3xAdapterTest.java	(revision )
++++ ../../../hudson/deploy-plugin/src/test/java/hudson/plugins/deploy/glassfish/GlassFish3xAdapterTest.java	(revision )
+@@ -0,0 +1,62 @@
++package hudson.plugins.deploy.glassfish;
++
++import hudson.FilePath;
++import hudson.model.StreamBuildListener;
++import org.codehaus.cargo.container.Container;
++import org.codehaus.cargo.container.glassfish.GlassFish3xInstalledLocalContainer;
++import org.codehaus.cargo.generic.ContainerFactory;
++import org.codehaus.cargo.generic.DefaultContainerFactory;
++import org.codehaus.cargo.generic.configuration.ConfigurationFactory;
++import org.codehaus.cargo.generic.configuration.DefaultConfigurationFactory;
++import org.junit.Assert;
++import org.junit.Before;
++import org.junit.Test;
++
++import java.io.File;
++import java.io.IOException;
++
++/**
++ * @author soudmaijer
++ */
++public class GlassFish3xAdapterTest {
++
++    private GlassFish3xAdapter adapter;
++    private static final String home = "D:/development/server/glassfishv3";
++    private static final String username = "adminadmin";
++    private static final String password = "adminadmin";
++    private static int port = 1234;
++
++    @Before
++    public void setup() {
++        adapter = new GlassFish3xAdapter(home, password, username, port);
++    }
++
++    @Test
++    public void testContainerId() {
++        Assert.assertEquals(adapter.getContainerId(), new GlassFish3xInstalledLocalContainer(null).getId());
++    }
++
++    @Test
++    public void testConfigure() {
++        Assert.assertEquals(adapter.home, home);
++        Assert.assertEquals(adapter.adminPort, port);
++        Assert.assertEquals(adapter.userName, username);
++        Assert.assertEquals(adapter.password, password);
++
++        ConfigurationFactory configFactory = new DefaultConfigurationFactory();
++        ContainerFactory containerFactory = new DefaultContainerFactory();
++
++        Container container = adapter.getContainer(configFactory, containerFactory, adapter.getContainerId());
++        Assert.assertNotNull(container);
++    }
++
++    /**
++     * This test only runs in your local environment
++     * @throws IOException
++     * @throws InterruptedException
++     */
++    //@Test
++    public void testDeploy() throws IOException, InterruptedException {
++        adapter.redeploy(new FilePath(new File("D:/workspace/hudson/deploy-plugin/src/test/simple.war")), null, null, new StreamBuildListener(System.out));
++    }
++}
+Index: ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/weblogic/WebLogic10_3_xAdapter.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/weblogic/WebLogic10_3_xAdapter.java	(revision 19111)
++++ ../../../hudson/deploy-plugin/src/main/java/hudson/plugins/deploy/weblogic/WebLogic10_3_xAdapter.java	(revision )
+@@ -1,7 +1,5 @@
+ package hudson.plugins.deploy.weblogic;
+ 
+-import hudson.Extension;
+-import hudson.plugins.deploy.ContainerAdapterDescriptor;
+ import org.kohsuke.stapler.DataBoundConstructor;
+ 
+ /**
+Index: ../../../hudson/deploy-plugin/src/test/java/hudson/plugins/deploy/Foo.java
+===================================================================
+--- ../../../hudson/deploy-plugin/src/test/java/hudson/plugins/deploy/Foo.java	(revision )
++++ ../../../hudson/deploy-plugin/src/test/java/hudson/plugins/deploy/Foo.java	(revision )
+@@ -0,0 +1,100 @@
++package hudson.plugins.deploy;
++
++import javax.management.MBeanServerConnection;
++import javax.management.MBeanServerInvocationHandler;
++import javax.management.ObjectName;
++import javax.management.remote.JMXConnector;
++import javax.management.remote.JMXConnectorFactory;
++import javax.management.remote.JMXServiceURL;
++import javax.naming.Context;
++import java.net.URL;
++import java.net.URLClassLoader;
++import java.util.Hashtable;
++
++/**
++ *
++ * JMX documentation:
++ *      http://edocs.bea.com/wls/docs100/wlsmbeanref/core/index.html
++ *
++ * @author Kohsuke Kawaguchi
++ */
++public class Foo {
++
++    public static void main(String[] args) throws Exception {
++        JMXServiceURL serviceURL = new JMXServiceURL("t3", "127.0.0.1", 7001, "/jndi/weblogic.management.mbeanservers.domainruntime");
++
++        URLClassLoader cl = new URLClassLoader(new URL[]{
++                new URL("file:///home/kohsuke/bea/wlserver_10.3/server/lib/weblogic.jar")});
++
++        // otherwise JNDI fails to find an InitialContextFactory
++        Thread.currentThread().setContextClassLoader(cl);
++
++        Hashtable h = new Hashtable();
++        h.put(Context.SECURITY_PRINCIPAL, "admin");
++        h.put(Context.SECURITY_CREDENTIALS, "adminadmin");
++        h.put(JMXConnectorFactory.PROTOCOL_PROVIDER_CLASS_LOADER,cl);
++        h.put(JMXConnectorFactory.PROTOCOL_PROVIDER_PACKAGES,"weblogic.management.remote");
++        
++        JMXConnector connector = JMXConnectorFactory.connect(serviceURL, h);
++        MBeanServerConnection con = connector.getMBeanServerConnection();
++
++        
++    }
++
++    interface DeployerRuntime {
++        ObjectName activate(String source, String name, String stagingMode, Object info, String id);
++    }
++
++    interface DeploymentTaskRuntimeMBean {
++
++    }
++
++    /**
++     * Trying to access mbeans fail, apparently because CORBA fails to unmarshal a WL-specific exception class
++     */
++    public static void jmain(String[] args) throws Exception {
++        // http://download.oracle.com/docs/cd/E11035_01/wls100/jmx/accessWLS.html#wp1118690
++        String hostname = "localhost";
++        int port = 7001;
++        String protocol = "rmi";
++        String jndiroot = new String("/jndi/iiop://" + hostname + ":" +
++                port + "/");
++        // weblogic.management.mbeanservers.domainruntime
++        // weblogic.management.mbeanservers.runtime
++        // weblogic.management.mbeanservers.edit
++        String mserver = "weblogic.management.mbeanservers.domainruntime";
++
++        JMXServiceURL serviceURL = new JMXServiceURL(protocol, hostname, port,
++                jndiroot + mserver);
++
++        Hashtable h = new Hashtable();
++        h.put(Context.SECURITY_PRINCIPAL, "admin");
++        h.put(Context.SECURITY_CREDENTIALS, "adminadmin");
++
++        JMXConnector connector = JMXConnectorFactory.connect(serviceURL, h);
++        MBeanServerConnection con = connector.getMBeanServerConnection();
++//        for(ObjectName on : con.queryNames(null,null))
++//            System.out.println(on);
++
++        ObjectName on = new ObjectName("com.bea:Name=DeployerRuntime,Type=DeployerRuntime");
++        DeployerRuntime dr = MBeanServerInvocationHandler.newProxyInstance(con, on, DeployerRuntime.class, false);
++        System.out.println(con.invoke(on,"activate",new Object[]{"src/test/simple.war","simple",null,null,null},
++                new String [] { "java.lang.String", "java.lang.String", "java.lang.String", "weblogic.management.deploy.DeploymentData", "java.lang.String" })); 
++
++        // see http://90kts.com/blog/2008/monitoring-weblogic-using-jmx-in-sitescope/
++        // the trick is:
++        /*
++Setting up IIOP access on monitored machines
++SiteScope relies on the IIOP protocol to talk to the WL server. In order to get remote access with JMX via IIOP you need to provide a default username and password for the IIOP user.
++
++This can be done via the WL admin console as in:
++domServiceBus->Environment->Servers->server01_nn->Protocols [tab]\->IIOP->advanced
++
++Then provide a default username and password for the IIOP user.
++
++Note: IIOP is already enabled by default, but a username and pwd is not. This change requires a server restart for WL. You must make sure that the username and password is >= 8 digits, otherwise the CORBA connection will fail when using SiteScope.
++
++        
++         */
++    }
++}

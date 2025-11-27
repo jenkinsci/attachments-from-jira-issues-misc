@@ -1,0 +1,34 @@
+pipeline {
+	
+    agent any
+
+    options { 
+        parallelsAlwaysFailFast() 
+    }
+    	
+    stages {
+        stage('A') {
+            parallel {
+                stage('Docs') {
+                    steps { 
+                        build (job: "mihail-test-docs") 
+                    }
+                }
+                
+                stage('Build') {
+                    steps { 
+                       build (job: "mihail-test-build")
+                    }
+                }
+                
+                stage('Tests') {
+                    steps {
+                      catchError(catchInterruptions: false) {
+                            build (job: "mihail-test-tests")
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

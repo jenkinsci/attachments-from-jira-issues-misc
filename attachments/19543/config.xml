@@ -1,0 +1,166 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <logRotator>
+    <daysToKeep>30</daysToKeep>
+    <numToKeep>-1</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>BUILDTYPE</name>
+          <description>Choose the type of run Snapshot or Release</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>snapshot</string>
+              <string>release</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.promoted__builds.JobPropertyImpl>
+      <activeProcessNames>
+        <string>Release</string>
+        <string>Test</string>
+      </activeProcessNames>
+    </hudson.plugins.promoted__builds.JobPropertyImpl>
+    <hudson.plugins.disk__usage.DiskUsageProperty/>
+    <hudson.plugins.descriptionsetter.JobByDescription/>
+  </properties>
+  <scm class="hudson.scm.SubversionSCM">
+    <locations>
+      <hudson.scm.SubversionSCM_-ModuleLocation>
+        <remote>http://svn.factory.portinfolink.com/trunk/portbase/platform</remote>
+        <local>platform</local>
+      </hudson.scm.SubversionSCM_-ModuleLocation>
+      <hudson.scm.SubversionSCM_-ModuleLocation>
+        <remote>http://svn.factory.portinfolink.com/trunk/portbase/buildsystem</remote>
+        <local>buildsystem</local>
+      </hudson.scm.SubversionSCM_-ModuleLocation>
+      <hudson.scm.SubversionSCM_-ModuleLocation>
+        <remote>http://svn.factory.portinfolink.com/trunk/portbase/etc</remote>
+        <local>etc</local>
+      </hudson.scm.SubversionSCM_-ModuleLocation>
+    </locations>
+    <useUpdate>true</useUpdate>
+    <doRevert>false</doRevert>
+    <browser class="hudson.scm.browsers.FishEyeSVN">
+      <url>http://fisheye/browse/portbase/</url>
+      <rootModule></rootModule>
+    </browser>
+    <excludedRegions>.*/buildsystem/.*
+.*/etc/.*</excludedRegions>
+    <includedRegions></includedRegions>
+    <excludedUsers></excludedUsers>
+    <excludedRevprop></excludedRevprop>
+    <excludedCommitMessages></excludedCommitMessages>
+  </scm>
+  <assignedNode>pcs-trunk</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <jdk>JDK 6.16</jdk>
+  <triggers class="vector">
+    <hudson.triggers.SCMTrigger>
+      <spec></spec>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Ant>
+      <targets>incrementbuildnumber</targets>
+      <antName>Ant 1.7.1</antName>
+      <buildFile>buildsystem/buildnumber.xml</buildFile>
+      <properties>version.file=../platform/platform-version.txt</properties>
+    </hudson.tasks.Ant>
+    <hudson.tasks.Ant>
+      <targets>-logger org.apache.tools.ant.listener.BigProjectLogger clean all-${BUILDTYPE} codereview codereview-report</targets>
+      <antName>Ant 1.7.1</antName>
+      <buildFile>platform/buildserver.xml</buildFile>
+      <properties>anthill.project.name=${PROJECT_NAME}
+anthill.branch.name=${BRANCH_NAME}
+clover.enabled=false
+clover.combine=false
+anthill.build_track.name=${BUILDTYPE}</properties>
+    </hudson.tasks.Ant>
+  </builders>
+  <publishers>
+    <hudson.plugins.pmd.PmdPublisher>
+      <threshold></threshold>
+      <newThreshold></newThreshold>
+      <failureThreshold></failureThreshold>
+      <newFailureThreshold></newFailureThreshold>
+      <healthy></healthy>
+      <unHealthy></unHealthy>
+      <pluginName>[PMD] </pluginName>
+      <thresholdLimit>low</thresholdLimit>
+      <defaultEncoding></defaultEncoding>
+      <useDeltaValues>false</useDeltaValues>
+      <canRunOnFailed>false</canRunOnFailed>
+      <pattern></pattern>
+    </hudson.plugins.pmd.PmdPublisher>
+    <hudson.plugins.findbugs.FindBugsPublisher>
+      <threshold></threshold>
+      <newThreshold></newThreshold>
+      <failureThreshold></failureThreshold>
+      <newFailureThreshold></newFailureThreshold>
+      <healthy></healthy>
+      <unHealthy></unHealthy>
+      <pluginName>[FINDBUGS] </pluginName>
+      <defaultEncoding></defaultEncoding>
+      <useDeltaValues>false</useDeltaValues>
+      <canRunOnFailed>false</canRunOnFailed>
+      <pattern>**/findbugs/*.xml</pattern>
+    </hudson.plugins.findbugs.FindBugsPublisher>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>**/buildserver-logs/**/*,**/target/dist/**/*.platform/pltform-version.txt</artifacts>
+      <latestOnly>false</latestOnly>
+    </hudson.tasks.ArtifactArchiver>
+    <hudson.plugins.descriptionsetter.DescriptionSetterPublisher>
+      <regexp>build version: (.+)</regexp>
+      <regexpForFailed></regexpForFailed>
+      <setForMatrix>false</setForMatrix>
+    </hudson.plugins.descriptionsetter.DescriptionSetterPublisher>
+    <hudson.plugins.labeledgroupedtests.LabeledGroupedTestArchiver>
+      <configs>
+        <hudson.plugins.labeledgroupedtests.LabeledTestGroupConfiguration>
+          <parserClassName>hudson.tasks.junit.JUnitParser</parserClassName>
+          <testResultFileMask>**/test-reports/**/*.xml</testResultFileMask>
+          <label>unit</label>
+        </hudson.plugins.labeledgroupedtests.LabeledTestGroupConfiguration>
+      </configs>
+    </hudson.plugins.labeledgroupedtests.LabeledGroupedTestArchiver>
+    <hudson.plugins.chucknorris.CordellWalkerRecorder>
+      <factGenerator/>
+    </hudson.plugins.chucknorris.CordellWalkerRecorder>
+    <hudson.plugins.parameterizedtrigger.BuildTrigger>
+      <configs>
+        <hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
+          <configs>
+            <hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+              <properties>PLATFORMTYPE=get-latest-snapshot</properties>
+            </hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+          </configs>
+          <projects>SNAPSHOT_TRUNK_BASEAPPS</projects>
+          <condition class="hudson.plugins.parameterizedtrigger.ResultCondition">SUCCESS</condition>
+        </hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
+      </configs>
+    </hudson.plugins.parameterizedtrigger.BuildTrigger>
+    <hudson.plugins.cigame.GamePublisher/>
+    <hudson.plugins.statusmonitor.MonitorPublisher/>
+  </publishers>
+  <buildWrappers>
+    <hudson.plugins.setenv.SetEnvBuildWrapper>
+      <localVarText>PROJECT_NAME=PLATFORM
+APPLICATION_NAME=platform
+BRANCH_NAME=TRUNK
+BRANCH_LOCATION=trunk</localVarText>
+    </hudson.plugins.setenv.SetEnvBuildWrapper>
+  </buildWrappers>
+</project>

@@ -1,0 +1,249 @@
+Index: src/main/java/org/jvnet/hudson/plugins/m2release/M2ReleaseAction.java
+===================================================================
+--- src/main/java/org/jvnet/hudson/plugins/m2release/M2ReleaseAction.java	(revision 35131)
++++ src/main/java/org/jvnet/hudson/plugins/m2release/M2ReleaseAction.java	(working copy)
+@@ -54,12 +54,25 @@
+ 	private String versioningMode;
+ 	private boolean selectCustomScmCommentPrefix;
+ 	private boolean selectAppendHudsonUsername;
+-	
+-	public M2ReleaseAction(MavenModuleSet project, String versioningMode, boolean selectCustomScmCommentPrefix, boolean selectAppendHudsonUsername) {
++    private boolean selectScmTagName;
++	private String scmTagName;
++
++	public M2ReleaseAction(MavenModuleSet project, String versioningMode, boolean selectCustomScmCommentPrefix, boolean selectAppendHudsonUsername, boolean selectScmTagName, String scmTagName) {
+ 		this.project = project;
+ 		this.versioningMode = versioningMode;
+ 		this.selectCustomScmCommentPrefix = selectCustomScmCommentPrefix;
+ 		this.selectAppendHudsonUsername = selectAppendHudsonUsername;
++        this.selectScmTagName = selectScmTagName;
++
++        if(DescriptorImpl.SCM_TAG_ARTIFACT_RELEASE.equals(scmTagName)) {
++            this.scmTagName = project.getRootModule().getModuleName().artifactId + "-" + computeReleaseVersion(
++                    project.getRootModule().getVersion());
++        }
++        else if(DescriptorImpl.SCM_TAG_RELEASE.equals(scmTagName)) {
++            if(project.getRootModule() != null){
++                this.scmTagName = computeReleaseVersion(project.getRootModule().getVersion());
++            }
++        }
+ 	}
+ 
+ 
+@@ -105,6 +118,23 @@
+ 		this.selectAppendHudsonUsername = selectAppendHudsonUsername;
+ 	}
+ 
++    public boolean isSelectScmTagName() {
++        return selectScmTagName;
++    }
++
++    public void setSelectScmTagName(boolean selectScmTagName) {
++        this.selectScmTagName = selectScmTagName;
++    }
++
++
++    public String getScmTagName() {
++        return scmTagName;
++    }
++
++    public void setScmTagName(String scmTagName) {
++        this.scmTagName = scmTagName;
++    }
++    
+ 	public Collection<MavenModule> getModules() {
+ 		return project.getModules();
+ 	}
+@@ -173,6 +203,9 @@
+ 		final boolean specifyScmCredentials = httpParams.containsKey("specifyScmCredentials"); //$NON-NLS-1$
+ 		final String scmUsername = specifyScmCredentials ? getString("scmUsername", httpParams) : null; //$NON-NLS-1$
+ 		final String scmPassword = specifyScmCredentials ? getString("scmPassword", httpParams) : null; //$NON-NLS-1$
++        final boolean specifyTagName = httpParams.containsKey("scmTagName"); //$NON-NLS-1$
++		final String scmTagName = specifyTagName ? getString("scmTagName", httpParams) : null; //$NON-NLS-1$
++
+ 		final boolean specifyScmCommentPrefix = httpParams.containsKey("specifyScmCommentPrefix"); //$NON-NLS-1$
+ 		final String scmCommentPrefix = specifyScmCommentPrefix ? getString("scmCommentPrefix", httpParams) : null; //$NON-NLS-1$
+ 		final boolean appendHusonUserName = specifyScmCommentPrefix && httpParams.containsKey("appendHudsonUserName"); //$NON-NLS-1$
+@@ -212,7 +245,8 @@
+ 				m2Wrapper.setRepoDescription(repoDescription);
+ 				m2Wrapper.setScmUsername(scmUsername);
+ 				m2Wrapper.setScmPassword(scmPassword);
+-				m2Wrapper.setScmCommentPrefix(scmCommentPrefix);
++				m2Wrapper.setScmTagName(scmTagName);
++                m2Wrapper.setScmCommentPrefix(scmCommentPrefix);
+ 				m2Wrapper.setAppendHusonUserName(appendHusonUserName);
+ 				m2Wrapper.setHudsonUserName(Hudson.getAuthentication().getName());
+ 				// redirect to project page
+Index: src/main/java/org/jvnet/hudson/plugins/m2release/M2ReleaseBuildWrapper.java
+===================================================================
+--- src/main/java/org/jvnet/hudson/plugins/m2release/M2ReleaseBuildWrapper.java	(revision 35131)
++++ src/main/java/org/jvnet/hudson/plugins/m2release/M2ReleaseBuildWrapper.java	(working copy)
+@@ -83,6 +83,7 @@
+ 	private transient String              scmUsername;
+ 	private transient String              scmPassword;
+ 	private transient String              scmCommentPrefix;
++    private transient String              scmTagName;
+ 	private transient boolean             appendHusonUserName;
+ 	private transient String              hudsonUserName;
+ 
+@@ -90,14 +91,18 @@
+ 	public String                         defaultVersioningMode        = DescriptorImpl.DEFAULT_VERSIONING;
+ 	public boolean                        selectCustomScmCommentPrefix = DescriptorImpl.DEFAULT_SELECT_CUSTOM_SCM_COMMENT_PREFIX;
+ 	public boolean                        selectAppendHudsonUsername   = DescriptorImpl.DEFAULT_SELECT_APPEND_HUDSON_USERNAME;
++	public boolean                        selectScmTagName             = DescriptorImpl.DEFAULT_SELECT_SCM_TAG_NAME;
++    public String                         defaultScmTagName            = DescriptorImpl.DEFAULT_SCM_TAG_NAME;
+ 	
+ 	@DataBoundConstructor
+-	public M2ReleaseBuildWrapper(String releaseGoals, String defaultVersioningMode, boolean selectCustomScmCommentPrefix, boolean selectAppendHudsonUsername) {
++	public M2ReleaseBuildWrapper(String releaseGoals, String defaultVersioningMode, boolean selectCustomScmCommentPrefix, boolean selectAppendHudsonUsername, boolean selectScmTagName, String defaultScmTagName) {
+ 		super();
+ 		this.releaseGoals = releaseGoals;
+ 		this.defaultVersioningMode = defaultVersioningMode;
+ 		this.selectCustomScmCommentPrefix = selectCustomScmCommentPrefix;
+ 		this.selectAppendHudsonUsername = selectAppendHudsonUsername;
++        this.selectScmTagName = selectScmTagName;
++        this.defaultScmTagName = defaultScmTagName;
+ 	}
+ 
+ 
+@@ -136,6 +141,16 @@
+ 				if (scmPassword != null) {
+ 					thisBuildGoals = "-Dpassword=" + scmPassword + " " + thisBuildGoals;
+ 				}
++
++                if(scmTagName != null) {
++                    final StringBuilder sb = new StringBuilder();
++					sb.append("\"-Dtag=");
++					sb.append(scmTagName);
++					sb.append("\" ");
++					sb.append(thisBuildGoals);
++
++					thisBuildGoals = sb.toString();
++                }
+ 				
+ 				if (scmCommentPrefix != null) {
+ 					final StringBuilder sb = new StringBuilder();
+@@ -245,6 +260,10 @@
+ 		this.scmPassword = scmPassword;
+ 	}
+ 
++    public void setScmTagName(String scmTagName) {
++        this.scmTagName = scmTagName;
++    }
++
+ 	public void setScmCommentPrefix(String scmCommentPrefix) {
+ 		this.scmCommentPrefix = scmCommentPrefix;
+ 	}
+@@ -253,6 +272,13 @@
+ 		this.appendHusonUserName = appendHusonUserName;
+ 	}
+ 
++    public String getDefaultScmTagName() {
++        return defaultScmTagName;
++    }
++
++    public void setDefaultScmTagName(String defaultScmTagName) {
++        this.defaultScmTagName = defaultScmTagName;
++    }
+ 	
+   /**
+    * @return the defaultVersioningMode
+@@ -287,6 +313,14 @@
+ 		this.selectAppendHudsonUsername = selectAppendHudsonUsername;
+ 	}
+ 
++    public boolean isSelectScmTagName() {
++        return selectScmTagName;
++    }
++
++    public void setSelectScmTagName(boolean selectScmTagName) {
++        this.selectScmTagName = selectScmTagName;
++    }
++
+ 	public void setHudsonUserName(String hudsonUserName) {
+ 		this.hudsonUserName = hudsonUserName;
+ 	}
+@@ -328,7 +362,8 @@
+ 
+ 	@Override
+ 	public Action getProjectAction(AbstractProject job) {
+-		return new M2ReleaseAction((MavenModuleSet) job, defaultVersioningMode, selectCustomScmCommentPrefix, selectAppendHudsonUsername);
++		return new M2ReleaseAction((MavenModuleSet) job, defaultVersioningMode, selectCustomScmCommentPrefix, 
++                selectAppendHudsonUsername, selectScmTagName, defaultScmTagName);
+ 	}
+ 
+ 	public static boolean hasReleasePermission(AbstractProject job) {
+@@ -387,7 +422,12 @@
+ 		
+ 		public static final boolean    DEFAULT_SELECT_CUSTOM_SCM_COMMENT_PREFIX = false;
+ 		public static final boolean    DEFAULT_SELECT_APPEND_HUDSON_USERNAME    = false;
+-		
++        
++		public static final boolean    DEFAULT_SELECT_SCM_TAG_NAME = false;
++        public static final String     SCM_TAG_ARTIFACT_RELEASE = "artifactId-release";
++        public static final String     SCM_TAG_RELEASE = "release";
++        public static final String     DEFAULT_SCM_TAG_NAME = SCM_TAG_ARTIFACT_RELEASE;
++        
+ 		private boolean nexusSupport  = false;
+ 		private String  nexusURL      = null;
+ 		private String  nexusUser     = "deployment";                                    //$NON-NLS-1$
+Index: src/main/resources/org/jvnet/hudson/plugins/m2release/M2ReleaseAction/index.jelly
+===================================================================
+--- src/main/resources/org/jvnet/hudson/plugins/m2release/M2ReleaseAction/index.jelly	(revision 35131)
++++ src/main/resources/org/jvnet/hudson/plugins/m2release/M2ReleaseAction/index.jelly	(working copy)
+@@ -39,6 +39,13 @@
+ 						</f:radioBlock>
+ 					</f:entry>
+ 
++                    <f:optionalBlock name="SpecifyScmTag" title="Specify SCM tag" checked="${it.selectScmTagName}">
++						<f:entry title="Tag">
++<!--							<f:textbox name="scmTagName" value="${it.rootModule.moduleName.artifactId}-${it.computeReleaseVersion(it.rootModule.version)}" />-->
++							<f:textbox name="scmTagName" value="${it.scmTagName}" />
++						</f:entry>						
++					</f:optionalBlock>
++                    
+ 					<f:optionalBlock name="specifyScmCredentials" title="Specify SCM login/password" checked="false">
+ 						<f:entry title="Username">
+ 							<f:textbox name="scmUsername" value="" />
+Index: src/main/resources/org/jvnet/hudson/plugins/m2release/M2ReleaseBuildWrapper/config.jelly
+===================================================================
+--- src/main/resources/org/jvnet/hudson/plugins/m2release/M2ReleaseBuildWrapper/config.jelly	(revision 35131)
++++ src/main/resources/org/jvnet/hudson/plugins/m2release/M2ReleaseBuildWrapper/config.jelly	(working copy)
+@@ -26,4 +26,16 @@
+ 	<f:entry title="Preselect append Hudson username" help="/plugin/m2release/help-projectConfig-selectAppendHudsonUsername.html">
+ 		<f:checkbox name="selectAppendHudsonUsername" checked="${h.defaulted(instance.selectAppendHudsonUsername,descriptor.DEFAULT_SELECT_APPEND_HUDSON_USERNAME)}"/>
+ 	</f:entry>
++
++    <f:entry title="Preselect custom SCM Tag Name" help="/plugin/m2release/help-projectConfig-selectCustomScmTag.html">
++		<f:checkbox name="selectScmTagName" checked="${h.defaulted(instance.selectScmTagName,descriptor.DEFAULT_SELECT_SCM_TAG_NAME)}"/>        
++	</f:entry>
++
++    <f:entry title="SCM Tag Name" help="/plugin/m2release/help-projectConfig-SCMTagName.html">
++        <select name="defaultScmTagName">
++			<f:option value="${descriptor.SCM_TAG_ARTIFACT_RELEASE}" selected="${descriptor.SCM_TAG_ARTIFACT_RELEASEO == h.defaulted(instance.defaultScmTagName,descriptor.DEFAULT_SCM_TAG_NAME)}">ArtifactId-ReleaseVersion</f:option>
++			<f:option value="${descriptor.SCM_TAG_RELEASE}" selected="${descriptor.SCM_TAG_RELEASE == h.defaulted(instance.defaultScmTagName,descriptor.DEFAULT_SCM_TAG_NAME)}">ReleaseVersion</f:option>
++		</select>
++	</f:entry>
++
+ </j:jelly>
+Index: src/main/webapp/help-projectConfig-ScmTagName.html
+===================================================================
+--- src/main/webapp/help-projectConfig-ScmTagName.html	(revision 0)
++++ src/main/webapp/help-projectConfig-ScmTagName.html	(revision 0)
+@@ -0,0 +1,5 @@
++<div>
++	Specifies the SCM Tag name.
++    The Maven Release Plugin by defaults specifies the 'ArtifactId'-'ReleaseVersion'. This plugin copies this behaviour, but allows
++    to set the tag name to 'ReleaseVersion' only without 'ArtifactId'
++</div>
+\ No newline at end of file
+Index: src/main/webapp/help-projectConfig-selectCustomScmTag.html
+===================================================================
+--- src/main/webapp/help-projectConfig-selectCustomScmTag.html	(revision 0)
++++ src/main/webapp/help-projectConfig-selectCustomScmTag.html	(revision 0)
+@@ -0,0 +1,4 @@
++<div>
++	Enable this to have the "Specify SCM tag" option available in the "Perform Maven Release" view.
++    If this option is not set the SCM tag will be automatically set to the "Preselected SCM tag name"
++</div>
+\ No newline at end of file

@@ -1,0 +1,36 @@
+node {
+    writeFile(file: "a.c", text: '''
+#include <sys/types.h>
+#include <stdlib.h>
+
+void
+func1(void)
+{
+}
+
+int
+main(int argc, char *argv[])
+{
+    char *a;
+    int64_t *b;
+    b = (int64_t *)a;
+    printf("Hi");
+    printf(NULL);
+    printf("%s %d\\n", "35");
+    func1();
+}
+'''
+    )
+    sh "cc -Wall -W -Wcast-align -o output a.c"
+
+    step([$class: 'WarningsPublisher',
+         canComputeNew: false,
+         canResolveRelativePaths: false,
+         consoleParsers: [[parserName: 'Clang (LLVM based)']],
+         defaultEncoding: '',
+         excludePattern: '',
+         healthy: '',
+         includePattern: '',
+         messagesPattern: '',
+         unHealthy: ''])
+}

@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?><project>
+    <actions/>
+    <description>This job is automatically generated with job dsl from the ironbank/infrastructure repo</description>
+    <keepDependencies>false</keepDependencies>
+    <properties>
+        <hudson.model.ParametersDefinitionProperty>
+            <parameterDefinitions>
+                <hudson.model.StringParameterDefinition>
+                    <name>VERSION</name>
+                    <defaultValue/>
+                    <description>Build version to act upon</description>
+                </hudson.model.StringParameterDefinition>
+            </parameterDefinitions>
+        </hudson.model.ParametersDefinitionProperty>
+        <se.diabol.jenkins.pipeline.PipelineProperty>
+            <taskName>Run subsystem tests</taskName>
+            <stageName>Test</stageName>
+        </se.diabol.jenkins.pipeline.PipelineProperty>
+    </properties>
+    <canRoam>false</canRoam>
+    <disabled>false</disabled>
+    <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+    <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+    <triggers/>
+    <concurrentBuild>false</concurrentBuild>
+    <builders>
+        <hudson.tasks.Shell>
+            <command>
+                    #!/usr/bin/env bash
+                    export DOCKER_USER=`id -u`
+export DOCKER_CLIENT_TIMEOUT=400
+export COMPOSE_HTTP_TIMEOUT=400
+docker-compose -f se/subsystem-tests.yml stop
+export DOCKER_CLIENT_TIMEOUT=400
+export COMPOSE_HTTP_TIMEOUT=400
+docker-compose -f se/subsystem-tests.yml rm -f
+                    rm -rf ${PWD}/se/tmp/mandateResponses
+                    </command>
+        </hudson.tasks.Shell>
+        <hudson.tasks.Shell>
+            <command>
+                    #!/usr/bin/env bash
+                    mkdir -p ${PWD}/se/tmp/mandateResponses
+                    export DOCKER_USER=`id -u`
+                    sed -i.bak "s/VERSION_PLACEHOLDER/$VERSION/" se/subsystem-tests.yml
+export DOCKER_CLIENT_TIMEOUT=400
+export COMPOSE_HTTP_TIMEOUT=400
+docker-compose -f se/subsystem-tests.yml up -d
+                    </command>
+        </hudson.tasks.Shell>
+        <hudson.tasks.Shell>
+            <command>
+while ! curl -s http://localhost:9052/ping; do sleep 1; done;
+</command>
+        </hudson.tasks.Shell>
+        <hudson.tasks.Shell>
+            <command>
+mkdir -p ${HOME}/.gradle
+mkdir -p ${HOME}/.m2/repository
+mkdir -p ${HOME}/.ivy2
+mkdir -p ${HOME}/.sbt
+mkdir -p ${HOME}/.npm
+mkdir -p ${HOME}/.sonar
+mkdir -p ${HOME}/.coursier
+echo '' &gt; env
+</command>
+        </hudson.tasks.Shell>
+        <hudson.tasks.Shell>
+            <command>
+if [ -e build.new_version_without_prefix ]
+ then cp build.new_version_without_prefix se/.
+fi
+cd se &amp;&amp; mvn -s /home/jenkins/.m2/settings.xml -Psubsystem-test clean install -DskipTests
+</command>
+        </hudson.tasks.Shell>
+    </builders>
+    <publishers>
+        <hudson.tasks.Mailer>
+            <recipients/>
+            <dontNotifyEveryUnstableBuild>true</dontNotifyEveryUnstableBuild>
+            <sendToIndividuals>true</sendToIndividuals>
+        </hudson.tasks.Mailer>
+        <hudson.tasks.Mailer>
+            <recipients/>
+            <dontNotifyEveryUnstableBuild>true</dontNotifyEveryUnstableBuild>
+            <sendToIndividuals>true</sendToIndividuals>
+        </hudson.tasks.Mailer>
+        <org.jenkinsci.plugins.postbuildscript.PostBuildScript>
+            <buildSteps>
+                <hudson.tasks.Shell>
+                    <command>
+                            #!/usr/bin/env bash
+                            export DOCKER_USER=`id -u`
+export DOCKER_CLIENT_TIMEOUT=400
+export COMPOSE_HTTP_TIMEOUT=400
+docker-compose -f se/subsystem-tests.yml stop
+export DOCKER_CLIENT_TIMEOUT=400
+export COMPOSE_HTTP_TIMEOUT=400
+docker-compose -f se/subsystem-tests.yml rm -f
+                            rm -rf ${PWD}/se/tmp/mandateResponses
+                            </command>
+                </hudson.tasks.Shell>
+            </buildSteps>
+            <scriptOnlyIfSuccess>false</scriptOnlyIfSuccess>
+            <scriptOnlyIfFailure>false</scriptOnlyIfFailure>
+            <markBuildUnstable>false</markBuildUnstable>
+        </org.jenkinsci.plugins.postbuildscript.PostBuildScript>
+        <hudson.plugins.parameterizedtrigger.BuildTrigger>
+            <configs>
+                <hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
+                    <projects>direct-debit-se-staging-eu-provision</projects>
+                    <condition>SUCCESS</condition>
+                    <triggerWithNoParameters>false</triggerWithNoParameters>
+                    <configs>
+                        <hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+                            <properties>VERSION=$VERSION</properties>
+                        </hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+                    </configs>
+                </hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
+            </configs>
+        </hudson.plugins.parameterizedtrigger.BuildTrigger>
+        <hudson.tasks.Mailer>
+            <recipients/>
+            <dontNotifyEveryUnstableBuild>true</dontNotifyEveryUnstableBuild>
+            <sendToIndividuals>true</sendToIndividuals>
+        </hudson.tasks.Mailer>
+    </publishers>
+    <buildWrappers>
+        <hudson.plugins.ws__cleanup.PreBuildCleanup>
+            <patterns/>
+            <deleteDirs>false</deleteDirs>
+            <cleanupParameter/>
+            <externalDelete/>
+        </hudson.plugins.ws__cleanup.PreBuildCleanup>
+        <hudson.plugins.ansicolor.AnsiColorBuildWrapper>
+            <colorMapName>xterm</colorMapName>
+        </hudson.plugins.ansicolor.AnsiColorBuildWrapper>
+        <com.michelin.cio.hudson.plugins.maskpasswords.MaskPasswordsBuildWrapper/>
+        <EnvInjectPasswordWrapper>
+            <injectGlobalPasswords>true</injectGlobalPasswords>
+            <maskPasswordParameters>true</maskPasswordParameters>
+            <passwordEntries/>
+        </EnvInjectPasswordWrapper>
+        <com.cloudbees.jenkins.plugins.sshagent.SSHAgentBuildWrapper>
+            <user>jenkins-ssh</user>
+        </com.cloudbees.jenkins.plugins.sshagent.SSHAgentBuildWrapper>
+        <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
+            <bindings/>
+        </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
+        <com.michelin.cio.hudson.plugins.maskpasswords.MaskPasswordsBuildWrapper/>
+        <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
+            <bindings/>
+        </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
+        <com.michelin.cio.hudson.plugins.maskpasswords.MaskPasswordsBuildWrapper/>
+        <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
+            <bindings/>
+        </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
+        <com.michelin.cio.hudson.plugins.maskpasswords.MaskPasswordsBuildWrapper/>
+    </buildWrappers>
+    <logRotator>
+        <daysToKeep>30</daysToKeep>
+        <numToKeep>-1</numToKeep>
+        <artifactDaysToKeep>30</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+    </logRotator>
+    <assignedNode>ironbank-xlarge</assignedNode>
+    <scm class="hudson.plugins.git.GitSCM">
+        <userRemoteConfigs>
+            <hudson.plugins.git.UserRemoteConfig>
+                <name>origin</name>
+                <url>ssh://git@stash.int.klarna.net:7999/ib/direct-debit-mandates.git</url>
+                <credentialsId>ironbank-system-user-ssh</credentialsId>
+            </hudson.plugins.git.UserRemoteConfig>
+        </userRemoteConfigs>
+        <branches>
+            <hudson.plugins.git.BranchSpec>
+                <name>$VERSION</name>
+            </hudson.plugins.git.BranchSpec>
+        </branches>
+        <configVersion>2</configVersion>
+        <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+        <gitTool>Default</gitTool>
+        <extensions>
+            <hudson.plugins.git.extensions.impl.WipeWorkspace/>
+            <hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+                <relativeTargetDir/>
+            </hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+            <hudson.plugins.git.extensions.impl.SubmoduleOption>
+                <disableSubmodules>false</disableSubmodules>
+                <recursiveSubmodules>true</recursiveSubmodules>
+                <trackingSubmodules>false</trackingSubmodules>
+                <reference/>
+                <parentCredentials>false</parentCredentials>
+            </hudson.plugins.git.extensions.impl.SubmoduleOption>
+            <hudson.plugins.git.extensions.impl.LocalBranch>
+                <localBranch>$VERSION</localBranch>
+            </hudson.plugins.git.extensions.impl.LocalBranch>
+        </extensions>
+    </scm>
+</project>

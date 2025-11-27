@@ -1,0 +1,105 @@
+Index: src/test/java/hudson/scm/SubversionSCMTest.java
+===================================================================
+--- src/test/java/hudson/scm/SubversionSCMTest.java	(revision 27929)
++++ src/test/java/hudson/scm/SubversionSCMTest.java	(working copy)
+@@ -43,6 +43,7 @@
+ import static hudson.scm.SubversionSCM.compareSVNAuthentications;
+ import hudson.scm.SubversionSCM.DescriptorImpl;
+ import hudson.scm.browsers.Sventon;
++import hudson.util.FormValidation;
+ import hudson.util.NullStream;
+ import hudson.util.StreamTaskListener;
+ import org.dom4j.Document;
+@@ -316,6 +317,39 @@
+         verify(scm,(SubversionSCM)p.getScm());
+     }
+ 
++    @Bug(5684)
++    public void testDoCheckExcludedUsers() throws Exception {
++        String[] validUsernames = new String[] {
++            "DOMAIN\\user",
++            "user",
++            "us_er",
++            "user123",
++            "User",
++            "", // this one is ignored
++            "DOmain12\\User34"};
++
++        for (String validUsername : validUsernames) {
++            assertEquals(
++                "User " + validUsername + " isn't OK (but it's valid).", 
++                FormValidation.Kind.OK, 
++                new SubversionSCM.DescriptorImpl().doCheckExcludedUsers(validUsername).kind);
++        }
++
++        String[] invalidUsernames = new String[] {
++            "\\user",
++            "DOMAIN\\",
++            "DOMAIN@user",
++            "DOMAIN.user" };
++
++        for (String invalidUsername : invalidUsernames) {
++            assertEquals(
++                "User " + invalidUsername + " isn't ERROR (but it's not valid).", 
++                FormValidation.Kind.ERROR, 
++                new SubversionSCM.DescriptorImpl().doCheckExcludedUsers(invalidUsername).kind);
++        }
++
++    }
++
+     private void verify(SubversionSCM lhs, SubversionSCM rhs) {
+         ModuleLocation[] ll = lhs.getLocations();
+         ModuleLocation[] rl = rhs.getLocations();
+Index: src/main/java/hudson/scm/SubversionSCM.java
+===================================================================
+--- src/main/java/hudson/scm/SubversionSCM.java	(revision 27929)
++++ src/main/java/hudson/scm/SubversionSCM.java	(working copy)
+@@ -1815,7 +1815,11 @@
+             return FormValidation.ok();
+         }
+ 
+-        private static final Pattern USERNAME_PATTERN = Pattern.compile("\\w+");
++        /**
++         * Regular expression for matching one username. Matches 'windows' names ('DOMAIN&#92;user') and
++         * 'normal' names ('user'). Where user (and DOMAIN) has one or more characters in 'a-zA-Z_0-9')
++         */
++        private static final Pattern USERNAME_PATTERN = Pattern.compile("(\\w+\\\\)?+(\\w+)");
+ 
+         /**
+          * Validates the excludeUsers field
+Index: pom.xml
+===================================================================
+--- pom.xml	(revision 27929)
++++ pom.xml	(working copy)
+@@ -27,7 +27,7 @@
+   <parent>
+     <groupId>org.jvnet.hudson.plugins</groupId>
+     <artifactId>plugin</artifactId>
+-    <version>1.346</version>
++    <version>1.347</version>
+     <relativePath>../pom.xml</relativePath>
+   </parent>
+ 
+@@ -55,19 +55,19 @@
+       <groupId>org.jvnet.hudson.main</groupId>
+       <artifactId>hudson-war</artifactId>
+       <type>war</type>
+-      <version>1.347-SNAPSHOT</version>
++      <version>1.347</version>
+       <scope>test</scope>
+     </dependency>
+     <dependency>
+       <groupId>org.jvnet.hudson.main</groupId>
+       <artifactId>hudson-core</artifactId>
+-      <version>1.347-SNAPSHOT</version>
++      <version>1.347</version>
+       <scope>provided</scope>
+     </dependency>
+     <dependency>
+       <groupId>org.jvnet.hudson.main</groupId>
+       <artifactId>hudson-test-harness</artifactId>
+-      <version>1.347-SNAPSHOT</version>
++      <version>1.347</version>
+       <scope>test</scope>
+     </dependency>
+   </dependencies>

@@ -1,0 +1,287 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>30</daysToKeep>
+        <numToKeep>10</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <com.sonyericsson.jenkins.plugins.bfa.model.ScannerJobProperty plugin="build-failure-analyzer@1.22.0">
+      <doNotScan>false</doNotScan>
+    </com.sonyericsson.jenkins.plugins.bfa.model.ScannerJobProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.29">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <com.synopsys.arc.jenkinsci.plugins.jobrestrictions.jobs.JobRestrictionProperty plugin="job-restrictions@0.8"/>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.0.1">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList">
+        <string>virtual machine</string>
+      </categories>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>category</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit></paramsToUseForLimit>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    <job-metadata plugin="metadata@1.1.0b">
+      <values class="linked-list">
+        <metadata-tree>
+          <name>job-info</name>
+          <parent class="job-metadata" reference="../../.."/>
+          <generated>true</generated>
+          <exposedToEnvironment>false</exposedToEnvironment>
+          <children class="linked-list">
+            <metadata-tree>
+              <name>last-saved</name>
+              <description></description>
+              <parent class="metadata-tree" reference="../../.."/>
+              <generated>true</generated>
+              <exposedToEnvironment>false</exposedToEnvironment>
+              <children class="linked-list">
+                <metadata-date>
+                  <name>time</name>
+                  <description></description>
+                  <parent class="metadata-tree" reference="../../.."/>
+                  <generated>true</generated>
+                  <exposedToEnvironment>false</exposedToEnvironment>
+                  <value>
+                    <time>1551361551985</time>
+                    <timezone>UTC</timezone>
+                  </value>
+                  <checked>false</checked>
+                </metadata-date>
+                <metadata-tree>
+                  <name>user</name>
+                  <parent class="metadata-tree" reference="../../.."/>
+                  <generated>true</generated>
+                  <exposedToEnvironment>false</exposedToEnvironment>
+                  <children class="linked-list">
+                    <metadata-string>
+                      <name>display-name</name>
+                      <description></description>
+                      <parent class="metadata-tree" reference="../../.."/>
+                      <generated>true</generated>
+                      <exposedToEnvironment>false</exposedToEnvironment>
+                      <value>Jim Klimov</value>
+                    </metadata-string>
+                    <metadata-string>
+                      <name>full-name</name>
+                      <description></description>
+                      <parent class="metadata-tree" reference="../../.."/>
+                      <generated>true</generated>
+                      <exposedToEnvironment>false</exposedToEnvironment>
+                      <value>Jim Klimov</value>
+                    </metadata-string>
+                  </children>
+                </metadata-tree>
+              </children>
+            </metadata-tree>
+          </children>
+        </metadata-tree>
+      </values>
+    </job-metadata>
+  </properties>
+  <scm class="org.jenkinsci.plugins.multiplescms.MultiSCM" plugin="multiple-scms@0.6">
+    <scms>
+      <hudson.plugins.git.GitSCM plugin="git@4.0.0-rc">
+        <configVersion>2</configVersion>
+        <userRemoteConfigs>
+          <hudson.plugins.git.UserRemoteConfig>
+            <refspec>+refs/pull-requests/*:refs/remotes/origin/pr/*</refspec>
+            <url>ssh://git@bitbucket-prod.localdomain:7999/${destinationRepositoryOwner}/${destinationRepositoryName}.git</url>
+            <credentialsId>a4cb8b58-30ab-4914-a306-6ba4567890b2</credentialsId>
+          </hudson.plugins.git.UserRemoteConfig>
+        </userRemoteConfigs>
+        <branches>
+          <hudson.plugins.git.BranchSpec>
+            <name>origin/pr/${pullRequestId}/from</name>
+          </hudson.plugins.git.BranchSpec>
+        </branches>
+        <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+        <submoduleCfg class="list"/>
+        <extensions>
+          <hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+            <relativeTargetDir>project</relativeTargetDir>
+          </hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+          <hudson.plugins.git.extensions.impl.CleanBeforeCheckout/>
+        </extensions>
+      </hudson.plugins.git.GitSCM>
+      <hudson.plugins.git.GitSCM plugin="git@4.0.0-rc">
+        <configVersion>2</configVersion>
+        <userRemoteConfigs>
+          <hudson.plugins.git.UserRemoteConfig>
+            <url>ssh://git@bitbucket-prod.localdomain:7999/CI/continuous-integration.git</url>
+            <credentialsId>a4cb8b58-30ab-4914-a306-6ba4567890b2</credentialsId>
+          </hudson.plugins.git.UserRemoteConfig>
+        </userRemoteConfigs>
+        <branches>
+          <hudson.plugins.git.BranchSpec>
+            <name>origin/master</name>
+          </hudson.plugins.git.BranchSpec>
+        </branches>
+        <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+        <submoduleCfg class="list"/>
+        <extensions>
+          <hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+            <relativeTargetDir>ci</relativeTargetDir>
+          </hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+          <hudson.plugins.git.extensions.impl.PathRestriction>
+            <includedRegions></includedRegions>
+            <excludedRegions>.*</excludedRegions>
+          </hudson.plugins.git.extensions.impl.PathRestriction>
+        </extensions>
+      </hudson.plugins.git.GitSCM>
+    </scms>
+  </scm>
+  <assignedNode>devel-image &amp;&amp; x86_64</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <jdk>(System)</jdk>
+  <triggers>
+    <stashpullrequestbuilder.stashpullrequestbuilder.StashBuildTrigger plugin="stash-pullrequest-builder@1.8">
+      <spec>H/2 * * * *</spec>
+      <cron>H/2 * * * *</cron>
+      <stashHost>https://bitbucket-prod.localdomain</stashHost>
+      <credentialsId>5df640b4-d117-4f0e-9ef2-1b120fead149</credentialsId>
+      <projectCode>BIOS</projectCode>
+      <repositoryName>conn-amqp</repositoryName>
+      <ciSkipPhrases>NO TEST</ciSkipPhrases>
+      <ciBuildPhrases>test this please</ciBuildPhrases>
+      <targetBranchesToBuild></targetBranchesToBuild>
+      <ignoreSsl>true</ignoreSsl>
+      <checkDestinationCommit>false</checkDestinationCommit>
+      <checkMergeable>false</checkMergeable>
+      <mergeOnSuccess>false</mergeOnSuccess>
+      <checkNotConflicted>false</checkNotConflicted>
+      <onlyBuildOnComment>false</onlyBuildOnComment>
+      <deletePreviousBuildFinishComments>false</deletePreviousBuildFinishComments>
+      <cancelOutdatedJobsEnabled>true</cancelOutdatedJobsEnabled>
+      <checkProbeMergeStatus>true</checkProbeMergeStatus>
+    </stashpullrequestbuilder.stashpullrequestbuilder.StashBuildTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>PATH=&quot;/usr/lib/ccache:/usr/lib64/ccache:$PATH&quot;
+export PATH
+
+cppcheck --std=c++11 --enable=all --inconclusive --xml --xml-version=2 project 2&gt;cppcheck.xml
+cd project &amp;&amp; \
+CCACHE_BASEDIR=&quot;`pwd`&quot; &amp;&amp; export CCACHE_BASEDIR &amp;&amp; \
+./autogen.sh &amp;&amp; \
+./configure &amp;&amp; \
+make memcheck &amp;&amp; \
+make distcheck
+</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <org.jenkinsci.plugins.cppcheck.CppcheckPublisher plugin="cppcheck@1.24">
+      <config>
+        <pattern>**/cppcheck.xml</pattern>
+        <ignoreBlankFiles>true</ignoreBlankFiles>
+        <allowNoReport>true</allowNoReport>
+        <configSeverityEvaluation>
+          <threshold></threshold>
+          <newThreshold></newThreshold>
+          <failureThreshold></failureThreshold>
+          <newFailureThreshold></newFailureThreshold>
+          <healthy></healthy>
+          <unHealthy></unHealthy>
+          <severityError>true</severityError>
+          <severityWarning>true</severityWarning>
+          <severityStyle>true</severityStyle>
+          <severityPerformance>true</severityPerformance>
+          <severityInformation>true</severityInformation>
+          <severityNoCategory>true</severityNoCategory>
+          <severityPortability>true</severityPortability>
+        </configSeverityEvaluation>
+        <configGraph>
+          <xSize>500</xSize>
+          <ySize>200</ySize>
+          <numBuildsInGraph>0</numBuildsInGraph>
+          <displayAllErrors>true</displayAllErrors>
+          <displayErrorSeverity>false</displayErrorSeverity>
+          <displayWarningSeverity>false</displayWarningSeverity>
+          <displayStyleSeverity>false</displayStyleSeverity>
+          <displayPerformanceSeverity>false</displayPerformanceSeverity>
+          <displayInformationSeverity>false</displayInformationSeverity>
+          <displayNoCategorySeverity>false</displayNoCategorySeverity>
+          <displayPortabilitySeverity>false</displayPortabilitySeverity>
+        </configGraph>
+      </config>
+    </org.jenkinsci.plugins.cppcheck.CppcheckPublisher>
+    <org.jenkinsci.plugins.stashNotifier.StashNotifier plugin="stashNotifier@1.17">
+      <stashServerBaseUrl>https://bitbucket-prod.localdomain</stashServerBaseUrl>
+      <credentialsId>5df640b4-d117-4f0e-9ef2-1b120fead149</credentialsId>
+      <ignoreUnverifiedSSLPeer>false</ignoreUnverifiedSSLPeer>
+      <commitSha1>${sourceCommitHash}</commitSha1>
+      <includeBuildNumberInKey>true</includeBuildNumberInKey>
+      <projectKey></projectKey>
+      <prependParentProjectKey>false</prependParentProjectKey>
+      <disableInprogressNotification>false</disableInprogressNotification>
+      <considerUnstableAsSuccess>false</considerUnstableAsSuccess>
+      <globalConfig>
+        <adminAddress>Jenkins@localdomain.com&gt;</adminAddress>
+        <jenkinsUrl>https://jenkins2.localdomain/</jenkinsUrl>
+      </globalConfig>
+    </org.jenkinsci.plugins.stashNotifier.StashNotifier>
+  </publishers>
+  <buildWrappers>
+    <hudson.plugins.ws__cleanup.PreBuildCleanup plugin="ws-cleanup@0.37">
+      <deleteDirs>false</deleteDirs>
+      <cleanupParameter></cleanupParameter>
+      <externalDelete></externalDelete>
+      <disableDeferredWipeout>false</disableDeferredWipeout>
+    </hudson.plugins.ws__cleanup.PreBuildCleanup>
+    <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper plugin="credentials-binding@1.17">
+      <bindings>
+        <org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding>
+          <credentialsId>5df640b4-d117-4f0e-9ef2-1b120fead149</credentialsId>
+          <usernameVariable>STASH_USERNAME</usernameVariable>
+          <passwordVariable>STASH_PASSWORD</passwordVariable>
+        </org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding>
+      </bindings>
+    </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
+    <hudson.plugins.build__timeout.BuildTimeoutWrapper plugin="build-timeout@1.19">
+      <strategy class="hudson.plugins.build_timeout.impl.NoActivityTimeOutStrategy">
+        <timeoutSecondsString>180</timeoutSecondsString>
+      </strategy>
+      <operationList>
+        <hudson.plugins.build__timeout.operations.WriteDescriptionOperation>
+          <description>This build stalled for {0} minutes with no output...</description>
+        </hudson.plugins.build__timeout.operations.WriteDescriptionOperation>
+      </operationList>
+    </hudson.plugins.build__timeout.BuildTimeoutWrapper>
+    <hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.9"/>
+    <org.jenkinsci.plugins.preSCMbuildstep.PreSCMBuildStepsWrapper plugin="preSCMbuildstep@0.3">
+      <buildSteps>
+        <hudson.tasks.Shell>
+          <command>#
+# Workaround for broken git references that appear due to PRs,
+# popping up in other jobs trying to use just the master branch.
+#
+# See https://issues.jenkins-ci.org/browse/JENKINS-35219 and
+# https://community.atlassian.com/t5/Bitbucket-questions/Change-pull-request-refs-after-Commit-instead-of-after-Approval/qaq-p/194702
+
+set +x
+
+echo &quot;Triggering lazy-merge of the PR on stash, by inspecting the special URL...&quot;
+curl -s -k https://${STASH_USERNAME}:${STASH_PASSWORD}@bitbucket-prod.localdomain/rest/api/latest/projects/${destinationRepositoryOwner}/repos/${destinationRepositoryName}/pull-requests/${pullRequestId}/merge &amp;&amp; echo &quot;&quot;
+</command>
+        </hudson.tasks.Shell>
+      </buildSteps>
+      <failOnError>false</failOnError>
+    </org.jenkinsci.plugins.preSCMbuildstep.PreSCMBuildStepsWrapper>
+  </buildWrappers>
+</project>

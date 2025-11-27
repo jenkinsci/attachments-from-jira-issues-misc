@@ -1,0 +1,337 @@
+
+
+/*
+*   Run and retry the pass-in task before secondstoWaitBeforeRetry is done
+*
+*   @doSomething : a runable task
+*   @secondstoWaitBeforeRetry : TTL for the task
+*/
+def runWithExtraLife(doSomething, int secondstoWaitBeforeRetry=0) {
+    try {
+        return doSomething()
+    } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException fie) {
+        println(fie.toString() + " (Maybe interrupted by newer build or manually abort)")
+        throw fie
+    } catch (exc) {
+        if (secondstoWaitBeforeRetry != 0) {
+            sleep(secondstoWaitBeforeRetry)
+        }
+        println(exc.toString() + " (Extra Life for retry)")
+        return doSomething()
+    }
+}
+
+/*
+*   Always run this task if following task will interact with docker
+*   This step aim to avoid the issue : https://stackoverflow.com/a/44384169
+*/
+def stopOldBuilds() {
+    try {
+        def previousBuild = currentBuild.rawBuild.getPreviousBuildInProgress()
+        if (previousBuild != null) {
+            previousBuild.doStop()
+        }
+    } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException fie) {
+        println(fie.toString() + " (Maybe interrupted by newer build or manually abort)")
+        throw fie
+    } catch( exc ) {
+        println(exc.toString() + " (exception on stopOldBuilds but fine to continue)")
+    }
+}
+
+/*
+*   Return ImageName
+*/
+def generateWebImageTagByGitCommit() {
+    return "CI-${BRANCH_NAME}-${GIT_COMMIT.substring(0, 7)}".replace('/','--').replace('@', '_at_')
+}
+
+/*
+*   Run backend test job parallelly by parallell_no
+*
+*   @parallel_no : indicate the part of tests will be run, number to testCases mapping please see @Dockerfile
+*/
+def runBackendParallelTests(int parallel_no) {
+    env.WEB_IMAGE_TAG = generateWebImageTagByGitCommit()
+    sh '/usr/sbin/ip a | grep "inet 10"'
+    sh '$HOME/.pyenv/versions/3.7.0/bin/python3 ci/wait_till_docker_ready.py'
+    try {
+        sh 'ci/ecr_login_quiet.sh | true'
+        sh 'docker-compose -f ci/docker-compose.test.yml pull'
+    } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException fie) {
+        println(fie.toString() + " (Maybe interrupted by newer build or manually abort)")
+        throw fie
+    } catch (exc) {
+        sleep(90)
+        println(exc.toString() + " (Extra Life for ecr_login_quiet.sh and docker-compose pull)")
+        sh 'ci/ecr_login_quiet.sh | true'
+        sh "docker-compose -f ci/docker-compose.test.yml pull"
+    }
+    try {
+        sh("PARALLEL_NO=${parallel_no} COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}-${parallel_no}"
+                + " make run-docker-compose-up")
+        junit "ci/output/junit${parallel_no}.xml"
+        dir('ci/output') {  // For Cobertura Coverage.
+            stash name: "Coverage_P${parallel_no}", includes: ".coverage.${parallel_no},coverage${parallel_no}.xml"
+        }
+    } finally {
+        sh 'docker-compose -f ci/docker-compose.test.yml down'
+        // Avoid test worker storage full. It should be fine since image should be done within 1 hour and pull new
+        // one should only take about one minute.
+        sh "ci/rm_hours_old_docker_images.sh || true"
+    }
+}
+
+/*
+*   Function to support 'pipeline-github-plugin', aim to remove label from PR
+*
+*   native pullRequest.removeLabel throw exception when label not exist in PR
+*   this func deal with this situation
+*/
+def removeLabelFormPR(java.lang.String removedLabel, pullRequest) {
+    for (label in pullRequest.labels) {
+        if (label.toLowerCase().equals(removedLabel)) {
+            pullRequest.removeLabel(removedLabel)
+        }
+    }
+}
+
+def parallel_timeout_minutes = 35
+
+pipeline {
+    agent none
+    environment {
+        COMPOSE_PROJECT_NAME = "CI-${BRANCH_NAME}-${BUILD_NUMBER}"
+        COMPOSE_HTTP_TIMEOUT = "600"
+        COVERALLS_REPO_TOKEN = credentials('XXX')
+        // For WEB_IMAGE_TAG to be valid with docker image name.
+        AWS_DEFAULT_REGION = 'ap-northeast-1'
+        AWS_ECR = "XXX"
+        // Pass in python version to Dockerfile
+        PY_VERSION = "2.7.16"
+    }
+    options {
+        timeout(time: 90, unit: 'MINUTES')
+        timestamps()
+    }
+    stages {
+        stage('Stop Old Builds') {
+            steps {  // from https://stackoverflow.com/a/52811034 .
+                stopOldBuilds()
+            }
+        }
+        stage('BE Build') {
+            failFast false
+            parallel {
+                stage('python2') {
+                    agent {
+                        node {
+                            label 'ec2-fleet-be-builder'
+                        }
+                    }
+                    options {
+                        timeout(time: 45, unit: 'MINUTES')
+                    }
+                    environment {
+                        WEB_IMAGE_TAG = generateWebImageTagByGitCommit()
+                    }
+                    stages {
+                        stage('Build & Push Image') {
+                            options {
+                                timeout(time: 35, unit: 'MINUTES')
+                            }
+                            steps {
+                                sh '/usr/sbin/ip a | grep "inet 10"'
+                                sh '$HOME/.pyenv/versions/3.7.0/bin/python3 ci/wait_till_docker_ready.py'
+                                sh 'mkdir -p ci/output'
+                                sh 'ci/ecr_login_quiet.sh | true'
+                                runWithExtraLife({
+                                    sh "ci/build_not_existed_docker_image.sh"
+                                })
+                            }
+                        }
+                        stage('Check Security') {
+                            when {
+                                anyOf {
+                                    branch 'master'
+                                    branch 'develop'
+                                }
+                            }
+                            steps {
+                                sh 'docker-compose -f ci/docker-compose.test.yml run web make safety-check arg="-i 36810"'
+                                // 36810 is the vulnerability ID of numpy, need fix in PR #2707
+                                sh 'docker-compose -f ci/docker-compose.test.yml run web make bandit-check'
+                            }
+                        }
+                    }
+                    post {
+                        always {
+                            sh 'docker-compose -f ci/docker-compose.test.yml down'
+                            sh 'docker run -w /home -v `pwd`:/home alpine chown -R `id -u` .'
+                        }
+                    }
+                }
+                stage('python3') {
+                    agent {
+                        node {
+                            label 'ec2-fleet-be-builder'
+                        }
+                    }
+                    environment {
+                        PY_VERSION = "3.6.8"
+                    }
+                    options {
+                        timeout(time: 45, unit: 'MINUTES')
+                    }
+                    stages {
+                        stage('Removing tag of PR') {
+                            steps {
+                                script {
+                                    if(env.CHANGE_ID) {
+                                        removeLabelFormPR("py3 build", pullRequest)
+                                    }
+                                }
+                            }
+                        }
+                        stage('Build Image') {
+                            options {
+                                timeout(time: 35, unit: 'MINUTES')
+                            }
+                            steps {
+                                sh '$HOME/.pyenv/versions/3.7.0/bin/python3 ci/wait_till_docker_ready.py'
+                                sh 'mkdir -p ci/output'
+                                sh 'ci/ecr_login_quiet.sh | true'
+                                runWithExtraLife({
+                                    // ***
+                                    // now image WILL NOT BE PUSHED
+                                    // ***
+                                    sh "ci/build_not_existed_docker_image_without_push.sh"
+                                })
+                                script {
+                                    if (env.CHANGE_ID) { // syntax to make sure this is a PR not a branch
+                                        pullRequest.addLabel("py3 build")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        stage('BE Tests') {
+            environment {
+                AWS_DEFAULT_REGION = 'ap-northeast-1'
+            }
+            options {
+                timeout(time: 50, unit: 'MINUTES')
+            }
+            failFast false
+            parallel {
+                stage('BE Parallel:1') {
+                    agent { node { label 'ec2-fleet-r5xlarge-like' } }
+                    options { timeout(time: parallel_timeout_minutes, unit: 'MINUTES') }
+                    stages {
+                        stage('BE Test') {
+                            steps {
+                                runBackendParallelTests(1)
+                            }
+                        }
+                    }
+                    post { always { sh 'docker run -w /home -v `pwd`:/home alpine chown -R `id -u` .' } }
+                }
+                stage('BE Parallel:2') {
+                    agent { node { label 'ec2-fleet-r5xlarge-like' } }
+                    options { timeout(time: parallel_timeout_minutes, unit: 'MINUTES') }
+                    stages {
+                        stage('BE Test') {
+                            steps {
+                                runBackendParallelTests(2)
+                            }
+                        }
+                    }
+                    post { always { sh 'docker run -w /home -v `pwd`:/home alpine chown -R `id -u` .' } }
+                }
+                stage('BE Parallel:3') {
+                    agent { node { label 'ec2-fleet-r5xlarge-like' } }
+                    options { timeout(time: parallel_timeout_minutes, unit: 'MINUTES') }
+                    stages {
+                        stage('BE Test') {
+                            steps {
+                                runBackendParallelTests(3)
+                            }
+                        }
+                    }
+                    post { always { sh 'docker run -w /home -v `pwd`:/home alpine chown -R `id -u` .' } }
+                }
+                stage('BE Parallel:4') {
+                    agent { node { label 'ec2-fleet-r5xlarge-like' } }
+                    options { timeout(time: parallel_timeout_minutes, unit: 'MINUTES') }
+                    stages {
+                        stage('BE Test') {
+                            steps {
+                                runBackendParallelTests(4)
+                            }
+                        }
+                    }
+                    post { always { sh 'docker run -w /home -v `pwd`:/home alpine chown -R `id -u` .' } }
+                }
+            }
+        }
+        stage('BE Coverage') {
+            agent { node { label 'ec2-fleet-be-builder' } }
+            options { timeout(time: 8, unit: 'MINUTES') }
+            environment {
+                WEB_IMAGE_TAG = generateWebImageTagByGitCommit()
+            }
+            steps {
+                sh '/usr/sbin/ip a | grep "inet 10"'
+                unstash "Coverage_P1"
+                unstash "Coverage_P2"
+                unstash "Coverage_P3"
+                unstash "Coverage_P4"
+                cobertura coberturaReportFile: "coverage*.xml", autoUpdateHealth: true, autoUpdateStability: true
+                sh 'mkdir -p ci/input'
+                sh 'mv .coverage.* ci/input'
+                sh '$HOME/.pyenv/versions/3.7.0/bin/python3 ci/wait_till_docker_ready.py'
+                sh 'ci/ecr_login_quiet.sh | true'
+                sh "docker pull ${AWS_ECR}/company-docker-image:${WEB_IMAGE_TAG}"
+                script {
+                    env.CI_PULL_REQUEST = (env.CHANGE_ID != null) ? "${COMPANY_GITHUB_REPO}/pull/${CHANGE_ID}" : null
+                }
+                sh("docker run --rm "
+                        + "-e 'COVERALLS_REPO_TOKEN=${COVERALLS_REPO_TOKEN}' "
+                        + "-e 'COVERALLS_PARALLEL=true' "
+                        + "-e 'JENKINS_HOME=/var/lib/jenkins' "
+                        + "-e 'BUILD_NUMBER=${BUILD_NUMBER}' "
+                        + "-e 'GIT_BRANCH=${BRANCH_NAME}' "
+                        + "-e 'CI_PULL_REQUEST=${env.CI_PULL_REQUEST}' "
+                        + "-v \$(pwd)/ci/input:/app/ci/input "
+                        + "${AWS_ECR}/company-docker-image:${WEB_IMAGE_TAG} ci/backend_coveralls.sh")
+                sh 'ci/coveralls_parallels_post_webhook.sh'
+            }
+        }
+        stage('Test Deployment') {
+            agent { node { label 'master' } }
+            when {
+                anyOf {
+                    branch 'master'
+                    branch 'develop'
+                    expression { BRANCH_NAME ==~ /hotfix\/.*/ }
+                    expression { BRANCH_NAME ==~ /project\/.*/ }
+                    expression { BRANCH_NAME ==~ /release\/.*/ }
+                }
+            }
+            environment {
+                WEB_IMAGE_TAG = generateWebImageTagByGitCommit()
+            }
+            steps {
+                build job: '_DeployCloud', wait: false, parameters: [
+                    [$class: 'StringParameterValue', name: 'BRANCH_TO_BUILD', value: "${BRANCH_NAME}"],
+                    [$class: 'StringParameterValue', name: 'ENV_NAME', value: "deployable"],
+                    [$class: 'StringParameterValue', name: 'STACK_NAME', value: "deployableDynamic"],
+                    [$class: 'StringParameterValue', name: 'WEB_IMAGE_TAG', value: "${WEB_IMAGE_TAG}"],
+                ]
+            }
+        }
+    }
+}

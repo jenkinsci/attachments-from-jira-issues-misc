@@ -1,0 +1,55 @@
+import groovy.json.JsonSlurperClassic
+
+pipeline {
+    agent any
+    
+    environment {
+        JsonCollectorObject = null
+        Test = "Hallo"
+    }
+    
+    stages {
+        stage("ClangTidy") {
+            steps {
+                script {
+                    JsonCollectorObject = new net.sf.json.JSONObject()
+                    
+                    def props = readJSON text: '{"Failed":  1, "Succeeded":  2, "ProcessedFiles":  3}', returnPojo: false
+                    JsonCollectorObject.element("ClangTidy", props)
+                }
+            }
+        }
+        
+        stage("ClangFormat") {
+            steps {
+                script {
+                    def props = readJSON text: '{"Failed":  4, "Succeeded":  5, "ProcessedFiles":  6}', returnPojo: false
+                    JsonCollectorObject.element("ClangFormat", props)
+                }
+            }
+        }
+        
+        stage("Array") {
+            steps {
+                script {
+                    def props = readJSON text: '[{"a":3}, {"b":4}, {"c":5}]', returnPojo: false
+                    JsonCollectorObject.element("Array", props)
+                }
+            }
+        }
+        
+        stage("Publish") {
+            steps {
+                script
+                {
+                    Test = JsonCollectorObject.toString(3)
+                    println(Test)
+                    
+                    Map dataMap = new JsonSlurperClassic().parseText(JsonCollectorObject.toString())
+                    influxDbPublisher(selectedTarget: 'InfluxDB', customDataMap: dataMap)
+                }
+            }
+        }
+    
+    }
+}

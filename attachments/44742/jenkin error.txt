@@ -1,0 +1,68 @@
+Started by user admin
+[EnvInject] - Loading node environment variables.
+Building in workspace D:\Jenkin\jobs\ParamUATOSBIntegrationTeam\workspace
+Deleting workspace as the configuration has changed since a build was performed on this computer.
+FATAL: com.microsoft.tfs.core.exceptions.TECoreException: Connection timed out: connect
+java.lang.RuntimeException: com.microsoft.tfs.core.exceptions.TECoreException: Connection timed out: connect
+	at hudson.plugins.tfs.model.Server.execute(Server.java:226)
+	at hudson.plugins.tfs.model.Workspaces.getListFromServer(Workspaces.java:35)
+	at hudson.plugins.tfs.model.Workspaces.populateMapFromServer(Workspaces.java:44)
+	at hudson.plugins.tfs.model.Workspaces.exists(Workspaces.java:70)
+	at hudson.plugins.tfs.actions.RemoveWorkspaceAction.remove(RemoveWorkspaceAction.java:24)
+	at hudson.plugins.tfs.TeamFoundationServerScm.checkout(TeamFoundationServerScm.java:297)
+	at hudson.model.AbstractProject.checkout(AbstractProject.java:1270)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.defaultCheckout(AbstractBuild.java:604)
+	at jenkins.scm.SCMCheckoutStrategy.checkout(SCMCheckoutStrategy.java:86)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.run(AbstractBuild.java:529)
+	at hudson.model.Run.execute(Run.java:1720)
+	at hudson.model.FreeStyleBuild.run(FreeStyleBuild.java:43)
+	at hudson.model.ResourceController.execute(ResourceController.java:98)
+	at hudson.model.Executor.run(Executor.java:410)
+Caused by: com.microsoft.tfs.core.exceptions.TECoreException: Connection timed out: connect
+	at com.microsoft.tfs.core.exceptions.mappers.TECoreExceptionMapper.map(TECoreExceptionMapper.java:92)
+	at com.microsoft.tfs.core.exceptions.mappers.RegistrationExceptionMapper.map(RegistrationExceptionMapper.java:18)
+	at com.microsoft.tfs.core.clients.registration.RegistrationData.newFromServer(RegistrationData.java:61)
+	at com.microsoft.tfs.core.clients.registration.RegistrationClient.getRegistrationData(RegistrationClient.java:617)
+	at com.microsoft.tfs.core.clients.registration.RegistrationClient.getRegistrationEntries(RegistrationClient.java:144)
+	at com.microsoft.tfs.core.clients.registration.RegistrationClient.getRegistrationEntries(RegistrationClient.java:129)
+	at com.microsoft.tfs.core.PreFrameworkServerDataProvider.findServiceLocation(PreFrameworkServerDataProvider.java:275)
+	at com.microsoft.tfs.core.PreFrameworkServerDataProvider.locationForCurrentConnection(PreFrameworkServerDataProvider.java:251)
+	at com.microsoft.tfs.core.TFSTeamProjectCollection.getServerDataProvider(TFSTeamProjectCollection.java:172)
+	at com.microsoft.tfs.core.TFSConnection.getWebService(TFSConnection.java:896)
+	at com.microsoft.tfs.core.config.client.DefaultClientFactory$7.newClient(DefaultClientFactory.java:214)
+	at com.microsoft.tfs.core.config.client.DefaultClientFactory.newClient(DefaultClientFactory.java:92)
+	at com.microsoft.tfs.core.TFSConnection.getClient(TFSConnection.java:1459)
+	at com.microsoft.tfs.core.TFSTeamProjectCollection.getVersionControlClient(TFSTeamProjectCollection.java:376)
+	at hudson.plugins.tfs.model.Server.getVersionControlClient(Server.java:207)
+	at hudson.plugins.tfs.commands.ListWorkspacesCommand.call(ListWorkspacesCommand.java:49)
+	at hudson.plugins.tfs.commands.ListWorkspacesCommand.call(ListWorkspacesCommand.java:20)
+	at hudson.remoting.LocalChannel.call(LocalChannel.java:45)
+	at hudson.plugins.tfs.model.Server.execute(Server.java:222)
+	... 13 more
+Caused by: com.microsoft.tfs.core.ws.runtime.exceptions.TransportException: Connection timed out: connect
+	at com.microsoft.tfs.core.ws.runtime.client.SOAPService.executeSOAPRequestInternal(SOAPService.java:674)
+	at com.microsoft.tfs.core.ws.runtime.client.SOAPService.executeSOAPRequest(SOAPService.java:444)
+	at ms.tfs.services.registration._03._RegistrationSoap12Service.getRegistrationEntries(_RegistrationSoap12Service.java:106)
+	at com.microsoft.tfs.core.clients.registration.RegistrationData.newFromServer(RegistrationData.java:58)
+	... 29 more
+Caused by: java.net.ConnectException: Connection timed out: connect
+	at java.net.DualStackPlainSocketImpl.waitForConnect(Native Method)
+	at java.net.DualStackPlainSocketImpl.socketConnect(Unknown Source)
+	at java.net.AbstractPlainSocketImpl.doConnect(Unknown Source)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(Unknown Source)
+	at java.net.AbstractPlainSocketImpl.connect(Unknown Source)
+	at java.net.PlainSocketImpl.connect(Unknown Source)
+	at java.net.SocksSocketImpl.connect(Unknown Source)
+	at java.net.Socket.connect(Unknown Source)
+	at sun.security.ssl.SSLSocketImpl.connect(Unknown Source)
+	at com.microsoft.tfs.core.config.httpclient.internal.DefaultSSLProtocolSocketFactory.createSocket(DefaultSSLProtocolSocketFactory.java:71)
+	at com.microsoft.tfs.core.httpclient.HttpConnection.open(HttpConnection.java:813)
+	at com.microsoft.tfs.core.httpclient.MultiThreadedHttpConnectionManager$HttpConnectionAdapter.open(MultiThreadedHttpConnectionManager.java:1463)
+	at com.microsoft.tfs.core.httpclient.HttpMethodDirector.executeWithRetry(HttpMethodDirector.java:418)
+	at com.microsoft.tfs.core.httpclient.HttpMethodDirector.executeMethod(HttpMethodDirector.java:182)
+	at com.microsoft.tfs.core.httpclient.HttpClient.executeMethod(HttpClient.java:428)
+	at com.microsoft.tfs.core.httpclient.HttpClient.executeMethod(HttpClient.java:343)
+	at com.microsoft.tfs.core.ws.runtime.client.SOAPService.executeSOAPRequestInternal(SOAPService.java:545)
+	... 32 more
+Finished: FAILURE
+

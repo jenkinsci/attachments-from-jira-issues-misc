@@ -1,0 +1,62 @@
+Using checkout strategy: Default
+Last Built Revision: Revision 0bb7ed476caf39124ac14ee3fb95062126e15380 (refs/remotes/origin/master)
+ > C:\J\tools\git\bin\git.exe rev-parse --is-inside-work-tree # timeout=10
+Fetching changes from the remote Git repository
+ > C:\J\tools\git\bin\git.exe config remote.origin.url https://github.com/mygitarea/myrepository.git # timeout=10
+Fetching upstream changes from https://github.com/mygitarea/myrepository.git
+ > C:\J\tools\git\bin\git.exe --version # timeout=10
+using GIT_ASKPASS to set credentials My_Jenkins_Credentials_For_Git
+ > C:\J\tools\git\bin\git.exe fetch --tags --progress https://github.com/mygitarea/myrepository.git +refs/heads/*:refs/remotes/origin/*
+getCandidateRevisions(false,origin/master,,,hudson.plugins.git.util.BuildData@919abc2a[scmName=<null>,remoteUrls=[https://github.com/mygitarea/myrepository.git],buildsByBranchName={refs/remotes/origin/Medusa=Build #8671 of Revision b75ba442f5290edc638355c015f2bb9b450aa339 (refs/remotes/origin/Medusa), refs/remotes/origin/release=Build #10488 of Revision ef2c1c42ebb34d73e3eb97966fc96f331feb99e4 (refs/remotes/origin/release), refs/remotes/origin/master=Build #12303 of Revision 0bb7ed476caf39124ac14ee3fb95062126e15380 (refs/remotes/origin/master)},lastBuild=Build #12303 of Revision 0bb7ed476caf39124ac14ee3fb95062126e15380 (refs/remotes/origin/master)]) considering branches to build
+Qualifying origin/master as a branch in repository origin -> refs/remotes/origin/master
+Qualifying origin/master as a branch in repository origin -> refs/remotes/origin/origin/master
+ > C:\J\tools\git\bin\git.exe rev-parse "refs/remotes/origin/master^{commit}" # timeout=10
+rev-parse refs/remotes/origin/master -> AnyObjectId[0bb7ed476caf39124ac14ee3fb95062126e15380]
+Found a new commit AnyObjectId[0bb7ed476caf39124ac14ee3fb95062126e15380] to be built on refs/remotes/origin/master
+ > C:\J\tools\git\bin\git.exe rev-parse "refs/remotes/origin/origin/master^{commit}" # timeout=10
+Failed to rev-parse: refs/remotes/origin/origin/master
+Checking out Revision 0bb7ed476caf39124ac14ee3fb95062126e15380 (refs/remotes/origin/master)
+ > C:\J\tools\git\bin\git.exe config core.sparsecheckout # timeout=10
+ > C:\J\tools\git\bin\git.exe checkout -f 0bb7ed476caf39124ac14ee3fb95062126e15380
+FATAL: Could not checkout 0bb7ed476caf39124ac14ee3fb95062126e15380
+hudson.plugins.git.GitException: Command "C:\J\tools\git\bin\git.exe checkout -f 0bb7ed476caf39124ac14ee3fb95062126e15380" returned status code 1:
+stdout: 
+stderr: Previous HEAD position was e272e5a... Make prettier
+HEAD is now at 0bb7ed4... Fix keyboard shortcut for expand
+
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandIn(CliGitAPIImpl.java:1990)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.access$800(CliGitAPIImpl.java:72)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl$9.execute(CliGitAPIImpl.java:2289)
+Also:   hudson.remoting.Channel$CallSiteStackTrace: Remote call to JNLP4-connect connection from myslave.mydomain.com/12.34.56.78:63836
+		at hudson.remoting.Channel.attachCallSiteStackTrace(Channel.java:1693)
+		at hudson.remoting.UserResponse.retrieve(UserRequest.java:310)
+		at hudson.remoting.Channel.call(Channel.java:908)
+		at org.jenkinsci.plugins.gitclient.RemoteGitImpl$CommandInvocationHandler.execute(RemoteGitImpl.java:146)
+		at sun.reflect.GeneratedMethodAccessor425.invoke(Unknown Source)
+		at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+		at java.lang.reflect.Method.invoke(Method.java:498)
+		at org.jenkinsci.plugins.gitclient.RemoteGitImpl$CommandInvocationHandler.invoke(RemoteGitImpl.java:132)
+		at com.sun.proxy.$Proxy143.execute(Unknown Source)
+		at hudson.plugins.git.GitSCM.checkout(GitSCM.java:1173)
+		at hudson.scm.SCM.checkout(SCM.java:495)
+		at hudson.model.AbstractProject.checkout(AbstractProject.java:1202)
+		at hudson.model.AbstractBuild$AbstractBuildExecution.defaultCheckout(AbstractBuild.java:574)
+		at jenkins.scm.SCMCheckoutStrategy.checkout(SCMCheckoutStrategy.java:86)
+		at hudson.model.AbstractBuild$AbstractBuildExecution.run(AbstractBuild.java:499)
+		at hudson.model.Run.execute(Run.java:1724)
+		at hudson.model.FreeStyleBuild.run(FreeStyleBuild.java:43)
+		at hudson.model.ResourceController.execute(ResourceController.java:97)
+		at hudson.model.Executor.run(Executor.java:421)
+Caused: hudson.plugins.git.GitException: Could not checkout 0bb7ed476caf39124ac14ee3fb95062126e15380
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl$9.execute(CliGitAPIImpl.java:2313)
+	at org.jenkinsci.plugins.gitclient.RemoteGitImpl$CommandInvocationHandler$1.call(RemoteGitImpl.java:153)
+	at org.jenkinsci.plugins.gitclient.RemoteGitImpl$CommandInvocationHandler$1.call(RemoteGitImpl.java:146)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:207)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:53)
+	at hudson.remoting.Request$2.run(Request.java:358)
+	at hudson.remoting.InterceptingExecutorService$1.call(InterceptingExecutorService.java:72)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at hudson.remoting.Engine$1$1.run(Engine.java:98)
+	at java.lang.Thread.run(Thread.java:748)

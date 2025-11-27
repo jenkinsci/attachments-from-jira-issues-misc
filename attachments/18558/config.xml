@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.SubversionSCM">
+    <locations>
+      <hudson.scm.SubversionSCM_-ModuleLocation>
+        <remote>svn://localhost/blub/trunk</remote>
+        <local>.</local>
+      </hudson.scm.SubversionSCM_-ModuleLocation>
+    </locations>
+    <useUpdate>true</useUpdate>
+    <excludedRegions></excludedRegions>
+  </scm>
+  <assignedNode>master</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <jdk>JDK1.6</jdk>
+  <triggers class="vector"/>
+  <builders>
+    <hudson.tasks.Maven>
+      <targets>clean install</targets>
+      <mavenName>Maven 2</mavenName>
+    </hudson.tasks.Maven>
+  </builders>
+  <publishers>
+    <hudson.tasks.junit.JUnitResultArchiver>
+      <testResults>**/target/*-reports/TEST-*.xml</testResults>
+    </hudson.tasks.junit.JUnitResultArchiver>
+    <hudson.plugins.statusmonitor.MonitorPublisher/>
+  </publishers>
+  <buildWrappers>
+    <hudson.plugins.release.ReleaseWrapper>
+      <preBuildSteps>
+        <hudson.tasks.Maven>
+          <targets>release:clean</targets>
+          <mavenName>Maven 2</mavenName>
+        </hudson.tasks.Maven>
+      </preBuildSteps>
+      <postBuildSteps>
+        <hudson.tasks.Maven>
+          <targets>-B release:prepare</targets>
+          <mavenName>Maven 2</mavenName>
+          <properties>tag=${JOB_NAME}-${RELEASE_VERSION}
+releaseVersion=${RELEASE_VERSION}
+developmentVersion=${DEVELOPMENT_VERSION}</properties>
+        </hudson.tasks.Maven>
+      </postBuildSteps>
+    </hudson.plugins.release.ReleaseWrapper>
+  </buildWrappers>
+</project>

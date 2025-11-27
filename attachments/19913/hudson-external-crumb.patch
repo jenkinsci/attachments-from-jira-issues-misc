@@ -1,0 +1,60 @@
+commit 232e88b073bc9a7386910870240e2546a24eb50b
+Author: David Reiss <dreiss@facebook.com>
+Date:   Fri Oct 22 15:47:44 2010 -0700
+
+    Fix monitoring external jobs with CSRF protection enabled
+    
+    Previously, the "monitor external job" flow didn't make any attempt to
+    submit crumbs with its requests, so they would always fail on a Hudson
+    instance that had CSRF protection enabled.  Now, fetch the crumb from
+    the xml api and include it with the postBuildResult request.
+
+diff --git a/core/src/main/java/hudson/Main.java b/core/src/main/java/hudson/Main.java
+index bdc00c4..d799b38 100644
+--- a/core/src/main/java/hudson/Main.java
++++ b/core/src/main/java/hudson/Main.java
+@@ -27,9 +27,11 @@ import hudson.util.DualOutputStream;
+ import hudson.util.EncodingStream;
+ import com.thoughtworks.xstream.core.util.Base64Encoder;
+ 
++import java.io.BufferedReader;
+ import java.io.File;
+ import java.io.FileInputStream;
+ import java.io.FileOutputStream;
++import java.io.InputStreamReader;
+ import java.io.IOException;
+ import java.io.OutputStreamWriter;
+ import java.io.Writer;
+@@ -109,6 +111,22 @@ public class Main {
+             }
+         }
+ 
++        // get a crumb to pass the csrf check
++        String crumbField = null;
++        String crumbValue = null;
++        try {
++            HttpURLConnection con = open(new URL(home+"crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)'"));
++            if (auth != null) con.setRequestProperty("Authorization", auth);
++            String line = (new BufferedReader(new InputStreamReader(con.getInputStream()))).readLine();
++            String[] components = line.split(":");
++            if (components.length == 2) {
++                crumbField = components[0];
++                crumbValue = components[1];
++            }
++        } catch (IOException e) {
++            // presumably this Hudson doesn't use crumb
++        }
++
+         // write the output to a temporary file first.
+         File tmpFile = File.createTempFile("hudson","log");
+         try {
+@@ -139,6 +157,9 @@ public class Main {
+                     // start a remote connection
+                     HttpURLConnection con = open(new URL(location));
+                     if (auth != null) con.setRequestProperty("Authorization", auth);
++                    if (crumbField != null && crumbValue != null) {
++                        con.setRequestProperty(crumbField, crumbValue);
++                    }
+                     con.setDoOutput(true);
+                     // this tells HttpURLConnection not to buffer the whole thing
+                     con.setFixedLengthStreamingMode((int)tmpFile.length());

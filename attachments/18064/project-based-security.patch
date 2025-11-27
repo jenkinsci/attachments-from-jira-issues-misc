@@ -1,0 +1,483 @@
+Index: src/main/resources/hudson/model/Slave/ComputerImpl/log.jelly
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/resources/hudson/model/Slave/ComputerImpl/log.jelly,v
+retrieving revision 1.5
+diff -u -r1.5 log.jelly
+--- src/main/resources/hudson/model/Slave/ComputerImpl/log.jelly	8 Aug 2007 16:04:58 -0000	1.5
++++ src/main/resources/hudson/model/Slave/ComputerImpl/log.jelly	4 Feb 2008 22:28:45 -0000
+@@ -1,5 +1,5 @@
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+-  <l:layout title="${it.displayName} log" secured="true">
++  <l:layout title="${it.displayName} log" permission="${app.ADMINISTER}>
+     <st:include page="sidepanel.jelly" />
+     <l:main-panel>
+       <l:isAdmin>
+Index: src/main/resources/lib/layout/task.jelly
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/resources/lib/layout/task.jelly,v
+retrieving revision 1.4
+diff -u -r1.4 task.jelly
+--- src/main/resources/lib/layout/task.jelly	4 Jan 2008 01:58:19 -0000	1.4
++++ src/main/resources/lib/layout/task.jelly	4 Feb 2008 22:28:46 -0000
+@@ -8,7 +8,7 @@
+     permission: permission object. If specified, the link will be displayed only if you have a permission (optional)
+ -->
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+-  <j:if test="${h.hasPermission(attrs.permission)}">
++  <j:if test="${it.hasPermission(permission)}">
+     <div class="task">
+       <a href="${href}" onclick="${attrs.onclick}">
+         <img width="24" height="24" style="margin: 2px;" src="${rootURL}${h.ifThenElse(icon.startsWith('images/'),h.resourcePath,'')}/${icon}"/>
+Index: src/main/resources/lib/layout/layout.jelly
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/resources/lib/layout/layout.jelly,v
+retrieving revision 1.41
+diff -u -r1.41 layout.jelly
+--- src/main/resources/lib/layout/layout.jelly	16 Jan 2008 05:30:18 -0000	1.41
++++ src/main/resources/lib/layout/layout.jelly	4 Feb 2008 22:28:46 -0000
+@@ -31,8 +31,10 @@
+ <j:set var="imagesURL"  value="${rootURL}${h.resourcePath}/images" />
+ <html>
+   <head>
+-    <!-- if this page needs to be secured, make sure the user is admin -->
++    <!--
+     ${h.adminCheck(request,response,secured,permission)}
++     if this page needs to be secured, make sure the user is admin -->
++    ${it.checkPermission(permission)}
+ 
+     <title>${h.appendIfNotNull(title, ' [Hudson]', 'Hudson')}</title>
+     <link rel="stylesheet" href="${resURL}/css/style.css" type="text/css" />
+Index: src/main/resources/hudson/model/Job/configure.jelly
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/resources/hudson/model/Job/configure.jelly,v
+retrieving revision 1.19
+diff -u -r1.19 configure.jelly
+--- src/main/resources/hudson/model/Job/configure.jelly	2 Feb 2008 06:15:30 -0000	1.19
++++ src/main/resources/hudson/model/Job/configure.jelly	4 Feb 2008 22:28:45 -0000
+@@ -2,7 +2,7 @@
+   Config page. derived class specific entries should go to configure-entries.jsp
+ -->
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+-  <l:layout title="${it.displayName} Config" norefresh="true" secured="true">
++  <l:layout title="${it.displayName} Config" norefresh="true" permission="${app.ADMINISTER}">
+     <st:include page="sidepanel.jelly" />
+     <l:main-panel>
+       <f:form method="post" action="configSubmit">
+Index: src/main/java/hudson/model/View.java
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/java/hudson/model/View.java,v
+retrieving revision 1.27
+diff -u -r1.27 View.java
+--- src/main/java/hudson/model/View.java	16 Jan 2008 04:48:56 -0000	1.27
++++ src/main/java/hudson/model/View.java	4 Feb 2008 22:28:45 -0000
+@@ -99,8 +99,15 @@
+      * Short for {@code getACL().checkPermission(p)}
+      */
+     public void checkPermission(Permission p) {
++    	if (p == null) {
++    		return;
++    	}
+         getACL().checkPermission(p);
+     }
++    
++    public boolean hasPermission(Permission p) {
++    	return p == null || getACL().hasPermission(p);
++    }
+ 
+     @ExportedBean(defaultVisibility=2)
+     public static final class UserInfo implements Comparable<UserInfo> {
+@@ -247,6 +254,10 @@
+     public void doRssFailed( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+         rss(req, rsp, " failed builds", new RunList(this).failureOnly());
+     }
++    
++    public RunList getBuilds() {
++    	return new RunList(this);
++    }
+ 
+     private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {
+         RSS.forwardToRss(getDisplayName()+ suffix, getUrl(),
+Index: src/main/java/hudson/model/AbstractProject.java
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/java/hudson/model/AbstractProject.java,v
+retrieving revision 1.82
+diff -u -r1.82 AbstractProject.java
+--- src/main/java/hudson/model/AbstractProject.java	14 Jan 2008 08:12:26 -0000	1.82
++++ src/main/java/hudson/model/AbstractProject.java	4 Feb 2008 22:28:44 -0000
+@@ -15,7 +15,9 @@
+ import hudson.scm.SCM;
+ import hudson.scm.SCMS;
+ import hudson.search.SearchIndexBuilder;
++import hudson.security.ACL;
+ import hudson.security.Permission;
++import hudson.security.SparseACL;
+ import hudson.tasks.BuildTrigger;
+ import hudson.triggers.SCMTrigger;
+ import hudson.triggers.Trigger;
+@@ -25,6 +27,8 @@
+ import hudson.widgets.BuildHistoryWidget;
+ import hudson.widgets.HistoryWidget;
+ import net.sf.json.JSONObject;
++
++import org.acegisecurity.acls.sid.GrantedAuthoritySid;
+ import org.kohsuke.stapler.StaplerRequest;
+ import org.kohsuke.stapler.StaplerResponse;
+ import org.kohsuke.stapler.export.Exported;
+@@ -58,7 +62,12 @@
+  */
+ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem {
+ 
+-    /**
++    @Override
++	public ACL getACL() {
++    	return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
++	}
++
++	/**
+      * {@link SCM} associated with the project.
+      * To allow derived classes to link {@link SCM} config to elsewhere,
+      * access to this variable should always go through {@link #getScm()}.
+@@ -582,21 +591,24 @@
+         }
+ 
+         try {
+-            FilePath workspace = getWorkspace();
+-            if(workspace==null) {
+-                // workspace offline. build now, or nothing will ever be built
+-                listener.getLogger().println("Workspace is offline.");
+-                listener.getLogger().println("Scheduling a new build to get a workspace.");
+-                return true;
+-            }
+-            if(!workspace.exists()) {
+-                // no workspace. build now, or nothing will ever be built
+-                listener.getLogger().println("No workspace is available, so can't check for updates.");
+-                listener.getLogger().println("Scheduling a new build to get a workspace.");
+-                return true;
+-            }
++        	FilePath workspace = getWorkspace();
++        	if (scm.requiresWorkspaceForPolling()) {
++        		if(workspace==null) {
++        			// workspace offline. build now, or nothing will ever be built
++        			listener.getLogger().println("Workspace is offline.");
++        			listener.getLogger().println("Scheduling a new build to get a workspace.");
++        			return true;
++        		}
++        		if(!workspace.exists()) {
++        			// no workspace. build now, or nothing will ever be built
++        			listener.getLogger().println("No workspace is available, so can't check for updates.");
++        			listener.getLogger().println("Scheduling a new build to get a workspace.");
++        			return true;
++        		}
++        	}
+ 
+-            return scm.pollChanges(this, workspace.createLauncher(listener), workspace, listener );
++        	Launcher launcher = workspace != null ? workspace.createLauncher(listener) : null;
++            return scm.pollChanges(this, launcher, workspace, listener );
+         } catch (AbortException e) {
+             listener.fatalError("Aborted");
+             return false;
+Index: src/main/java/hudson/model/AbstractItem.java
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/java/hudson/model/AbstractItem.java,v
+retrieving revision 1.26
+diff -u -r1.26 AbstractItem.java
+--- src/main/java/hudson/model/AbstractItem.java	12 Jan 2008 01:40:29 -0000	1.26
++++ src/main/java/hudson/model/AbstractItem.java	4 Feb 2008 22:28:43 -0000
+@@ -164,15 +164,16 @@
+      * Returns the {@link ACL} for this object.
+      */
+     public ACL getACL() {
+-        // TODO: this object should have its own ACL
+-        return Hudson.getInstance().getACL();
++    	return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
+     }
+ 
+     /**
+      * Short for {@code getACL().checkPermission(p)}
+      */
+     public void checkPermission(Permission p) {
+-        getACL().checkPermission(p);
++    	if (p != null) {
++    		getACL().checkPermission(p);
++    	}
+     }
+ 
+     /**
+Index: src/main/resources/hudson/model/View/index.jelly
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/resources/hudson/model/View/index.jelly,v
+retrieving revision 1.9
+diff -u -r1.9 index.jelly
+--- src/main/resources/hudson/model/View/index.jelly	21 Jan 2008 07:11:18 -0000	1.9
++++ src/main/resources/hudson/model/View/index.jelly	4 Feb 2008 22:28:45 -0000
+@@ -20,7 +20,7 @@
+               <j:forEach var="v" items="${app.views}">
+                 <l:tab name="${v.viewName}" active="${v==it}" href="${rootURL}/${v.url}" />
+               </j:forEach>
+-              <j:if test="${h.hasPermission(it.CREATE)}">
++              <j:if test="${it.hasPermission(it.CREATE)}">
+                 <l:tab name="+" href="${rootURL}/newView" active="false" />
+               </j:if>
+             </l:tabBar>
+Index: src/main/resources/hudson/model/Hudson/managePlugins.jelly
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/resources/hudson/model/Hudson/managePlugins.jelly,v
+retrieving revision 1.9
+diff -u -r1.9 managePlugins.jelly
+--- src/main/resources/hudson/model/Hudson/managePlugins.jelly	21 Jan 2008 06:55:28 -0000	1.9
++++ src/main/resources/hudson/model/Hudson/managePlugins.jelly	4 Feb 2008 22:28:45 -0000
+@@ -2,7 +2,7 @@
+   Config page
+ -->
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+-<l:layout secured="true">
++<l:layout secured="true" permission="${app.ADMINISTER}">
+   <st:include page="sidepanel.jelly" />
+   <l:main-panel>
+     <s:form method="post" action="configSubmit">
+Index: src/main/resources/hudson/model/Hudson/log.jelly
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/resources/hudson/model/Hudson/log.jelly,v
+retrieving revision 1.7
+diff -u -r1.7 log.jelly
+--- src/main/resources/hudson/model/Hudson/log.jelly	21 Jan 2008 04:30:36 -0000	1.7
++++ src/main/resources/hudson/model/Hudson/log.jelly	4 Feb 2008 22:28:45 -0000
+@@ -2,7 +2,7 @@
+   Log view
+ -->
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+-<l:layout title="Log" secured="true">
++<l:layout title="Log" permission="${app.ADMINISTER}>
+   <st:include page="sidepanel.jelly" />
+   <l:main-panel>
+     <h1><img src="images/48x48/clipboard.gif" />Hudson Log</h1>
+Index: src/main/resources/hudson/model/Hudson/configure.jelly
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/resources/hudson/model/Hudson/configure.jelly,v
+retrieving revision 1.28
+diff -u -r1.28 configure.jelly
+--- src/main/resources/hudson/model/Hudson/configure.jelly	21 Jan 2008 04:26:17 -0000	1.28
++++ src/main/resources/hudson/model/Hudson/configure.jelly	4 Feb 2008 22:28:45 -0000
+@@ -2,7 +2,7 @@
+   Config page
+ -->
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+-<l:layout norefresh="true" permission="${app.ADMINISTER}">
++<l:layout norefresh="true" permission="${it.CONFIGURE}">
+   <st:include page="sidepanel.jelly" />
+   <l:main-panel xmlns:local="local">
+     <s:form method="post" action="configSubmit">
+Index: src/main/resources/hudson/model/Hudson/noJob.jelly
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/resources/hudson/model/Hudson/noJob.jelly,v
+retrieving revision 1.4
+diff -u -r1.4 noJob.jelly
+--- src/main/resources/hudson/model/Hudson/noJob.jelly	20 Jan 2008 03:36:15 -0000	1.4
++++ src/main/resources/hudson/model/Hudson/noJob.jelly	4 Feb 2008 22:28:45 -0000
+@@ -5,7 +5,7 @@
+   ${%Welcome to Hudson!}
+   <j:choose xmlns:j="jelly:core">
+     <!-- Only show the create new jobs link to those users that have permission to use it. -->
+-    <j:when test="${h.hasPermission(it.CREATE)}">
++    <j:when test="${it.hasPermission(it.CREATE)}">
+       ${%newJob}
+     </j:when>
+     <j:otherwise>
+Index: src/main/java/hudson/Functions.java
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/java/hudson/Functions.java,v
+retrieving revision 1.75
+diff -u -r1.75 Functions.java
+--- src/main/java/hudson/Functions.java	2 Feb 2008 20:14:15 -0000	1.75
++++ src/main/java/hudson/Functions.java	4 Feb 2008 22:28:43 -0000
+@@ -1,6 +1,7 @@
+ package hudson;
+ 
+ import hudson.maven.ExecutedMojo;
++import hudson.model.AbstractItem;
+ import hudson.model.AbstractProject;
+ import hudson.model.Action;
+ import hudson.model.Descriptor;
+@@ -417,6 +418,12 @@
+         Hudson.getInstance().getACL().checkPermission(permission);
+     }
+ 
++    public static void checkPermission(AbstractItem object, Permission permission) throws IOException, ServletException {
++        if (permission != null) {
++        	object.checkPermission(permission);
++        }
++    }
++
+     /**
+      * Returns true if the current user has the given permission.
+      *
+@@ -427,6 +434,16 @@
+         return permission==null || Hudson.getInstance().getACL().hasPermission(permission);
+     }
+ 
++    /**
++     * Returns true if the current user has the given permissionon the given object
++     *
++     * @param permission
++     *      If null, returns true. This defaulting is convenient in making the use of this method terse.
++     */
++    public static boolean hasPermission(AbstractItem object, Permission permission) throws IOException, ServletException {
++        return permission==null || object.hasPermission(permission);
++    }
++
+     public static void adminCheck(StaplerRequest req, StaplerResponse rsp, Object required, Permission permission) throws IOException, ServletException {
+         // this is legacy --- all views should be eventually converted to
+         // the permission based model.
+Index: src/main/java/hudson/security/AuthorizationStrategy.java
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/java/hudson/security/AuthorizationStrategy.java,v
+retrieving revision 1.12
+diff -u -r1.12 AuthorizationStrategy.java
+--- src/main/java/hudson/security/AuthorizationStrategy.java	4 Jan 2008 01:50:39 -0000	1.12
++++ src/main/java/hudson/security/AuthorizationStrategy.java	4 Feb 2008 22:28:45 -0000
+@@ -1,20 +1,22 @@
+ package hudson.security;
+ 
+ import hudson.ExtensionPoint;
++import hudson.model.AbstractItem;
++import hudson.model.AbstractProject;
+ import hudson.model.Describable;
+ import hudson.model.Descriptor;
+ import hudson.model.Hudson;
+ import hudson.util.DescriptorList;
+-import org.acegisecurity.Authentication;
+-import org.kohsuke.stapler.StaplerRequest;
+ 
+ import java.io.Serializable;
+-import java.util.List;
+ import java.util.Collection;
+ import java.util.Collections;
+ 
+ import net.sf.json.JSONObject;
+ 
++import org.acegisecurity.Authentication;
++import org.kohsuke.stapler.StaplerRequest;
++
+ /**
+  * Controls authorization throughout Hudson.
+  *
+@@ -43,6 +45,18 @@
+      * IOW, this ACL will have the ultimate say on the access control.
+      */
+     public abstract ACL getRootACL();
++    
++    public ACL getACL(AbstractProject<?,?> project) {
++    	return getRootACL();
++    }
++
++    public ACL getACL(Hudson item) {
++    	return getRootACL();
++    }
++
++    public ACL getACL(AbstractItem item) {
++    	return getRootACL();
++    }
+ 
+     /**
+      * Returns the list of all group/role names used in this authorization strategy,
+@@ -112,6 +126,7 @@
+             LIST.load(FullControlOnceLoggedInAuthorizationStrategy.class);
+             LIST.load(GlobalMatrixAuthorizationStrategy.class);
+             LIST.load(LegacyAuthorizationStrategy.class);
++            LIST.load(ProjectBasedAuthorizationStrategy.class);
+ 
+             // can't do this in the constructor due to the initialization order
+             LIST.add(Unsecured.DESCRIPTOR);
+Index: src/main/resources/hudson/model/ComputerSet/index.jelly
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/resources/hudson/model/ComputerSet/index.jelly,v
+retrieving revision 1.4
+diff -u -r1.4 index.jelly
+--- src/main/resources/hudson/model/ComputerSet/index.jelly	31 Jan 2008 14:58:35 -0000	1.4
++++ src/main/resources/hudson/model/ComputerSet/index.jelly	4 Feb 2008 22:28:45 -0000
+@@ -2,7 +2,7 @@
+   Entrance to the configuration page
+ -->
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+-<l:layout title="Nodes" secured="true">
++<l:layout title="Nodes" permission="${app.ADMINISTER}">
+   <st:include page="sidepanel.jelly" />
+   <l:main-panel>
+     <j:set var="monitors" value="${it._monitors}"/>
+Index: src/main/java/hudson/security/ProjectBasedAuthorizationStrategy.java
+===================================================================
+RCS file: src/main/java/hudson/security/ProjectBasedAuthorizationStrategy.java
+diff -N src/main/java/hudson/security/ProjectBasedAuthorizationStrategy.java
+--- /dev/null	1 Jan 1970 00:00:00 -0000
++++ src/main/java/hudson/security/ProjectBasedAuthorizationStrategy.java	1 Jan 1970 00:00:00 -0000
+@@ -0,0 +1,70 @@
++package hudson.security;
++
++import hudson.model.AbstractProject;
++import hudson.model.Descriptor;
++import hudson.model.Item;
++
++import java.util.Collections;
++import java.util.List;
++
++import net.sf.json.JSONObject;
++
++import org.acegisecurity.GrantedAuthority;
++import org.acegisecurity.GrantedAuthorityImpl;
++import org.acegisecurity.acls.sid.GrantedAuthoritySid;
++import org.kohsuke.stapler.StaplerRequest;
++
++/**
++ * {@link AuthorizationStrategy} that grants control based on owned permissions.
++ */
++public class ProjectBasedAuthorizationStrategy extends AuthorizationStrategy {
++    @Override
++    public ACL getRootACL() {
++        return ROOT_ACL;
++    }
++
++    @Override
++	public ACL getACL(AbstractProject<?, ?> project) {
++    	SparseACL acl = new SparseACL(ROOT_ACL);
++    	acl.add(new GrantedAuthoritySid(createItemAuthority(project)), Permission.FULL_CONTROL, true);
++    	return acl;
++	}
++
++	public List<String> getGroups() {
++        return Collections.emptyList();
++    }
++
++    private static final SparseACL ROOT_ACL = new SparseACL(null);
++
++    static {
++    	ROOT_ACL.add(new GrantedAuthoritySid("admin"), Permission.FULL_CONTROL, true);
++        ROOT_ACL.add(ACL.EVERYONE,Permission.READ,true);
++        ROOT_ACL.add(ACL.EVERYONE,Permission.FULL_CONTROL,false);
++    }
++    
++    public static GrantedAuthority createItemAuthority(Item item) {
++    	return new GrantedAuthorityImpl(item.getFullName());
++    }
++
++    public Descriptor<AuthorizationStrategy> getDescriptor() {
++        return DESCRIPTOR;
++    }
++
++    public static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new Descriptor<AuthorizationStrategy>(ProjectBasedAuthorizationStrategy.class) {
++        public String getDisplayName() {
++            return "Project Based Access Control";
++        }
++
++        public AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
++            return new ProjectBasedAuthorizationStrategy();
++        }
++
++        public String getHelpFile() {
++            return "/help/security/full-control-once-logged-in.html";
++        }
++    };
++
++    static {
++        LIST.add(DESCRIPTOR);
++    }
++}

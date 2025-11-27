@@ -1,0 +1,54 @@
+Started by user anonymous
+Building in workspace C:\Users\user\.jenkins\workspace\SonarProject
+ > git.exe rev-parse --is-inside-work-tree # timeout=10
+Fetching changes from the remote Git repository
+ > git.exe config remote.origin.url https://github.com/imentor/qa.git # timeout=10
+Fetching upstream changes from https://github.com/imentor/qa.git
+ > git.exe --version # timeout=10
+using .gitcredentials to set credentials
+ > git.exe config --local credential.helper store --file=\"F:\Laptop Backup\CI\apache-tomcat-8.0.15\temp\git1906386007542070899.credentials\" # timeout=10
+ > git.exe -c core.askpass=true fetch --tags --progress https://github.com/imentor/qa.git +refs/heads/*:refs/remotes/origin/*
+ > git.exe config --local --remove-section credential # timeout=10
+ > git.exe rev-parse "refs/remotes/origin/dev^{commit}" # timeout=10
+ > git.exe rev-parse "refs/remotes/origin/origin/dev^{commit}" # timeout=10
+Checking out Revision 89ec8a146466850f83c4832f230b824872926163 (refs/remotes/origin/dev)
+ > git.exe config core.sparsecheckout # timeout=10
+ > git.exe checkout -f 89ec8a146466850f83c4832f230b824872926163
+ > git.exe rev-list 89ec8a146466850f83c4832f230b824872926163 # timeout=10
+[SonarProject] $ "F:\Laptop Backup\CI\Sonar\sonar-runner-2.4\bin\sonar-runner.bat" Job1 -Dsonar.jdbc.driver=com.mysql.jdbc.Driver "-Dsonar.jdbc.url=jdbc:mysql://localhost:3306/sonar?autoReconnect=true&useUnicode=true&characterEncoding=utf8" -Dsonar.projectBaseDir=C:\Users\user\.jenkins\workspace\SonarProject "-Dproject.settings=F:/Laptop Backup/CI/Sonar/sonar-runner-2.4/bin/sonar-project.properties"
+F:\Laptop Backup\CI\Sonar\sonar-runner-2.4
+SonarQube Runner 2.4
+Java 1.7.0_71 Oracle Corporation (32-bit)
+Windows 7 6.1 x86
+INFO: Runner configuration file: F:\Laptop Backup\CI\Sonar\sonar-runner-2.4\conf\sonar-runner.properties
+INFO: Project configuration file: F:\Laptop Backup\CI\Sonar\sonar-runner-2.4\bin\sonar-project.properties
+INFO: SonarQube Server 4.5.1
+09:46:23.037 INFO  - Load global referentials...
+09:46:25.011 INFO  - Load global referentials done: 1984 ms
+09:46:25.021 INFO  - User cache: C:\Users\user\.sonar\cache
+09:46:25.041 INFO  - Install plugins
+09:46:26.337 INFO  - Install JDBC driver
+09:46:26.422 INFO  - Create JDBC datasource for jdbc:mysql://localhost:3306/sonar?autoReconnect=true&useUnicode=true&characterEncoding=utf8
+09:46:29.610 INFO  - Initializing Hibernate
+INFO: ------------------------------------------------------------------------
+INFO: EXECUTION FAILURE
+INFO: ------------------------------------------------------------------------
+Total time: 19.972s
+Final Memory: 7M/18M
+INFO: ------------------------------------------------------------------------
+ERROR: Error during Sonar runner execution
+org.sonar.runner.impl.RunnerException: Unable to execute Sonar
+        at org.sonar.runner.impl.BatchLauncher$1.delegateExecution(BatchLauncher.java:91)
+        at org.sonar.runner.impl.BatchLauncher$1.run(BatchLauncher.java:75)
+        at java.security.AccessController.doPrivileged(Native Method)
+        at org.sonar.runner.impl.BatchLauncher.doExecute(BatchLauncher.java:69)
+        at org.sonar.runner.impl.BatchLauncher.execute(BatchLauncher.java:50)
+        at org.sonar.runner.api.EmbeddedRunner.doExecute(EmbeddedRunner.java:102)
+        at org.sonar.runner.api.Runner.execute(Runner.java:100)
+        at org.sonar.runner.Main.executeTask(Main.java:70)
+        at org.sonar.runner.Main.execute(Main.java:59)
+        at org.sonar.runner.Main.main(Main.java:53)
+Caused by: Task Job1 does not exist
+ERROR:
+ERROR: Re-run SonarQube Runner using the -X switch to enable full debug logging.
+

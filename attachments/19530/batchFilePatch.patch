@@ -1,0 +1,25 @@
+Index: main/java/hudson/plugins/groovy/Groovy.java
+===================================================================
+--- main/java/hudson/plugins/groovy/Groovy.java	(revision 32250)
++++ main/java/hudson/plugins/groovy/Groovy.java	(working copy)
+@@ -221,11 +221,16 @@
+         }
+ 
+         private File getExeFile(String execName) {
+-            if (File.separatorChar == '\\') {
+-                execName += ".exe";
++            String groovyHome = Util.replaceMacro(getHome(),EnvVars.masterEnvVars);
++            File binDir = new File(groovyHome, "bin/");
++            if (File.separatorChar == '\\') {                
++                if(new File(binDir, execName + ".exe").exists()) {
++                    execName += ".exe";
++                } else {
++                    execName += ".bat";
++                }
+             }
+-            String groovyHome = Util.replaceMacro(getHome(),EnvVars.masterEnvVars);
+-            return new File(groovyHome, "bin/" + execName);
++            return new File(binDir, execName);            
+         }
+ 
+         /**

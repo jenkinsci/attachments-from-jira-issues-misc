@@ -1,0 +1,62 @@
+Index: src/main/java/hudson/plugins/deploy/DeployPublisher.java
+===================================================================
+--- src/main/java/hudson/plugins/deploy/DeployPublisher.java	(revision 24951)
++++ src/main/java/hudson/plugins/deploy/DeployPublisher.java	(working copy)
+@@ -18,6 +18,7 @@
+ import java.util.ArrayList;
+ import java.util.Collections;
+ import java.util.Comparator;
++import java.util.StringTokenizer;
+ 
+ import org.kohsuke.stapler.DataBoundConstructor;
+ 
+@@ -40,14 +41,31 @@
+     }
+ 
+     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+-    	if (build.getResult().equals(Result.SUCCESS) || onFailure) {
+-	        FilePath warFile = build.getWorkspace().child(this.war);
+-	        if(!adapter.redeploy(warFile,build,launcher,listener))
+-	            build.setResult(Result.FAILURE);
+-    	}
+ 
+-        return true;
++		String[] warNames = getIndividualWarFiles();
++		for (int i = 0; i < warNames.length; i++) {
++			String warName = warNames[i];
++			if (build.getResult().equals(Result.SUCCESS) || onFailure) {
++				FilePath warFile = build.getWorkspace().child(warName);
++				if (!adapter.redeploy(warFile, build, launcher, listener))
++					build.setResult(Result.FAILURE);
++			}
++		}
++		return true;
+     }
++    
++    public String[] getIndividualWarFiles()
++    {
++    	StringTokenizer tokenizer = new StringTokenizer(this.war, " ");
++    	String[] wars = new String[tokenizer.countTokens()];
++    	int index = 0;
++    	while (tokenizer.hasMoreTokens())
++    	{
++    		wars[index] = tokenizer.nextToken();
++    		index++;
++    	}
++    	return wars;    	
++    }
+ 
+     public BuildStepMonitor getRequiredMonitorService() {
+         return BuildStepMonitor.BUILD;
+Index: src/main/resources/hudson/plugins/deploy/DeployPublisher/config.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/deploy/DeployPublisher/config.jelly	(revision 24951)
++++ src/main/resources/hudson/plugins/deploy/DeployPublisher/config.jelly	(working copy)
+@@ -1,6 +1,6 @@
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+          xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+-  <f:entry title="${%WAR/EAR file}" field="war">
++  <f:entry title="${%WAR/EAR files  separate multiple files with spaces }" field="war">
+     <f:textbox />
+   </f:entry>
+ 

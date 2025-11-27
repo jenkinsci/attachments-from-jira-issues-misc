@@ -1,0 +1,79 @@
+Index: C:/entw/hudson-org/disk-usage/src/main/java/hudson/plugins/disk_usage/DiskUsageProperty.java
+===================================================================
+--- C:/entw/hudson-org/disk-usage/src/main/java/hudson/plugins/disk_usage/DiskUsageProperty.java	(revision 13354)
++++ C:/entw/hudson-org/disk-usage/src/main/java/hudson/plugins/disk_usage/DiskUsageProperty.java	(working copy)
+@@ -11,38 +11,39 @@
+ 
+ //(basically nothing to see here)
+ /**
+- * This Property sets DiskUsage action. 
+- * 
++ * This Property sets DiskUsage action.
++ *
+  * @author dvrzalik
+  */
+ public class DiskUsageProperty extends JobProperty<Job<?, ?>> {
+-    
++
+      @Override
+     public Action getJobAction(Job<?, ?> job) {
+         return new ProjectDiskUsageAction((AbstractProject) job);//??
+     }
+-     
++
+     public JobPropertyDescriptor getDescriptor() {
+         return DESCRIPTOR;
+     }
+-    
++
+     public static final DiskUsageDescriptor DESCRIPTOR = new DiskUsageDescriptor();
+ 
+     public static final class DiskUsageDescriptor extends JobPropertyDescriptor {
+ 
+         //Show graph on the project page?
+         private Boolean showGraph;
+-        
++
+         public DiskUsageDescriptor() {
+             super(DiskUsageProperty.class);
++            load();
+         }
+-        
++
+         @Override
+         public String getDisplayName() {
+             return "Disk usage";
+         }
+-        
+ 
++
+         @Override
+         public DiskUsageProperty newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+              return new DiskUsageProperty();
+@@ -51,11 +52,12 @@
+         @Override
+         public boolean configure(StaplerRequest req) throws FormException {
+             showGraph = req.getParameter("disk_usage.showGraph") != null;
+-            return true;
++            save();
++            return super.configure(req);
+         }
+-        
+-        
+ 
++
++
+         @Override
+         public boolean isApplicable(Class<? extends Job> jobType) {
+             return true;
+@@ -69,7 +71,8 @@
+         public void setShowGraph(Boolean showGraph) {
+             this.showGraph = showGraph;
+         }
+-    }         
++    }
+ }
+ 
+-    
++
++

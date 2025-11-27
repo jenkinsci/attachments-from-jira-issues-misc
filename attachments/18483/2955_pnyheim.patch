@@ -1,0 +1,17 @@
+Index: src/main/java/hudson/plugins/active_directory/ActiveDirectoryAuthenticationProvider.java
+===================================================================
+--- src/main/java/hudson/plugins/active_directory/ActiveDirectoryAuthenticationProvider.java	(revision 15594)
++++ src/main/java/hudson/plugins/active_directory/ActiveDirectoryAuthenticationProvider.java	(working copy)
+@@ -95,7 +95,11 @@
+         } catch (ComException e) {
+             throw new BadCredentialsException("Incorrect password for "+username);
+         }
+-
++        
++        if (usr== null){
++        	throw new UsernameNotFoundException("No such user: "+username);
++        }
++        
+         List<GrantedAuthority> groups = new ArrayList<GrantedAuthority>();
+         for( Com4jObject g : usr.groups() ) {
+             IADsGroup grp = g.queryInterface(IADsGroup.class);

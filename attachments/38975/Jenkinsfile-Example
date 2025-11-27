@@ -1,0 +1,68 @@
+properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '10')), pipelineTriggers([])])
+//Define podTemplate for K8s with child templates
+	//build-unit podTemplate
+		podTemplate(
+				name: 'build-slave', 
+				label: 'build-slave',  
+				cloud: 'xyz', 
+				namespace: 'default' ,
+				containers: [
+						containerTemplate(
+									name: 'default-1', 
+									image: 'ubuntu:latest', 
+								    alwaysPullImage: false,
+									privileged: false,
+									ttyEnabled: true, 
+									command: 'cat'),
+						containerTemplate(
+									name: 'default-2', 
+									image: 'ubuntu:latest', 
+									alwaysPullImage: false,
+									privileged: false,
+									ttyEnabled: true, 
+									command: 'cat'),
+						containerTemplate(
+									name: 'default-3', 
+									image: 'ubuntu:latest', 
+									alwaysPullImage: false,
+									privileged: false,
+									ttyEnabled: true, 
+									command: 'cat')	
+						]
+			){
+		//Define K8s Node to execute
+		node ('build-slave') {
+		    Integer TimeOutMinutes=1
+			sh "echo initiating build step"
+			stage('build'){
+					timeout(TimeOutMinutes){
+					//Define container to limit the execution.
+					container('default-1') {
+						sh "echo Initiating 1 Container..."
+						} // Close Container
+				}
+	
+			}
+			
+			stage('unit test'){
+            timeout(TimeOutMinutes){        
+                
+                   //Define container to limit the execution.
+					container('default-2') {
+						sh "echo Initiating 2 Container..."
+                      // Close Container
+                        } 
+            }
+			}
+			stage('publish') {
+						timeout(TimeOutMinutes){
+						//Define container to limit the execution.
+						container('default-3') {
+							sh "echo Initiating 3 Container..."
+							}// Close Container
+						}
+						}
+    		
+		} // Close Node
+		} // Close podTemplate 
+	

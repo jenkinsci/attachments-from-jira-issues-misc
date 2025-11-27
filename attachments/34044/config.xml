@@ -1,0 +1,201 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<matrix-project plugin="matrix-project@1.7.1">
+  <actions/>
+  <displayName>gcc-4_9_3-release</displayName>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.3.0">
+      <gitLabConnection>gitlab</gitLabConnection>
+    </com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.25">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@1.9.0">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList">
+        <string>GCC-builds</string>
+      </categories>
+      <throttleEnabled>true</throttleEnabled>
+      <throttleOption>category</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <matrixOptions>
+        <throttleMatrixBuilds>false</throttleMatrixBuilds>
+        <throttleMatrixConfigurations>true</throttleMatrixConfigurations>
+      </matrixOptions>
+      <paramsToUseForLimit></paramsToUseForLimit>
+      <configVersion>1</configVersion>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    <jenkins.branch.RateLimitBranchProperty_-JobPropertyImpl plugin="branch-api@1.11-SNAPSHOT">
+      <durationName>week</durationName>
+      <count>3</count>
+    </jenkins.branch.RateLimitBranchProperty_-JobPropertyImpl>
+    <jenkins.advancedqueue.jobinclusion.strategy.JobInclusionJobProperty plugin="PrioritySorter@3.4">
+      <useJobGroup>true</useJobGroup>
+      <jobGroupName>Opportunistic (low priority)</jobGroupName>
+    </jenkins.advancedqueue.jobinclusion.strategy.JobInclusionJobProperty>
+    <com.github.mjdetullio.jenkins.plugins.multibranch.BranchProjectProperty plugin="multi-branch-project-plugin@0.5.1">
+      <branch plugin="branch-api@1.11-SNAPSHOT">
+        <sourceId>69d9f4ee-52e1-4dde-a9db-d61b2df4cee9</sourceId>
+        <head plugin="scm-api@1.2">
+          <name>gcc-4_9_3-release</name>
+        </head>
+        <scm class="hudson.plugins.git.GitSCM" plugin="git@2.5.4-SNAPSHOT">
+          <configVersion>2</configVersion>
+          <userRemoteConfigs>
+            <hudson.plugins.git.UserRemoteConfig>
+              <name>origin</name>
+              <refspec>+refs/heads/*:refs/remotes/origin/*</refspec>
+              <url>git://gitlab.ozlabs.ibm.com/mirror/gcc.git</url>
+            </hudson.plugins.git.UserRemoteConfig>
+            <hudson.plugins.git.UserRemoteConfig>
+              <name>origin</name>
+              <refspec>+refs/remotes/*:refs/remotes/*</refspec>
+              <url>git://gitlab.ozlabs.ibm.com/mirror/gcc.git</url>
+            </hudson.plugins.git.UserRemoteConfig>
+          </userRemoteConfigs>
+          <branches class="singleton-list">
+            <hudson.plugins.git.BranchSpec>
+              <name>gcc-4_9_3-release</name>
+            </hudson.plugins.git.BranchSpec>
+          </branches>
+          <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+          <submoduleCfg class="empty-list"/>
+          <extensions>
+            <hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+              <relativeTargetDir>gcc</relativeTargetDir>
+            </hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+            <hudson.plugins.git.extensions.impl.CloneOption>
+              <shallow>false</shallow>
+              <noTags>false</noTags>
+              <reference>/var/lib/jenkins/git/gcc.git</reference>
+              <timeout>120</timeout>
+              <depth>0</depth>
+              <honorRefspec>false</honorRefspec>
+            </hudson.plugins.git.extensions.impl.CloneOption>
+            <hudson.plugins.git.extensions.impl.BuildChooserSetting>
+              <buildChooser class="org.jenkinsci.plugins.git.chooser.alternative.AlternativeBuildChooser" plugin="git-chooser-alternative@1.1"/>
+            </hudson.plugins.git.extensions.impl.BuildChooserSetting>
+          </extensions>
+        </scm>
+        <properties class="java.util.concurrent.CopyOnWriteArrayList"/>
+      </branch>
+    </com.github.mjdetullio.jenkins.plugins.multibranch.BranchProjectProperty>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>10</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>4</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" reference="../properties/com.github.mjdetullio.jenkins.plugins.multibranch.BranchProjectProperty/branch/scm"/>
+  <assignedNode>x86</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <axes>
+    <hudson.matrix.TextAxis>
+      <name>HOST_OS</name>
+      <values>
+        <string>ubuntu-16.04</string>
+        <string>ubuntu-14.04.4</string>
+        <string>fedora-23</string>
+        <string>debian-8.4</string>
+      </values>
+    </hudson.matrix.TextAxis>
+    <hudson.matrix.TextAxis>
+      <name>TARGET_PLATFORM</name>
+      <values>
+        <string>x86_64</string>
+        <string>power32</string>
+        <string>ppc64le</string>
+        <string>ppc64be</string>
+      </values>
+    </hudson.matrix.TextAxis>
+    <hudson.matrix.LabelAxis>
+      <name>HOST_PLATFORM</name>
+      <values>
+        <string>ppc64le</string>
+        <string>x86_64</string>
+      </values>
+    </hudson.matrix.LabelAxis>
+  </axes>
+  <combinationFilter>!(HOST_PLATFORM==&quot;ppc64le&quot; &amp;&amp; TARGET_PLATFORM==&quot;x86_64&quot;) &amp;&amp; !(HOST_OS==&quot;ubuntu-14.04.4&quot;)</combinationFilter>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>git clone --branch binutils-2_27 git://gitlab.ozlabs.ibm.com/mirror/binutils-gdb.git binutils
+
+git clone --recursive git://gitlab.ozlabs.ibm.com/CI/crosstool-build-script.git
+crosstool-build-script/build-setup.sh
+</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>cross-*.tbz</artifacts>
+      <allowEmptyArchive>false</allowEmptyArchive>
+      <onlyIfSuccessful>false</onlyIfSuccessful>
+      <fingerprint>false</fingerprint>
+      <defaultExcludes>true</defaultExcludes>
+      <caseSensitive>true</caseSensitive>
+    </hudson.tasks.ArtifactArchiver>
+    <hudson.plugins.ircbot.IrcPublisher plugin="ircbot@2.27">
+      <targets class="empty-list"/>
+      <strategy>FAILURE_AND_FIXED</strategy>
+      <notifyOnBuildStart>false</notifyOnBuildStart>
+      <notifySuspects>false</notifySuspects>
+      <notifyCulprits>false</notifyCulprits>
+      <notifyFixers>false</notifyFixers>
+      <notifyUpstreamCommitters>false</notifyUpstreamCommitters>
+      <buildToChatNotifier class="hudson.plugins.im.build_notify.SummaryOnlyBuildToChatNotifier" plugin="instant-messaging@1.35"/>
+      <matrixMultiplier>ONLY_CONFIGURATIONS</matrixMultiplier>
+    </hudson.plugins.ircbot.IrcPublisher>
+    <hudson.plugins.ws__cleanup.WsCleanup plugin="ws-cleanup@0.30">
+      <patterns class="empty-list"/>
+      <deleteDirs>false</deleteDirs>
+      <skipWhenFailed>false</skipWhenFailed>
+      <cleanWhenSuccess>true</cleanWhenSuccess>
+      <cleanWhenUnstable>true</cleanWhenUnstable>
+      <cleanWhenFailure>true</cleanWhenFailure>
+      <cleanWhenNotBuilt>true</cleanWhenNotBuilt>
+      <cleanWhenAborted>true</cleanWhenAborted>
+      <notFailBuild>false</notFailBuild>
+      <cleanupMatrixParent>false</cleanupMatrixParent>
+      <externalDelete></externalDelete>
+    </hudson.plugins.ws__cleanup.WsCleanup>
+  </publishers>
+  <buildWrappers>
+    <hudson.plugins.ws__cleanup.PreBuildCleanup plugin="ws-cleanup@0.30">
+      <deleteDirs>false</deleteDirs>
+      <cleanupParameter></cleanupParameter>
+      <externalDelete></externalDelete>
+    </hudson.plugins.ws__cleanup.PreBuildCleanup>
+    <hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.8.4"/>
+    <hudson.plugins.ansicolor.AnsiColorBuildWrapper plugin="ansicolor@0.4.2">
+      <colorMapName>xterm</colorMapName>
+    </hudson.plugins.ansicolor.AnsiColorBuildWrapper>
+    <ruby-proxy-object>
+      <ruby-object ruby-class="Jenkins::Plugin::Proxies::BuildWrapper" pluginid="pathignore">
+        <object ruby-class="PathignoreWrapper" pluginid="pathignore">
+          <invert__ignore ruby-class="FalseClass" pluginid="pathignore"/>
+          <ignored__paths pluginid="pathignore" ruby-class="String">**/DATESTAMP</ignored__paths>
+        </object>
+        <pluginid pluginid="pathignore" ruby-class="String">pathignore</pluginid>
+      </ruby-object>
+    </ruby-proxy-object>
+    <org.jenkinsci.plugins.buildnamesetter.BuildNameSetter plugin="build-name-setter@1.6.5">
+      <template>#${BUILD_NUMBER}_gcc-${GIT_REVISION,length=14}</template>
+      <runAtStart>true</runAtStart>
+      <runAtEnd>true</runAtEnd>
+    </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
+  </buildWrappers>
+  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+    <runSequentially>false</runSequentially>
+  </executionStrategy>
+</matrix-project>

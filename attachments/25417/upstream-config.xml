@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <actions/>
+  <description/>
+  <logRotator class="hudson.tasks.LogRotator">
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>3</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.sonyericsson.jenkins.plugins.bfa.model.ScannerJobProperty plugin="build-failure-analyzer@1.5.1">
+      <doNotScan>false</doNotScan>
+    </com.sonyericsson.jenkins.plugins.bfa.model.ScannerJobProperty>
+    <jenkins.advancedqueue.AdvancedQueueSorterJobProperty plugin="PrioritySorter@2.6">
+      <useJobPriority>false</useJobPriority>
+      <priority>-1</priority>
+    </jenkins.advancedqueue.AdvancedQueueSorterJobProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.21">
+      <autoRebuild>false</autoRebuild>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.plugins.heavy__job.HeavyJobProperty plugin="heavy-job@1.1">
+      <weight>2</weight>
+    </hudson.plugins.heavy__job.HeavyJobProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@1.8.1">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    <EnvInjectJobProperty plugin="envinject@1.89">
+      <info>
+        <propertiesContent>PROJECT_NAME_ARM=HelpScreenAutomation
+PROJECT_OWNER_ARM=E014637
+AO_WAR_NAME=HelpScreenAutomationWeb</propertiesContent>
+        <loadFilesFromMaster>false</loadFilesFromMaster>
+      </info>
+      <on>true</on>
+      <keepJenkinsSystemVariables>true</keepJenkinsSystemVariables>
+      <keepBuildVariables>true</keepBuildVariables>
+      <contributors/>
+    </EnvInjectJobProperty>
+    <hudson.plugins.disk__usage.DiskUsageProperty plugin="disk-usage@0.23"/>
+  </properties>
+  <scm class="hudson.plugins.accurev.AccurevSCM" plugin="accurev@0.6.18">
+    <serverName>Production Accurev</serverName>
+    <depot>EnterpriseJava</depot>
+    <stream>HelpScreenAutomation_developerIntegration</stream>
+    <ignoreStreamParent>false</ignoreStreamParent>
+    <useWorkspace>false</useWorkspace>
+    <usePurgeIfLastFailed>false</usePurgeIfLastFailed>
+    <useUpdate>false</useUpdate>
+    <useRevert>false</useRevert>
+    <useSnapshot>false</useSnapshot>
+    <snapshotNameFormat/>
+    <synctime>false</synctime>
+    <workspace/>
+    <workspaceSubPath/>
+  </scm>
+  <assignedNode>Java</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <jdk>WAS7</jdk>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <com.cloudbees.hudson.plugins.modeling.impl.builder.BuilderImpl.Build.Template__Builder__Clear__Ivy__Cache>
+      <values/>
+    </com.cloudbees.hudson.plugins.modeling.impl.builder.BuilderImpl.Build.Template__Builder__Clear__Ivy__Cache>
+    <com.cloudbees.hudson.plugins.modeling.impl.builder.BuilderImpl.Build.Template__Builder__Invoke__Ant__Project__Level__Build__Script>
+      <values>
+        <entry>
+          <string>AO_CheckstyleChecksConfigURL</string>
+          <string>AO_CheckstyleChecksLowerConfigURL</string>
+        </entry>
+        <entry>
+          <string>AO_BUILD_TARGET</string>
+          <string>build.all</string>
+        </entry>
+      </values>
+    </com.cloudbees.hudson.plugins.modeling.impl.builder.BuilderImpl.Build.Template__Builder__Invoke__Ant__Project__Level__Build__Script>
+  </builders>
+  <publishers>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>${AO_WAR_NAME}/src/**, ${AO_WAR_NAME}/lib/**, ${AO_WAR_NAME}/target/bin/**, ${AO_WAR_NAME}/target/dist/war/**</artifacts>
+      <latestOnly>true</latestOnly>
+      <allowEmptyArchive>true</allowEmptyArchive>
+    </hudson.tasks.ArtifactArchiver>
+    <hudson.plugins.emailext.ExtendedEmailPublisher plugin="email-ext@2.37.2.1">
+      <recipientList/>
+      <configuredTriggers>
+        <hudson.plugins.emailext.plugins.trigger.AbortedTrigger>
+          <email>
+            <recipientList>DL.IT.${PROJECT_NAME_ARM}EAR@aoins.com</recipientList>
+            <subject>$PROJECT_DEFAULT_SUBJECT</subject>
+            <body>$PROJECT_DEFAULT_CONTENT</body>
+            <sendToDevelopers>true</sendToDevelopers>
+            <sendToRequester>true</sendToRequester>
+            <includeCulprits>true</includeCulprits>
+            <sendToRecipientList>true</sendToRecipientList>
+            <attachmentsPattern/>
+            <attachBuildLog>false</attachBuildLog>
+            <compressBuildLog>false</compressBuildLog>
+            <replyTo/>
+            <contentType>project</contentType>
+          </email>
+        </hudson.plugins.emailext.plugins.trigger.AbortedTrigger>
+        <hudson.plugins.emailext.plugins.trigger.FailureTrigger>
+          <email>
+            <recipientList>DL.IT.${PROJECT_NAME_ARM}EAR@aoins.com</recipientList>
+            <subject>$PROJECT_DEFAULT_SUBJECT</subject>
+            <body>$PROJECT_DEFAULT_CONTENT</body>
+            <sendToDevelopers>true</sendToDevelopers>
+            <sendToRequester>true</sendToRequester>
+            <includeCulprits>true</includeCulprits>
+            <sendToRecipientList>true</sendToRecipientList>
+            <attachmentsPattern/>
+            <attachBuildLog>false</attachBuildLog>
+            <compressBuildLog>false</compressBuildLog>
+            <replyTo/>
+            <contentType>project</contentType>
+          </email>
+        </hudson.plugins.emailext.plugins.trigger.FailureTrigger>
+        <hudson.plugins.emailext.plugins.trigger.FixedTrigger>
+          <email>
+            <recipientList>DL.IT.${PROJECT_NAME_ARM}EAR@aoins.com</recipientList>
+            <subject>$PROJECT_DEFAULT_SUBJECT</subject>
+            <body>$PROJECT_DEFAULT_CONTENT</body>
+            <sendToDevelopers>true</sendToDevelopers>
+            <sendToRequester>true</sendToRequester>
+            <includeCulprits>true</includeCulprits>
+            <sendToRecipientList>true</sendToRecipientList>
+            <attachmentsPattern/>
+            <attachBuildLog>false</attachBuildLog>
+            <compressBuildLog>false</compressBuildLog>
+            <replyTo/>
+            <contentType>project</contentType>
+          </email>
+        </hudson.plugins.emailext.plugins.trigger.FixedTrigger>
+        <hudson.plugins.emailext.plugins.trigger.SuccessTrigger>
+          <email>
+            <recipientList>DL.IT.${PROJECT_NAME_ARM}EAR@aoins.com</recipientList>
+            <subject>$PROJECT_DEFAULT_SUBJECT</subject>
+            <body>$PROJECT_DEFAULT_CONTENT</body>
+            <sendToDevelopers>true</sendToDevelopers>
+            <sendToRequester>true</sendToRequester>
+            <includeCulprits>true</includeCulprits>
+            <sendToRecipientList>true</sendToRecipientList>
+            <attachmentsPattern/>
+            <attachBuildLog>false</attachBuildLog>
+            <compressBuildLog>false</compressBuildLog>
+            <replyTo/>
+            <contentType>project</contentType>
+          </email>
+        </hudson.plugins.emailext.plugins.trigger.SuccessTrigger>
+      </configuredTriggers>
+      <contentType>default</contentType>
+      <defaultSubject>$DEFAULT_SUBJECT</defaultSubject>
+      <defaultContent>$DEFAULT_CONTENT</defaultContent>
+      <attachmentsPattern/>
+      <presendScript>$DEFAULT_PRESEND_SCRIPT</presendScript>
+      <attachBuildLog>false</attachBuildLog>
+      <compressBuildLog>false</compressBuildLog>
+      <replyTo/>
+      <saveOutput>false</saveOutput>
+    </hudson.plugins.emailext.ExtendedEmailPublisher>
+    <hudson.plugins.parameterizedtrigger.BuildTrigger plugin="parameterized-trigger@2.22">
+      <configs>
+        <hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
+          <configs>
+            <hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+              <properties>AO_WAR_NAME=${AO_WAR_NAME}
+AO_UPSTREAM_JOB_NAME=${JOB_NAME}
+AO_PROJECT_NAME_ARM=${PROJECT_NAME_ARM}
+AO_UPSTREAM_BUILD_ID=${BUILD_ID}</properties>
+            </hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+          </configs>
+          <projects>Build/Coverity/Coverity_JavaEE_Full_WAR_Scan</projects>
+          <condition>SUCCESS</condition>
+          <triggerWithNoParameters>false</triggerWithNoParameters>
+        </hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
+      </configs>
+    </hudson.plugins.parameterizedtrigger.BuildTrigger>
+  </publishers>
+  <buildWrappers>
+    <hudson.plugins.ws__cleanup.PreBuildCleanup plugin="ws-cleanup@0.20">
+      <deleteDirs>false</deleteDirs>
+      <cleanupParameter/>
+      <externalDelete/>
+    </hudson.plugins.ws__cleanup.PreBuildCleanup>
+    <hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.5.8"/>
+    <org.jfrog.hudson.ivy.ArtifactoryIvyFreeStyleConfigurator plugin="artifactory@2.2.1">
+      <details>
+        <artifactoryUrl>http://jarrep1.aoins.com/artifactory</artifactoryUrl>
+        <artifactoryName>http://jarrep1.aoins.com/artifactory</artifactoryName>
+        <repositoryKey>libs-snapshot-local</repositoryKey>
+        <snapshotsRepositoryKey>libs-snapshot-local</snapshotsRepositoryKey>
+      </details>
+      <deployArtifacts>true</deployArtifacts>
+      <envVarsPatterns>
+        <includePatterns/>
+        <excludePatterns>*password*,*secret*</excludePatterns>
+      </envVarsPatterns>
+      <deployBuildInfo>true</deployBuildInfo>
+      <includeEnvVars>false</includeEnvVars>
+      <runChecks>false</runChecks>
+      <violationRecipients/>
+      <includePublishArtifacts>false</includePublishArtifacts>
+      <scopes/>
+      <licenseAutoDiscovery>true</licenseAutoDiscovery>
+      <disableLicenseAutoDiscovery>false</disableLicenseAutoDiscovery>
+      <ivyPattern>[organisation]/[module]/[revision]/ivy-[revision].xml</ivyPattern>
+      <artifactPattern>[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]</artifactPattern>
+      <notM2Compatible>false</notM2Compatible>
+      <artifactDeploymentPatterns>
+        <includePatterns/>
+        <excludePatterns/>
+      </artifactDeploymentPatterns>
+      <discardOldBuilds>false</discardOldBuilds>
+      <passIdentifiedDownstream>false</passIdentifiedDownstream>
+      <discardBuildArtifacts>true</discardBuildArtifacts>
+      <matrixParams/>
+      <enableIssueTrackerIntegration>false</enableIssueTrackerIntegration>
+      <aggregateBuildIssues>false</aggregateBuildIssues>
+      <blackDuckRunChecks>false</blackDuckRunChecks>
+      <blackDuckAppName/>
+      <blackDuckAppVersion/>
+      <blackDuckReportRecipients/>
+      <blackDuckScopes/>
+      <blackDuckIncludePublishedArtifacts>false</blackDuckIncludePublishedArtifacts>
+      <autoCreateMissingComponentRequests>true</autoCreateMissingComponentRequests>
+      <autoDiscardStaleComponentRequests>true</autoDiscardStaleComponentRequests>
+      <filterExcludedArtifactsFromBuild>false</filterExcludedArtifactsFromBuild>
+    </org.jfrog.hudson.ivy.ArtifactoryIvyFreeStyleConfigurator>
+    <org.jenkinsci.plugins.builduser.BuildUser plugin="build-user-vars-plugin@1.1"/>
+  </buildWrappers>
+</project>

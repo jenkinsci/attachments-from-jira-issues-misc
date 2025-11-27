@@ -1,0 +1,39 @@
+From b689a2786b0aa1577062d43183dd7d03d796344e Mon Sep 17 00:00:00 2001
+From: Michael Elkin <michael.elkin@bridgepointeducation.com>
+Date: Sun, 9 Oct 2011 17:12:16 -0700
+Subject: [PATCH 28/28] Adding ordinal value to the extension
+
+---
+ .../hudson/plugins/ws_cleanup/PreBuildCleanup.java |    2 +-
+ .../java/hudson/plugins/ws_cleanup/WsCleanup.java  |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/main/java/hudson/plugins/ws_cleanup/PreBuildCleanup.java b/src/main/java/hudson/plugins/ws_cleanup/PreBuildCleanup.java
+index 51325b3..2372612 100644
+--- a/src/main/java/hudson/plugins/ws_cleanup/PreBuildCleanup.java
++++ b/src/main/java/hudson/plugins/ws_cleanup/PreBuildCleanup.java
+@@ -67,7 +67,7 @@ public class PreBuildCleanup extends BuildWrapper {
+ 		}
+ 	}
+ 
+-	@Extension
++	@Extension(ordinal=-99999)
+ 	public static final class DescriptorImpl extends Descriptor<BuildWrapper> {
+ 
+ 		public String getDisplayName() {
+diff --git a/src/main/java/hudson/plugins/ws_cleanup/WsCleanup.java b/src/main/java/hudson/plugins/ws_cleanup/WsCleanup.java
+index a30c438..9831527 100644
+--- a/src/main/java/hudson/plugins/ws_cleanup/WsCleanup.java
++++ b/src/main/java/hudson/plugins/ws_cleanup/WsCleanup.java
+@@ -59,7 +59,7 @@ public class WsCleanup extends Notifier {
+     	return BuildStepMonitor.STEP;
+     }
+     
+-    @Extension
++    @Extension(ordinal=-99999)
+     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+ 
+         public DescriptorImpl() {
+-- 
+1.7.3.4
+

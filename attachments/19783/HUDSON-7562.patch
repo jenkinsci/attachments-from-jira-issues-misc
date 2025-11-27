@@ -1,0 +1,46 @@
+Index: main/core/src/main/resources/hudson/tasks/junit/JUnitResultArchiver/config.jelly
+===================================================================
+--- main/core/src/main/resources/hudson/tasks/junit/JUnitResultArchiver/config.jelly	(revision 35229)
++++ main/core/src/main/resources/hudson/tasks/junit/JUnitResultArchiver/config.jelly	(working copy)
+@@ -28,8 +28,8 @@
+ 		description="${%description('http://ant.apache.org/manual/Types/fileset.html')}">
+ 		<f:textbox />
+ 	</f:entry>
+-        <f:entry field="keepLongStdio" title="">
+-            <f:checkbox/>
++        <f:entry title="">
++            <f:checkbox name="keepLongStdio" checked="${instance.keepLongStdio}"/>
+             <label class="attach-previous">${%Retain long standard output/error}</label>
+ 	</f:entry>
+ 	<j:invokeStatic var="testDataPublisherDescriptors"
+Index: main/core/src/main/java/hudson/tasks/junit/JUnitResultArchiver.java
+===================================================================
+--- main/core/src/main/java/hudson/tasks/junit/JUnitResultArchiver.java	(revision 35229)
++++ main/core/src/main/java/hudson/tasks/junit/JUnitResultArchiver.java	(working copy)
+@@ -119,9 +119,10 @@
+     protected TestResult parse(String expandedTestResults, AbstractBuild build, Launcher launcher, BuildListener listener)
+             throws IOException, InterruptedException
+     {
+-        return new JUnitParser(keepLongStdio).parse(expandedTestResults, build, launcher, listener);
++        return new JUnitParser(isKeepLongStdio()).parse(expandedTestResults, build, launcher, listener);
+     }
+ 
++    @Override
+ 	public boolean perform(AbstractBuild build, Launcher launcher,
+ 			BuildListener listener) throws InterruptedException, IOException {
+ 		listener.getLogger().println(Messages.JUnitResultArchiver_Recording());
+@@ -223,7 +224,14 @@
+ 
+ 	private static final long serialVersionUID = 1L;
+ 
++    /**
++     * @return the keepLongStdio
++     */
++    public boolean isKeepLongStdio() {
++        return keepLongStdio;
++    }
+ 
++
+     @Extension
+     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+ 		public String getDisplayName() {

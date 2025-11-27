@@ -1,0 +1,787 @@
+Index: pom.xml
+===================================================================
+--- pom.xml	(revision 40809)
++++ pom.xml	(working copy)
+@@ -41,9 +41,9 @@
+ 			<optional>true</optional>
+ 		</dependency>
+ 		<dependency>
+-			<groupId>org.jvnet.hudson.plugins</groupId>
++			<groupId>org.jenkins-ci.plugins</groupId>
+ 			<artifactId>email-ext</artifactId>
+-			<version>2.7</version>
++			<version>2.18</version>
+ 			<scope>compile</scope>
+ 			<optional>true</optional>
+ 		</dependency>
+Index: src/main/java/configurationslicing/email/CoreEmailSlicer.java
+===================================================================
+--- src/main/java/configurationslicing/email/CoreEmailSlicer.java	(revision 40809)
++++ src/main/java/configurationslicing/email/CoreEmailSlicer.java	(working copy)
+@@ -1,6 +1,7 @@
+ package configurationslicing.email;
+ 
+ import java.io.IOException;
++import java.util.List;
+ 
+ import hudson.Extension;
+ import hudson.maven.MavenModuleSet;
+@@ -86,6 +87,12 @@
+ 				return false;
+ 			}
+ 		}
++		public boolean removeTrigger(AbstractProject project) {
++			return false;
++		}
++		public boolean addTrigger(AbstractProject project, List<String> values) {
++			return false;
++		}
+ 	}
+ 	@SuppressWarnings("unchecked")
+ 	private static class MavenEmailProjectHandler implements ProjectHandler {
+@@ -136,6 +143,12 @@
+ 				return false;
+ 			}
+ 		}
++		public boolean removeTrigger(AbstractProject project) {
++			return false;
++		}
++		public boolean addTrigger(AbstractProject project, List<String> values) {
++			return false;
++		}
+ 	}
+-	
++
+ }
+Index: src/main/java/configurationslicing/email/ExtEmailSlicer.java
+===================================================================
+--- src/main/java/configurationslicing/email/ExtEmailSlicer.java	(revision 40809)
++++ src/main/java/configurationslicing/email/ExtEmailSlicer.java	(working copy)
+@@ -39,7 +39,7 @@
+ 		public ExtEmailSliceSpec() {
+ 			super(",", "Editable Email Notification", "emailext");
+ 		}
+-		
++
+ 		@Override
+ 		protected ProjectHandler getProjectHandler(AbstractProject project) {
+ 			return this;
+@@ -82,13 +82,14 @@
+ 				EmailType email = new EmailType();
+ 				email.setSendToDevelopers(true);
+ 				email.setSendToRecipientList(true);
++
++				// there is no way to get this text from the plugin itself
++				email.setBody("$PROJECT_DEFAULT_CONTENT");
++				email.setSubject("$PROJECT_DEFAULT_SUBJECT");
+ 				trigger.setEmail(email);
+ 				publisher.getConfiguredTriggers().add(trigger);
+-				
+-				// there is no way to get this text from the plugin itself
+ 				publisher.defaultContent = "$DEFAULT_CONTENT";
+ 				publisher.defaultSubject = "$DEFAULT_SUBJECT";
+-				
+ 				publishers.add(publisher);
+ 				return true;
+ 			} else {
+@@ -105,6 +106,14 @@
+ 				return false;
+ 			}
+ 		}
++
++		public boolean removeTrigger(AbstractProject project) {
++			return false;
++		}
++
++		public boolean addTrigger(AbstractProject project, List<String> values) {
++			return false;
++		}
+ 	}
+-	
++
+ }
+Index: src/main/java/configurationslicing/email/ProjectHandler.java
+===================================================================
+--- src/main/java/configurationslicing/email/ProjectHandler.java	(revision 40809)
++++ src/main/java/configurationslicing/email/ProjectHandler.java	(working copy)
+@@ -1,6 +1,7 @@
+ package configurationslicing.email;
+ 
+ import java.io.IOException;
++import java.util.List;
+ 
+ import hudson.model.AbstractProject;
+ 
+@@ -12,4 +13,6 @@
+ 	boolean addMailer(AbstractProject project) throws IOException;
+ 	boolean setRecipients(AbstractProject project, String recipients) throws IOException;
+ 
++	boolean removeTrigger(AbstractProject project);
++	boolean addTrigger(AbstractProject project, List<String> values);
+ }
+Index: src/main/java/configurationslicing/emailTrigger/AbstractTriggerSliceSpec.java
+===================================================================
+--- src/main/java/configurationslicing/emailTrigger/AbstractTriggerSliceSpec.java	(revision 0)
++++ src/main/java/configurationslicing/emailTrigger/AbstractTriggerSliceSpec.java	(working copy)
+@@ -0,0 +1,223 @@
++package configurationslicing.emailTrigger;
++
++import hudson.model.AbstractProject;
++import hudson.model.Descriptor;
++import hudson.model.Hudson;
++import hudson.plugins.emailext.EmailType;
++import hudson.plugins.emailext.ExtendedEmailPublisher;
++import hudson.plugins.emailext.plugins.EmailTrigger;
++import hudson.tasks.Publisher;
++import hudson.util.DescribableList;
++
++import java.io.IOException;
++import java.util.ArrayList;
++import java.util.List;
++
++import org.apache.commons.lang.StringUtils;
++
++import configurationslicing.email.AbstractEmailSliceSpec;
++import configurationslicing.email.ProjectHandler;
++
++@SuppressWarnings("unchecked")
++public abstract class AbstractTriggerSliceSpec extends AbstractEmailSliceSpec
++        implements ProjectHandler {
++
++    protected static final String DISABLED = "(Disabled)";
++    protected static final String SEPARATOR = ",";
++
++    protected AbstractTriggerSliceSpec(String joinString, String name,
++            String url) {
++        super(joinString, name, url);
++    }
++
++
++    public abstract String getTrigger();
++
++    public abstract EmailTrigger createTrigger();
++
++    protected ProjectHandler getProjectHandler(AbstractProject project) {
++        return this;
++    }
++
++    @Override
++    public String getConfiguredValueDescription() {
++        return "Recipient List, Committers, Requester, Culprits <i>(e.g. true,true,false,true)</i>"
++                + "<ul><li>Send to Recipient List (true/false)</li>"
++                + "<li>Send to Committers (true/false)</li>"
++                + "<li>Send to Requester (true/false)</li>"
++                + "<li>Send to Culprits (true/false)</li></ul>";
++    }
++
++    public String getNotActivatedMessage() {
++        return "\"Editable Email Notification\" is not activated for these jobs! \n"
++                + "Activate it first under the point \"Editable Email Notification\" in "
++                + "the Configuration Slicing, before adding any triggers!";
++    }
++
++    public ExtendedEmailPublisher getExtMailer(AbstractProject project) {
++        DescribableList<Publisher, Descriptor<Publisher>> publishers = project
++                .getPublishersList();
++        Descriptor<Publisher> descriptor = Hudson.getInstance().getDescriptor(
++                ExtendedEmailPublisher.class);
++        Publisher emailPublisher = publishers.get(descriptor);
++        return (ExtendedEmailPublisher) emailPublisher;
++    }
++
++    @Override
++    public List<String> getValues(AbstractProject<?, ?> project) {
++
++        String trigger = null;
++        boolean triggerConfigured = false;
++        List<String> values = new ArrayList<String>();
++        ExtendedEmailPublisher mailer = getExtMailer(project);
++        if (mailer != null) {
++
++            if (!mailer.isConfigured()) {
++                trigger = DISABLED;
++                values.add(trigger);
++            } else {
++                List<EmailTrigger> configuredTriggers = mailer.getConfiguredTriggers();
++                for (EmailTrigger emailTrigger : configuredTriggers) {
++
++                    if (emailTrigger.getDescriptor().getTriggerName().equals(getTrigger())) {
++                        trigger = emailTrigger.getEmail().getSendToRecipientList() + SEPARATOR
++                                + emailTrigger.getEmail().getSendToDevelopers() + SEPARATOR
++                                + emailTrigger.getEmail().isSendToRequester() + SEPARATOR
++                                + emailTrigger.getEmail().getIncludeCulprits();
++                        values.add(trigger);
++                        triggerConfigured = true;
++                    }
++                }
++                if (!triggerConfigured) {
++                    trigger = DISABLED;
++                    values.add(trigger);
++                }
++            }
++        } else {
++            trigger = getNotActivatedMessage();
++            values.add(trigger);
++        }
++        return values;
++    }
++
++    public boolean setValues(AbstractProject<?, ?> project, List<String> set) {
++
++        String configLine;
++        List<String> values = new ArrayList<String>();
++        boolean disabled = false;
++        configLine = set.iterator().next();
++
++        if (DISABLED.equals(configLine) || StringUtils.isEmpty(configLine)
++                || configLine == null) {
++            disabled = true;
++        } else {
++            final String[] split = configLine.split(SEPARATOR);
++            if (split.length == 4) {
++                values.add(split[0]);
++                values.add(split[1]);
++                values.add(split[2]);
++                values.add(split[3]);
++            } else {
++                disabled = true;
++            }
++        }
++
++        boolean saved = false;
++        boolean oneSaved = false;
++        ProjectHandler handler = getProjectHandler(project);
++
++        if (disabled) {
++            oneSaved = handler.removeTrigger(project);
++        } else {
++            oneSaved = handler.addTrigger(project, values);
++        }
++        if (oneSaved) {
++            try {
++                project.save();
++            } catch (IOException e) {
++                throw new RuntimeException(e);
++            }
++            saved = true;
++        }
++        return saved;
++    }
++
++    public boolean removeTrigger(AbstractProject project) {
++        ExtendedEmailPublisher mailer = getExtMailer(project);
++        if (mailer != null) {
++            List<EmailTrigger> configuredTriggers = mailer
++                    .getConfiguredTriggers();
++            for (EmailTrigger emailTrigger : configuredTriggers) {
++                if (emailTrigger.getDescriptor().getTriggerName()
++                        .equals(getTrigger())) {
++                    configuredTriggers.remove(emailTrigger);
++                    return true;
++                }
++            }
++        }
++        return false;
++    }
++
++    public boolean addTrigger(AbstractProject project, List<String> values) {
++        boolean recipientList = false;
++        boolean developers = false;
++        boolean requester = false;
++        boolean includeCulprits = false;
++
++        ExtendedEmailPublisher mailer = getExtMailer(project);
++
++        if (mailer != null) {
++            recipientList = Boolean.parseBoolean(values.get(0));
++            developers = Boolean.parseBoolean(values.get(1));
++            requester = Boolean.parseBoolean(values.get(2));
++            includeCulprits = Boolean.parseBoolean(values.get(3));
++
++            List<EmailTrigger> configuredTriggers = mailer
++                    .getConfiguredTriggers();
++            for (EmailTrigger emailTrigger : configuredTriggers) {
++                if (emailTrigger.getDescriptor().getTriggerName()
++                        .equals(getTrigger())) {
++                    emailTrigger.getEmail().setSendToRecipientList(
++                            recipientList);
++                    emailTrigger.getEmail().setSendToDevelopers(developers);
++                    emailTrigger.getEmail().setSendToRequester(requester);
++                    emailTrigger.getEmail().setIncludeCulprits(includeCulprits);
++                    return true;
++                }
++            }
++            EmailTrigger trigger = createTrigger();
++            EmailType email = new EmailType();
++            email.setBody("$PROJECT_DEFAULT_CONTENT");
++            email.setSubject("$PROJECT_DEFAULT_SUBJECT");
++            email.setSendToRecipientList(recipientList);
++            email.setSendToDevelopers(developers);
++            email.setSendToRequester(requester);
++            email.setIncludeCulprits(includeCulprits);
++            trigger.setEmail(email);
++            configuredTriggers.add(trigger);
++
++            return true;
++
++        } else {
++            return false;
++        }
++    }
++
++    public String getRecipients(AbstractProject project) {
++        return null;
++    }
++
++    public boolean removeMailer(AbstractProject project) throws IOException {
++        return false;
++    }
++
++    public boolean addMailer(AbstractProject project) throws IOException {
++        return false;
++    }
++
++    public boolean setRecipients(AbstractProject project, String recipients)
++            throws IOException {
++        return false;
++    }
++
++}
+\ No newline at end of file
+Index: src/main/java/configurationslicing/emailTrigger/ExtEmailAbortedTrigger.java
+===================================================================
+--- src/main/java/configurationslicing/emailTrigger/ExtEmailAbortedTrigger.java	(revision 0)
++++ src/main/java/configurationslicing/emailTrigger/ExtEmailAbortedTrigger.java	(working copy)
+@@ -0,0 +1,34 @@
++package configurationslicing.emailTrigger;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import hudson.plugins.emailext.plugins.EmailTrigger;
++import hudson.plugins.emailext.plugins.trigger.AbortedTrigger;
++import configurationslicing.UnorderedStringSlicer;
++
++@Extension
++public class ExtEmailAbortedTrigger extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++    public ExtEmailAbortedTrigger() {
++        super(new ExtEmailAbortedTriggerSliceSpec());
++    }
++
++    public static class ExtEmailAbortedTriggerSliceSpec extends AbstractTriggerSliceSpec {
++
++        public ExtEmailAbortedTriggerSliceSpec() {
++            super(",", "Editable Email Notification - Aborted Trigger", "emailextabortedtrigger");
++        }
++
++        @Override
++        public String getTrigger() {
++            return AbortedTrigger.TRIGGER_NAME;
++        }
++
++        @Override
++        public EmailTrigger createTrigger() {
++            return new AbortedTrigger();
++        }
++
++    }
++
++}
+\ No newline at end of file
+Index: src/main/java/configurationslicing/emailTrigger/ExtEmailFailureTrigger.java
+===================================================================
+--- src/main/java/configurationslicing/emailTrigger/ExtEmailFailureTrigger.java	(revision 0)
++++ src/main/java/configurationslicing/emailTrigger/ExtEmailFailureTrigger.java	(working copy)
+@@ -0,0 +1,34 @@
++package configurationslicing.emailTrigger;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import hudson.plugins.emailext.plugins.EmailTrigger;
++import hudson.plugins.emailext.plugins.trigger.FailureTrigger;
++import configurationslicing.UnorderedStringSlicer;
++
++@Extension
++public class ExtEmailFailureTrigger extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++    public ExtEmailFailureTrigger() {
++        super(new ExtEmailFailureTriggerSliceSpec());
++    }
++
++    public static class ExtEmailFailureTriggerSliceSpec extends AbstractTriggerSliceSpec {
++
++        public ExtEmailFailureTriggerSliceSpec() {
++            super(",", "Editable Email Notification - Failure Trigger", "emailextfailuretrigger");
++        }
++
++        @Override
++        public String getTrigger() {
++            return FailureTrigger.TRIGGER_NAME;
++        }
++
++        @Override
++        public EmailTrigger createTrigger() {
++            return new FailureTrigger();
++        }
++
++    }
++
++}
+\ No newline at end of file
+Index: src/main/java/configurationslicing/emailTrigger/ExtEmailFixedTrigger.java
+===================================================================
+--- src/main/java/configurationslicing/emailTrigger/ExtEmailFixedTrigger.java	(revision 0)
++++ src/main/java/configurationslicing/emailTrigger/ExtEmailFixedTrigger.java	(working copy)
+@@ -0,0 +1,34 @@
++package configurationslicing.emailTrigger;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import hudson.plugins.emailext.plugins.EmailTrigger;
++import hudson.plugins.emailext.plugins.trigger.FixedTrigger;
++import configurationslicing.UnorderedStringSlicer;
++
++@Extension
++public class ExtEmailFixedTrigger extends UnorderedStringSlicer<AbstractProject<?,?>>{
++
++    public ExtEmailFixedTrigger() {
++        super(new ExtEmailFixedTriggerSliceSpec());
++    }
++
++    public static class ExtEmailFixedTriggerSliceSpec extends AbstractTriggerSliceSpec {
++
++        public ExtEmailFixedTriggerSliceSpec(){
++            super(",", "Editable Email Notification - Fixed Trigger", "emailextfixedtrigger");
++        }
++
++        @Override
++        public String getTrigger() {
++            return FixedTrigger.TRIGGER_NAME;
++        }
++
++        @Override
++        public EmailTrigger createTrigger() {
++            return new FixedTrigger();
++        }
++
++    }
++
++}
+\ No newline at end of file
+Index: src/main/java/configurationslicing/emailTrigger/ExtEmailImprovementTrigger.java
+===================================================================
+--- src/main/java/configurationslicing/emailTrigger/ExtEmailImprovementTrigger.java	(revision 0)
++++ src/main/java/configurationslicing/emailTrigger/ExtEmailImprovementTrigger.java	(working copy)
+@@ -0,0 +1,34 @@
++package configurationslicing.emailTrigger;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import hudson.plugins.emailext.plugins.EmailTrigger;
++import hudson.plugins.emailext.plugins.trigger.ImprovementTrigger;
++import configurationslicing.UnorderedStringSlicer;
++
++@Extension
++public class ExtEmailImprovementTrigger extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++    public ExtEmailImprovementTrigger() {
++        super(new ExtEmailImprovementTriggerSliceSpec());
++    }
++
++    public static class ExtEmailImprovementTriggerSliceSpec extends AbstractTriggerSliceSpec {
++
++        public ExtEmailImprovementTriggerSliceSpec() {
++            super(",", "Editable Email Notification - Improvement Trigger", "emailextimprovementtrigger");
++        }
++
++        @Override
++        public String getTrigger() {
++            return ImprovementTrigger.TRIGGER_NAME;
++        }
++
++        @Override
++        public EmailTrigger createTrigger() {
++            return new ImprovementTrigger();
++        }
++
++    }
++
++}
+\ No newline at end of file
+Index: src/main/java/configurationslicing/emailTrigger/ExtEmailNotBuildTrigger.java
+===================================================================
+--- src/main/java/configurationslicing/emailTrigger/ExtEmailNotBuildTrigger.java	(revision 0)
++++ src/main/java/configurationslicing/emailTrigger/ExtEmailNotBuildTrigger.java	(working copy)
+@@ -0,0 +1,33 @@
++package configurationslicing.emailTrigger;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import hudson.plugins.emailext.plugins.EmailTrigger;
++import hudson.plugins.emailext.plugins.trigger.NotBuiltTrigger;
++import configurationslicing.UnorderedStringSlicer;
++
++@Extension
++public class ExtEmailNotBuildTrigger extends UnorderedStringSlicer<AbstractProject<?,?>>{
++
++    public ExtEmailNotBuildTrigger(){
++        super(new ExtEmailNotBuildTriggerSliceSpec());
++    }
++
++    public static class ExtEmailNotBuildTriggerSliceSpec extends AbstractTriggerSliceSpec {
++
++        public ExtEmailNotBuildTriggerSliceSpec() {
++            super(",", "Editable Email Notification - Not-Build Trigger", "emailextnotbuildtrigger");
++        }
++
++        @Override
++        public String getTrigger() {
++            return NotBuiltTrigger.TRIGGER_NAME;
++        }
++
++        @Override
++        public EmailTrigger createTrigger() {
++            return new NotBuiltTrigger();
++        }
++    }
++
++}
+\ No newline at end of file
+Index: src/main/java/configurationslicing/emailTrigger/ExtEmailPreBuildTrigger.java
+===================================================================
+--- src/main/java/configurationslicing/emailTrigger/ExtEmailPreBuildTrigger.java	(revision 0)
++++ src/main/java/configurationslicing/emailTrigger/ExtEmailPreBuildTrigger.java	(working copy)
+@@ -0,0 +1,34 @@
++package configurationslicing.emailTrigger;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import hudson.plugins.emailext.plugins.EmailTrigger;
++import hudson.plugins.emailext.plugins.trigger.PreBuildTrigger;
++import configurationslicing.UnorderedStringSlicer;
++
++@Extension
++public class ExtEmailPreBuildTrigger extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++    public ExtEmailPreBuildTrigger() {
++        super(new ExtEmailPreBuildTriggerSliceSpec());
++    }
++
++    public static class ExtEmailPreBuildTriggerSliceSpec extends AbstractTriggerSliceSpec {
++
++        public ExtEmailPreBuildTriggerSliceSpec() {
++            super(",", "Editable Email Notification - Pre-Build Trigger", "emailextprebuildtrigger");
++        }
++
++        @Override
++        public String getTrigger() {
++            return PreBuildTrigger.TRIGGER_NAME;
++        }
++
++        @Override
++        public EmailTrigger createTrigger() {
++            return new PreBuildTrigger();
++        }
++
++    }
++
++}
+\ No newline at end of file
+Index: src/main/java/configurationslicing/emailTrigger/ExtEmailRegressionTrigger.java
+===================================================================
+--- src/main/java/configurationslicing/emailTrigger/ExtEmailRegressionTrigger.java	(revision 0)
++++ src/main/java/configurationslicing/emailTrigger/ExtEmailRegressionTrigger.java	(working copy)
+@@ -0,0 +1,34 @@
++package configurationslicing.emailTrigger;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import hudson.plugins.emailext.plugins.EmailTrigger;
++import hudson.plugins.emailext.plugins.trigger.RegressionTrigger;
++import configurationslicing.UnorderedStringSlicer;
++
++@Extension
++public class ExtEmailRegressionTrigger extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++    public ExtEmailRegressionTrigger() {
++        super(new ExtEmailRegressionTriggerSliceSpec());
++    }
++
++    public static class ExtEmailRegressionTriggerSliceSpec extends AbstractTriggerSliceSpec {
++
++        public ExtEmailRegressionTriggerSliceSpec() {
++            super(",", "Editable Email Notification - Regression Trigger", "emailextregressiontrigger");
++        }
++
++        @Override
++        public String getTrigger() {
++            return RegressionTrigger.TRIGGER_NAME;
++        }
++
++        @Override
++        public EmailTrigger createTrigger() {
++            return new RegressionTrigger();
++        }
++
++    }
++
++}
+\ No newline at end of file
+Index: src/main/java/configurationslicing/emailTrigger/ExtEmailStillFailingTrigger.java
+===================================================================
+--- src/main/java/configurationslicing/emailTrigger/ExtEmailStillFailingTrigger.java	(revision 0)
++++ src/main/java/configurationslicing/emailTrigger/ExtEmailStillFailingTrigger.java	(working copy)
+@@ -0,0 +1,34 @@
++package configurationslicing.emailTrigger;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import hudson.plugins.emailext.plugins.EmailTrigger;
++import hudson.plugins.emailext.plugins.trigger.StillFailingTrigger;
++import configurationslicing.UnorderedStringSlicer;
++
++@Extension
++public class ExtEmailStillFailingTrigger extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++    public ExtEmailStillFailingTrigger() {
++        super(new ExtEmailStillFailingTriggerSliceSpec());
++    }
++
++    public static class ExtEmailStillFailingTriggerSliceSpec extends AbstractTriggerSliceSpec {
++
++        public ExtEmailStillFailingTriggerSliceSpec() {
++            super(",", "Editable Email Notification - Still-Failing Trigger", "emailextstillfailingtrigger");
++        }
++
++        @Override
++        public String getTrigger() {
++            return StillFailingTrigger.TRIGGER_NAME;
++        }
++
++        @Override
++        public EmailTrigger createTrigger() {
++            return new StillFailingTrigger();
++        }
++
++    }
++
++}
+Index: src/main/java/configurationslicing/emailTrigger/ExtEmailStillUnstableTrigger.java
+===================================================================
+--- src/main/java/configurationslicing/emailTrigger/ExtEmailStillUnstableTrigger.java	(revision 0)
++++ src/main/java/configurationslicing/emailTrigger/ExtEmailStillUnstableTrigger.java	(working copy)
+@@ -0,0 +1,34 @@
++package configurationslicing.emailTrigger;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import hudson.plugins.emailext.plugins.EmailTrigger;
++import hudson.plugins.emailext.plugins.trigger.StillUnstableTrigger;
++import configurationslicing.UnorderedStringSlicer;
++
++@Extension
++public class ExtEmailStillUnstableTrigger extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++    public ExtEmailStillUnstableTrigger() {
++        super(new ExtEmaiStilllUnstableTriggerSliceSpec());
++    }
++
++    public static class ExtEmaiStilllUnstableTriggerSliceSpec extends AbstractTriggerSliceSpec {
++
++        public ExtEmaiStilllUnstableTriggerSliceSpec() {
++            super(",", "Editable Email Notification - Still-Unstable Trigger", "emailextstillunstabletrigger");
++        }
++
++        @Override
++        public String getTrigger() {
++            return StillUnstableTrigger.TRIGGER_NAME;
++        }
++
++        @Override
++        public EmailTrigger createTrigger() {
++            return new StillUnstableTrigger();
++        }
++
++    }
++
++}
+Index: src/main/java/configurationslicing/emailTrigger/ExtEmailSuccessTrigger.java
+===================================================================
+--- src/main/java/configurationslicing/emailTrigger/ExtEmailSuccessTrigger.java	(revision 0)
++++ src/main/java/configurationslicing/emailTrigger/ExtEmailSuccessTrigger.java	(working copy)
+@@ -0,0 +1,34 @@
++package configurationslicing.emailTrigger;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import hudson.plugins.emailext.plugins.EmailTrigger;
++import hudson.plugins.emailext.plugins.trigger.SuccessTrigger;
++import configurationslicing.UnorderedStringSlicer;
++
++@Extension
++public class ExtEmailSuccessTrigger extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++    public ExtEmailSuccessTrigger() {
++        super(new ExtEmailSuccessTriggerSliceSpec());
++    }
++
++    public static class ExtEmailSuccessTriggerSliceSpec extends AbstractTriggerSliceSpec {
++
++        public ExtEmailSuccessTriggerSliceSpec() {
++            super(",", "Editable Email Notification - Success Trigger", "emailextsuccesstrigger");
++        }
++
++        @Override
++        public String getTrigger() {
++            return SuccessTrigger.TRIGGER_NAME;
++        }
++
++        @Override
++        public EmailTrigger createTrigger() {
++            return new SuccessTrigger();
++        }
++
++    }
++
++}
+\ No newline at end of file
+Index: src/main/java/configurationslicing/emailTrigger/ExtEmailUnstableTrigger.java
+===================================================================
+--- src/main/java/configurationslicing/emailTrigger/ExtEmailUnstableTrigger.java	(revision 0)
++++ src/main/java/configurationslicing/emailTrigger/ExtEmailUnstableTrigger.java	(working copy)
+@@ -0,0 +1,34 @@
++package configurationslicing.emailTrigger;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import hudson.plugins.emailext.plugins.EmailTrigger;
++import hudson.plugins.emailext.plugins.trigger.UnstableTrigger;
++import configurationslicing.UnorderedStringSlicer;
++
++@Extension
++public class ExtEmailUnstableTrigger extends UnorderedStringSlicer<AbstractProject<?,?>>{
++
++    public ExtEmailUnstableTrigger() {
++        super(new ExtEmailUnstableTriggerSliceSpec());
++    }
++
++    public static class ExtEmailUnstableTriggerSliceSpec extends AbstractTriggerSliceSpec {
++
++        public ExtEmailUnstableTriggerSliceSpec(){
++            super(",", "Editable Email Notification - Unstable Trigger", "emailextunstabletrigger");
++        }
++
++        @Override
++        public String getTrigger() {
++            return UnstableTrigger.TRIGGER_NAME;
++        }
++
++        @Override
++        public EmailTrigger createTrigger() {
++            return new UnstableTrigger();
++        }
++
++    }
++
++}
+\ No newline at end of file

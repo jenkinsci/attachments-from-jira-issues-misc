@@ -1,0 +1,124 @@
+Branch event
+Checking out git https://XXXXXX.git into /var/jenkins_home/workspace/kdi_iar_7_50_3_master-RVVCF7BLE6R72WUEANPWRYEKH3D44ID74JJV2H7WLPGSLKZCSCQA@script to read Jenkinsfile
+ > git rev-parse --is-inside-work-tree # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://XXXXXX.git # timeout=10
+Fetching without tags
+Fetching upstream changes from https://XXXXXX.git
+ > git --version # timeout=10
+using GIT_ASKPASS to set credentials Jenkins Bitbucket user access
+ > git fetch --no-tags --progress https://XXXXXXXX.git +refs/heads/master:refs/remotes/origin/master
+Checking out Revision d7cf602a397dca8d1fd07e1f50b524544b30fce0 (master)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f d7cf602a397dca8d1fd07e1f50b524544b30fce0
+Commit message: "Called exe file hello world and run container manually as root"
+ > git rev-list 224824cba30b5be8b875cfc7b8d2e1638358b3a8 # timeout=10
+[Bitbucket] Notifying commit build result
+[Pipeline] node
+Running on X in /home/jenkins-build-slave/jenkins/workspace/kdi_iar_7_50_3_master-RVVCF7BLE6R72WUEANPWRYEKH3D44ID74JJV2H7WLPGSLKZCSCQA
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Setup Workspace)
+[Pipeline] deleteDir
+[Pipeline] checkout
+Cloning the remote Git repository
+Cloning with configured refspecs honoured and without tags
+Cloning repository https://XXXXXXXX.git
+ > git init /home/jenkins-build-slave/jenkins/workspace/kdi_iar_7_50_3_master-RVVCF7BLE6R72WUEANPWRYEKH3D44ID74JJV2H7WLPGSLKZCSCQA # timeout=10
+Fetching upstream changes from https://XXXXXXXX.git
+ > git --version # timeout=10
+using GIT_ASKPASS to set credentials Jenkins Bitbucket user access
+ > git fetch --no-tags --progress https://XXXXXXXX.git +refs/heads/master:refs/remotes/origin/master
+ > git config remote.origin.url https://XXXXXXXX.git # timeout=10
+ > git config --add remote.origin.fetch +refs/heads/master:refs/remotes/origin/master # timeout=10
+ > git config remote.origin.url https://XXXXXXXX.git # timeout=10
+Fetching without tags
+Fetching upstream changes from https://XXXXXXXX.git
+using GIT_ASKPASS to set credentials Jenkins Bitbucket user access
+ > git fetch --no-tags --progress https://XXXXXXXX.git +refs/heads/master:refs/remotes/origin/master
+Checking out Revision d7cf602a397dca8d1fd07e1f50b524544b30fce0 (master)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f d7cf602a397dca8d1fd07e1f50b524544b30fce0
+Commit message: "Called exe file hello world and run container manually as root"
+[Bitbucket] Notifying commit build result
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Build Image)
+[Pipeline] sh
+[kdi_iar_7_50_3_master-RVVCF7BLE6R72WUEANPWRYEKH3D44ID74JJV2H7WLPGSLKZCSCQA] Running shell script
++ docker build -t wine_test_repo .
+Sending build context to Docker daemon 65.02 kB
+
+Step 1/3 : FROM debian
+ ---> 6d83de432e98
+Step 2/3 : RUN dpkg --add-architecture i386 &&     apt-get update &&     apt-get -y install wine &&     rm -rf /var/lib/apt/lists/*
+ ---> Using cache
+ ---> da9bbc565c51
+Step 3/3 : ADD dependencies/helloworld.exe /usr/wine_test/helloworld.exe
+ ---> 5f16a9ac0bf3
+Removing intermediate container 543f3223f206
+Successfully built 5f16a9ac0bf3
+[Pipeline] dockerFingerprintFrom
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Test Image using shell)
+[Pipeline] sh
+[kdi_iar_7_50_3_master-RVVCF7BLE6R72WUEANPWRYEKH3D44ID74JJV2H7WLPGSLKZCSCQA] Running shell script
++ docker run -tu root wine_test_repo wine /usr/wine_test/helloworld.exe
+wine: created the configuration directory '/root/.wine'
+err:ole:marshal_object couldn't get IPSFactory buffer for interface {00000131-0000-0000-c000-000000000046}
+err:ole:marshal_object couldn't get IPSFactory buffer for interface {6d5140c1-7436-11ce-8034-00aa006009fa}
+err:ole:StdMarshalImpl_MarshalInterface Failed to create ifstub, hres=0x80004002
+err:ole:CoMarshalInterface Failed to marshal the interface {6d5140c1-7436-11ce-8034-00aa006009fa}, 80004002
+err:ole:get_local_server_stream Failed: 80004002
+err:winediag:nulldrv_CreateWindow Application tried to create a window, but no driver could be loaded.
+err:winediag:nulldrv_CreateWindow Make sure that your X server is running and that $DISPLAY is set correctly.
+err:winediag:nulldrv_CreateWindow Application tried to create a window, but no driver could be loaded.
+err:winediag:nulldrv_CreateWindow Make sure that your X server is running and that $DISPLAY is set correctly.
+err:ole:apartment_createwindowifneeded CreateWindow failed with error 0
+err:ole:apartment_createwindowifneeded CreateWindow failed with error 0
+err:ole:marshal_object couldn't get IPSFactory buffer for interface {00000131-0000-0000-c000-000000000046}
+err:ole:apartment_createwindowifneeded CreateWindow failed with error 14007
+err:ole:StdMarshalImpl_MarshalInterface Failed to create ifstub, hres=0x800736b7
+err:ole:CoMarshalInterface Failed to marshal the interface {6d5140c1-7436-11ce-8034-00aa006009fa}, 800736b7
+err:ole:get_local_server_stream Failed: 800736b7
+err:winediag:nulldrv_CreateWindow Application tried to create a window, but no driver could be loaded.
+err:winediag:nulldrv_CreateWindow Make sure that your X server is running and that $DISPLAY is set correctly.
+Could not load wine-gecko. HTML rendering will be disabled.
+err:winediag:nulldrv_CreateWindow Application tried to create a window, but no driver could be loaded.
+err:winediag:nulldrv_CreateWindow Make sure that your X server is running and that $DISPLAY is set correctly.
+Could not load wine-gecko. HTML rendering will be disabled.
+wine: configuration in '/root/.wine' has been updated.
+[?1h=Hello, World!
+
+[?1l>[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Test Image using plugin)
+[Pipeline] sh
+[kdi_iar_7_50_3_master-RVVCF7BLE6R72WUEANPWRYEKH3D44ID74JJV2H7WLPGSLKZCSCQA] Running shell script
++ docker inspect -f . wine_test_repo
+.
+[Pipeline] withDockerContainer
+bluepenguin does not seem to be running inside a container
+$ docker run -t -d -u 1007:1008 -u root -w /home/jenkins-build-slave/jenkins/workspace/kdi_iar_7_50_3_master-RVVCF7BLE6R72WUEANPWRYEKH3D44ID74JJV2H7WLPGSLKZCSCQA -v /home/jenkins-build-slave/jenkins/workspace/kdi_iar_7_50_3_master-RVVCF7BLE6R72WUEANPWRYEKH3D44ID74JJV2H7WLPGSLKZCSCQA:/home/jenkins-build-slave/jenkins/workspace/kdi_iar_7_50_3_master-RVVCF7BLE6R72WUEANPWRYEKH3D44ID74JJV2H7WLPGSLKZCSCQA:rw,z -v /home/jenkins-build-slave/jenkins/workspace/kdi_iar_7_50_3_master-RVVCF7BLE6R72WUEANPWRYEKH3D44ID74JJV2H7WLPGSLKZCSCQA@tmp:/home/jenkins-build-slave/jenkins/workspace/kdi_iar_7_50_3_master-RVVCF7BLE6R72WUEANPWRYEKH3D44ID74JJV2H7WLPGSLKZCSCQA@tmp:rw,z -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** --entrypoint cat wine_test_repo
+[Pipeline] {
+[Pipeline] sh
+[kdi_iar_7_50_3_master-RVVCF7BLE6R72WUEANPWRYEKH3D44ID74JJV2H7WLPGSLKZCSCQA] Running shell script
++ wine /usr/wine_test/helloworld.exe
+wine: created the configuration directory '/root/.wine'
+[Pipeline] }
+$ docker stop --time=1 540a37c4755e4c31612be498dce622653472d868a61874485e61f7f1f75fdd22
+$ docker rm -f 540a37c4755e4c31612be498dce622653472d868a61874485e61f7f1f75fdd22
+[Pipeline] // withDockerContainer
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+[Bitbucket] Notifying commit build result
+[Bitbucket] Build result notified
+ERROR: script returned exit code -1
+Finished: FAILURE

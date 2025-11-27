@@ -1,0 +1,107 @@
+2011-02-06 00:50:11
+Full thread dump Java HotSpot(TM) 64-Bit Server VM (17.0-b16 mixed mode):
+
+"Attach Listener" daemon prio=10 tid=0x0000000041dc9000 nid=0x1722 waiting on condition [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"pool-1-thread-1" prio=10 tid=0x00007f4378006000 nid=0x1623 in Object.wait() [0x00007f437df63000]
+   java.lang.Thread.State: TIMED_WAITING (on object monitor)
+	at java.lang.Object.wait(Native Method)
+	- waiting on <0x00007f43d2dc3668> (a [B)
+	at hudson.remoting.FastPipedInputStream.read(FastPipedInputStream.java:173)
+	- locked <0x00007f43d2dc3668> (a [B)
+	at hudson.remoting.FastPipedInputStream.read(FastPipedInputStream.java:146)
+	at java.io.FilterInputStream.read(FilterInputStream.java:66)
+	at hudson.remoting.PipeTest$CreateSaturationTestProxy$1.readFirst(PipeTest.java:221)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at hudson.remoting.RemoteInvocationHandler$RPCRequest.perform(RemoteInvocationHandler.java:274)
+	at hudson.remoting.RemoteInvocationHandler$RPCRequest.call(RemoteInvocationHandler.java:255)
+	at hudson.remoting.RemoteInvocationHandler$RPCRequest.call(RemoteInvocationHandler.java:215)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:114)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:48)
+	at hudson.remoting.Request$2.run(Request.java:270)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:441)
+	at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:303)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:138)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:619)
+
+"Ping thread for channel hudson.remoting.Channel@f7e6a96:channel" daemon prio=10 tid=0x0000000041e02800 nid=0x1622 in Object.wait() [0x00007f437e065000]
+   java.lang.Thread.State: TIMED_WAITING (on object monitor)
+	at java.lang.Object.wait(Native Method)
+	- waiting on <0x00007f43d2d3aa00> (a hudson.remoting.UserRequest)
+	at hudson.remoting.Request$1.get(Request.java:230)
+	- locked <0x00007f43d2d3aa00> (a hudson.remoting.UserRequest)
+	at hudson.remoting.Request$1.get(Request.java:172)
+	at hudson.remoting.FutureAdapter.get(FutureAdapter.java:59)
+	at hudson.remoting.PingThread.ping(PingThread.java:101)
+	at hudson.remoting.PingThread.run(PingThread.java:81)
+
+"Channel reader thread: channel" prio=10 tid=0x0000000041d8d800 nid=0x1621 runnable [0x00007f437e166000]
+   java.lang.Thread.State: RUNNABLE
+	at java.io.FileInputStream.readBytes(Native Method)
+	at java.io.FileInputStream.read(FileInputStream.java:199)
+	at java.io.BufferedInputStream.fill(BufferedInputStream.java:218)
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:237)
+	- locked <0x00007f43d2a00830> (a java.io.BufferedInputStream)
+	at java.io.ObjectInputStream$PeekInputStream.peek(ObjectInputStream.java:2249)
+	at java.io.ObjectInputStream$BlockDataInputStream.peek(ObjectInputStream.java:2542)
+	at java.io.ObjectInputStream$BlockDataInputStream.peekByte(ObjectInputStream.java:2552)
+	at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1297)
+	at java.io.ObjectInputStream.readObject(ObjectInputStream.java:351)
+	at hudson.remoting.Channel$ReaderThread.run(Channel.java:947)
+
+"Low Memory Detector" daemon prio=10 tid=0x0000000041d44800 nid=0x161e runnable [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"CompilerThread1" daemon prio=10 tid=0x0000000041d42000 nid=0x161d waiting on condition [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"CompilerThread0" daemon prio=10 tid=0x0000000041d3c800 nid=0x161c waiting on condition [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"Signal Dispatcher" daemon prio=10 tid=0x0000000041d3a800 nid=0x161b runnable [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"Finalizer" daemon prio=10 tid=0x0000000041d1c000 nid=0x161a in Object.wait() [0x00007f437e92a000]
+   java.lang.Thread.State: WAITING (on object monitor)
+	at java.lang.Object.wait(Native Method)
+	- waiting on <0x00007f43d29f11e0> (a java.lang.ref.ReferenceQueue$Lock)
+	at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:118)
+	- locked <0x00007f43d29f11e0> (a java.lang.ref.ReferenceQueue$Lock)
+	at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:134)
+	at java.lang.ref.Finalizer$FinalizerThread.run(Finalizer.java:159)
+
+"Reference Handler" daemon prio=10 tid=0x0000000041d14800 nid=0x1619 in Object.wait() [0x00007f437ea2b000]
+   java.lang.Thread.State: WAITING (on object monitor)
+	at java.lang.Object.wait(Native Method)
+	- waiting on <0x00007f43d29f1048> (a java.lang.ref.Reference$Lock)
+	at java.lang.Object.wait(Object.java:485)
+	at java.lang.ref.Reference$ReferenceHandler.run(Reference.java:116)
+	- locked <0x00007f43d29f1048> (a java.lang.ref.Reference$Lock)
+
+"main" prio=10 tid=0x0000000041cb7000 nid=0x1615 in Object.wait() [0x00007f43fd83b000]
+   java.lang.Thread.State: WAITING (on object monitor)
+	at java.lang.Object.wait(Native Method)
+	- waiting on <0x00007f43d2ba7e20> (a hudson.remoting.Channel)
+	at java.lang.Object.wait(Object.java:485)
+	at hudson.remoting.Channel.join(Channel.java:728)
+	- locked <0x00007f43d2ba7e20> (a hudson.remoting.Channel)
+	at hudson.remoting.Launcher.main(Launcher.java:418)
+	at hudson.remoting.Launcher.runWithStdinStdout(Launcher.java:364)
+	at hudson.remoting.Launcher.run(Launcher.java:204)
+	at hudson.remoting.Launcher.main(Launcher.java:166)
+
+"VM Thread" prio=10 tid=0x0000000041d10000 nid=0x1618 runnable 
+
+"GC task thread#0 (ParallelGC)" prio=10 tid=0x0000000041cca000 nid=0x1616 runnable 
+
+"GC task thread#1 (ParallelGC)" prio=10 tid=0x0000000041ccb800 nid=0x1617 runnable 
+
+"VM Periodic Task Thread" prio=10 tid=0x0000000041d4f000 nid=0x161f waiting on condition 
+
+JNI global references: 1163

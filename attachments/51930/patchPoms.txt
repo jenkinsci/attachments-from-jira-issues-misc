@@ -1,0 +1,128 @@
+Index: pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- pom.xml	(revision 0e27887c2d9ea00d5b3dd1d31067087e54e47612)
++++ pom.xml	(date 1594892766840)
+@@ -57,7 +57,8 @@
+     <properties>
+         <revision>2.14</revision>
+         <changelist>-SNAPSHOT</changelist>
+-        <jenkins.version>2.60.3</jenkins.version>
++        <jenkins.version>2.190.1</jenkins.version>
++        <slf4jVersion>1.7.26</slf4jVersion>
+         <java.level>8</java.level>
+         <workflow.version>2.0</workflow.version>
+     </properties>
+Index: ui/pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- ui/pom.xml	(revision 0e27887c2d9ea00d5b3dd1d31067087e54e47612)
++++ ui/pom.xml	(date 1594892796955)
+@@ -52,12 +52,12 @@
+         <dependency>
+             <groupId>org.jenkins-ci.plugins.workflow</groupId>
+             <artifactId>workflow-api</artifactId>
+-            <version>2.24</version>
++            <version>2.29</version>
+         </dependency>
+         <dependency>
+             <groupId>org.jenkins-ci.plugins.workflow</groupId>
+             <artifactId>workflow-job</artifactId>
+-            <version>2.12</version>
++            <version>2.25</version>
+         </dependency>
+         <dependency>
+             <groupId>org.jenkins-ci.ui</groupId>
+@@ -77,25 +77,49 @@
+         <dependency>
+             <groupId>org.jenkins-ci.plugins</groupId>
+             <artifactId>script-security</artifactId>
+-            <version>1.26</version>
++            <version>1.46</version>
++            <scope>test</scope>
++        </dependency>
++        <dependency>
++            <groupId>org.jenkins-ci.plugins</groupId>
++            <artifactId>structs</artifactId>
++            <version>1.15</version>
++            <scope>test</scope>
++        </dependency>
++        <dependency>
++            <groupId>org.jenkins-ci.plugins</groupId>
++            <artifactId>mailer</artifactId>
++            <version>1.20</version>
++            <scope>test</scope>
++        </dependency>
++        <dependency>
++            <groupId>org.apache.commons</groupId>
++            <artifactId>commons-lang3</artifactId>
++            <version>3.7</version>
++            <scope>test</scope>
++        </dependency>
++        <dependency>
++            <groupId>org.jenkins-ci.plugins</groupId>
++            <artifactId>scm-api</artifactId>
++            <version>2.2.8</version>
+             <scope>test</scope>
+         </dependency>
+         <dependency>
+             <groupId>org.jenkins-ci.plugins.workflow</groupId>
+             <artifactId>workflow-support</artifactId>
+-            <version>2.14</version>
++            <version>2.20</version>
+             <scope>test</scope>
+         </dependency>
+         <dependency>
+             <groupId>org.jenkins-ci.plugins.workflow</groupId>
+             <artifactId>workflow-scm-step</artifactId>
+-            <version>2.4</version>
++            <version>2.6</version>
+             <scope>test</scope>
+         </dependency>
+         <dependency>
+             <groupId>org.jenkins-ci.plugins.workflow</groupId>
+             <artifactId>workflow-cps</artifactId>
+-            <version>2.31</version>
++            <version>2.56</version>
+             <scope>test</scope>
+         </dependency>
+         <dependency>
+@@ -111,6 +135,18 @@
+                 <exclusion>
+                     <groupId>org.apache.httpcomponents</groupId>
+                     <artifactId>httpclient</artifactId>
++                </exclusion>
++            </exclusions>
++        </dependency>
++        <dependency>
++            <groupId>org.jenkins-ci.plugins.workflow</groupId>
++            <artifactId>workflow-aggregator</artifactId>
++            <version>2.6</version>
++            <scope>test</scope>
++            <exclusions>
++                <exclusion>
++                    <groupId>org.jenkins-ci.plugins</groupId>
++                    <artifactId>pipeline-stage-view</artifactId>
+                 </exclusion>
+             </exclusions>
+         </dependency>
+Index: rest-api/pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- rest-api/pom.xml	(revision 0e27887c2d9ea00d5b3dd1d31067087e54e47612)
++++ rest-api/pom.xml	(date 1594892784796)
+@@ -105,7 +105,7 @@
+         <dependency>
+             <groupId>org.jenkins-ci.plugins.workflow</groupId>
+             <artifactId>workflow-step-api</artifactId>
+-            <version>2.14</version>
++            <version>2.16</version>
+         </dependency>
+ 
+         <dependency>

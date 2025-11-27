@@ -1,0 +1,54 @@
+[Gitea] Notifying branch build status: PENDING Build started...
+[Gitea] Notified
+[Pipeline] nodejs
+[Pipeline] {
+[Pipeline] sh
++ yarn install --network-timeout 100000
+yarn install v1.22.17
+[1/4] Resolving packages...
+[2/4] Fetching packages...
+[3/4] Linking dependencies...
+warning "@emotion/styled > @emotion/babel-plugin@11.3.0" has unmet peer dependency "@babel/core@^7.0.0".
+warning "@emotion/styled > @emotion/babel-plugin > @babel/plugin-syntax-jsx@7.16.0" has unmet peer dependency "@babel/core@^7.0.0-0".
+[4/4] Building fresh packages...
+Done in 23.06s.
+[Pipeline] sh
++ yarn build
+yarn run v1.22.17
+$ $npm_execpath tsc -b
+$ /var/lib/jenkins/workspace/git.struna.me_rwdom_master/node_modules/.bin/tsc -b
+Done in 27.11s.
+[Pipeline] dir
+Running in /var/lib/jenkins/workspace/git.struna.me_rwdom_master/shell
+[Pipeline] {
+[Pipeline] sh
++ yarn dev-publish
+yarn run v1.22.17
+$ webpack build --config webpack.devp.js
+/bin/sh: line 1: webpack: command not found
+error Command failed with exit code 127.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+[Pipeline] }
+[Pipeline] // dir
+[Pipeline] }
+[Pipeline] // nodejs
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Deploy)
+Stage "Deploy" skipped due to earlier failure(s)
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+ERROR: script returned exit code 127
+[Gitea] Notifying branch build status: FAILURE There was a failure building this commit
+[Gitea] Notified
+Finished: FAILURE

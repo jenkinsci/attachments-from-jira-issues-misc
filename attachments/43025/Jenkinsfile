@@ -1,0 +1,134 @@
+#!/usr/bin/env groovy
+
+def ITEM_GROUPS = [:]
+def ITEMS_CHOSEN = []
+def ITEMS = [:]
+
+pipeline {
+  agent {
+    node {
+      label "master"
+    }
+  }
+  environment {
+    ITEM_GROUP_CHOSEN = ""
+    ITEMS_COUNT = 0
+  }
+  stages {
+    stage("select item group") {
+      steps {
+        script {
+          def ITEM_GROUP_FILE = readFile "/tmp/item-groups.txt"
+          for (LINE in ITEM_GROUP_FILE.split("\n")) {
+            if (LINE!=null && LINE.length()>0 && LINE[0]!="-" && LINE[0]!="#") {
+              string ITEM_NAME = LINE.split("#")[0].trim()
+              string GROUP_TIEM_FILE = LINE.split("#")[1].trim()
+              ITEM_GROUPS[ITEM_NAME] = GROUP_TIEM_FILE
+            }
+          }
+          string CHOICES = ""
+          for (ENTRY in ITEM_GROUPS) {
+            CHOICES = CHOICES + ENTRY.key.split("=")[0] + "\n"
+          }
+          ITEM_GROUP_CHOSEN = input (
+            id: "item-group",
+            message: "item groups",
+            ok: "Select",
+            parameters: [
+              [
+                $class: "ChoiceParameterDefinition",
+                name: "ItemGroup",
+                choices: CHOICES,
+                description: "Please choose an item group:"
+              ]
+            ]
+          )
+          echo "Selected item group: ${ITEM_GROUP_CHOSEN}"
+        }
+      }
+    }
+    stage("select items") {
+      steps {
+        script {
+          string GROUP_TIEM_FILE = ""
+          for (ENTRY in ITEM_GROUPS) {
+            if (ENTRY.key.split("=")[0] == ITEM_GROUP_CHOSEN) {
+              GROUP_TIEM_FILE = ENTRY.value.split("=")[0]
+            }
+          }
+          def ITEMS_FILE = readFile "${GROUP_TIEM_FILE}"
+          for (LINE in ITEMS_FILE.split("\n")) {
+            if (LINE!=null && LINE.length()>0 && LINE[0]!="-" && LINE[0]!="#") {
+              ITEM_NAME = LINE.split("#")[0].trim()
+              ITEM_COL1    = LINE.split("#")[1].trim()
+              ITEM_COL2    = LINE.split("#")[2].trim()
+              ITEM_COL3    = LINE.split("#")[3].trim()
+              ITEM_COL4    = LINE.split("#")[4].trim()
+              ITEMS[ITEM_NAME] = [ ITEM_COL1, ITEM_COL2, ITEM_COL3, ITEM_COL4 ]
+            }
+          }
+          def ITEMS_LIST = []
+          for (ENTRY in ITEMS) {
+            ITEMS_LIST.add(ENTRY.key)
+          }
+          ITEMS_COUNT = ITEMS.size()
+          if (ITEMS_COUNT == 1) {
+            DEFAULT_VALUE = true
+            DESCRIPTION = "Please select the item:"
+          } else {
+            DEFAULT_VALUE = false
+            DESCRIPTION = "Please select one or multiple items:"
+          }
+          def PARAMETERS = ITEMS_LIST.collect { [ $class: 'BooleanParameterDefinition', defaultValue: DEFAULT_VALUE, name: it ] }
+          def ITEMS_CHOICE = input (
+            id: "items",
+            message: "items for ${ITEM_GROUP_CHOSEN}",
+            description: DESCRIPTION,
+            ok: "Select",
+            parameters: PARAMETERS
+          )
+          if (ITEMS_COUNT == 1) {
+            if (ITEMS_CHOICE == true) {
+              ITEMS_CHOSEN.add(ITEMS_LIST[0])
+            } else {
+              //currentBuild.result = "ABORTED"
+              error("No item was chosen!")
+            }
+          } else {
+            for (ENTRY in ITEMS_CHOICE) {
+              if (ENTRY.value == true) {
+                string VALID = ENTRY.key.split("=")[0]
+                ITEMS_CHOSEN.add(VALID)
+              }
+            }
+            if (ITEMS_CHOSEN.size() == 0) {
+              error("No item was chosen!")
+            }
+          }
+          echo "Selected items: ${ITEMS_CHOSEN}"
+        }
+      }
+    }
+    stage("process items") {
+      steps {
+        script {
+          if (ITEMS_CHOSEN.size() == 1) {
+            CURRENT_ITEM = ITEMS_CHOSEN[0]
+            input message: "Process ${CURRENT_ITEM}?", ok: "Continue"
+          } else {
+            def ITEMS_LOOP = [:]
+            for (ITEM in ITEMS_CHOSEN) {
+              def CURRENT_ITEM = "${ITEM}"
+              ITEMS_LOOP["${CURRENT_ITEM}"] = {
+                stage("${CURRENT_ITEM}") {
+                  input message: "Process ${CURRENT_ITEM}?", ok: "Continue"
+                }
+              }
+            }
+            parallel ITEMS_LOOP
+          }
+        }
+      }
+    }
+  }
+}

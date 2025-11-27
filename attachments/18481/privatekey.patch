@@ -1,0 +1,138 @@
+Index: src/main/java/hudson/plugins/sshslaves/SSHLauncher.java
+===================================================================
+--- src/main/java/hudson/plugins/sshslaves/SSHLauncher.java	(revision 14803)
++++ src/main/java/hudson/plugins/sshslaves/SSHLauncher.java	(working copy)
+@@ -12,6 +12,7 @@
+ import org.kohsuke.stapler.DataBoundConstructor;
+ 
+ import java.io.BufferedReader;
++import java.io.File;
+ import java.io.IOException;
+ import java.io.InputStream;
+ import java.io.InputStreamReader;
+@@ -48,6 +49,11 @@
+     private final String password;
+ 
+     /**
++     * Field privatekey
++     */
++    private final String privatekey;
++
++    /**
+      * Field connection
+      */
+     private transient Connection connection;
+@@ -64,13 +70,15 @@
+      * @param port     The port to connect on.
+      * @param username The username to connect as.
+      * @param password The password to connect with.
++     * @param privatekey The ssh privatekey to connect with.
+      */
+     @DataBoundConstructor
+-    public SSHLauncher(String host, int port, String username, String password) {
++    public SSHLauncher(String host, int port, String username, String password, String privatekey) {
+         this.host = host;
+         this.port = port == 0 ? 22 : port;
+         this.username = username;
+         this.password = password;
++        this.privatekey = privatekey;
+     }
+ 
+     /**
+@@ -323,10 +331,19 @@
+         connection.connect();
+ 
+         // TODO if using a key file, use the key file instead of password
+-        listener.getLogger().println(Messages.SSHLauncher_AuthenticatingUserPass(getTimestamp(), username, "******"));
+-        boolean isAuthenicated = connection.authenticateWithPassword(username, password);
+-
+-        if (isAuthenicated && connection.isAuthenticationComplete()) {
++	boolean isAuthenticated = false;
++	if ( privatekey.length() > 0 ) {
++	    File key = new File(privatekey);
++	    if ( key.exists() ) {
++	        listener.getLogger().println(Messages.SSHLauncher_AuthenticatingPublicKey(getTimestamp(), username, privatekey));
++		isAuthenticated = connection.authenticateWithPublicKey(username, key, password);
++	    } 
++	}
++	if ( ! isAuthenticated ) {
++            listener.getLogger().println(Messages.SSHLauncher_AuthenticatingUserPass(getTimestamp(), username, "******"));
++	    isAuthenticated = connection.authenticateWithPassword(username, password);
++	}
++        if (isAuthenticated && connection.isAuthenticationComplete()) {
+             listener.getLogger().println(Messages.SSHLauncher_AuthenticationSuccessful(getTimestamp()));
+         } else {
+             listener.getLogger().println(Messages.SSHLauncher_AuthenticationFailed(getTimestamp()));
+@@ -403,6 +420,15 @@
+     }
+ 
+     /**
++     * Getter for property 'privatekey'.
++     *
++     * @return Value for property 'privatekey'.
++     */
++    public String getPrivatekey() {
++        return privatekey;
++    }
++
++    /**
+      * {@inheritDoc}
+      */
+     public Descriptor<ComputerLauncher> getDescriptor() {
+Index: src/main/resources/hudson/plugins/sshslaves/SSHLauncher/config.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/sshslaves/SSHLauncher/config.jelly	(revision 14803)
++++ src/main/resources/hudson/plugins/sshslaves/SSHLauncher/config.jelly	(working copy)
+@@ -9,10 +9,14 @@
+     </f:entry>
+ 
+     <f:advanced>
+-        <f:entry title="${%Password}">
+-            <input class="setting-input" type="password" name="launcher.password" value="${instance.password}"/>
++        <f:entry title="${%Password}" help="/plugin/ssh-slaves/help_password.html">
++            <input class="setting-input" type="password" name="launcher.password" value="${instance.password}" />
+         </f:entry>
+ 
++        <f:entry title="${%Private Key File}" help="/plugin/ssh-slaves/help_privatekey.html">
++            <f:textbox name="launcher.privatekey" value="${instance.privatekey}"/>
++        </f:entry>
++
+         <f:entry title="${%Port}">
+             <f:textbox name="launcher.port" value="${h.ifThenElse(instance.port == null, '22', instance.port)}"/>
+         </f:entry>
+Index: src/main/resources/hudson/plugins/sshslaves/Messages.properties
+===================================================================
+--- src/main/resources/hudson/plugins/sshslaves/Messages.properties	(revision 14803)
++++ src/main/resources/hudson/plugins/sshslaves/Messages.properties	(working copy)
+@@ -11,6 +11,7 @@
+ SSHLauncher.NoJavaFound=Could not find a version of java that is at least version 1.5
+ SSHLauncher.JavaVersionResult={0} [SSH] {1} -version returned {2}.
+ SSHLauncher.OpeningSSHConnection={0} [SSH] Opening SSH connection to {1}.
++SSHLauncher.AuthenticatingPublicKey={0} [SSH] Authenticating as {1} with {2}.
+ SSHLauncher.AuthenticatingUserPass={0} [SSH] Authenticating as {1}/{2}.
+ SSHLauncher.AuthenticationSuccessful={0} [SSH] Authentication successful.
+ SSHLauncher.AuthenticationFailed={0} [SSH] Authentication failed.
+Index: src/main/webapp/help_password.html
+===================================================================
+--- src/main/webapp/help_password.html	(revision 0)
++++ src/main/webapp/help_password.html	(revision 0)
+@@ -0,0 +1,6 @@
++<div>
++<p>This password will be used for both Public/Private Key authentication
++and Username/Password authentication.  If the SSH Private Key does not
++require a password, this field will be ignored (i.e. it is not an error
++to specify a password when none is needed).</p>
++</div>
+Index: src/main/webapp/help_privatekey.html
+===================================================================
+--- src/main/webapp/help_privatekey.html	(revision 0)
++++ src/main/webapp/help_privatekey.html	(revision 0)
+@@ -0,0 +1,8 @@
++<div>
++<p>This specifies the <b>absolute path</b> to the SSH private key file
++(e.g. <code>id_dsa</code> or <code>id_rsa</code>) to use for
++"password-less" Public/Private Key authentication.</p>
++
++<p>If this field is blank or if the Public/Private key authentication
++fails, the plugin will attempt username/password authentication.</p>
++</div>

@@ -1,0 +1,289 @@
+From 4e0b1d633610b6cf69823cecdb1cf9276ab6e07b Mon Sep 17 00:00:00 2001
+From: Marc van Kalmthout <Marc.van.Kalmthout@sioux.eu>
+Date: Sun, 2 Jun 2024 18:51:42 +0200
+Subject: [PATCH 1/5] replace .AbstractBuild with Run and AbstractProject with
+ Job
+
+Reason: these types are more suitable for pipeline jobs. Preparation to implement SimpleBuildStep.LastBuildAction
+---
+ .../logparser/action/LogParserProjectAction.java   | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/src/main/java/hudson/plugins/logparser/action/LogParserProjectAction.java b/src/main/java/hudson/plugins/logparser/action/LogParserProjectAction.java
+index b8b6ab4..5282f3b 100755
+--- a/src/main/java/hudson/plugins/logparser/action/LogParserProjectAction.java
++++ b/src/main/java/hudson/plugins/logparser/action/LogParserProjectAction.java
+@@ -1,8 +1,8 @@
+ package hudson.plugins.logparser.action;
+ 
+ import hudson.model.Action;
+-import hudson.model.AbstractBuild;
+-import hudson.model.AbstractProject;
++import hudson.model.Run;
++import hudson.model.Job ;
+ import hudson.plugins.logparser.LogParserAction;
+ 
+ import java.io.IOException;
+@@ -22,10 +22,10 @@ import org.kohsuke.stapler.StaplerResponse;
+  */
+ public class LogParserProjectAction implements Action {
+ 
+-    public final AbstractProject<?,?> project;
++    public final Job <?,?> job;
+ 
+-    public LogParserProjectAction(AbstractProject<?, ?> project) {
+-        this.project = project;
++    public LogParserProjectAction(Job <?, ?> job) {
++        this.job = job;
+     }
+ 
+     public String getIconFileName() {
+@@ -41,9 +41,9 @@ public class LogParserProjectAction implements Action {
+     }
+ 
+     public LogParserAction getLastLogParserAction() {
+-        final AbstractBuild<?,?> tb = project.getLastSuccessfulBuild();
++        final Run<?,?> tb = job.getLastSuccessfulBuild();
+ 
+-        AbstractBuild<?,?> b = project.getLastBuild();
++        Run<?,?> b = job.getLastBuild();
+         while (b != null) {
+             LogParserAction a = b.getAction(LogParserAction.class);
+             if (a != null) {
+-- 
+2.38.0.windows.1
+
+
+From f9fbb65c6b1c5007cd2dec127a04812ae794b4b1 Mon Sep 17 00:00:00 2001
+From: Marc van Kalmthout <Marc.van.Kalmthout@sioux.eu>
+Date: Sun, 2 Jun 2024 18:52:21 +0200
+Subject: [PATCH 2/5] Implement SimpleBuildStep.LastBuildAction
+
+---
+ .../hudson/plugins/logparser/LogParserAction.java  | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/src/main/java/hudson/plugins/logparser/LogParserAction.java b/src/main/java/hudson/plugins/logparser/LogParserAction.java
+index 5b9ba6d..7bb6e53 100755
+--- a/src/main/java/hudson/plugins/logparser/LogParserAction.java
++++ b/src/main/java/hudson/plugins/logparser/LogParserAction.java
+@@ -3,7 +3,9 @@ package hudson.plugins.logparser;
+ import hudson.Functions;
+ import hudson.model.Action;
+ import hudson.model.AbstractBuild;
++import hudson.model.Job;
+ import hudson.model.Run;
++import hudson.plugins.logparser.action.LogParserProjectAction;
+ import hudson.util.Area;
+ import hudson.util.ChartUtil;
+ import hudson.util.ColorPalette;
+@@ -11,10 +13,16 @@ import hudson.util.DataSetBuilder;
+ import hudson.util.ShiftedCategoryAxis;
+ import hudson.util.StackedAreaRenderer2;
+ 
++import jenkins.tasks.SimpleBuildStep;
++import jenkins.tasks.SimpleBuildStep.LastBuildAction;
++
+ import java.awt.Color;
+ import java.io.File;
+ import java.io.IOException;
+ 
++import java.util.Collection;
++import java.util.Collections;
++
+ import javax.servlet.ServletException;
+ 
+ import org.jfree.chart.ChartFactory;
+@@ -30,7 +38,7 @@ import org.jfree.ui.RectangleInsets;
+ import org.kohsuke.stapler.StaplerRequest;
+ import org.kohsuke.stapler.StaplerResponse;
+ 
+-public class LogParserAction implements Action {
++public class LogParserAction implements Action, SimpleBuildStep.LastBuildAction {
+ 
+     final private Run<?, ?> build;
+     final private LogParserResult result;
+@@ -45,7 +53,11 @@ public class LogParserAction implements Action {
+     public LogParserAction(final Run<?, ?> build, final LogParserResult result) {
+         this.build = build;
+         this.result = result;
++    }
+ 
++    public Collection<? extends Action> getProjectActions() {
++        final Job<?, ?> job = build.getParent();
++        return Collections.singleton(new LogParserProjectAction(job));
+     }
+ 
+     public String getIconFileName() {
+-- 
+2.38.0.windows.1
+
+
+From c10b407817429dde70f218b7ab2bc64d135021f3 Mon Sep 17 00:00:00 2001
+From: Marc van Kalmthout <Marc.van.Kalmthout@sioux.eu>
+Date: Sun, 2 Jun 2024 18:53:02 +0200
+Subject: [PATCH 3/5] Override attribute to the Action properties.
+
+getIconFileName, getDisplayName, getUrlName
+---
+ src/main/java/hudson/plugins/logparser/LogParserAction.java    | 3 +++
+ .../plugins/logparser/action/LogParserProjectAction.java       | 3 +++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/src/main/java/hudson/plugins/logparser/LogParserAction.java b/src/main/java/hudson/plugins/logparser/LogParserAction.java
+index 7bb6e53..2f9c2a5 100755
+--- a/src/main/java/hudson/plugins/logparser/LogParserAction.java
++++ b/src/main/java/hudson/plugins/logparser/LogParserAction.java
+@@ -60,14 +60,17 @@ public class LogParserAction implements Action, SimpleBuildStep.LastBuildAction
+         return Collections.singleton(new LogParserProjectAction(job));
+     }
+ 
++    @Override
+     public String getIconFileName() {
+         return "clipboard.gif";
+     }
+ 
++    @Override
+     public String getDisplayName() {
+         return "Console Output (parsed)";
+     }
+ 
++    @Override
+     public String getUrlName() {
+         return urlName;
+     }
+diff --git a/src/main/java/hudson/plugins/logparser/action/LogParserProjectAction.java b/src/main/java/hudson/plugins/logparser/action/LogParserProjectAction.java
+index 5282f3b..5732dc9 100755
+--- a/src/main/java/hudson/plugins/logparser/action/LogParserProjectAction.java
++++ b/src/main/java/hudson/plugins/logparser/action/LogParserProjectAction.java
+@@ -28,14 +28,17 @@ public class LogParserProjectAction implements Action {
+         this.job = job;
+     }
+ 
++    @Override
+     public String getIconFileName() {
+         return null;
+     }
+ 
++    @Override
+     public String getDisplayName() {
+         return "logparser";
+     }
+ 
++    @Override
+     public String getUrlName() {
+         return "logparser";
+     }
+-- 
+2.38.0.windows.1
+
+
+From 289976bc78af1df8d469a2b0479cd6d2503d32af Mon Sep 17 00:00:00 2001
+From: Marc van Kalmthout <Marc.van.Kalmthout@sioux.eu>
+Date: Sun, 2 Jun 2024 18:53:28 +0200
+Subject: [PATCH 4/5] Remove  getProjectAction as it is replaced by
+ SimpleBuildStep.LastBuildAction
+
+---
+ .../hudson/plugins/logparser/LogParserPublisher.java | 12 ------------
+ 1 file changed, 12 deletions(-)
+
+diff --git a/src/main/java/hudson/plugins/logparser/LogParserPublisher.java b/src/main/java/hudson/plugins/logparser/LogParserPublisher.java
+index 15592a6..f4d79ff 100755
+--- a/src/main/java/hudson/plugins/logparser/LogParserPublisher.java
++++ b/src/main/java/hudson/plugins/logparser/LogParserPublisher.java
+@@ -227,16 +227,4 @@ public class LogParserPublisher extends Recorder implements SimpleBuildStep, Ser
+         // the available parsing rules from there
+         return ((DescriptorImpl) this.getDescriptor()).getParsingRulesGlobal();
+     }
+-
+-    @Override
+-    public Action getProjectAction(AbstractProject<?, ?> project) {
+-
+-        if (showGraphs) {
+-            return new LogParserProjectAction(project);
+-
+-        } else {
+-            return null;
+-        }
+-    }
+-
+ }
+-- 
+2.38.0.windows.1
+
+
+From b8116f7b16e3768fb212be2879b1c19fe81a61a4 Mon Sep 17 00:00:00 2001
+From: Marc van Kalmthout <Marc.van.Kalmthout@sioux.eu>
+Date: Sun, 2 Jun 2024 18:53:55 +0200
+Subject: [PATCH 5/5]  LogParserAction now handles showGraphs as it implements
+ SimpleBuildStep.LastBuildAction
+
+---
+ .../plugins/logparser/LogParserAction.java       | 16 +++++++++++-----
+ .../plugins/logparser/LogParserPublisher.java    |  4 ++--
+ 2 files changed, 13 insertions(+), 7 deletions(-)
+
+diff --git a/src/main/java/hudson/plugins/logparser/LogParserAction.java b/src/main/java/hudson/plugins/logparser/LogParserAction.java
+index 2f9c2a5..f4dedeb 100755
+--- a/src/main/java/hudson/plugins/logparser/LogParserAction.java
++++ b/src/main/java/hudson/plugins/logparser/LogParserAction.java
+@@ -42,22 +42,28 @@ public class LogParserAction implements Action, SimpleBuildStep.LastBuildAction
+ 
+     final private Run<?, ?> build;
+     final private LogParserResult result;
++    final private boolean showGraphs;
+ 
+     private static String urlName = "parsed_console";
+ 
+     @Deprecated
+-    public LogParserAction(final AbstractBuild<?, ?> build, final LogParserResult result) {
+-        this((Run<?, ?>) build, result);
++    public LogParserAction(final AbstractBuild<?, ?> build, final LogParserResult result, final boolean showGraphs) {
++        this((Run<?, ?>) build, result, showGraphs);
+     }
+ 
+-    public LogParserAction(final Run<?, ?> build, final LogParserResult result) {
++    public LogParserAction(final Run<?, ?> build, final LogParserResult result, final boolean showGraphs) {
+         this.build = build;
+         this.result = result;
++        this.showGraphs = showGraphs;
+     }
+ 
+     public Collection<? extends Action> getProjectActions() {
+-        final Job<?, ?> job = build.getParent();
+-        return Collections.singleton(new LogParserProjectAction(job));
++        if (showGraphs) {
++            final Job<?, ?> job = build.getParent();
++            return Collections.singleton(new LogParserProjectAction(job));
++        } else {
++            return Collections.emptyList();
++        }
+     }
+ 
+     @Override
+diff --git a/src/main/java/hudson/plugins/logparser/LogParserPublisher.java b/src/main/java/hudson/plugins/logparser/LogParserPublisher.java
+index f4d79ff..3bfec12 100755
+--- a/src/main/java/hudson/plugins/logparser/LogParserPublisher.java
++++ b/src/main/java/hudson/plugins/logparser/LogParserPublisher.java
+@@ -110,7 +110,7 @@ public class LogParserPublisher extends Recorder implements SimpleBuildStep, Ser
+                 logger.log(Level.SEVERE, LogParserConsts.CANNOT_PARSE + build, NULL_PARSING_RULES);
+                 result.setFailedToParseError(NULL_PARSING_RULES);
+                 build.setResult(Result.ABORTED);
+-                build.addAction(new LogParserAction(build, result));
++                build.addAction(new LogParserAction(build, result, showGraphs));
+                 return;
+             } else {
+                 parsingRulesFile = new FilePath(new File(parsingRulesPath));
+@@ -139,7 +139,7 @@ public class LogParserPublisher extends Recorder implements SimpleBuildStep, Ser
+         }
+ 
+         // Add an action created with the above results
+-        final LogParserAction action = new LogParserAction(build, result);
++        final LogParserAction action = new LogParserAction(build, result, showGraphs);
+         build.addAction(action);
+     }
+ 
+-- 
+2.38.0.windows.1
+

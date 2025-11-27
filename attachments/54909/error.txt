@@ -1,0 +1,103 @@
+2021-06-02 05:09:56.800+0000 [id=1]	INFO	org.eclipse.jetty.server.Server#doStart: Started @5190ms
+2021-06-02 05:09:56.890+0000 [id=24]	INFO	winstone.Logger#logInternal: Winstone Servlet Engine running: controlPort=disabled
+2021-06-02 05:10:03.078+0000 [id=35]	INFO	jenkins.InitReactorRunner$1#onAttained: Started initialization
+2021-06-02 05:10:05.920+0000 [id=37]	INFO	jenkins.InitReactorRunner$1#onAttained: Listed all plugins
+2021-06-02 05:10:20.826+0000 [id=37]	SEVERE	h.ExtensionFinder$GuiceFinder#<init>: Failed to create Guice container from all the plugins
+java.lang.LinkageError: loader constraint violation: loader (instance of hudson/PluginFirstClassLoader) previously initiated loading for a different type with name "com/google/inject/Binder"
+	at java.lang.ClassLoader.defineClass1(Native Method)
+	at java.lang.ClassLoader.defineClass(ClassLoader.java:756)
+	at jenkins.util.AntClassLoader.defineClassFromData(AntClassLoader.java:1161)
+	at jenkins.util.AntClassLoader.getClassFromStream(AntClassLoader.java:1332)
+	at jenkins.util.AntClassLoader.findClassInComponents(AntClassLoader.java:1384)
+	at jenkins.util.AntClassLoader.findClass(AntClassLoader.java:1349)
+	at jenkins.util.AntClassLoader.loadClass(AntClassLoader.java:1101)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:351)
+	at com.google.inject.multibindings.Multibinder.newSetBinder(Multibinder.java:136)
+	at com.google.inject.multibindings.Multibinder.newSetBinder(Multibinder.java:99)
+	at hudson.plugins.depgraph_view.model.graph.DependencyGraphModule.configure(DependencyGraphModule.java:49)
+	at com.google.inject.AbstractModule.configure(AbstractModule.java:62)
+	at com.google.inject.spi.Elements$RecordingBinder.install(Elements.java:340)
+	at com.google.inject.spi.Elements.getElements(Elements.java:110)
+	at com.google.inject.internal.InjectorShell$Builder.build(InjectorShell.java:138)
+	at com.google.inject.internal.InternalInjectorCreator.build(InternalInjectorCreator.java:104)
+	at com.google.inject.Guice.createInjector(Guice.java:96)
+	at com.google.inject.Guice.createInjector(Guice.java:73)
+	at hudson.ExtensionFinder$GuiceFinder.<init>(ExtensionFinder.java:283)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:423)
+	at java.lang.Class.newInstance(Class.java:442)
+	at net.java.sezpoz.IndexItem.instance(IndexItem.java:181)
+	at hudson.ExtensionFinder$Sezpoz._find(ExtensionFinder.java:709)
+	at hudson.ExtensionFinder$Sezpoz.find(ExtensionFinder.java:695)
+	at hudson.ClassicPluginStrategy.findComponents(ClassicPluginStrategy.java:352)
+	at hudson.ExtensionList.load(ExtensionList.java:383)
+	at hudson.ExtensionList.ensureLoaded(ExtensionList.java:319)
+	at hudson.ExtensionList.getComponents(ExtensionList.java:183)
+	at jenkins.model.Jenkins$6.onInitMilestoneAttained(Jenkins.java:1191)
+	at jenkins.InitReactorRunner$1.onAttained(InitReactorRunner.java:89)
+	at org.jvnet.hudson.reactor.ReactorListener$Aggregator.lambda$onAttained$3(ReactorListener.java:102)
+	at org.jvnet.hudson.reactor.ReactorListener$Aggregator.run(ReactorListener.java:109)
+	at org.jvnet.hudson.reactor.ReactorListener$Aggregator.onAttained(ReactorListener.java:102)
+	at org.jvnet.hudson.reactor.Reactor$1.run(Reactor.java:177)
+	at org.jvnet.hudson.reactor.Reactor$Node.run(Reactor.java:117)
+	at jenkins.security.ImpersonatingExecutorService$1.run(ImpersonatingExecutorService.java:68)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+2021-06-02 05:10:21.801+0000 [id=37]	WARNING	hudson.ExtensionFinder$Sezpoz#_find: Failed to load hudson.ExtensionFinder$GuiceFinder
+com.google.inject.CreationException: Unable to create injector, see the following errors:
+
+1) Could not find a suitable constructor in jenkins.model.Jenkins. Classes must have either one (and only one) constructor annotated with @Inject or a zero-argument constructor that is not private.
+  at jenkins.model.Jenkins.class(Jenkins.java:340)
+  while locating jenkins.model.Jenkins
+    for field at jenkins.model.Jenkins$EnforceSlaveAgentPortAdministrativeMonitor.j(Jenkins.java:1351)
+  at hudson.ExtensionFinder$GuiceFinder$SezpozModule.configure(ExtensionFinder.java:531)
+
+2) Could not find a suitable constructor in jenkins.model.Jenkins. Classes must have either one (and only one) constructor annotated with @Inject or a zero-argument constructor that is not private.
+  at jenkins.model.Jenkins.class(Jenkins.java:340)
+  while locating jenkins.model.Jenkins
+    for field at jenkins.security.s2m.AdminCallableMonitor.jenkins(AdminCallableMonitor.java:33)
+  at hudson.ExtensionFinder$GuiceFinder$SezpozModule.configure(ExtensionFinder.java:531)
+
+3) Could not find a suitable constructor in jenkins.model.Jenkins. Classes must have either one (and only one) constructor annotated with @Inject or a zero-argument constructor that is not private.
+  at jenkins.model.Jenkins.class(Jenkins.java:340)
+  while locating jenkins.model.Jenkins
+    for field at jenkins.security.s2m.MasterKillSwitchConfiguration.jenkins(MasterKillSwitchConfiguration.java:20)
+  at hudson.ExtensionFinder$GuiceFinder$SezpozModule.configure(ExtensionFinder.java:531)
+
+3 errors
+	at com.google.inject.internal.Errors.throwCreationExceptionIfErrorsExist(Errors.java:466)
+	at com.google.inject.internal.InternalInjectorCreator.initializeStatically(InternalInjectorCreator.java:155)
+	at com.google.inject.internal.InternalInjectorCreator.build(InternalInjectorCreator.java:107)
+	at com.google.inject.Guice.createInjector(Guice.java:96)
+	at com.google.inject.Guice.createInjector(Guice.java:73)
+	at com.google.inject.Guice.createInjector(Guice.java:62)
+	at hudson.ExtensionFinder$GuiceFinder.<init>(ExtensionFinder.java:289)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:423)
+	at java.lang.Class.newInstance(Class.java:442)
+	at net.java.sezpoz.IndexItem.instance(IndexItem.java:181)
+Caused: java.lang.InstantiationException
+	at net.java.sezpoz.IndexItem.instance(IndexItem.java:191)
+	at hudson.ExtensionFinder$Sezpoz._find(ExtensionFinder.java:709)
+	at hudson.ExtensionFinder$Sezpoz.find(ExtensionFinder.java:695)
+	at hudson.ClassicPluginStrategy.findComponents(ClassicPluginStrategy.java:352)
+	at hudson.ExtensionList.load(ExtensionList.java:383)
+	at hudson.ExtensionList.ensureLoaded(ExtensionList.java:319)
+	at hudson.ExtensionList.getComponents(ExtensionList.java:183)
+	at jenkins.model.Jenkins$6.onInitMilestoneAttained(Jenkins.java:1191)
+	at jenkins.InitReactorRunner$1.onAttained(InitReactorRunner.java:89)
+	at org.jvnet.hudson.reactor.ReactorListener$Aggregator.lambda$onAttained$3(ReactorListener.java:102)
+	at org.jvnet.hudson.reactor.ReactorListener$Aggregator.run(ReactorListener.java:109)
+	at org.jvnet.hudson.reactor.ReactorListener$Aggregator.onAttained(ReactorListener.java:102)
+	at org.jvnet.hudson.reactor.Reactor$1.run(Reactor.java:177)
+	at org.jvnet.hudson.reactor.Reactor$Node.run(Reactor.java:117)
+	at jenkins.security.ImpersonatingExecutorService$1.run(ImpersonatingExecutorService.java:68)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+2021-06-02 05:10:21.836+0000 [id=37]	INFO	jenkins.InitReactorRunner$1#onAttained: Prepared all plugins

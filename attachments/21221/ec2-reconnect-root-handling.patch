@@ -1,0 +1,13 @@
+diff --git src/main/java/hudson/plugins/ec2/ssh/EC2UnixLauncher.java src/main/java/hudson/plugins/ec2/ssh/EC2UnixLauncher.java
+index 2e1c8b8..76de10e 100644
+--- src/main/java/hudson/plugins/ec2/ssh/EC2UnixLauncher.java
++++ src/main/java/hudson/plugins/ec2/ssh/EC2UnixLauncher.java
+@@ -150,7 +150,7 @@
+                 logger.println("Authentication failed");
+                 return FAILED;
+             }
+-            if (!computer.getRemoteAdmin().equals("root")) {
++            if ((computer.getRootCommandPrefix() != null) && (computer.getRootCommandPrefix().length() >0)) {
+                 // Get root working, so we can scp in etc.
+                 Session sess = bootstrapConn.openSession();
+                 sess.requestDumbPTY(); // so that the remote side bundles stdout and stderr

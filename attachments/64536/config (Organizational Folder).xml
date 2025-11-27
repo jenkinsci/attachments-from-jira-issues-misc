@@ -1,0 +1,103 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<jenkins.branch.OrganizationFolder plugin="branch-api@2.1217.v43d8b_b_d8b_2c7">
+  <actions/>
+  <description></description>
+  <displayName>0010-191 Organizational Folder</displayName>
+  <properties>
+    <jenkins.branch.OrganizationChildHealthMetricsProperty>
+      <templates>
+        <com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric plugin="cloudbees-folder@6.1023.v4fcb_72152519">
+          <nonRecursive>false</nonRecursive>
+        </com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric>
+      </templates>
+    </jenkins.branch.OrganizationChildHealthMetricsProperty>
+    <jenkins.branch.OrganizationChildOrphanedItemsProperty>
+      <strategy class="jenkins.branch.OrganizationChildOrphanedItemsProperty$Inherit"/>
+    </jenkins.branch.OrganizationChildOrphanedItemsProperty>
+    <jenkins.branch.OrganizationChildTriggersProperty>
+      <templates>
+        <org.jenkinsci.plugins.pipeline.maven.trigger.WorkflowJobDependencyTrigger plugin="pipeline-maven@1530.v625a_45ca_0fdd">
+          <spec></spec>
+        </org.jenkinsci.plugins.pipeline.maven.trigger.WorkflowJobDependencyTrigger>
+        <com.cloudbees.hudson.plugins.folder.computed.PeriodicFolderTrigger plugin="cloudbees-folder@6.1023.v4fcb_72152519">
+          <spec>H H/4 * * *</spec>
+          <interval>86400000</interval>
+        </com.cloudbees.hudson.plugins.folder.computed.PeriodicFolderTrigger>
+      </templates>
+    </jenkins.branch.OrganizationChildTriggersProperty>
+    <org.jenkinsci.plugins.pipeline.maven.MavenConfigFolderOverrideProperty plugin="pipeline-maven@1530.v625a_45ca_0fdd">
+      <settings class="jenkins.mvn.DefaultSettingsProvider"/>
+      <globalSettings class="jenkins.mvn.DefaultGlobalSettingsProvider"/>
+      <override>false</override>
+    </org.jenkinsci.plugins.pipeline.maven.MavenConfigFolderOverrideProperty>
+    <jenkins.branch.NoTriggerOrganizationFolderProperty>
+      <branches>.*</branches>
+      <strategy>NONE</strategy>
+    </jenkins.branch.NoTriggerOrganizationFolderProperty>
+  </properties>
+  <folderViews class="jenkins.branch.OrganizationFolderViewHolder">
+    <owner reference="../.."/>
+  </folderViews>
+  <healthMetrics>
+    <com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric plugin="cloudbees-folder@6.1023.v4fcb_72152519">
+      <nonRecursive>false</nonRecursive>
+    </com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric>
+  </healthMetrics>
+  <icon class="jenkins.branch.MetadataActionFolderIcon">
+    <owner class="jenkins.branch.OrganizationFolder" reference="../.."/>
+  </icon>
+  <orphanedItemStrategy class="com.cloudbees.hudson.plugins.folder.computed.DefaultOrphanedItemStrategy" plugin="cloudbees-folder@6.1023.v4fcb_72152519">
+    <pruneDeadBranches>true</pruneDeadBranches>
+    <daysToKeep>4</daysToKeep>
+    <numToKeep>-1</numToKeep>
+    <abortBuilds>false</abortBuilds>
+  </orphanedItemStrategy>
+  <triggers>
+    <org.jenkinsci.plugins.pipeline.maven.trigger.WorkflowJobDependencyTrigger plugin="pipeline-maven@1530.v625a_45ca_0fdd">
+      <spec></spec>
+    </org.jenkinsci.plugins.pipeline.maven.trigger.WorkflowJobDependencyTrigger>
+    <com.cloudbees.hudson.plugins.folder.computed.PeriodicFolderTrigger plugin="cloudbees-folder@6.1023.v4fcb_72152519">
+      <spec>H H/4 * * *</spec>
+      <interval>86400000</interval>
+    </com.cloudbees.hudson.plugins.folder.computed.PeriodicFolderTrigger>
+  </triggers>
+  <disabled>false</disabled>
+  <navigators>
+    <com.cloudbees.jenkins.plugins.bitbucket.BitbucketSCMNavigator plugin="cloudbees-bitbucket-branch-source@936.3.1">
+      <serverUrl>https://git.mydomain.com</serverUrl>
+      <credentialsId>0f0faacf-14c8-423c-8088-9c6d3b4a8b4a</credentialsId>
+      <repoOwner>D0010_191</repoOwner>
+      <traits>
+        <com.cloudbees.jenkins.plugins.bitbucket.trait.BranchDiscoveryTrait>
+          <strategyId>1</strategyId>
+        </com.cloudbees.jenkins.plugins.bitbucket.trait.BranchDiscoveryTrait>
+        <com.cloudbees.jenkins.plugins.bitbucket.trait.OriginPullRequestDiscoveryTrait>
+          <strategyId>1</strategyId>
+        </com.cloudbees.jenkins.plugins.bitbucket.trait.OriginPullRequestDiscoveryTrait>
+        <com.cloudbees.jenkins.plugins.bitbucket.trait.ForkPullRequestDiscoveryTrait>
+          <strategyId>1</strategyId>
+          <trust class="com.cloudbees.jenkins.plugins.bitbucket.trait.ForkPullRequestDiscoveryTrait$TrustTeamForks"/>
+        </com.cloudbees.jenkins.plugins.bitbucket.trait.ForkPullRequestDiscoveryTrait>
+        <jenkins.plugins.git.traits.LocalBranchTrait plugin="git@5.7.0">
+          <extension class="hudson.plugins.git.extensions.impl.LocalBranch">
+            <localBranch>**</localBranch>
+          </extension>
+        </jenkins.plugins.git.traits.LocalBranchTrait>
+        <jenkins.plugins.git.traits.CleanBeforeCheckoutTrait plugin="git@5.7.0">
+          <extension class="hudson.plugins.git.extensions.impl.CleanBeforeCheckout">
+            <deleteUntrackedNestedRepositories>false</deleteUntrackedNestedRepositories>
+          </extension>
+        </jenkins.plugins.git.traits.CleanBeforeCheckoutTrait>
+      </traits>
+    </com.cloudbees.jenkins.plugins.bitbucket.BitbucketSCMNavigator>
+  </navigators>
+  <projectFactories>
+    <org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProjectFactory plugin="workflow-multibranch@806.vb_b_688f609ee9">
+      <scriptPath>Jenkinsfile</scriptPath>
+    </org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProjectFactory>
+  </projectFactories>
+  <buildStrategies/>
+  <strategy class="jenkins.branch.DefaultBranchPropertyStrategy">
+    <properties class="empty-list"/>
+  </strategy>
+</jenkins.branch.OrganizationFolder>

@@ -1,0 +1,39 @@
+pipeline {
+  agent {
+    kubernetes {
+      yamlFile 'jenkins/podTemplate.yml'
+    }
+  }
+  parameters {
+    string(
+      name: 'BRANCH',
+      defaultValue: null,
+      description: 'Enter the GIT branch or commit'
+    )
+  }
+
+  stages {
+
+    stage('Checkout') {
+      options { timeout(time: 5, unit: 'MINUTES') }
+      steps {
+        checkout([
+          $class: 'GitSCM',
+          branches: [[name: '${BRANCH}']],
+          doGenerateSubmoduleConfigurations: false,
+          extensions: [
+            cloneOption(
+              noTags: true,
+              reference: '',
+              shallow: false
+            )
+          ],
+          userRemoteConfigs: [[
+            credentialsId: 'foo',
+            url: 'bar'
+          ]]
+        ])
+      }
+    }
+  }
+}

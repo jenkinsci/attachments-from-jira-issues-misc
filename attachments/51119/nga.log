@@ -1,0 +1,20 @@
+29/04/2020 08:41:05,596 INFO  [r[AOS-K8S-100-PIPELINE/1:AOS-K8S-100-PIPELINE #1]]] BuildLogHelper                  : enqueued build 'AOS-K8S-100-PIPELINE #1' for log submission
+29/04/2020 08:41:05,608 WARN  [r[AOS-K8S-100-PIPELINE/1:AOS-K8S-100-PIPELINE #1]]] VulnerabilitiesUtils            : SSC configuration was found in AOS-K8S-100-PIPELINE #1
+29/04/2020 08:41:05,625 INFO  [r[AOS-K8S-100-PIPELINE/1:AOS-K8S-100-PIPELINE #1]]] VulnerabilitiesServiceImpl      : [http://k8s-master.modeloffice.org:30001?p=1001] 1/AOS-K8S-100-PIPELINE was added to vulnerabilities queue
+29/04/2020 08:41:06,256 INFO  [BuildLogsPushWorker-63                            ] LogsServiceImpl                 : [http://k8s-master.modeloffice.org:30001?p=1001] log of 'AOS-K8S-100-PIPELINE #1', root job : AOS-K8S-100-PIPELINE, found 1 interested workspace/s
+29/04/2020 08:41:06,396 INFO  [VulnerabilitiesPushWorker-66                      ] VulnerabilitiesServiceImpl      : [http://k8s-master.modeloffice.org:30001?p=1001] vulnerabilities data of AOS-K8S-100-PIPELINE #1 found to be relevant to Octane
+29/04/2020 08:41:07,596 INFO  [EventsServiceWorker-62                            ] EventsServiceImpl               : [http://k8s-master.modeloffice.org:30001?p=1001] sending [AOS-K8S-100-PIPELINE:1:FINISHED] event/s ...
+29/04/2020 08:41:07,677 INFO  [BuildLogsPushWorker-63                            ] LogsServiceImpl                 : [http://k8s-master.modeloffice.org:30001?p=1001] successfully pushed log of 'AOS-K8S-100-PIPELINE #1', root job : AOS-K8S-100-PIPELINE to WS 1003
+29/04/2020 08:41:10,545 INFO  [VulnerabilitiesPushWorker-66                      ] ExistingIssuesInOctane          : vulnerabilities retrieve was completed; status: 200, response: []
+29/04/2020 08:41:10,545 INFO  [VulnerabilitiesPushWorker-66                      ] ExistingIssuesInOctane          : retrieved existing vulnerabilities from Octane.
+29/04/2020 08:41:10,554 ERROR [VulnerabilitiesPushWorker-66                      ] VulnerabilitiesServiceImpl      : [http://k8s-master.modeloffice.org:30001?p=1001] permanent error on 'AOS-K8S-100-PIPELINE #1', passing over
+com.hp.octane.integrations.exceptions.PermanentException: This job run has no issues.
+	at com.hp.octane.integrations.services.vulnerabilities.PackIssuesToOctaneUtils.packToOctaneIssues(PackIssuesToOctaneUtils.java:50) ~[integrations-sdk-2.6.2.2.jar:?]
+	at com.hp.octane.integrations.services.vulnerabilities.ssc.PackSSCIssuesToSendToOctane.packToOctaneIssues(PackSSCIssuesToSendToOctane.java:48) ~[integrations-sdk-2.6.2.2.jar:?]
+	at com.hp.octane.integrations.services.vulnerabilities.ssc.SSCServiceImpl.getNonCacheVulnerabilitiesScanResultStream(SSCServiceImpl.java:141) ~[integrations-sdk-2.6.2.2.jar:?]
+	at com.hp.octane.integrations.services.vulnerabilities.ssc.SSCServiceImpl.getVulnerabilitiesScanResultStream(SSCServiceImpl.java:83) ~[integrations-sdk-2.6.2.2.jar:?]
+	at com.hp.octane.integrations.services.vulnerabilities.VulnerabilitiesServiceImpl.processPushVulnerabilitiesQueueItem(VulnerabilitiesServiceImpl.java:215) ~[integrations-sdk-2.6.2.2.jar:?]
+	at com.hp.octane.integrations.services.vulnerabilities.VulnerabilitiesServiceImpl.worker(VulnerabilitiesServiceImpl.java:160) ~[integrations-sdk-2.6.2.2.jar:?]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149) [?:1.8.0_242]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624) [?:1.8.0_242]
+	at java.lang.Thread.run(Thread.java:748) [?:1.8.0_242]

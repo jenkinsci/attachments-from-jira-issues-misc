@@ -1,0 +1,113 @@
+From 4050377ffb9220600a13044673a4f9e842e76b10 Mon Sep 17 00:00:00 2001
+From: Steven Aerts <steven.aerts@removed.com>
+Date: Thu, 25 Aug 2011 11:37:48 +0200
+Subject: [PATCH] Fixed JENKINS-1073
+
+Update xml schema to conform command line xml output of klocwork.
+Add tests.
+---
+ .../plugins/klocwork/model/xsd/klocwork-9.2.xsd    |   25 ++++++++++++++++---
+ .../plugins/klocwork/KlocworkParserTest.java       |    1 +
+ .../hudson/plugins/klocwork/bug-jenkins-10735.xml  |   22 +++++++++++++++++
+ 3 files changed, 44 insertions(+), 4 deletions(-)
+ create mode 100644 src/test/resources/com/thalesgroup/hudson/plugins/klocwork/bug-jenkins-10735.xml
+
+diff --git a/src/main/resources/com/thalesgroup/hudson/plugins/klocwork/model/xsd/klocwork-9.2.xsd b/src/main/resources/com/thalesgroup/hudson/plugins/klocwork/model/xsd/klocwork-9.2.xsd
+index 28cdf65..1946bd5 100755
+--- a/src/main/resources/com/thalesgroup/hudson/plugins/klocwork/model/xsd/klocwork-9.2.xsd
++++ b/src/main/resources/com/thalesgroup/hudson/plugins/klocwork/model/xsd/klocwork-9.2.xsd
+@@ -148,6 +148,21 @@
+ 
+     <xs:element name="owner" type="xs:string"/>
+ 
++    <xs:element name="taxonomy">
++        <xs:complexType>
++            <xs:attribute name="name" type="xs:string"/>
++            <xs:attribute name="metaInf" type="xs:string"/>
++        </xs:complexType>
++    </xs:element>
++
++    <xs:element name="taxonomies">
++        <xs:complexType>
++            <xs:sequence maxOccurs="unbounded">
++                <xs:element ref="tag:taxonomy"/>
++            </xs:sequence>
++        </xs:complexType>
++    </xs:element>
++
+     <!-- Main tags -->
+     <xs:element name="problem">
+         <xs:complexType>
+@@ -166,9 +181,10 @@
+                 <xs:element ref="tag:severitylevel"/>
+                 <xs:element ref="tag:displayAs"/>
+                 <xs:element ref="tag:citingStatus"/>
+-                <xs:element ref="tag:state"/>
+-                <xs:element ref="tag:dateOriginated"/>
+-                <xs:element ref="tag:url"/>
++
++                <xs:element ref="tag:state" minOccurs="0"/>
++                <xs:element ref="tag:dateOriginated" minOccurs="0"/>
++                <xs:element ref="tag:url" minOccurs="0"/>
+ 
+ 
+                 <xs:element ref="tag:comment" minOccurs="0"/>
+@@ -178,6 +194,7 @@
+                 <xs:element ref="tag:dateFixed" minOccurs="0"/>
+                 <xs:element ref="tag:category" minOccurs="0"/>
+                 <xs:element ref="tag:lastCommit" minOccurs="0"/>
++                <xs:element ref="tag:taxonomies" minOccurs="0"/>
+ 
+ 
+             </xs:all>
+@@ -194,4 +211,4 @@
+         </xs:complexType>
+     </xs:element>
+ 
+-</xs:schema>
+\ No newline at end of file
++</xs:schema>
+diff --git a/src/test/java/com/thalesgroup/hudson/plugins/klocwork/KlocworkParserTest.java b/src/test/java/com/thalesgroup/hudson/plugins/klocwork/KlocworkParserTest.java
+index 6d5e54e..daaaf48 100755
+--- a/src/test/java/com/thalesgroup/hudson/plugins/klocwork/KlocworkParserTest.java
++++ b/src/test/java/com/thalesgroup/hudson/plugins/klocwork/KlocworkParserTest.java
+@@ -92,6 +92,7 @@ public class KlocworkParserTest {
+     //Warning : the version of Klocwork used was 9.0 and no custom java checker were used in Klocwork
+     public void testCsvToSQLProject() {
+         analyzeFiles("report-csvtosql.xml", 66, 18);
++        analyzeFiles("bug-jenkins-10735.xml", 1, 0);
+     }
+     //TO BE COMPLETED (with other files to test)...
+ }
+diff --git a/src/test/resources/com/thalesgroup/hudson/plugins/klocwork/bug-jenkins-10735.xml b/src/test/resources/com/thalesgroup/hudson/plugins/klocwork/bug-jenkins-10735.xml
+new file mode 100644
+index 0000000..689c619
+--- /dev/null
++++ b/src/test/resources/com/thalesgroup/hudson/plugins/klocwork/bug-jenkins-10735.xml
+@@ -0,0 +1,22 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<errorList xmlns="http://www.klocwork.com/inForce/report/1.0">
++<problem>
++ <problemID>2</problemID>
++ <file>C:\Jenkins_Home\jobs\NUnit Quick Learning\workspace\NUnit_Quick_Learn_1\AccountTest.cs</file>
++ <method>AccountTest.cs</method>
++ <line>64</line>
++ <column>20</column>
++ <code>CS.FLOAT.EQCHECK</code>
++ <message>Equality check on floating point type</message>
++ <anchor>0</anchor>
++ <prefix>result=0;doublestep=(x2-x1)/700;</prefix>
++ <postfix>{result=result+x*step;x=x+step;b</postfix>
++ <citingStatus>Analyze</citingStatus>
++ <severity>Style</severity>
++ <severitylevel>8</severitylevel>
++ <displayAs>Warning</displayAs>
++ <taxonomies>
++  <taxonomy name="C#" metaInf=""/>
++ </taxonomies>
++</problem>
++</errorList>
+\ No newline at end of file
+-- 
+1.7.5.2
+

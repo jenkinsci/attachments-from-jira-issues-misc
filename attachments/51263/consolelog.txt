@@ -1,0 +1,127 @@
+Branch indexing
+Querying the current revision of branch master...
+Current revision of branch master is aff1bf094c90388880621a95e73b5216cad235db
+Obtained Jenkinsfile from aff1bf094c90388880621a95e73b5216cad235db
+Running in Durability level: MAX_SURVIVABILITY
+[Pipeline] Start of Pipeline
+[Pipeline] podTemplate
+[Pipeline] {
+[Pipeline] node
+Created Pod: jenkins/build-dashboard-frontend-master-14-7d984-hxh50-nfjk5
+[Normal][jenkins/build-dashboard-frontend-master-14-7d984-hxh50-nfjk5][Scheduled] Successfully assigned jenkins/build-dashboard-frontend-master-14-7d984-hxh50-nfjk5 to kuben02
+[Normal][jenkins/build-dashboard-frontend-master-14-7d984-hxh50-nfjk5][Pulled] Container image "lachlanevenson/k8s-kubectl:v1.8.8" already present on machine
+Still waiting to schedule task
+‘build-dashboard-frontend-master-14-7d984-hxh50-nfjk5’ is offline
+[Normal][jenkins/build-dashboard-frontend-master-14-7d984-hxh50-nfjk5][Created] Created container
+[Normal][jenkins/build-dashboard-frontend-master-14-7d984-hxh50-nfjk5][Started] Started container
+[Normal][jenkins/build-dashboard-frontend-master-14-7d984-hxh50-nfjk5][Pulled] Container image "docker:latest" already present on machine
+[Normal][jenkins/build-dashboard-frontend-master-14-7d984-hxh50-nfjk5][Created] Created container
+[Normal][jenkins/build-dashboard-frontend-master-14-7d984-hxh50-nfjk5][Started] Started container
+[Normal][jenkins/build-dashboard-frontend-master-14-7d984-hxh50-nfjk5][Pulled] Container image "jenkins/jnlp-slave:4.0.1-1" already present on machine
+[Normal][jenkins/build-dashboard-frontend-master-14-7d984-hxh50-nfjk5][Created] Created container
+[Normal][jenkins/build-dashboard-frontend-master-14-7d984-hxh50-nfjk5][Started] Started container
+Agent build-dashboard-frontend-master-14-7d984-hxh50-nfjk5 is provisioned from template Build_dashboard-frontend_master_14-7d984-hxh50
+---
+apiVersion: "v1"
+kind: "Pod"
+metadata:
+  annotations:
+    buildUrl: "http://jenkins:8080/job/Build/job/dashboard-frontend/job/master/14/"
+    runUrl: "job/Build/job/dashboard-frontend/job/master/14/"
+  labels:
+    jenkins: "slave"
+    jenkins/label: "Build_dashboard-frontend_master_14-7d984"
+  name: "build-dashboard-frontend-master-14-7d984-hxh50-nfjk5"
+spec:
+  containers:
+  - command:
+    - "cat"
+    image: "lachlanevenson/k8s-kubectl:v1.8.8"
+    imagePullPolicy: "IfNotPresent"
+    name: "kubectl"
+    resources:
+      limits: {}
+      requests: {}
+    securityContext:
+      privileged: false
+    tty: true
+    volumeMounts:
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+  - command:
+    - "cat"
+    image: "docker:latest"
+    imagePullPolicy: "IfNotPresent"
+    name: "docker"
+    resources:
+      limits: {}
+      requests: {}
+    securityContext:
+      privileged: false
+    tty: true
+    volumeMounts:
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+  - env:
+    - name: "JENKINS_SECRET"
+      value: "********"
+    - name: "JENKINS_TUNNEL"
+      value: "jenkins-agent:50000"
+    - name: "JENKINS_AGENT_NAME"
+      value: "build-dashboard-frontend-master-14-7d984-hxh50-nfjk5"
+    - name: "JENKINS_NAME"
+      value: "build-dashboard-frontend-master-14-7d984-hxh50-nfjk5"
+    - name: "JENKINS_AGENT_WORKDIR"
+      value: "/home/jenkins/agent"
+    - name: "JENKINS_URL"
+      value: "http://jenkins:8080/"
+    image: "jenkins/jnlp-slave:4.0.1-1"
+    name: "jnlp"
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "256Mi"
+    volumeMounts:
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+  nodeSelector:
+    beta.kubernetes.io/os: "linux"
+  restartPolicy: "Never"
+  securityContext: {}
+  volumes:
+  - emptyDir:
+      medium: ""
+    name: "workspace-volume"
+
+Running on build-dashboard-frontend-master-14-7d984-hxh50-nfjk5 in /home/jenkins/agent/workspace/ld_dashboard-frontend_master
+[Pipeline] {
+[Pipeline] container
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Build stage image)
+[Pipeline] echo
+test
+[Pipeline] sh
++ ls -la
+total 4
+drwxr-xr-x    2 1000     root             6 May 19 21:33 .
+drwxr-xr-x    4 1000     root          4096 May 19 21:33 ..
+[Pipeline] sh
++ docker build -t core.harbor/kubernetes/dashboard-frontend:stage -f Dockerfile.stage .
+unable to prepare context: unable to evaluate symlinks in Dockerfile path: lstat /home/jenkins/agent/workspace/ld_dashboard-frontend_master/Dockerfile.stage: no such file or directory
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // container
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // podTemplate
+[Pipeline] End of Pipeline
+[Gitea] Notifying branch build status: FAILURE There was a failure building this commit
+[Gitea] Notified
+ERROR: script returned exit code 1
+Finished: FAILURE

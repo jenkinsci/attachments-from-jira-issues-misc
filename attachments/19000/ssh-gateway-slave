@@ -1,0 +1,51 @@
+#!/bin/bash
+
+#
+# Sets up an SSH tunnel through a gateway server
+# then starts a Hudson slave on the target host
+#
+
+if [ $# -ne 2 ]
+then
+  echo "Usage: $0 <ssh-gateway> <ssh-target>"
+  exit 1
+fi
+
+gateway=$1
+target=$2
+
+tunnelpid=0
+
+minport=2000
+maxport=5000
+
+# Provide for tunnel cleanup
+function cleanup {
+  [ ${tunnelpid} -ne 0 ] && kill ${tunnelpid} > /dev/null 2>&1
+}
+trap "cleanup" SIGINT SIGTERM EXIT
+
+# Find an open port
+port=0
+openports=$(netstat -lnt 2>&1 | grep tcp | grep -v tcp6 | awk '{print $4}' | awk -F: '{print $2}' | xargs echo -n)
+for port in $(seq ${minport} ${maxport})
+do
+  if ! [[ "${openports}" =~ "${port}" ]]
+  then
+    break
+  fi
+done
+
+# Create a tunnel
+ssh -N -A -L localhost:${port}:${target}:22 ${gateway} &
+tunnelpid=$!
+
+# Give the tunnel some time
+sleep 2
+
+# Copy the slave jar
+scp -P ${port} -o StrictHostKeyChecking=no -o HostKeyAlias=${target} ../.hudson/war/WEB-INF/slave.jar localhost:slave.jar
+
+# Start the slave
+ssh -o StrictHostKeyChecking=no -o HostKeyAlias=${target} -p ${port} localhost 'hostname; java -jar slave.jar'
+

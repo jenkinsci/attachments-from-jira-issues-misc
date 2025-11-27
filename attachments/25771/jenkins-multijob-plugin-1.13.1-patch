@@ -1,0 +1,2120 @@
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/pom.xml jenkins-multijob-plugin-1.13.1/pom.xml
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/pom.xml	2014-03-01 19:45:13.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/pom.xml	2014-05-06 18:35:47.400727388 +0200
+@@ -9,7 +9,7 @@
+ 		<version>2.1.0</version> <relativePath>../pom.xml</relativePath> </parent -->
+ 
+ 	<artifactId>jenkins-multijob-plugin</artifactId>
+-	<version>1.13</version>
++	<version>1.13.1</version>
+ 	<name>Jenkins Multijob plugin</name>
+ 	<description>Enabling full hierarchy of Jenkins jobs</description>
+ 	<url>http://wiki.jenkins-ci.org/display/JENKINS/Multijob+Plugin</url>
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/src/main/java/com/tikal/jenkins/plugins/multijob/MultiJobBuilder.java jenkins-multijob-plugin-1.13.1/src/main/java/com/tikal/jenkins/plugins/multijob/MultiJobBuilder.java
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/src/main/java/com/tikal/jenkins/plugins/multijob/MultiJobBuilder.java	2014-03-01 19:45:13.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/src/main/java/com/tikal/jenkins/plugins/multijob/MultiJobBuilder.java	2014-05-06 18:32:27.735237522 +0200
+@@ -91,7 +91,9 @@ public class MultiJobBuilder extends Bui
+ 			}
+ 		}
+ 
++
+ 		List<SubTask> subTasks = new ArrayList<SubTask>();
++
+ 		for (PhaseSubJob phaseSubJob : phaseSubJobs.keySet()) {
+ 			AbstractProject subJob = phaseSubJob.job;
+ 			if (subJob.isDisabled()) {
+@@ -102,6 +104,33 @@ public class MultiJobBuilder extends Bui
+ 				continue;
+ 			}
+ 
++/*
++	RRQ: Hope this works!!!
++*/
++			// If the build contains the variable named hudson.scm.multijob.force.build.always with a value of "true",
++			// we force the build always. Useful to overwrite the subJob.poll(...).hasChanges() value.
++			final boolean forceBuildAlways = Boolean.valueOf(build.getBuildVariables().get("hudson.scm.multijob.force.build.always"));
++			if (!subJob.poll(listener).hasChanges()) {
++				if(forceBuildAlways) {
++					listener.getLogger().println(
++					String.format(
++							"This Job has no changes since last build, but you force build always.",
++							subJob.getName()));
++
++				} else {
++					listener.getLogger().println(
++					String.format(
++							"Skipping %s. This Job has no changes since last build.",
++							subJob.getName()));
++					continue;
++				}
++			}
++
++			listener.getLogger().println(
++					String.format(
++							"%s. This Job has changes since last build. Adding to build queue.",
++							subJob.getName()));
++
+ 			reportStart(listener, subJob);
+ 			PhaseJobsConfig phaseConfig = phaseSubJobs.get(phaseSubJob);
+ 			List<Action> actions = new ArrayList<Action>();
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/src/main/java/com/tikal/jenkins/plugins/multijob/MultiJobBuild.java jenkins-multijob-plugin-1.13.1/src/main/java/com/tikal/jenkins/plugins/multijob/MultiJobBuild.java
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/src/main/java/com/tikal/jenkins/plugins/multijob/MultiJobBuild.java	2014-03-01 19:45:13.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/src/main/java/com/tikal/jenkins/plugins/multijob/MultiJobBuild.java	2014-05-06 18:44:07.834436084 +0200
+@@ -95,12 +95,15 @@ public class MultiJobBuild extends Build
+ 				}
+ 				String value = stringParameter.value;
+ 				String name = stringParameter.getName();
+-				buffer.append(
+-						"<input type='text' size='15' value='" + name
+-								+ "' readonly/>")
+-						.append("&nbsp;")
+-						.append("<input type='text' size='35' value='" + value
+-								+ "'/ readonly>").append("</br>");
++				// RRQ: Changes optimizing append (from .append(string1+string2) to .append(string1).append(string2))
++				// RRQ: Fix: .append("'/ readonly>") with .append("' readonly/>")
++				buffer
++					.append("<input type='text' size='15' value='")
++					.append(name)
++					.append("' readonly/>&nbsp;")
++					.append("<input type='text' size='35' value='")
++					.append(value)
++					.append("'readonly/></br>");
+ 			}
+ 			return buffer.toString();
+ 		} catch (Exception e) {
+@@ -244,4 +247,4 @@ public class MultiJobBuild extends Build
+ 					+ jobName + ", buildNumber=" + buildNumber + "]";
+ 		}
+ 	}
+-}
+\ No hay ningún carácter de nueva línea al final del fichero
++}
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/src/main/java/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig.java jenkins-multijob-plugin-1.13.1/src/main/java/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig.java
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/src/main/java/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig.java	2014-03-01 19:45:13.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/src/main/java/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig.java	2014-05-06 12:04:36.000000000 +0200
+@@ -54,6 +54,12 @@ public class PhaseJobsConfig implements
+ 	private List<AbstractBuildParameters> configs;
+ 	private KillPhaseOnJobResultCondition killPhaseOnJobResultCondition = KillPhaseOnJobResultCondition.NEVER;
+ 
++	private boolean triggerOnlyIfSCMChanges = false;
++
++	public boolean isTriggerOnlyIfSCMChanges() {
++		return this.triggerOnlyIfSCMChanges;
++	}
++
+ 	public boolean isDisableJob() {
+ 		return disableJob;
+ 	}
+@@ -79,6 +85,10 @@ public class PhaseJobsConfig implements
+ 		this.exposedSCM = exposedSCM;
+ 	}
+ 
++	public void setTriggerOnlyIfSCMChanges(boolean triggerOnlyIfSCMChanges) {
++		this.triggerOnlyIfSCMChanges = triggerOnlyIfSCMChanges;
++	}
++
+ 	public boolean isCurrParams() {
+ 		return currParams;
+ 	}
+@@ -115,13 +125,14 @@ public class PhaseJobsConfig implements
+ 	public PhaseJobsConfig(String jobName, String jobProperties,
+ 			boolean currParams, List<AbstractBuildParameters> configs,
+ 			KillPhaseOnJobResultCondition killPhaseOnJobResultCondition,
+-			boolean disableJob) {
++			boolean disableJob, boolean triggerOnlyIfSCMChanges) {
+ 		this.jobName = jobName;
+ 		this.jobProperties = jobProperties;
+ 		this.currParams = currParams;
+ 		this.killPhaseOnJobResultCondition = killPhaseOnJobResultCondition;
+ 		this.disableJob = disableJob;
+ 		this.configs = Util.fixNull(configs);
++		this.triggerOnlyIfSCMChanges = triggerOnlyIfSCMChanges;
+ 	}
+ 
+ 	public List<AbstractBuildParameters> getConfigs() {
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/src/main/resources/com/tikal/jenkins/plugins/multijob/MultiJobBuilder/config.jelly jenkins-multijob-plugin-1.13.1/src/main/resources/com/tikal/jenkins/plugins/multijob/MultiJobBuilder/config.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/src/main/resources/com/tikal/jenkins/plugins/multijob/MultiJobBuilder/config.jelly	2014-03-01 19:45:13.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/src/main/resources/com/tikal/jenkins/plugins/multijob/MultiJobBuilder/config.jelly	2014-05-06 13:18:33.000000000 +0200
+@@ -11,6 +11,10 @@
+                          help="/plugin/jenkins-multijob-plugin/help-jobName.html">
+       				<f:textbox />
+     			</f:entry>
++
++                <f:entry title="Trigger only if SCM changes" field="triggerOnlyIfSCMChanges">
++                    <f:checkbox name="triggerOnlyIfSCMChanges" checked="${instance.triggerOnlyIfSCMChanges}" default="false"/>
++                </f:entry>
+     		
+ 				<f:advanced>
+ 				  	<f:entry title="Disable" field="disableJob">
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/src/test/java/com/tikal/jenkins/plugins/multijob/test/PhaseJobsConfigTest.java jenkins-multijob-plugin-1.13.1/src/test/java/com/tikal/jenkins/plugins/multijob/test/PhaseJobsConfigTest.java
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/src/test/java/com/tikal/jenkins/plugins/multijob/test/PhaseJobsConfigTest.java	2014-03-01 19:45:13.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/src/test/java/com/tikal/jenkins/plugins/multijob/test/PhaseJobsConfigTest.java	2014-05-06 12:07:54.000000000 +0200
+@@ -81,7 +81,7 @@ public class PhaseJobsConfigTest extends
+ 		AbstractProject projectB = createTriggeredProject(null);
+ 		MultiJobBuild mjb =createTriggeringBuild(null);
+ 
+-		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, null, KillPhaseOnJobResultCondition.NEVER,false);
++		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, null, KillPhaseOnJobResultCondition.NEVER,false, false);
+ 
+ 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
+ 		// check single ParametersAction created
+@@ -93,7 +93,7 @@ public class PhaseJobsConfigTest extends
+ 		AbstractProject projectB = createTriggeredProject(DEFAULT_KEY_VALUES);
+ 		MultiJobBuild mjb = createTriggeringBuild(null);
+ 
+-		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, null, KillPhaseOnJobResultCondition.NEVER,false);
++		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, null, KillPhaseOnJobResultCondition.NEVER,false, false);
+ 
+ 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
+ 
+@@ -114,7 +114,7 @@ public class PhaseJobsConfigTest extends
+ 		AbstractProject projectB = createTriggeredProject(DEFAULT_KEY_VALUES);
+ 		MultiJobBuild mjb = createTriggeringBuild(createParametersAction(CURRENT_KEY_VALUES));
+ 
+-		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, null, KillPhaseOnJobResultCondition.NEVER,false);
++		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, null, KillPhaseOnJobResultCondition.NEVER,false, false);
+ 
+ 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
+ 
+@@ -137,7 +137,7 @@ public class PhaseJobsConfigTest extends
+ 		AbstractProject projectB = createTriggeredProject(DEFAULT_KEY_VALUES);
+ 		MultiJobBuild mjb = createTriggeringBuild(createParametersAction(OVERRIDES_KEY_VALUES));
+ 
+-		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, null, KillPhaseOnJobResultCondition.NEVER,false);
++		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, null, KillPhaseOnJobResultCondition.NEVER,false, false);
+ 
+ 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
+ 
+@@ -159,7 +159,7 @@ public class PhaseJobsConfigTest extends
+ 		AbstractProject projectB = createTriggeredProject(DEFAULT_KEY_VALUES);
+ 		MultiJobBuild mjb = createTriggeringBuild(createParametersAction(OVERRIDES_KEY_VALUES));
+ 
+-		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, null, KillPhaseOnJobResultCondition.NEVER,false);
++		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, null, KillPhaseOnJobResultCondition.NEVER,false, false);
+ 
+ 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, false);
+ 
+@@ -183,7 +183,7 @@ public class PhaseJobsConfigTest extends
+ 		configs.add(new TestParametersConfig());
+ 		configs.add(new TestParametersConfig(OVERRIDES_KEY_VALUES));
+ 
+-		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, configs, KillPhaseOnJobResultCondition.NEVER,false);
++		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, configs, KillPhaseOnJobResultCondition.NEVER,false, false);
+ 
+ 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
+ 
+@@ -211,7 +211,7 @@ public class PhaseJobsConfigTest extends
+ 		configs.add(new TestParametersConfig());
+ 		configs.add(new TestParametersConfig(CONFIG_OVERRIDES_KEY_VALUES));
+ 
+-		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, configs, KillPhaseOnJobResultCondition.NEVER,false);
++		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, configs, KillPhaseOnJobResultCondition.NEVER,false, false);
+ 
+ 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
+ 
+@@ -240,7 +240,7 @@ public class PhaseJobsConfigTest extends
+ 		configs.add(new TestParametersConfig());
+ 		configs.add(new TestParametersConfig(CONFIG_OVERRIDES_KEY_VALUES));
+ 
+-		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, configs, KillPhaseOnJobResultCondition.NEVER,false);
++		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, configs, KillPhaseOnJobResultCondition.NEVER,false, false);
+ 
+ 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, false);
+ 
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/AbstractBuildParameters.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/AbstractBuildParameters.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/AbstractBuildParameters$DontTriggerException.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/AbstractBuildParameters$DontTriggerException.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/FileBuildParameters.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/FileBuildParameters.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/FileBuildParameters$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/FileBuildParameters$DescriptorImpl.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/FileBuildParameters.stapler jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/FileBuildParameters.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/FileBuildParameters.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/FileBuildParameters.stapler	2014-05-06 18:45:08.585672338 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=propertiesFile
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild/main.jelly jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild/main.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild/main.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild/main.jelly	2014-05-06 18:45:02.381750332 +0200
+@@ -0,0 +1,87 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
++	xmlns:p="/lib/hudson/project">
++
++	<style>
++		td.phase {
++			font-size:14px;
++			padding:5px;
++			text-align:left;
++			border-bottom:1px dashed #D3DDE2;
++		}
++		span.job{
++			border-left:1px dashed #D3DDE2;
++		}
++		.collapse{
++		  text-decoration: underline;
++		  cursor:pointer;
++		  display:block;
++		  color: blue;
++		}
++		.collapse + input{
++		  display:none;
++		}
++		.collapse + input + *{
++		  display:none;
++		}
++		.collapse+ input:checked + *{
++			position:absolute;
++			width:400px;
++			background-color:#ffffff;
++			height:300px;
++			border:1px dashed #D3DDE2;
++		  	display:block;
++		  	padding: 10px;
++		  	font-size: 1.2em;
++		  	overflow: auto;
++		  	overflow-x: hidden;
++		  	-ms-overflow-x: hidden;
++		}
++	</style>
++	
++	<table border="0" style="margin-top: 1em; margin-left:1em;" width="40%">
++    <j:set var="lastPhase" value=""/>
++    <j:set var="index" value="0"/>
++	<j:forEach var="builder" items="${it.getBuilders()}">
++	<j:set var="index" value="${index+1}"/>
++	<tr>
++		<td>
++			<table border="0" width="100%">
++				<j:choose>
++				<j:when test="${!lastPhase.equals(builder.phaseName)}">
++				<j:set var="lastPhase" value="${builder.phaseName}"/>
++				<tr>
++					<td colspan="5" align="center" class="phase">[Phase] - ${builder.phaseName}</td>
++				</tr>
++				</j:when>
++				<tr>
++		 			<td class="no-wrap" width="5%" >
++	           			<span class="job"><img src="${imagesURL}/16x16/${builder.icon}" alt=""/></span>
++	 				</td>
++	 				<td class="no-wrap" width="50%">
++	 					<a href="${rootURL}/job/${builder.jobName}">${builder.jobName}</a>
++	 				</td>
++					<td class="no-wrap" width="15%">
++						<j:choose>
++							<j:when test="${builder.url.length() > 0}">
++								<a href="${rootURL}/${builder.url}">
++									build #${builder.buildNumber}
++								</a>
++							</j:when>
++						</j:choose>
++					</td>
++	 				<td class="no-wrap" width="20%">( ${builder.duration} )</td>	
++	 				<td class="no-wrap" width="10%">
++						<label class="collapse" for="_${index}">parameters</label>
++						<input id="_${index}" type="checkbox"/>
++						<div>${it.getBuildParams(builder)}</div>
++	 				</td>			   
++				</tr>
++				</j:choose>
++			</table>
++		</td>
++	</tr>
++	</j:forEach>
++	</table>
++	<p:upstream-downstream />
++</j:jelly>
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild/SubBuild.javadoc jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild/SubBuild.javadoc
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild/SubBuild.javadoc	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild/SubBuild.javadoc	2014-05-06 18:45:08.785669823 +0200
+@@ -0,0 +1 @@
++#Tue May 06 18:45:08 CEST 2014
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder/config.jelly jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder/config.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder/config.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder/config.jelly	2014-05-06 18:45:02.381750332 +0200
+@@ -0,0 +1,60 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
++		<f:entry title="Phase name" field="phaseName"
++                help="/plugin/jenkins-multijob-plugin/help-phaseName.html">
++			<f:textbox name="phaseName" value="${instance.phaseName}" />
++		</f:entry>
++		<f:entry title="Phase jobs" field="phaseJobs">
++    		<f:repeatable field="phaseJobs" noAddButton="true" minimum="1">
++    			<table width="100%">
++    			<f:entry title="Job name" field="jobName"
++                         help="/plugin/jenkins-multijob-plugin/help-jobName.html">
++      				<f:textbox />
++    			</f:entry>
++
++                <f:entry title="Trigger only if SCM changes" field="triggerOnlyIfSCMChanges">
++                    <f:checkbox name="triggerOnlyIfSCMChanges" checked="${instance.triggerOnlyIfSCMChanges}" default="false"/>
++                </f:entry>
++    		
++				<f:advanced>
++				  	<f:entry title="Disable" field="disableJob">
++  						<f:checkbox name="disableJob" checked="${instance.disableJob}" default="false"/>
++  					</f:entry>
++				    <f:entry title="Kill the phase on:" field="killPhaseOnJobResultCondition">
++  						<f:enum field="killPhaseOnJobResultCondition">
++							${it.getLabel()}
++						</f:enum>
++  					</f:entry>
++				    <f:block>
++    					<f:hetero-list name="configs" hasHeader="true"
++                   		descriptors="${descriptor.getBuilderConfigDescriptors()}"
++                   		oneEach="true"
++                   		items="${instance.configs}"
++                   		addCaption="${%Add Parameters}"	/>
++    				</f:block>
++					<f:entry title="Current job parameters" field="currParams"
++						help="/plugin/jenkins-multijob-plugin/help-currParams.html">
++  						<f:checkbox name="currParams" checked="${instance.currParams}" default="true"/>
++  					</f:entry>
++  					<f:entry title="Exposed SCM" field="exposedSCM"
++						help="/plugin/jenkins-multijob-plugin/help-repository.html">
++  						<f:checkbox name="exposedSCM" checked="${instance.exposedSCM}" default="true"/>
++  					</f:entry>
++				</f:advanced>
++		        <f:entry>
++		          <div align="right">
++		            <input type="button" value="${%Add jobs...}" class="repeatable-add show-if-last" />
++		            <input type="button" value="${%Delete}" class="repeatable-delete show-if-not-only" style="margin-left: 1em;" />
++		          </div>
++		        </f:entry>
++		        </table>
++    		</f:repeatable>
++  		</f:entry>
++  		<f:entry title="Continuation condition to next phase &lt;br&gt; when jobs' statuses are:"
++			field="continuationCondition" help="/plugin/jenkins-multijob-plugin/help-continuationCondition.html">
++			<f:enum field="continuationCondition">
++				${it.getLabel()}
++			</f:enum>
++		</f:entry>
++  		
++</j:jelly>
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$1.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$1.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$ContinuationCondition$1.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$ContinuationCondition$1.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$ContinuationCondition$2.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$ContinuationCondition$2.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$ContinuationCondition$3.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$ContinuationCondition$3.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$ContinuationCondition$4.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$ContinuationCondition$4.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$ContinuationCondition.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$ContinuationCondition.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$DescriptorImpl.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$PhaseSubJob.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$PhaseSubJob.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder.stapler jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder.stapler	2014-05-06 18:45:08.641671633 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=phaseName,phaseJobs,continuationCondition
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$SubJobWorker.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$SubJobWorker.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$SubTask.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$SubTask.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild.javadoc jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild.javadoc
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild.javadoc	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild.javadoc	2014-05-06 18:45:08.789669773 +0200
+@@ -0,0 +1 @@
++#Tue May 06 18:45:08 CEST 2014
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild$MultiJobRunnerImpl.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild$MultiJobRunnerImpl.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild$SubBuild.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild$SubBuild.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobChangeLogSet/digest.jelly jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobChangeLogSet/digest.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobChangeLogSet/digest.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobChangeLogSet/digest.jelly	2014-05-06 18:45:02.385750282 +0200
+@@ -0,0 +1,27 @@
++<!--
++The MIT License
++
++Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in
++all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++THE SOFTWARE.
++-->
++
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
++  ${%No changes.}
++</j:jelly>
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobChangeLogSet.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobChangeLogSet.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/configure-advanced.jelly jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/configure-advanced.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/configure-advanced.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/configure-advanced.jelly	2014-05-06 18:45:02.385750282 +0200
+@@ -0,0 +1,8 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
++  <f:optionalBlock name="customWorkspace" title="${%Use custom workspace}" checked="${it.customWorkspace!=null}"
++      help="/help/project-config/custom-workspace.html">
++    <f:entry title="${%Directory}">
++      <f:textbox name="customWorkspace.directory" value="${it.customWorkspace}" />
++    </f:entry>
++  </f:optionalBlock>
++ </j:jelly>
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/main.jelly jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/main.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/main.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/main.jelly	2014-05-06 18:45:02.385750282 +0200
+@@ -0,0 +1,56 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
++	xmlns:p="/lib/hudson/project">
++
++	<j:if test="${it.supportsMakeDisabled()}">
++		<st:include page="makeDisabled.jelly" />
++	</j:if>
++
++	<!--j:choose>
++		<j:when test="${it.topMost}"-->
++			<br />
++			<t:projectView jobs="${it.view.getRootItem(it)}"
++				jobBaseUrl="${it.rootUrl}" showViewTabs="false" columnExtensions="${it.view.columns}">
++			</t:projectView>
++		<!--/j:when>
++	</j:choose-->
++
++
++	<p:projectActionFloatingBox />
++
++	<table style="margin-top: 1em; margin-left:1em;">
++
++		<j:forEach var="act" items="${it.prominentActions}">
++			<t:summary icon="${act.iconFileName}" href="${act.urlName}">
++				${act.displayName}
++      </t:summary>
++		</j:forEach>
++		<t:summary icon="folder.gif" href="ws/" permission="${it.WORKSPACE}">
++			${%Workspace}
++    </t:summary>
++
++		<t:artifactList caption="${%Last Successful Artifacts}"
++			build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/"
++			permission="${it.lastSuccessfulBuild.ARTIFACTS}" />
++
++		<t:summary icon="notepad.gif" href="changes">
++			${%Recent Changes}
++		</t:summary>
++
++		<j:set var="tr" value="${it.lastCompletedBuild.testResultAction}" />
++		<j:if test="${tr!=null}">
++			<t:summary icon="clipboard.gif">
++				<a href="lastCompletedBuild/testReport/">${%Latest Test Result}</a>
++				<st:nbsp />
++				<t:test-result it="${tr}" />
++			</t:summary>
++		</j:if>
++	</table>
++
++	<!-- merge fragments from the actions -->
++	<j:forEach var="a" items="${it.actions}">
++		<st:include page="jobMain.jelly" it="${a}" optional="true" />
++	</j:forEach>
++
++	<p:upstream-downstream />
++</j:jelly>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/newJobDetail.jelly jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/newJobDetail.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/newJobDetail.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/newJobDetail.jelly	2014-05-06 18:45:02.385750282 +0200
+@@ -0,0 +1,28 @@
++<!--
++The MIT License
++
++Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in
++all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++THE SOFTWARE.
++-->
++
++<?jelly escape-by-default='true'?>
++<div>
++  ${%body}
++</div>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/newJobDetail.properties jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/newJobDetail.properties
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/newJobDetail.properties	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/newJobDetail.properties	2014-05-06 18:45:02.385750282 +0200
+@@ -0,0 +1,24 @@
++# The MIT License
++# 
++# Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
++# 
++# Permission is hereby granted, free of charge, to any person obtaining a copy
++# of this software and associated documentation files (the "Software"), to deal
++# in the Software without restriction, including without limitation the rights
++# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++# copies of the Software, and to permit persons to whom the Software is
++# furnished to do so, subject to the following conditions:
++# 
++# The above copyright notice and this permission notice shall be included in
++# all copies or substantial portions of the Software.
++# 
++# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++# THE SOFTWARE.
++
++body=\
++  MultiJob Project, suitable for running other jobs 
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject$1.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject$1.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject$DescriptorImpl.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doAutoCompleteJobName.stapler jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doAutoCompleteJobName.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doAutoCompleteJobName.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doAutoCompleteJobName.stapler	2014-05-06 18:45:08.817669420 +0200
+@@ -0,0 +1 @@
++value
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doCheckJobName.stapler jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doCheckJobName.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doCheckJobName.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doCheckJobName.stapler	2014-05-06 18:45:08.817669420 +0200
+@@ -0,0 +1 @@
++value
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doFillJobProperties.stapler jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doFillJobProperties.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doFillJobProperties.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doFillJobProperties.stapler	2014-05-06 18:45:08.817669420 +0200
+@@ -0,0 +1 @@
++jobName
+\ No hay ningún carácter de nueva línea al final del fichero
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$1.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$1.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$DescriptorImpl.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$KillPhaseOnJobResultCondition$1.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$KillPhaseOnJobResultCondition$1.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$KillPhaseOnJobResultCondition$2.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$KillPhaseOnJobResultCondition$2.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$KillPhaseOnJobResultCondition$3.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$KillPhaseOnJobResultCondition$3.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$KillPhaseOnJobResultCondition.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$KillPhaseOnJobResultCondition.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig.stapler jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig.stapler	2014-05-06 18:45:08.701670879 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=jobName,jobProperties,currParams,configs,killPhaseOnJobResultCondition,disableJob,triggerOnlyIfSCMChanges
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/Plugin.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/Plugin.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/Plugin$RenameListener.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/Plugin$RenameListener.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/PredefinedBuildParameters.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/PredefinedBuildParameters.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/PredefinedBuildParameters$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/PredefinedBuildParameters$DescriptorImpl.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/PredefinedBuildParameters.stapler jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/PredefinedBuildParameters.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/PredefinedBuildParameters.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/PredefinedBuildParameters.stapler	2014-05-06 18:45:08.585672338 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=jobProperties
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/scm/MultiJobScm/config.jelly jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/scm/MultiJobScm/config.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/scm/MultiJobScm/config.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/scm/MultiJobScm/config.jelly	2014-05-06 18:45:02.385750282 +0200
+@@ -0,0 +1,26 @@
++<!--
++The MIT License
++
++Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in
++all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++THE SOFTWARE.
++-->
++
++<!-- nothing to configure -->
++<j:jelly xmlns:j="jelly:core"  />
+\ No hay ningún carácter de nueva línea al final del fichero
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/AbstractWrapper.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/AbstractWrapper.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/BuildState.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/BuildState.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn/columnHeader.jelly jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn/columnHeader.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn/columnHeader.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn/columnHeader.jelly	2014-05-06 18:45:02.389750231 +0200
+@@ -0,0 +1,3 @@
++<j:jelly xmlns:j="jelly:core">
++    <th>Console</th>
++</j:jelly>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn/column.jelly jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn/column.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn/column.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn/column.jelly	2014-05-06 18:45:02.389750231 +0200
+@@ -0,0 +1,17 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
++	xmlns:i="jelly:fmt">
++	<j:set var="lBuild" value="${job.getLastBuild()}" />
++	<td data="${lBuild.duration ?: '0'}">
++		<j:choose>
++			<j:when test="${lBuild!=null}">
++				<a href="${jobBaseUrl}${job.shortUrl}${lBuild.number}/console">
++					<img src="${imagesURL}/${subIconSize}/terminal.gif" title="${%Console output}"
++						alt="${%Console output}" border="0" />
++				</a>
++			</j:when>
++			<j:otherwise>
++			</j:otherwise>
++		</j:choose>
++	</td>
++</j:jelly>
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn$DescriptorImpl.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn.stapler jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn.stapler	2014-05-06 18:45:08.585672338 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn/columnHeader.jelly jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn/columnHeader.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn/columnHeader.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn/columnHeader.jelly	2014-05-06 18:45:02.389750231 +0200
+@@ -0,0 +1,3 @@
++<j:jelly xmlns:j="jelly:core">
++    <th>Job</th>
++</j:jelly>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn/column.jelly jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn/column.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn/column.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn/column.jelly	2014-05-06 18:45:02.389750231 +0200
+@@ -0,0 +1,14 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
++	xmlns:i="jelly:fmt">
++	<td style="${job.getCss()}">
++		<j:choose>
++			<j:when test="${job.phase}">
++				${job.isConditional() ? "[?]" : ""} ${job.displayName}
++			</j:when>
++			<j:when test="${!job.phase}">
++				<a href="${jobBaseUrl}${job.shortUrl}">${job.displayName}</a>
++			</j:when>
++		</j:choose>
++	</td>
++</j:jelly>
+\ No hay ningún carácter de nueva línea al final del fichero
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn$DescriptorImpl.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn.stapler jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn.stapler	2014-05-06 18:45:08.625671835 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn/columnHeader.jelly jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn/columnHeader.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn/columnHeader.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn/columnHeader.jelly	2014-05-06 18:45:02.397750129 +0200
+@@ -0,0 +1,3 @@
++<j:jelly xmlns:j="jelly:core">
++    <th>Last Duration</th>
++</j:jelly>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn/column.jelly jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn/column.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn/column.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn/column.jelly	2014-05-06 18:45:02.393750180 +0200
+@@ -0,0 +1,20 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
++	xmlns:i="jelly:fmt">
++	<j:set var="lBuild" value="${job.getLastBuild()}" />
++	<td data="${lBuild.duration ?: '0'}">
++		<j:choose>
++			<j:when test="${lBuild!=null}">
++				${lBuild.durationString}
++              </j:when>
++			<j:otherwise>
++				<j:choose>
++					<j:when test="${job.phase}"></j:when>
++					<j:otherwise>
++						${%N/A}
++					</j:otherwise>
++				</j:choose>
++			</j:otherwise>
++		</j:choose>
++	</td>
++</j:jelly>
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn$DescriptorImpl.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn.stapler jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn.stapler	2014-05-06 18:45:08.637671684 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn/columnHeader.jelly jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn/columnHeader.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn/columnHeader.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn/columnHeader.jelly	2014-05-06 18:45:02.397750129 +0200
+@@ -0,0 +1,3 @@
++<j:jelly xmlns:j="jelly:core">
++    <th>Last Failure</th>
++</j:jelly>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn/column.jelly jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn/column.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn/column.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn/column.jelly	2014-05-06 18:45:02.397750129 +0200
+@@ -0,0 +1,21 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
++  <j:set var="lfBuild" value="${job.getLastFailedBuild()}"/>
++  <td data="${lfBuild.startTimeInMillis()  ?: '0'}">
++  	<j:choose>
++ 	 <j:when test="${lfBuild!=null}">
++ 	   ${lfBuild.timestampString}
++ 	 </j:when>
++ 	 <j:otherwise>
++ 	   <j:choose>
++ 	     <j:when test="${job.phase}"/>
++ 	     <j:otherwise>
++ 	       ${%N/A}
++ 	     </j:otherwise>
++ 		
++      </j:choose>
++ 		
++    </j:otherwise>
++ 	
++  </j:choose>
++  </td>
++ </j:jelly>
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn$DescriptorImpl.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn.stapler jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn.stapler	2014-05-06 18:45:08.609672035 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn/columnHeader.jelly jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn/columnHeader.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn/columnHeader.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn/columnHeader.jelly	2014-05-06 18:45:02.397750129 +0200
+@@ -0,0 +1,3 @@
++<j:jelly xmlns:j="jelly:core">
++    <th>Last Success</th>
++</j:jelly>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn/column.jelly jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn/column.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn/column.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn/column.jelly	2014-05-06 18:45:02.397750129 +0200
+@@ -0,0 +1,20 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
++	xmlns:i="jelly:fmt">
++	<j:set var="lsBuild" value="${job.getLastSuccessfulBuild()}" />
++	<td data="${lsBuild.startTimeInMillis()  ?: '0'}">
++	<j:choose>
++	 	<j:when test="${lsBuild!=null}">
++	 	  ${lsBuild.timestampString}
++	 	</j:when>
++	 	<j:otherwise>
++	 	  <j:choose>
++	 	    <j:when test="${job.phase}"/>
++	 	    <j:otherwise>
++	 	      ${%N/A}
++	 	    </j:otherwise>
++	 	  </j:choose>
++	 	</j:otherwise>
++	 </j:choose>
++	 </td>
++</j:jelly>
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn$DescriptorImpl.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn.stapler jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn.stapler	2014-05-06 18:45:08.609672035 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobListViewColumn.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobListViewColumn.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView/configure-entries.jelly jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView/configure-entries.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView/configure-entries.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView/configure-entries.jelly	2014-05-06 18:45:02.393750180 +0200
+@@ -0,0 +1,7 @@
++<?jelly escape-by-default='true'?>
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
++	xmlns:i="jelly:fmt">
++      <!-- set @jobBaseUrl="" so that links to jobs will be under this view. -->
++      <t:buildListTable builds="${it.builds}" jobBaseUrl="" />	
++</j:jelly>
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView/DescriptorImpl/doCheckIncludeRegex.stapler jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView/DescriptorImpl/doCheckIncludeRegex.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView/DescriptorImpl/doCheckIncludeRegex.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView/DescriptorImpl/doCheckIncludeRegex.stapler	2014-05-06 18:45:08.817669420 +0200
+@@ -0,0 +1 @@
++value
+\ No hay ningún carácter de nueva línea al final del fichero
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView$1.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView$1.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView$DescriptorImpl.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView.stapler jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView.stapler	2014-05-06 18:45:08.705670829 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=name
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/PhaseWrapper.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/PhaseWrapper.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/ProjectWrapper.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/ProjectWrapper.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn/columnHeader.jelly jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn/columnHeader.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn/columnHeader.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn/columnHeader.jelly	2014-05-06 18:45:02.389750231 +0200
+@@ -0,0 +1,3 @@
++<j:jelly xmlns:j="jelly:core">
++    <th>S</th>
++</j:jelly>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn/column.jelly jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn/column.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn/column.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn/column.jelly	2014-05-06 18:45:02.389750231 +0200
+@@ -0,0 +1,7 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
++	xmlns:i="jelly:fmt">
++
++	<t:ballColorTd it="${job.iconColor}" />
++
++</j:jelly>
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn$DescriptorImpl.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn.stapler jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn.stapler	2014-05-06 18:45:08.621671885 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn/columnHeader.jelly jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn/columnHeader.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn/columnHeader.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn/columnHeader.jelly	2014-05-06 18:45:02.389750231 +0200
+@@ -0,0 +1,3 @@
++<j:jelly xmlns:j="jelly:core">
++    <th>W</th>
++</j:jelly>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn/column.jelly jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn/column.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn/column.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn/column.jelly	2014-05-06 18:45:02.385750282 +0200
+@@ -0,0 +1,5 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
++	xmlns:i="jelly:fmt">
++	<t:buildHealth td="true" link="${jobBaseUrl}${job.shortUrl}lastBuild" />
++</j:jelly>
+\ No hay ningún carácter de nueva línea al final del fichero
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn$DescriptorImpl.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn.stapler jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn.stapler	2014-05-06 18:45:08.625671835 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/index.jelly jenkins-multijob-plugin-1.13.1/target/classes/index.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/index.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/index.jelly	2014-05-06 18:45:02.397750129 +0200
+@@ -0,0 +1,8 @@
++<!--
++  This view is used to render the plugin list page.
++
++  Since we don't really have anything dynamic here, let's just use static HTML. 
++-->
++<div>
++  This plugin is a MultiJob plugin.
++</div>
+\ No hay ningún carácter de nueva línea al final del fichero
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/META-INF/annotations/hudson.Extension y jenkins-multijob-plugin-1.13.1/target/classes/META-INF/annotations/hudson.Extension son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/META-INF/annotations/org.kohsuke.stapler.export.ExportedBean jenkins-multijob-plugin-1.13.1/target/classes/META-INF/annotations/org.kohsuke.stapler.export.ExportedBean
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/META-INF/annotations/org.kohsuke.stapler.export.ExportedBean	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/META-INF/annotations/org.kohsuke.stapler.export.ExportedBean	2014-05-06 18:45:08.885668567 +0200
+@@ -0,0 +1,2 @@
++com.tikal.jenkins.plugins.multijob.MultiJobBuild
++com.tikal.jenkins.plugins.multijob.MultiJobBuild$SubBuild
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/META-INF/exposed.stapler-beans jenkins-multijob-plugin-1.13.1/target/classes/META-INF/exposed.stapler-beans
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/META-INF/exposed.stapler-beans	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/META-INF/exposed.stapler-beans	2014-05-06 18:45:08.793669723 +0200
+@@ -0,0 +1,2 @@
++com.tikal.jenkins.plugins.multijob.MultiJobBuild
++com.tikal.jenkins.plugins.multijob.MultiJobBuild.SubBuild
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/META-INF/services/hudson.Plugin jenkins-multijob-plugin-1.13.1/target/classes/META-INF/services/hudson.Plugin
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/classes/META-INF/services/hudson.Plugin	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/classes/META-INF/services/hudson.Plugin	2014-05-06 18:45:08.493673494 +0200
+@@ -0,0 +1 @@
++com.tikal.jenkins.plugins.multijob.Plugin
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/inject-tests/InjectedTest.java jenkins-multijob-plugin-1.13.1/target/inject-tests/InjectedTest.java
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/inject-tests/InjectedTest.java	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/inject-tests/InjectedTest.java	1970-01-01 01:00:00.000000000 +0100
+@@ -0,0 +1,17 @@
++import java.util.*;
++/**
++ * Entry point to auto-generated tests (generated by maven-hpi-plugin).
++ * If this fails to compile, you are probably using Hudson &lt; 1.327. If so, disable
++ * this code generation by configuring maven-hpi-plugin to &lt;disabledTestInjection>true&lt;/disabledTestInjection>.
++ */
++public class InjectedTest extends junit.framework.TestCase {
++  public static junit.framework.Test suite() throws Exception {
++    Map parameters = new HashMap();
++    parameters.put("basedir","/home/rrial/workspaces/jenkins/jenkins-multijob-plugin-1.13.1");
++    parameters.put("artifactId","jenkins-multijob-plugin");
++    parameters.put("outputDirectory","/home/rrial/workspaces/jenkins/jenkins-multijob-plugin-1.13.1/target/classes");
++    parameters.put("testOutputDirectory","/home/rrial/workspaces/jenkins/jenkins-multijob-plugin-1.13.1/target/test-classes");
++    parameters.put("requirePI","false");
++    return new org.jvnet.hudson.test.PluginAutomaticTestBuilder().build(parameters);
++  }
++}
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/help-continuationCondition.html jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/help-continuationCondition.html
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/help-continuationCondition.html	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/help-continuationCondition.html	2014-05-06 18:45:18.053553310 +0200
+@@ -0,0 +1,3 @@
++<div>
++    Define how to decide the status of the whole MultiJob Phase, based on the statuses of phase's sub jobs
++</div>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/help-currParams.html jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/help-currParams.html
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/help-currParams.html	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/help-currParams.html	2014-05-06 18:45:18.053553310 +0200
+@@ -0,0 +1,3 @@
++<div>
++  Copy parameters from the current build, except any file parameters will be omitted.
++</div>
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/help-globalConfig.html jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/help-globalConfig.html
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/help-globalConfig.html	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/help-globalConfig.html	2014-05-06 18:45:18.053553310 +0200
+@@ -0,0 +1,8 @@
++<div>
++  <p>
++    This HTML fragment will be injected into the configuration screen
++    when the user clicks the 'help' icon. See global.jelly for how the
++    form decides which page to load.
++    You can have any HTML fragment here.
++  </p>
++</div>
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/help-jobName.html jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/help-jobName.html
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/help-jobName.html	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/help-jobName.html	2014-05-06 18:45:18.053553310 +0200
+@@ -0,0 +1,3 @@
++<div>
++    Define here the name of the Job
++</div>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/help-jobProperties.html jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/help-jobProperties.html
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/help-jobProperties.html	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/help-jobProperties.html	2014-05-06 18:45:18.053553310 +0200
+@@ -0,0 +1,3 @@
++<div>
++    Define here the properties of the Job
++</div>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/help-phaseName.html jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/help-phaseName.html
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/help-phaseName.html	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/help-phaseName.html	2014-05-06 18:45:18.053553310 +0200
+@@ -0,0 +1,3 @@
++<div>
++    Define here the name of the MultiJob Phase
++</div>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/help-repository.html jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/help-repository.html
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/help-repository.html	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/help-repository.html	2014-05-06 18:45:18.053553310 +0200
+@@ -0,0 +1,3 @@
++<div>
++  Exposed the repository to "Multi Job" to allow pull SCM mode
++</div>
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/META-INF/MANIFEST.MF jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/META-INF/MANIFEST.MF
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/META-INF/MANIFEST.MF	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/META-INF/MANIFEST.MF	2014-05-06 18:45:18.121552454 +0200
+@@ -0,0 +1,22 @@
++Manifest-Version: 1.0
++Built-By: rrial
++Created-By: Apache Maven
++Build-Jdk: 1.6.0_43
++Extension-Name: jenkins-multijob-plugin
++Specification-Title: Enabling full hierarchy of Jenkins jobs
++Implementation-Title: jenkins-multijob-plugin
++Implementation-Version: 1.13.1
++Plugin-Class: com.tikal.jenkins.plugins.multijob.Plugin
++Group-Id: org.jenkins-ci.plugins
++Short-Name: jenkins-multijob-plugin
++Long-Name: Jenkins Multijob plugin
++Url: http://wiki.jenkins-ci.org/display/JENKINS/Multijob+Plugin
++Plugin-Version: 1.13.1
++Hudson-Version: 1.480
++Jenkins-Version: 1.480
++Plugin-Dependencies: maven-plugin:1.480,run-condition:0.10,parameteriz
++ ed-trigger:2.21,conditional-buildstep:1.3.1,javadoc:1.0,envinject:1.8
++ 3,token-macro:1.5.1
++Plugin-Developers: Alex Nickolaevsky:alex-n:alex@tikalk.com,Roni Licht
++ :ronil:roni@tikalk.com,Itai Or:itaior:itai@tikalk.com
++
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/AbstractBuildParameters.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/AbstractBuildParameters.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/AbstractBuildParameters$DontTriggerException.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/AbstractBuildParameters$DontTriggerException.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/FileBuildParameters.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/FileBuildParameters.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/FileBuildParameters$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/FileBuildParameters$DescriptorImpl.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/FileBuildParameters.stapler jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/FileBuildParameters.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/FileBuildParameters.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/FileBuildParameters.stapler	2014-05-06 18:45:18.061553210 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=propertiesFile
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild/main.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild/main.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild/main.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild/main.jelly	2014-05-06 18:45:18.057553260 +0200
+@@ -0,0 +1,87 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
++	xmlns:p="/lib/hudson/project">
++
++	<style>
++		td.phase {
++			font-size:14px;
++			padding:5px;
++			text-align:left;
++			border-bottom:1px dashed #D3DDE2;
++		}
++		span.job{
++			border-left:1px dashed #D3DDE2;
++		}
++		.collapse{
++		  text-decoration: underline;
++		  cursor:pointer;
++		  display:block;
++		  color: blue;
++		}
++		.collapse + input{
++		  display:none;
++		}
++		.collapse + input + *{
++		  display:none;
++		}
++		.collapse+ input:checked + *{
++			position:absolute;
++			width:400px;
++			background-color:#ffffff;
++			height:300px;
++			border:1px dashed #D3DDE2;
++		  	display:block;
++		  	padding: 10px;
++		  	font-size: 1.2em;
++		  	overflow: auto;
++		  	overflow-x: hidden;
++		  	-ms-overflow-x: hidden;
++		}
++	</style>
++	
++	<table border="0" style="margin-top: 1em; margin-left:1em;" width="40%">
++    <j:set var="lastPhase" value=""/>
++    <j:set var="index" value="0"/>
++	<j:forEach var="builder" items="${it.getBuilders()}">
++	<j:set var="index" value="${index+1}"/>
++	<tr>
++		<td>
++			<table border="0" width="100%">
++				<j:choose>
++				<j:when test="${!lastPhase.equals(builder.phaseName)}">
++				<j:set var="lastPhase" value="${builder.phaseName}"/>
++				<tr>
++					<td colspan="5" align="center" class="phase">[Phase] - ${builder.phaseName}</td>
++				</tr>
++				</j:when>
++				<tr>
++		 			<td class="no-wrap" width="5%" >
++	           			<span class="job"><img src="${imagesURL}/16x16/${builder.icon}" alt=""/></span>
++	 				</td>
++	 				<td class="no-wrap" width="50%">
++	 					<a href="${rootURL}/job/${builder.jobName}">${builder.jobName}</a>
++	 				</td>
++					<td class="no-wrap" width="15%">
++						<j:choose>
++							<j:when test="${builder.url.length() > 0}">
++								<a href="${rootURL}/${builder.url}">
++									build #${builder.buildNumber}
++								</a>
++							</j:when>
++						</j:choose>
++					</td>
++	 				<td class="no-wrap" width="20%">( ${builder.duration} )</td>	
++	 				<td class="no-wrap" width="10%">
++						<label class="collapse" for="_${index}">parameters</label>
++						<input id="_${index}" type="checkbox"/>
++						<div>${it.getBuildParams(builder)}</div>
++	 				</td>			   
++				</tr>
++				</j:choose>
++			</table>
++		</td>
++	</tr>
++	</j:forEach>
++	</table>
++	<p:upstream-downstream />
++</j:jelly>
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild/SubBuild.javadoc jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild/SubBuild.javadoc
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild/SubBuild.javadoc	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild/SubBuild.javadoc	2014-05-06 18:45:18.057553260 +0200
+@@ -0,0 +1 @@
++#Tue May 06 18:45:08 CEST 2014
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder/config.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder/config.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder/config.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder/config.jelly	2014-05-06 18:45:18.057553260 +0200
+@@ -0,0 +1,60 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
++		<f:entry title="Phase name" field="phaseName"
++                help="/plugin/jenkins-multijob-plugin/help-phaseName.html">
++			<f:textbox name="phaseName" value="${instance.phaseName}" />
++		</f:entry>
++		<f:entry title="Phase jobs" field="phaseJobs">
++    		<f:repeatable field="phaseJobs" noAddButton="true" minimum="1">
++    			<table width="100%">
++    			<f:entry title="Job name" field="jobName"
++                         help="/plugin/jenkins-multijob-plugin/help-jobName.html">
++      				<f:textbox />
++    			</f:entry>
++
++                <f:entry title="Trigger only if SCM changes" field="triggerOnlyIfSCMChanges">
++                    <f:checkbox name="triggerOnlyIfSCMChanges" checked="${instance.triggerOnlyIfSCMChanges}" default="false"/>
++                </f:entry>
++    		
++				<f:advanced>
++				  	<f:entry title="Disable" field="disableJob">
++  						<f:checkbox name="disableJob" checked="${instance.disableJob}" default="false"/>
++  					</f:entry>
++				    <f:entry title="Kill the phase on:" field="killPhaseOnJobResultCondition">
++  						<f:enum field="killPhaseOnJobResultCondition">
++							${it.getLabel()}
++						</f:enum>
++  					</f:entry>
++				    <f:block>
++    					<f:hetero-list name="configs" hasHeader="true"
++                   		descriptors="${descriptor.getBuilderConfigDescriptors()}"
++                   		oneEach="true"
++                   		items="${instance.configs}"
++                   		addCaption="${%Add Parameters}"	/>
++    				</f:block>
++					<f:entry title="Current job parameters" field="currParams"
++						help="/plugin/jenkins-multijob-plugin/help-currParams.html">
++  						<f:checkbox name="currParams" checked="${instance.currParams}" default="true"/>
++  					</f:entry>
++  					<f:entry title="Exposed SCM" field="exposedSCM"
++						help="/plugin/jenkins-multijob-plugin/help-repository.html">
++  						<f:checkbox name="exposedSCM" checked="${instance.exposedSCM}" default="true"/>
++  					</f:entry>
++				</f:advanced>
++		        <f:entry>
++		          <div align="right">
++		            <input type="button" value="${%Add jobs...}" class="repeatable-add show-if-last" />
++		            <input type="button" value="${%Delete}" class="repeatable-delete show-if-not-only" style="margin-left: 1em;" />
++		          </div>
++		        </f:entry>
++		        </table>
++    		</f:repeatable>
++  		</f:entry>
++  		<f:entry title="Continuation condition to next phase &lt;br&gt; when jobs' statuses are:"
++			field="continuationCondition" help="/plugin/jenkins-multijob-plugin/help-continuationCondition.html">
++			<f:enum field="continuationCondition">
++				${it.getLabel()}
++			</f:enum>
++		</f:entry>
++  		
++</j:jelly>
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$1.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$1.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$ContinuationCondition$1.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$ContinuationCondition$1.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$ContinuationCondition$2.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$ContinuationCondition$2.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$ContinuationCondition$3.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$ContinuationCondition$3.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$ContinuationCondition$4.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$ContinuationCondition$4.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$ContinuationCondition.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$ContinuationCondition.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$DescriptorImpl.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$PhaseSubJob.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$PhaseSubJob.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder.stapler jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder.stapler	2014-05-06 18:45:18.061553210 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=phaseName,phaseJobs,continuationCondition
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$SubJobWorker.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$SubJobWorker.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$SubTask.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuilder$SubTask.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild.javadoc jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild.javadoc
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild.javadoc	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild.javadoc	2014-05-06 18:45:18.061553210 +0200
+@@ -0,0 +1 @@
++#Tue May 06 18:45:08 CEST 2014
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild$MultiJobRunnerImpl.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild$MultiJobRunnerImpl.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild$SubBuild.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobBuild$SubBuild.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobChangeLogSet/digest.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobChangeLogSet/digest.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobChangeLogSet/digest.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobChangeLogSet/digest.jelly	2014-05-06 18:45:18.057553260 +0200
+@@ -0,0 +1,27 @@
++<!--
++The MIT License
++
++Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in
++all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++THE SOFTWARE.
++-->
++
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
++  ${%No changes.}
++</j:jelly>
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobChangeLogSet.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobChangeLogSet.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/configure-advanced.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/configure-advanced.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/configure-advanced.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/configure-advanced.jelly	2014-05-06 18:45:18.061553210 +0200
+@@ -0,0 +1,8 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
++  <f:optionalBlock name="customWorkspace" title="${%Use custom workspace}" checked="${it.customWorkspace!=null}"
++      help="/help/project-config/custom-workspace.html">
++    <f:entry title="${%Directory}">
++      <f:textbox name="customWorkspace.directory" value="${it.customWorkspace}" />
++    </f:entry>
++  </f:optionalBlock>
++ </j:jelly>
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/main.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/main.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/main.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/main.jelly	2014-05-06 18:45:18.061553210 +0200
+@@ -0,0 +1,56 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
++	xmlns:p="/lib/hudson/project">
++
++	<j:if test="${it.supportsMakeDisabled()}">
++		<st:include page="makeDisabled.jelly" />
++	</j:if>
++
++	<!--j:choose>
++		<j:when test="${it.topMost}"-->
++			<br />
++			<t:projectView jobs="${it.view.getRootItem(it)}"
++				jobBaseUrl="${it.rootUrl}" showViewTabs="false" columnExtensions="${it.view.columns}">
++			</t:projectView>
++		<!--/j:when>
++	</j:choose-->
++
++
++	<p:projectActionFloatingBox />
++
++	<table style="margin-top: 1em; margin-left:1em;">
++
++		<j:forEach var="act" items="${it.prominentActions}">
++			<t:summary icon="${act.iconFileName}" href="${act.urlName}">
++				${act.displayName}
++      </t:summary>
++		</j:forEach>
++		<t:summary icon="folder.gif" href="ws/" permission="${it.WORKSPACE}">
++			${%Workspace}
++    </t:summary>
++
++		<t:artifactList caption="${%Last Successful Artifacts}"
++			build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/"
++			permission="${it.lastSuccessfulBuild.ARTIFACTS}" />
++
++		<t:summary icon="notepad.gif" href="changes">
++			${%Recent Changes}
++		</t:summary>
++
++		<j:set var="tr" value="${it.lastCompletedBuild.testResultAction}" />
++		<j:if test="${tr!=null}">
++			<t:summary icon="clipboard.gif">
++				<a href="lastCompletedBuild/testReport/">${%Latest Test Result}</a>
++				<st:nbsp />
++				<t:test-result it="${tr}" />
++			</t:summary>
++		</j:if>
++	</table>
++
++	<!-- merge fragments from the actions -->
++	<j:forEach var="a" items="${it.actions}">
++		<st:include page="jobMain.jelly" it="${a}" optional="true" />
++	</j:forEach>
++
++	<p:upstream-downstream />
++</j:jelly>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/newJobDetail.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/newJobDetail.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/newJobDetail.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/newJobDetail.jelly	2014-05-06 18:45:18.061553210 +0200
+@@ -0,0 +1,28 @@
++<!--
++The MIT License
++
++Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in
++all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++THE SOFTWARE.
++-->
++
++<?jelly escape-by-default='true'?>
++<div>
++  ${%body}
++</div>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/newJobDetail.properties jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/newJobDetail.properties
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/newJobDetail.properties	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject/newJobDetail.properties	2014-05-06 18:45:18.061553210 +0200
+@@ -0,0 +1,24 @@
++# The MIT License
++# 
++# Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
++# 
++# Permission is hereby granted, free of charge, to any person obtaining a copy
++# of this software and associated documentation files (the "Software"), to deal
++# in the Software without restriction, including without limitation the rights
++# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++# copies of the Software, and to permit persons to whom the Software is
++# furnished to do so, subject to the following conditions:
++# 
++# The above copyright notice and this permission notice shall be included in
++# all copies or substantial portions of the Software.
++# 
++# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++# THE SOFTWARE.
++
++body=\
++  MultiJob Project, suitable for running other jobs 
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject$1.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject$1.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/MultiJobProject$DescriptorImpl.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doAutoCompleteJobName.stapler jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doAutoCompleteJobName.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doAutoCompleteJobName.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doAutoCompleteJobName.stapler	2014-05-06 18:45:18.097552757 +0200
+@@ -0,0 +1 @@
++value
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doCheckJobName.stapler jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doCheckJobName.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doCheckJobName.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doCheckJobName.stapler	2014-05-06 18:45:18.097552757 +0200
+@@ -0,0 +1 @@
++value
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doFillJobProperties.stapler jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doFillJobProperties.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doFillJobProperties.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig/DescriptorImpl/doFillJobProperties.stapler	2014-05-06 18:45:18.097552757 +0200
+@@ -0,0 +1 @@
++jobName
+\ No hay ningún carácter de nueva línea al final del fichero
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$1.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$1.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$DescriptorImpl.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$KillPhaseOnJobResultCondition$1.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$KillPhaseOnJobResultCondition$1.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$KillPhaseOnJobResultCondition$2.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$KillPhaseOnJobResultCondition$2.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$KillPhaseOnJobResultCondition$3.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$KillPhaseOnJobResultCondition$3.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$KillPhaseOnJobResultCondition.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig$KillPhaseOnJobResultCondition.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig.stapler jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PhaseJobsConfig.stapler	2014-05-06 18:45:18.101552707 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=jobName,jobProperties,currParams,configs,killPhaseOnJobResultCondition,disableJob,triggerOnlyIfSCMChanges
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/Plugin.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/Plugin.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/Plugin$RenameListener.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/Plugin$RenameListener.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PredefinedBuildParameters.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PredefinedBuildParameters.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PredefinedBuildParameters$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PredefinedBuildParameters$DescriptorImpl.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PredefinedBuildParameters.stapler jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PredefinedBuildParameters.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PredefinedBuildParameters.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/PredefinedBuildParameters.stapler	2014-05-06 18:45:18.097552757 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=jobProperties
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/scm/MultiJobScm/config.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/scm/MultiJobScm/config.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/scm/MultiJobScm/config.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/scm/MultiJobScm/config.jelly	2014-05-06 18:45:18.057553260 +0200
+@@ -0,0 +1,26 @@
++<!--
++The MIT License
++
++Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in
++all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++THE SOFTWARE.
++-->
++
++<!-- nothing to configure -->
++<j:jelly xmlns:j="jelly:core"  />
+\ No hay ningún carácter de nueva línea al final del fichero
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/AbstractWrapper.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/AbstractWrapper.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/BuildState.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/BuildState.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn/columnHeader.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn/columnHeader.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn/columnHeader.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn/columnHeader.jelly	2014-05-06 18:45:18.073553059 +0200
+@@ -0,0 +1,3 @@
++<j:jelly xmlns:j="jelly:core">
++    <th>Console</th>
++</j:jelly>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn/column.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn/column.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn/column.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn/column.jelly	2014-05-06 18:45:18.073553059 +0200
+@@ -0,0 +1,17 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
++	xmlns:i="jelly:fmt">
++	<j:set var="lBuild" value="${job.getLastBuild()}" />
++	<td data="${lBuild.duration ?: '0'}">
++		<j:choose>
++			<j:when test="${lBuild!=null}">
++				<a href="${jobBaseUrl}${job.shortUrl}${lBuild.number}/console">
++					<img src="${imagesURL}/${subIconSize}/terminal.gif" title="${%Console output}"
++						alt="${%Console output}" border="0" />
++				</a>
++			</j:when>
++			<j:otherwise>
++			</j:otherwise>
++		</j:choose>
++	</td>
++</j:jelly>
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn$DescriptorImpl.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn.stapler jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/ConsoleColumn.stapler	2014-05-06 18:45:18.085552907 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn/columnHeader.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn/columnHeader.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn/columnHeader.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn/columnHeader.jelly	2014-05-06 18:45:18.077553008 +0200
+@@ -0,0 +1,3 @@
++<j:jelly xmlns:j="jelly:core">
++    <th>Job</th>
++</j:jelly>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn/column.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn/column.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn/column.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn/column.jelly	2014-05-06 18:45:18.077553008 +0200
+@@ -0,0 +1,14 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
++	xmlns:i="jelly:fmt">
++	<td style="${job.getCss()}">
++		<j:choose>
++			<j:when test="${job.phase}">
++				${job.isConditional() ? "[?]" : ""} ${job.displayName}
++			</j:when>
++			<j:when test="${!job.phase}">
++				<a href="${jobBaseUrl}${job.shortUrl}">${job.displayName}</a>
++			</j:when>
++		</j:choose>
++	</td>
++</j:jelly>
+\ No hay ningún carácter de nueva línea al final del fichero
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn$DescriptorImpl.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn.stapler jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/JobColumn.stapler	2014-05-06 18:45:18.085552907 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn/columnHeader.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn/columnHeader.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn/columnHeader.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn/columnHeader.jelly	2014-05-06 18:45:18.081552957 +0200
+@@ -0,0 +1,3 @@
++<j:jelly xmlns:j="jelly:core">
++    <th>Last Duration</th>
++</j:jelly>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn/column.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn/column.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn/column.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn/column.jelly	2014-05-06 18:45:18.081552957 +0200
+@@ -0,0 +1,20 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
++	xmlns:i="jelly:fmt">
++	<j:set var="lBuild" value="${job.getLastBuild()}" />
++	<td data="${lBuild.duration ?: '0'}">
++		<j:choose>
++			<j:when test="${lBuild!=null}">
++				${lBuild.durationString}
++              </j:when>
++			<j:otherwise>
++				<j:choose>
++					<j:when test="${job.phase}"></j:when>
++					<j:otherwise>
++						${%N/A}
++					</j:otherwise>
++				</j:choose>
++			</j:otherwise>
++		</j:choose>
++	</td>
++</j:jelly>
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn$DescriptorImpl.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn.stapler jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastDurationColumn.stapler	2014-05-06 18:45:18.081552957 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn/columnHeader.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn/columnHeader.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn/columnHeader.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn/columnHeader.jelly	2014-05-06 18:45:18.081552957 +0200
+@@ -0,0 +1,3 @@
++<j:jelly xmlns:j="jelly:core">
++    <th>Last Failure</th>
++</j:jelly>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn/column.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn/column.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn/column.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn/column.jelly	2014-05-06 18:45:18.081552957 +0200
+@@ -0,0 +1,21 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
++  <j:set var="lfBuild" value="${job.getLastFailedBuild()}"/>
++  <td data="${lfBuild.startTimeInMillis()  ?: '0'}">
++  	<j:choose>
++ 	 <j:when test="${lfBuild!=null}">
++ 	   ${lfBuild.timestampString}
++ 	 </j:when>
++ 	 <j:otherwise>
++ 	   <j:choose>
++ 	     <j:when test="${job.phase}"/>
++ 	     <j:otherwise>
++ 	       ${%N/A}
++ 	     </j:otherwise>
++ 		
++      </j:choose>
++ 		
++    </j:otherwise>
++ 	
++  </j:choose>
++  </td>
++ </j:jelly>
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn$DescriptorImpl.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn.stapler jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastFailureColumn.stapler	2014-05-06 18:45:18.085552907 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn/columnHeader.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn/columnHeader.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn/columnHeader.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn/columnHeader.jelly	2014-05-06 18:45:18.085552907 +0200
+@@ -0,0 +1,3 @@
++<j:jelly xmlns:j="jelly:core">
++    <th>Last Success</th>
++</j:jelly>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn/column.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn/column.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn/column.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn/column.jelly	2014-05-06 18:45:18.085552907 +0200
+@@ -0,0 +1,20 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
++	xmlns:i="jelly:fmt">
++	<j:set var="lsBuild" value="${job.getLastSuccessfulBuild()}" />
++	<td data="${lsBuild.startTimeInMillis()  ?: '0'}">
++	<j:choose>
++	 	<j:when test="${lsBuild!=null}">
++	 	  ${lsBuild.timestampString}
++	 	</j:when>
++	 	<j:otherwise>
++	 	  <j:choose>
++	 	    <j:when test="${job.phase}"/>
++	 	    <j:otherwise>
++	 	      ${%N/A}
++	 	    </j:otherwise>
++	 	  </j:choose>
++	 	</j:otherwise>
++	 </j:choose>
++	 </td>
++</j:jelly>
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn$DescriptorImpl.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn.stapler jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/LastSuccessColumn.stapler	2014-05-06 18:45:18.085552907 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobListViewColumn.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobListViewColumn.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView/configure-entries.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView/configure-entries.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView/configure-entries.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView/configure-entries.jelly	2014-05-06 18:45:18.081552957 +0200
+@@ -0,0 +1,7 @@
++<?jelly escape-by-default='true'?>
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
++	xmlns:i="jelly:fmt">
++      <!-- set @jobBaseUrl="" so that links to jobs will be under this view. -->
++      <t:buildListTable builds="${it.builds}" jobBaseUrl="" />	
++</j:jelly>
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView/DescriptorImpl/doCheckIncludeRegex.stapler jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView/DescriptorImpl/doCheckIncludeRegex.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView/DescriptorImpl/doCheckIncludeRegex.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView/DescriptorImpl/doCheckIncludeRegex.stapler	2014-05-06 18:45:18.081552957 +0200
+@@ -0,0 +1 @@
++value
+\ No hay ningún carácter de nueva línea al final del fichero
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView$1.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView$1.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView$DescriptorImpl.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView.stapler jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/MultiJobView.stapler	2014-05-06 18:45:18.085552907 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=name
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/PhaseWrapper.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/PhaseWrapper.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/ProjectWrapper.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/ProjectWrapper.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn/columnHeader.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn/columnHeader.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn/columnHeader.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn/columnHeader.jelly	2014-05-06 18:45:18.073553059 +0200
+@@ -0,0 +1,3 @@
++<j:jelly xmlns:j="jelly:core">
++    <th>S</th>
++</j:jelly>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn/column.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn/column.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn/column.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn/column.jelly	2014-05-06 18:45:18.073553059 +0200
+@@ -0,0 +1,7 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
++	xmlns:i="jelly:fmt">
++
++	<t:ballColorTd it="${job.iconColor}" />
++
++</j:jelly>
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn$DescriptorImpl.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn.stapler jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/StatusColumn.stapler	2014-05-06 18:45:18.081552957 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn/columnHeader.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn/columnHeader.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn/columnHeader.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn/columnHeader.jelly	2014-05-06 18:45:18.073553059 +0200
+@@ -0,0 +1,3 @@
++<j:jelly xmlns:j="jelly:core">
++    <th>W</th>
++</j:jelly>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn/column.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn/column.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn/column.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn/column.jelly	2014-05-06 18:45:18.073553059 +0200
+@@ -0,0 +1,5 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
++	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
++	xmlns:i="jelly:fmt">
++	<t:buildHealth td="true" link="${jobBaseUrl}${job.shortUrl}lastBuild" />
++</j:jelly>
+\ No hay ningún carácter de nueva línea al final del fichero
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn.class son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn$DescriptorImpl.class y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn$DescriptorImpl.class son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn.stapler jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn.stapler
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn.stapler	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/com/tikal/jenkins/plugins/multijob/views/WeatherColumn.stapler	2014-05-06 18:45:18.077553008 +0200
+@@ -0,0 +1,2 @@
++#Tue May 06 18:45:08 CEST 2014
++constructor=
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/index.jelly jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/index.jelly
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/index.jelly	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/index.jelly	2014-05-06 18:45:18.101552707 +0200
+@@ -0,0 +1,8 @@
++<!--
++  This view is used to render the plugin list page.
++
++  Since we don't really have anything dynamic here, let's just use static HTML. 
++-->
++<div>
++  This plugin is a MultiJob plugin.
++</div>
+\ No hay ningún carácter de nueva línea al final del fichero
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/META-INF/annotations/hudson.Extension y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/META-INF/annotations/hudson.Extension son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/META-INF/annotations/org.kohsuke.stapler.export.ExportedBean jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/META-INF/annotations/org.kohsuke.stapler.export.ExportedBean
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/META-INF/annotations/org.kohsuke.stapler.export.ExportedBean	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/META-INF/annotations/org.kohsuke.stapler.export.ExportedBean	2014-05-06 18:45:18.101552707 +0200
+@@ -0,0 +1,2 @@
++com.tikal.jenkins.plugins.multijob.MultiJobBuild
++com.tikal.jenkins.plugins.multijob.MultiJobBuild$SubBuild
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/META-INF/exposed.stapler-beans jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/META-INF/exposed.stapler-beans
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/META-INF/exposed.stapler-beans	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/META-INF/exposed.stapler-beans	2014-05-06 18:45:18.101552707 +0200
+@@ -0,0 +1,2 @@
++com.tikal.jenkins.plugins.multijob.MultiJobBuild
++com.tikal.jenkins.plugins.multijob.MultiJobBuild.SubBuild
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/META-INF/services/hudson.Plugin jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/META-INF/services/hudson.Plugin
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/classes/META-INF/services/hudson.Plugin	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/classes/META-INF/services/hudson.Plugin	2014-05-06 18:45:18.101552707 +0200
+@@ -0,0 +1 @@
++com.tikal.jenkins.plugins.multijob.Plugin
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/licenses.xml jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/licenses.xml
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin/WEB-INF/licenses.xml	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin/WEB-INF/licenses.xml	2014-05-06 18:45:17.909555120 +0200
+@@ -0,0 +1,5 @@
++<l:dependencies xmlns:l='licenses' groupId='org.jenkins-ci.plugins' artifactId='jenkins-multijob-plugin' version='1.13.1'>
++  <l:dependency name='Jenkins Multijob plugin' groupId='org.jenkins-ci.plugins' artifactId='jenkins-multijob-plugin' version='1.13.1' url='http://wiki.jenkins-ci.org/display/JENKINS/Multijob+Plugin'>
++    <l:description>Enabling full hierarchy of Jenkins jobs</l:description>
++  </l:dependency>
++</l:dependencies>
+\ No hay ningún carácter de nueva línea al final del fichero
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin.hpi y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin.hpi son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/jenkins-multijob-plugin.jar y jenkins-multijob-plugin-1.13.1/target/jenkins-multijob-plugin.jar son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/test-classes/com/tikal/jenkins/plugins/multijob/test/CompatibilityTest/config.xml jenkins-multijob-plugin-1.13.1/target/test-classes/com/tikal/jenkins/plugins/multijob/test/CompatibilityTest/config.xml
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/test-classes/com/tikal/jenkins/plugins/multijob/test/CompatibilityTest/config.xml	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/test-classes/com/tikal/jenkins/plugins/multijob/test/CompatibilityTest/config.xml	2014-05-06 18:45:13.301613049 +0200
+@@ -0,0 +1,58 @@
++<?xml version='1.0' encoding='UTF-8'?>
++<hudson>
++  <version>1.0</version>
++  <numExecutors>2</numExecutors>
++  <mode>NORMAL</mode>
++  <authorizationStrategy class="hudson.security.AuthorizationStrategy$Unsecured"/>
++  <securityRealm class="hudson.security.SecurityRealm$None"/>
++  <jdks/>
++  <viewsTabBar class="hudson.views.DefaultViewsTabBar"/>
++  <myViewsTabBar class="hudson.views.DefaultMyViewsTabBar"/>
++  <clouds/>
++  <slaves/>
++  <scmCheckoutRetryCount>0</scmCheckoutRetryCount>
++  <views>
++    <hudson.model.AllView>
++      <owner class="hudson" reference="../../.."/>
++      <name>All</name>
++      <filterExecutors>false</filterExecutors>
++      <filterQueue>false</filterQueue>
++    </hudson.model.AllView>
++    <com.tikal.jenkins.plugins.multijob.views.MultiJobView>
++      <owner class="hudson" reference="../../.."/>
++      <name>Reactor</name>
++      <filterExecutors>false</filterExecutors>
++      <filterQueue>false</filterQueue>
++      <jobNames class="tree-set">
++        <comparator class="hudson.util.CaseInsensitiveComparator"/>
++        <string>reactor-1</string>
++        <string>test1</string>
++      </jobNames>
++      <jobFilters/>
++      <columns>
++        <com.tikal.jenkins.plugins.multijob.views.JobColumn/>
++        <com.tikal.jenkins.plugins.multijob.views.StatusColumn/>
++        <com.tikal.jenkins.plugins.multijob.views.WeatherColumn/>
++        <com.tikal.jenkins.plugins.multijob.views.LastSuccessColumn/>
++        <com.tikal.jenkins.plugins.multijob.views.LastFailureColumn/>
++        <com.tikal.jenkins.plugins.multijob.views.LastDurationColumn/>
++        <hudson.views.BuildButtonColumn/>
++      </columns>
++      <columns defined-in="com.tikal.jenkins.plugins.multijob.views.MultiJobView">
++        <com.tikal.jenkins.plugins.multijob.views.JobColumn/>
++        <com.tikal.jenkins.plugins.multijob.views.StatusColumn/>
++        <com.tikal.jenkins.plugins.multijob.views.WeatherColumn/>
++        <com.tikal.jenkins.plugins.multijob.views.LastSuccessColumn/>
++        <com.tikal.jenkins.plugins.multijob.views.LastFailureColumn/>
++        <com.tikal.jenkins.plugins.multijob.views.LastDurationColumn/>
++        <hudson.views.BuildButtonColumn/>
++      </columns>
++    </com.tikal.jenkins.plugins.multijob.views.MultiJobView>
++  </views>
++  <primaryView>All</primaryView>
++  <slaveAgentPort>0</slaveAgentPort>
++  <label></label>
++  <nodeProperties/>
++  <globalNodeProperties/>
++  <disabledAdministrativeMonitors/>
++</hudson>
+\ No hay ningún carácter de nueva línea al final del fichero
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/test-classes/com/tikal/jenkins/plugins/multijob/test/CompatibilityTest/jobs/old/config.xml jenkins-multijob-plugin-1.13.1/target/test-classes/com/tikal/jenkins/plugins/multijob/test/CompatibilityTest/jobs/old/config.xml
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/test-classes/com/tikal/jenkins/plugins/multijob/test/CompatibilityTest/jobs/old/config.xml	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/test-classes/com/tikal/jenkins/plugins/multijob/test/CompatibilityTest/jobs/old/config.xml	2014-05-06 18:45:13.301613049 +0200
+@@ -0,0 +1,45 @@
++<?xml version='1.0' encoding='UTF-8'?>
++<com.tikal.jenkins.plugins.multijob.MultiJobProject>
++  <actions/>
++  <description></description>
++  <keepDependencies>false</keepDependencies>
++  <properties/>
++  <scm class="hudson.scm.NullSCM"/>
++  <canRoam>true</canRoam>
++  <disabled>false</disabled>
++  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
++  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
++  <triggers class="vector"/>
++  <concurrentBuild>false</concurrentBuild>
++  <builders>
++    <com.tikal.jenkins.plugins.multijob.MultiJobBuilder>
++      <phaseName>Build</phaseName>
++      <phaseJobs>
++        <com.tikal.jenkins.plugins.multijob.PhaseJobsConfig>
++          <jobName>test1</jobName>
++          <jobProperties></jobProperties>
++          <currParams>true</currParams>
++        </com.tikal.jenkins.plugins.multijob.PhaseJobsConfig>
++        <com.tikal.jenkins.plugins.multijob.PhaseJobsConfig>
++          <jobName>Test job 1</jobName>
++          <jobProperties></jobProperties>
++          <currParams>true</currParams>
++        </com.tikal.jenkins.plugins.multijob.PhaseJobsConfig>
++      </phaseJobs>
++      <continuationCondition>SUCCESSFUL</continuationCondition>
++    </com.tikal.jenkins.plugins.multijob.MultiJobBuilder>
++    <com.tikal.jenkins.plugins.multijob.MultiJobBuilder>
++      <phaseName>Deploy</phaseName>
++      <phaseJobs>
++        <com.tikal.jenkins.plugins.multijob.PhaseJobsConfig>
++          <jobName>Test job 2</jobName>
++          <jobProperties></jobProperties>
++          <currParams>true</currParams>
++        </com.tikal.jenkins.plugins.multijob.PhaseJobsConfig>
++      </phaseJobs>
++      <continuationCondition>SUCCESSFUL</continuationCondition>
++    </com.tikal.jenkins.plugins.multijob.MultiJobBuilder>
++  </builders>
++  <publishers/>
++  <buildWrappers/>
++</com.tikal.jenkins.plugins.multijob.MultiJobProject>
+\ No hay ningún carácter de nueva línea al final del fichero
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/test-classes/test-dependencies/ant.hpi y jenkins-multijob-plugin-1.13.1/target/test-classes/test-dependencies/ant.hpi son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/test-classes/test-dependencies/conditional-buildstep.hpi y jenkins-multijob-plugin-1.13.1/target/test-classes/test-dependencies/conditional-buildstep.hpi son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/test-classes/test-dependencies/envinject.hpi y jenkins-multijob-plugin-1.13.1/target/test-classes/test-dependencies/envinject.hpi son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/test-classes/test-dependencies/index jenkins-multijob-plugin-1.13.1/target/test-classes/test-dependencies/index
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/test-classes/test-dependencies/index	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/test-classes/test-dependencies/index	2014-05-06 18:45:14.105602942 +0200
+@@ -0,0 +1,10 @@
++token-macro
++run-condition
++javadoc
++ui-samples-plugin
++maven-plugin
++subversion
++parameterized-trigger
++ant
++envinject
++conditional-buildstep
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/test-classes/test-dependencies/javadoc.hpi y jenkins-multijob-plugin-1.13.1/target/test-classes/test-dependencies/javadoc.hpi son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/test-classes/test-dependencies/maven-plugin.hpi y jenkins-multijob-plugin-1.13.1/target/test-classes/test-dependencies/maven-plugin.hpi son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/test-classes/test-dependencies/parameterized-trigger.hpi y jenkins-multijob-plugin-1.13.1/target/test-classes/test-dependencies/parameterized-trigger.hpi son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/test-classes/test-dependencies/run-condition.hpi y jenkins-multijob-plugin-1.13.1/target/test-classes/test-dependencies/run-condition.hpi son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/test-classes/test-dependencies/subversion.hpi y jenkins-multijob-plugin-1.13.1/target/test-classes/test-dependencies/subversion.hpi son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/test-classes/test-dependencies/token-macro.hpi y jenkins-multijob-plugin-1.13.1/target/test-classes/test-dependencies/token-macro.hpi son distintos
+Los ficheros binarios tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/test-classes/test-dependencies/ui-samples-plugin.hpi y jenkins-multijob-plugin-1.13.1/target/test-classes/test-dependencies/ui-samples-plugin.hpi son distintos
+diff -rupN tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/test-classes/the.hpl jenkins-multijob-plugin-1.13.1/target/test-classes/the.hpl
+--- tikal-multijob-plugin-jenkins-multijob-plugin-1.13/target/test-classes/the.hpl	1970-01-01 01:00:00.000000000 +0100
++++ jenkins-multijob-plugin-1.13.1/target/test-classes/the.hpl	2014-05-06 18:45:13.845606212 +0200
+@@ -0,0 +1,149 @@
++Manifest-Version: 1.0
++Plugin-Class: com.tikal.jenkins.plugins.multijob.Plugin
++Group-Id: org.jenkins-ci.plugins
++Short-Name: jenkins-multijob-plugin
++Long-Name: Jenkins Multijob plugin
++Url: http://wiki.jenkins-ci.org/display/JENKINS/Multijob+Plugin
++Plugin-Version: 1.13.1
++Hudson-Version: 1.480
++Jenkins-Version: 1.480
++Plugin-Dependencies: maven-plugin:1.480,run-condition:0.10,conditional
++ -buildstep:1.3.1,envinject:1.83,parameterized-trigger:2.21,token-macr
++ o:1.5.1,javadoc:1.0
++Plugin-Developers: Alex Nickolaevsky:alex-n:alex@tikalk.com,Roni Licht
++ :ronil:roni@tikalk.com,Itai Or:itaior:itai@tikalk.com
++Libraries: /home/rrial/workspaces/jenkins/jenkins-multijob-plugin-1.13
++ .1/target/classes,/home/rrial/.m2/repository/org/jenkins-ci/main/jenk
++ ins-war/1.480/jenkins-war-1.480.war,/home/rrial/.m2/repository/org/je
++ nkins-ci/plugins/parameterized-trigger/2.21/parameterized-trigger-2.2
++ 1.jar,/home/rrial/.m2/repository/org/jenkins-ci/plugins/envinject/1.8
++ 3/envinject-1.83.jar,/home/rrial/.m2/repository/org/jenkins-ci/main/m
++ aven-plugin/1.480/maven-plugin-1.480.jar,/home/rrial/.m2/repository/o
++ rg/jenkins-ci/plugins/javadoc/1.0/javadoc-1.0.jar,/home/rrial/.m2/rep
++ ository/org/jenkins-ci/main/maven/maven-agent/1.2/maven-agent-1.2.jar
++ ,/home/rrial/.m2/repository/org/jenkins-ci/main/maven/maven-intercept
++ or/1.2/maven-interceptor-1.2.jar,/home/rrial/.m2/repository/commons-h
++ ttpclient/commons-httpclient/3.1/commons-httpclient-3.1.jar,/home/rri
++ al/.m2/repository/commons-logging/commons-logging/1.1.1/commons-loggi
++ ng-1.1.1.jar,/home/rrial/.m2/repository/commons-codec/commons-codec/1
++ .4/commons-codec-1.4.jar,/home/rrial/.m2/repository/org/apache/ant/an
++ t/1.8.3/ant-1.8.3.jar,/home/rrial/.m2/repository/org/apache/ant/ant-l
++ auncher/1.8.3/ant-launcher-1.8.3.jar,/home/rrial/.m2/repository/org/j
++ vnet/hudson/maven2.1-interceptor/1.2/maven2.1-interceptor-1.2.jar,/ho
++ me/rrial/.m2/repository/org/jenkins-ci/main/maven/maven3-agent/1.2/ma
++ ven3-agent-1.2.jar,/home/rrial/.m2/repository/org/apache/maven/maven-
++ embedder/3.0.4/maven-embedder-3.0.4.jar,/home/rrial/.m2/repository/or
++ g/apache/maven/maven-settings/3.0.4/maven-settings-3.0.4.jar,/home/rr
++ ial/.m2/repository/org/codehaus/plexus/plexus-utils/2.0.6/plexus-util
++ s-2.0.6.jar,/home/rrial/.m2/repository/org/apache/maven/maven-core/3.
++ 0.4/maven-core-3.0.4.jar,/home/rrial/.m2/repository/org/apache/maven/
++ maven-model/3.0.4/maven-model-3.0.4.jar,/home/rrial/.m2/repository/or
++ g/apache/maven/maven-settings-builder/3.0.4/maven-settings-builder-3.
++ 0.4.jar,/home/rrial/.m2/repository/org/codehaus/plexus/plexus-interpo
++ lation/1.14/plexus-interpolation-1.14.jar,/home/rrial/.m2/repository/
++ org/codehaus/plexus/plexus-component-annotations/1.5.5/plexus-compone
++ nt-annotations-1.5.5.jar,/home/rrial/.m2/repository/org/sonatype/plex
++ us/plexus-sec-dispatcher/1.3/plexus-sec-dispatcher-1.3.jar,/home/rria
++ l/.m2/repository/org/sonatype/plexus/plexus-cipher/1.7/plexus-cipher-
++ 1.7.jar,/home/rrial/.m2/repository/org/apache/maven/maven-repository-
++ metadata/3.0.4/maven-repository-metadata-3.0.4.jar,/home/rrial/.m2/re
++ pository/org/apache/maven/maven-artifact/3.0.4/maven-artifact-3.0.4.j
++ ar,/home/rrial/.m2/repository/org/apache/maven/maven-plugin-api/3.0.4
++ /maven-plugin-api-3.0.4.jar,/home/rrial/.m2/repository/org/sonatype/s
++ isu/sisu-inject-plexus/2.3.0/sisu-inject-plexus-2.3.0.jar,/home/rrial
++ /.m2/repository/org/codehaus/plexus/plexus-classworlds/2.3/plexus-cla
++ ssworlds-2.3.jar,/home/rrial/.m2/repository/org/sonatype/sisu/sisu-in
++ ject-bean/2.3.0/sisu-inject-bean-2.3.0.jar,/home/rrial/.m2/repository
++ /org/apache/maven/maven-model-builder/3.0.4/maven-model-builder-3.0.4
++ .jar,/home/rrial/.m2/repository/org/apache/maven/maven-aether-provide
++ r/3.0.4/maven-aether-provider-3.0.4.jar,/home/rrial/.m2/repository/or
++ g/sonatype/aether/aether-api/1.13.1/aether-api-1.13.1.jar,/home/rrial
++ /.m2/repository/org/sonatype/aether/aether-spi/1.13.1/aether-spi-1.13
++ .1.jar,/home/rrial/.m2/repository/org/sonatype/aether/aether-util/1.1
++ 3.1/aether-util-1.13.1.jar,/home/rrial/.m2/repository/org/sonatype/ae
++ ther/aether-impl/1.13.1/aether-impl-1.13.1.jar,/home/rrial/.m2/reposi
++ tory/org/apache/maven/maven-compat/3.0.4/maven-compat-3.0.4.jar,/home
++ /rrial/.m2/repository/org/apache/maven/wagon/wagon-provider-api/2.2/w
++ agon-provider-api-2.2.jar,/home/rrial/.m2/repository/commons-cli/comm
++ ons-cli/1.2/commons-cli-1.2.jar,/home/rrial/.m2/repository/org/jenkin
++ s-ci/main/maven/maven3-interceptor/1.2/maven3-interceptor-1.2.jar,/ho
++ me/rrial/.m2/repository/org/sonatype/aether/aether-connector-wagon/1.
++ 13.1/aether-connector-wagon-1.13.1.jar,/home/rrial/.m2/repository/org
++ /sonatype/sisu/sisu-guice/3.1.0/sisu-guice-3.1.0.jar,/home/rrial/.m2/
++ repository/javax/inject/javax.inject/1/javax.inject-1.jar,/home/rrial
++ /.m2/repository/aopalliance/aopalliance/1.0/aopalliance-1.0.jar,/home
++ /rrial/.m2/repository/com/google/guava/guava/11.0.1/guava-11.0.1.jar,
++ /home/rrial/.m2/repository/com/google/code/findbugs/jsr305/1.3.9/jsr3
++ 05-1.3.9.jar,/home/rrial/.m2/repository/org/apache/maven/wagon/wagon-
++ http/2.2/wagon-http-2.2-shaded.jar,/home/rrial/.m2/repository/org/apa
++ che/maven/wagon/wagon-file/2.2/wagon-file-2.2.jar,/home/rrial/.m2/rep
++ ository/org/apache/maven/wagon/wagon-ftp/2.2/wagon-ftp-2.2.jar,/home/
++ rrial/.m2/repository/commons-net/commons-net/3.0.1/commons-net-3.0.1.
++ jar,/home/rrial/.m2/repository/org/slf4j/slf4j-api/1.6.1/slf4j-api-1.
++ 6.1.jar,/home/rrial/.m2/repository/org/apache/maven/wagon/wagon-ssh/2
++ .2/wagon-ssh-2.2.jar,/home/rrial/.m2/repository/com/jcraft/jsch/0.1.4
++ 4-1/jsch-0.1.44-1.jar,/home/rrial/.m2/repository/org/apache/maven/wag
++ on/wagon-ssh-common/2.2/wagon-ssh-common-2.2.jar,/home/rrial/.m2/repo
++ sitory/org/codehaus/plexus/plexus-interactivity-api/1.0-alpha-6/plexu
++ s-interactivity-api-1.0-alpha-6.jar,/home/rrial/.m2/repository/org/ap
++ ache/maven/wagon/wagon-ssh-external/2.2/wagon-ssh-external-2.2.jar,/h
++ ome/rrial/.m2/repository/org/apache/maven/reporting/maven-reporting-a
++ pi/3.0/maven-reporting-api-3.0.jar,/home/rrial/.m2/repository/org/apa
++ che/maven/doxia/doxia-sink-api/1.0/doxia-sink-api-1.0.jar,/home/rrial
++ /.m2/repository/org/jenkins-ci/lib/lib-jenkins-maven-artifact-manager
++ /1.2/lib-jenkins-maven-artifact-manager-1.2.jar,/home/rrial/.m2/repos
++ itory/commons-io/commons-io/1.4/commons-io-1.4.jar,/home/rrial/.m2/re
++ pository/org/jenkins-ci/lib/lib-jenkins-maven-embedder/3.9/lib-jenkin
++ s-maven-embedder-3.9.jar,/home/rrial/.m2/repository/org/apache/maven/
++ wagon/wagon-webdav-jackrabbit/2.2/wagon-webdav-jackrabbit-2.2.jar,/ho
++ me/rrial/.m2/repository/org/apache/maven/wagon/wagon-http-shared/2.2/
++ wagon-http-shared-2.2.jar,/home/rrial/.m2/repository/org/apache/jackr
++ abbit/jackrabbit-webdav/2.2.5/jackrabbit-webdav-2.2.5.jar,/home/rrial
++ /.m2/repository/org/apache/jackrabbit/jackrabbit-jcr-commons/2.2.5/ja
++ ckrabbit-jcr-commons-2.2.5.jar,/home/rrial/.m2/repository/net/sourcef
++ orge/nekohtml/nekohtml/1.9.13/nekohtml-1.9.13.jar,/home/rrial/.m2/rep
++ ository/xerces/xercesImpl/2.9.1/xercesImpl-2.9.1.jar,/home/rrial/.m2/
++ repository/xml-apis/xml-apis/1.3.04/xml-apis-1.3.04.jar,/home/rrial/.
++ m2/repository/org/jenkins-ci/lib/envinject-lib/1.15/envinject-lib-1.1
++ 5.jar,/home/rrial/.m2/repository/org/jenkins-ci/plugins/conditional-b
++ uildstep/1.3.1/conditional-buildstep-1.3.1.jar,/home/rrial/.m2/reposi
++ tory/org/jenkins-ci/plugins/token-macro/1.5.1/token-macro-1.5.1.jar,/
++ home/rrial/.m2/repository/org/jenkins-ci/plugins/run-condition/0.10/r
++ un-condition-0.10.jar,/home/rrial/.m2/repository/junit/junit/3.8/juni
++ t-3.8.jar,/home/rrial/.m2/repository/org/jenkins-ci/main/jenkins-test
++ -harness/1.480/jenkins-test-harness-1.480.jar,/home/rrial/.m2/reposit
++ ory/org/jenkins-ci/main/jenkins-war/1.480/jenkins-war-1.480-war-for-t
++ est.jar,/home/rrial/.m2/repository/org/jenkins-ci/modules/instance-id
++ entity/1.2/instance-identity-1.2.jar,/home/rrial/.m2/repository/bounc
++ ycastle/bcprov-jdk15/140/bcprov-jdk15-140.jar,/home/rrial/.m2/reposit
++ ory/org/jenkins-ci/modules/ssh-cli-auth/1.2/ssh-cli-auth-1.2.jar,/hom
++ e/rrial/.m2/repository/org/slf4j/slf4j-jdk14/1.6.2/slf4j-jdk14-1.6.2.
++ jar,/home/rrial/.m2/repository/org/jenkins-ci/plugins/ant/1.1/ant-1.1
++ .jar,/home/rrial/.m2/repository/org/jenkins-ci/plugins/subversion/1.2
++ 6/subversion-1.26.jar,/home/rrial/.m2/repository/org/jenkins-ci/svnki
++ t/svnkit/1.3.4-jenkins-4/svnkit-1.3.4-jenkins-4.jar,/home/rrial/.m2/r
++ epository/org/mortbay/jetty/jetty/6.1.26/jetty-6.1.26.jar,/home/rrial
++ /.m2/repository/org/mortbay/jetty/jetty-util/6.1.26/jetty-util-6.1.26
++ .jar,/home/rrial/.m2/repository/org/mortbay/jetty/servlet-api/2.5-200
++ 81211/servlet-api-2.5-20081211.jar,/home/rrial/.m2/repository/org/jvn
++ et/hudson/test-annotations/1.0/test-annotations-1.0.jar,/home/rrial/.
++ m2/repository/org/jvnet/mock-javamail/mock-javamail/1.7/mock-javamail
++ -1.7.jar,/home/rrial/.m2/repository/junit/junit-dep/4.10/junit-dep-4.
++ 10.jar,/home/rrial/.m2/repository/org/hamcrest/hamcrest-core/1.1/hamc
++ rest-core-1.1.jar,/home/rrial/.m2/repository/org/hamcrest/hamcrest-li
++ brary/1.2.1/hamcrest-library-1.2.1.jar,/home/rrial/.m2/repository/org
++ /jenkins-ci/htmlunit/2.6-jenkins-6/htmlunit-2.6-jenkins-6.jar,/home/r
++ rial/.m2/repository/xalan/xalan/2.7.1/xalan-2.7.1.jar,/home/rrial/.m2
++ /repository/xalan/serializer/2.7.1/serializer-2.7.1.jar,/home/rrial/.
++ m2/repository/org/jvnet/hudson/htmlunit-core-js/2.6-hudson-1/htmlunit
++ -core-js-2.6-hudson-1.jar,/home/rrial/.m2/repository/net/sourceforge/
++ cssparser/cssparser/0.9.5/cssparser-0.9.5.jar,/home/rrial/.m2/reposit
++ ory/org/w3c/css/sac/1.3/sac-1.3.jar,/home/rrial/.m2/repository/org/jv
++ net/hudson/embedded-rhino-debugger/1.2/embedded-rhino-debugger-1.2.ja
++ r,/home/rrial/.m2/repository/org/jvnet/hudson/netx/0.5-hudson-2/netx-
++ 0.5-hudson-2.jar,/home/rrial/.m2/repository/org/easymock/easymock/2.4
++ /easymock-2.4.jar,/home/rrial/.m2/repository/org/jenkins-ci/main/ui-s
++ amples-plugin/1.480/ui-samples-plugin-1.480.jar
++Resource-Path: /home/rrial/workspaces/jenkins/jenkins-multijob-plugin-
++ 1.13.1/src/main/webapp
++

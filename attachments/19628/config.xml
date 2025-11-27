@@ -1,0 +1,127 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <logRotator>
+    <daysToKeep>180</daysToKeep>
+    <numToKeep>-1</numToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <jdk>Java 5</jdk>
+  <triggers class="vector">
+    <hudson.triggers.TimerTrigger>
+      <spec>0 22 * * 7</spec>
+    </hudson.triggers.TimerTrigger>
+  </triggers>
+  <builders>
+    <hudson.tasks.Ant>
+      <targets>-verbose cpd</targets>
+      <antName>Ant 1.6.4</antName>
+      <antOpts>-Xmx1024m</antOpts>
+      <buildFile>/view/hudson_dvib_main/vobs/host/hudson/buildCpd.xml</buildFile>
+      <properties>viewName=hudson_dvib_main
+workspace.dir=/b/hudson/.hudson/jobs/Copy Paste Detection/workspace
+pmd.dir=/local/hudson/pmd
+findbugs.home=/local/hudson/findbugs
+reports.dir=/local/hudson/reports</properties>
+    </hudson.tasks.Ant>
+    <hudson.plugins.groovy.Groovy>
+      <scriptSource class="hudson.plugins.groovy.StringScriptSource">
+        <command>	// Create the properties files needed for the plot plugin
+
+        def filePath = &quot;/b/hudson/.hudson/jobs/Copy Paste Detection/workspace&quot;
+	def fileName =  &quot;cpd.html&quot;
+	def path = &quot;${filePath}/${fileName}&quot;
+	
+	println &quot;Reading ${path}&quot;
+	def cpdFile = new File(path)	
+	List lines = cpdFile.readLines()
+	
+	def data = lines.find{it.startsWith(&quot;&quot;&quot;&lt;td class=&quot;SummaryNumber&quot;&gt;&quot;&quot;&quot;)}
+	def tokens = data.tokenize(&quot;&quot;&quot;&lt;td class=&quot;SummaryNumber&quot;&gt;&quot;&quot;&quot;)
+	def totalDuplications = tokens[0]
+	def totalLines = tokens[2]
+	
+	File dupsDataFile = new File(&quot;${filePath}/duplications.properties&quot;)
+	dupsDataFile.write(&quot;YVALUE=${totalDuplications}&quot;)
+	
+	File totLinesDataFile = new File(&quot;${filePath}/totalLines.properties&quot;)
+	totLinesDataFile.write(&quot;YVALUE=${totalLines}&quot;)
+	
+	println &quot;# Duplications: ${totalDuplications}  Total Lines: ${totalLines}&quot;
+
+        // Delete groovy files from workspace
+        new File(filePath).eachFileMatch(~&quot;.*groovy&quot; ) { f -&gt;
+                 println &quot;Deleting ${f}&quot;
+                 f.delete()
+        }
+
+</command>
+      </scriptSource>
+      <groovyName>Groovy 1.5.6</groovyName>
+      <parameters></parameters>
+      <scriptParameters></scriptParameters>
+      <properties></properties>
+    </hudson.plugins.groovy.Groovy>
+  </builders>
+  <publishers>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>cpd.html</artifacts>
+      <latestOnly>false</latestOnly>
+    </hudson.tasks.ArtifactArchiver>
+    <hudson.plugins.plot.PlotPublisher>
+      <plots>
+        <hudson.plugins.plot.Plot>
+          <title>Total Duplicate Lines of Code</title>
+          <yaxis></yaxis>
+          <series>
+            <hudson.plugins.plot.Series>
+              <file>totalLines.properties</file>
+              <label>Total Duplicate Lines of Code</label>
+            </hudson.plugins.plot.Series>
+          </series>
+          <group>Code Duplication</group>
+          <numBuilds>50</numBuilds>
+          <csvFileName>623288274.csv</csvFileName>
+          <csvLastModification>0</csvLastModification>
+        </hudson.plugins.plot.Plot>
+        <hudson.plugins.plot.Plot>
+          <title># of Duplications</title>
+          <yaxis></yaxis>
+          <series>
+            <hudson.plugins.plot.Series>
+              <file>duplications.properties</file>
+              <label># of Duplications</label>
+            </hudson.plugins.plot.Series>
+          </series>
+          <group>Code Duplication</group>
+          <numBuilds>50</numBuilds>
+          <csvFileName>737105723.csv</csvFileName>
+          <csvLastModification>0</csvLastModification>
+        </hudson.plugins.plot.Plot>
+      </plots>
+    </hudson.plugins.plot.PlotPublisher>
+    <hudson.plugins.dry.DryPublisher>
+      <threshold></threshold>
+      <newThreshold></newThreshold>
+      <failureThreshold></failureThreshold>
+      <newFailureThreshold></newFailureThreshold>
+      <healthy></healthy>
+      <unHealthy></unHealthy>
+      <pluginName>[DRY] </pluginName>
+      <thresholdLimit>low</thresholdLimit>
+      <defaultEncoding></defaultEncoding>
+      <pattern>**/cpd.xml</pattern>
+    </hudson.plugins.dry.DryPublisher>
+    <hudson.tasks.Mailer>
+      <recipients>kriegand</recipients>
+      <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>false</sendToIndividuals>
+    </hudson.tasks.Mailer>
+  </publishers>
+  <buildWrappers/>
+</project>

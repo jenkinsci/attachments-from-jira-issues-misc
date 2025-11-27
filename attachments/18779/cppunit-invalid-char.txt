@@ -1,0 +1,32 @@
+[CppUnit] Recording CppUnit tests results.
+[CppUnit] Use the default CppUnit plugin stylesheet.
+[CppUnit] Processing 18 files with the pattern 'build/**/unittest-*.xml'.
+FATAL: Could not transform the CppUnit report.
+hudson.util.IOException2: Could not transform the CppUnit report.
+	at hudson.plugins.cppunit.CppUnitArchiver.invoke(CppUnitArchiver.java:59)
+	at hudson.plugins.cppunit.CppUnitArchiver.invoke(CppUnitArchiver.java:24)
+	at hudson.FilePath.act(FilePath.java:676)
+	at hudson.FilePath.act(FilePath.java:660)
+	at hudson.plugins.cppunit.CppUnitPublisher.perform(CppUnitPublisher.java:121)
+	at hudson.model.AbstractBuild$AbstractRunner.performAllBuildStep(AbstractBuild.java:379)
+	at hudson.model.AbstractBuild$AbstractRunner.performAllBuildStep(AbstractBuild.java:367)
+	at hudson.model.Build$RunnerImpl.post2(Build.java:183)
+	at hudson.model.AbstractBuild$AbstractRunner.post(AbstractBuild.java:352)
+	at hudson.model.Run.run(Run.java:969)
+	at hudson.model.Build.run(Build.java:112)
+	at hudson.model.ResourceController.execute(ResourceController.java:93)
+	at hudson.model.Executor.run(Executor.java:116)
+Caused by: javax.xml.transform.TransformerException: javax.xml.transform.TransformerException: com.sun.org.apache.xml.internal.utils.WrappedRuntimeException: An invalid XML character (Unicode: 0x1a) was found in the element content of the document.
+	at com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl.transform(Unknown Source)
+	at com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl.transform(Unknown Source)
+	at hudson.plugins.cppunit.CppUnitTransformer.transform(CppUnitTransformer.java:64)
+	at hudson.plugins.cppunit.CppUnitArchiver.invoke(CppUnitArchiver.java:57)
+	... 12 more
+Caused by: javax.xml.transform.TransformerException: com.sun.org.apache.xml.internal.utils.WrappedRuntimeException: An invalid XML character (Unicode: 0x1a) was found in the element content of the document.
+	at com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl.getDOM(Unknown Source)
+	... 16 more
+Caused by: com.sun.org.apache.xml.internal.utils.WrappedRuntimeException: An invalid XML character (Unicode: 0x1a) was found in the element content of the document.
+	at com.sun.org.apache.xalan.internal.xsltc.dom.XSLTCDTMManager.getDTM(Unknown Source)
+	at com.sun.org.apache.xalan.internal.xsltc.dom.XSLTCDTMManager.getDTM(Unknown Source)
+	... 17 more
+

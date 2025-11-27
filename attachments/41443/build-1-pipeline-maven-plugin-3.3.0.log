@@ -1,0 +1,308 @@
+Started by user admin
+[Pipeline] node
+Running on Jenkins in /var/jenkins_home/workspace/pipeline-maven-plugin
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (checkout)
+[Pipeline] git
+ > git rev-parse --is-inside-work-tree # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://github.com/bingshiao/pipeline-maven-plugin.git # timeout=10
+Fetching upstream changes from https://github.com/bingshiao/pipeline-maven-plugin.git
+ > git --version # timeout=10
+ > git fetch --tags --progress https://github.com/bingshiao/pipeline-maven-plugin.git +refs/heads/*:refs/remotes/origin/*
+ > git rev-parse refs/remotes/origin/master^{commit} # timeout=10
+ > git rev-parse refs/remotes/origin/origin/master^{commit} # timeout=10
+Checking out Revision 5d6640d8e4e8bac47ab9b73703b7bf126807f409 (refs/remotes/origin/master)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 5d6640d8e4e8bac47ab9b73703b7bf126807f409
+ > git branch -a -v --no-abbrev # timeout=10
+ > git branch -D master # timeout=10
+ > git checkout -b master 5d6640d8e4e8bac47ab9b73703b7bf126807f409
+Commit message: "[JENKINS-49482] update summary.jelly to only display 'Deployed Artifacts:' when artifacts list is not empty"
+First time build. Skipping changelog.
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (build)
+[Pipeline] withMaven
+[withMaven] Options: []
+[withMaven] Available options:
+[withMaven] using JDK installation provided by the build agent
+[withMaven] using Maven installation 'maven 3.5.2'
+[Pipeline] {
+[Pipeline] sh
+[pipeline-maven-plugin] Running shell script
++ mvn clean deploy -DskipTests -DaltDeploymentRepository=central::default::file:///var/jenkins_home/.m2/repository
+----- withMaven Wrapper script -----
+Picked up JAVA_TOOL_OPTIONS: -Dmaven.ext.class.path="/var/jenkins_home/workspace/pipeline-maven-plugin@tmp/withMavenb1048c69/pipeline-maven-spy.jar" -Dorg.jenkinsci.plugins.pipeline.maven.reportsFolder="/var/jenkins_home/workspace/pipeline-maven-plugin@tmp/withMavenb1048c69"
+Apache Maven 3.5.2 (138edd61fd100ec658bfa2d307c43b76940a5d7d; 2017-10-18T07:58:13Z)
+Maven home: /var/jenkins_home/tools/hudson.tasks.Maven_MavenInstallation/maven_3.5.2
+Java version: 1.8.0_151, vendor: Oracle Corporation
+Java home: /usr/lib/jvm/java-8-openjdk-amd64/jre
+Default locale: en, platform encoding: UTF-8
+OS name: "linux", version: "4.9.60-linuxkit-aufs", arch: "amd64", family: "unix"
+[INFO] [jenkins-event-spy] Generate /var/jenkins_home/workspace/pipeline-maven-plugin@tmp/withMavenb1048c69/maven-spy-20180212-214126-18269295334818264046.log.tmp ...
+[INFO] Scanning for projects...
+[WARNING] The POM for org.jenkins-ci.tools:maven-hpi-plugin:jar:1.121 is missing, no dependency information available
+[WARNING] Failed to build parent project for org.jenkins-ci.plugins:pipeline-maven:hpi:3.3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO]
+[INFO] Pipeline Maven Integration Plugin Parent
+[INFO] Maven Spy for the Pipeline Maven Integration Plugin
+[INFO] Pipeline Maven Integration Plugin
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] Building Pipeline Maven Integration Plugin Parent 3.3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO]
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ pipeline-maven-parent ---
+[INFO]
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ pipeline-maven-parent ---
+[INFO] Installing /var/jenkins_home/workspace/pipeline-maven-plugin/pom.xml to /var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-parent/3.3.1-SNAPSHOT/pipeline-maven-parent-3.3.1-SNAPSHOT.pom
+[INFO]
+[INFO] --- maven-deploy-plugin:2.7:deploy (default-deploy) @ pipeline-maven-parent ---
+[INFO] Using alternate deployment repository central::default::file:///var/jenkins_home/.m2/repository
+[INFO] Downloading from central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-parent/3.3.1-SNAPSHOT/maven-metadata.xml
+[INFO] Downloaded from central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-parent/3.3.1-SNAPSHOT/maven-metadata.xml (620 B at 28 kB/s)
+[INFO] Uploading to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-parent/3.3.1-SNAPSHOT/pipeline-maven-parent-3.3.1-20180212.214129-7.pom
+[INFO] Uploaded to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-parent/3.3.1-SNAPSHOT/pipeline-maven-parent-3.3.1-20180212.214129-7.pom (4.3 kB at 1.1 MB/s)
+[INFO] Downloading from central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-parent/maven-metadata.xml
+[INFO] Downloaded from central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-parent/maven-metadata.xml (438 B at 219 kB/s)
+[INFO] Uploading to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-parent/3.3.1-SNAPSHOT/maven-metadata.xml
+[INFO] Uploaded to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-parent/3.3.1-SNAPSHOT/maven-metadata.xml (620 B at 620 kB/s)
+[INFO] Uploading to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-parent/maven-metadata.xml
+[INFO] Uploaded to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-parent/maven-metadata.xml (438 B at 438 kB/s)
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] Building Maven Spy for the Pipeline Maven Integration Plugin 3.3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO]
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ pipeline-maven-spy ---
+[INFO] Deleting /var/jenkins_home/workspace/pipeline-maven-plugin/maven-spy/target
+[INFO]
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ pipeline-maven-spy ---
+[WARNING] Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent!
+[INFO] skip non existing resourceDirectory /var/jenkins_home/workspace/pipeline-maven-plugin/maven-spy/src/main/resources
+[INFO]
+[INFO] --- maven-compiler-plugin:3.5.1:compile (default-compile) @ pipeline-maven-spy ---
+[INFO] Changes detected - recompiling the module!
+[WARNING] File encoding has not been set, using platform encoding UTF-8, i.e. build is platform dependent!
+[INFO] Compiling 27 source files to /var/jenkins_home/workspace/pipeline-maven-plugin/maven-spy/target/classes
+[INFO] /var/jenkins_home/workspace/pipeline-maven-plugin/maven-spy/src/main/java/org/jenkinsci/plugins/pipeline/maven/eventspy/handler/AbstractMavenEventHandler.java: Some input files use unchecked or unsafe operations.
+[INFO] /var/jenkins_home/workspace/pipeline-maven-plugin/maven-spy/src/main/java/org/jenkinsci/plugins/pipeline/maven/eventspy/handler/AbstractMavenEventHandler.java: Recompile with -Xlint:unchecked for details.
+[INFO]
+[INFO] --- sisu-maven-plugin:1.4:main-index (generate-index) @ pipeline-maven-spy ---
+[INFO]
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ pipeline-maven-spy ---
+[WARNING] Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent!
+[INFO] Copying 5 resources
+[INFO]
+[INFO] --- maven-compiler-plugin:3.5.1:testCompile (default-testCompile) @ pipeline-maven-spy ---
+[INFO] Changes detected - recompiling the module!
+[WARNING] File encoding has not been set, using platform encoding UTF-8, i.e. build is platform dependent!
+[INFO] Compiling 3 source files to /var/jenkins_home/workspace/pipeline-maven-plugin/maven-spy/target/test-classes
+[INFO] /var/jenkins_home/workspace/pipeline-maven-plugin/maven-spy/src/test/java/org/jenkinsci/plugins/pipeline/maven/eventspy/JenkinsMavenEventSpyMTTest.java: Some input files use unchecked or unsafe operations.
+[INFO] /var/jenkins_home/workspace/pipeline-maven-plugin/maven-spy/src/test/java/org/jenkinsci/plugins/pipeline/maven/eventspy/JenkinsMavenEventSpyMTTest.java: Recompile with -Xlint:unchecked for details.
+[INFO]
+[INFO] --- maven-surefire-plugin:2.12.4:test (default-test) @ pipeline-maven-spy ---
+[INFO] Tests are skipped.
+[INFO]
+[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ pipeline-maven-spy ---
+[INFO] Building jar: /var/jenkins_home/workspace/pipeline-maven-plugin/maven-spy/target/pipeline-maven-spy-3.3.1-SNAPSHOT.jar
+[INFO]
+[INFO] >>> findbugs-maven-plugin:3.0.5:check (default) > :findbugs @ pipeline-maven-spy >>>
+[INFO]
+[INFO] --- findbugs-maven-plugin:3.0.5:findbugs (findbugs) @ pipeline-maven-spy ---
+[INFO] Fork Value is true
+     [java] Picked up JAVA_TOOL_OPTIONS: -Dmaven.ext.class.path="/var/jenkins_home/workspace/pipeline-maven-plugin@tmp/withMavenb1048c69/pipeline-maven-spy.jar" -Dorg.jenkinsci.plugins.pipeline.maven.reportsFolder="/var/jenkins_home/workspace/pipeline-maven-plugin@tmp/withMavenb1048c69"
+[INFO] Done FindBugs Analysis....
+[INFO]
+[INFO] <<< findbugs-maven-plugin:3.0.5:check (default) < :findbugs @ pipeline-maven-spy <<<
+[INFO]
+[INFO]
+[INFO] --- findbugs-maven-plugin:3.0.5:check (default) @ pipeline-maven-spy ---
+[INFO] BugInstance size is 0
+[INFO] Error size is 0
+[INFO] No errors/warnings found
+[INFO]
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ pipeline-maven-spy ---
+[INFO] Installing /var/jenkins_home/workspace/pipeline-maven-plugin/maven-spy/target/pipeline-maven-spy-3.3.1-SNAPSHOT.jar to /var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-spy/3.3.1-SNAPSHOT/pipeline-maven-spy-3.3.1-SNAPSHOT.jar
+[INFO] Installing /var/jenkins_home/workspace/pipeline-maven-plugin/maven-spy/pom.xml to /var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-spy/3.3.1-SNAPSHOT/pipeline-maven-spy-3.3.1-SNAPSHOT.pom
+[INFO]
+[INFO] --- maven-deploy-plugin:2.7:deploy (default-deploy) @ pipeline-maven-spy ---
+[INFO] Using alternate deployment repository central::default::file:///var/jenkins_home/.m2/repository
+[INFO] Downloading from central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-spy/3.3.1-SNAPSHOT/maven-metadata.xml
+[INFO] Downloaded from central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-spy/3.3.1-SNAPSHOT/maven-metadata.xml (790 B at 198 kB/s)
+[INFO] Uploading to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-spy/3.3.1-SNAPSHOT/pipeline-maven-spy-3.3.1-20180212.214137-7.jar
+[INFO] Uploaded to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-spy/3.3.1-SNAPSHOT/pipeline-maven-spy-3.3.1-20180212.214137-7.jar (44 kB at 11 MB/s)
+[INFO] Uploading to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-spy/3.3.1-SNAPSHOT/pipeline-maven-spy-3.3.1-20180212.214137-7.pom
+[INFO] Uploaded to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-spy/3.3.1-SNAPSHOT/pipeline-maven-spy-3.3.1-20180212.214137-7.pom (5.7 kB at 5.7 MB/s)
+[INFO] Downloading from central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-spy/maven-metadata.xml
+[INFO] Downloaded from central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-spy/maven-metadata.xml (435 B at 87 kB/s)
+[INFO] Uploading to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-spy/3.3.1-SNAPSHOT/maven-metadata.xml
+[INFO] Uploaded to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-spy/3.3.1-SNAPSHOT/maven-metadata.xml (790 B at 790 kB/s)
+[INFO] Uploading to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-spy/maven-metadata.xml
+[INFO] Uploaded to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven-spy/maven-metadata.xml (435 B)
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] Building Pipeline Maven Integration Plugin 3.3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO]
+[INFO] --- maven-clean-plugin:3.0.0:clean (default-clean) @ pipeline-maven ---
+[INFO] Deleting /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/target
+[INFO]
+[INFO] --- maven-hpi-plugin:1.121:validate (default-validate) @ pipeline-maven ---
+[INFO]
+[INFO] --- maven-enforcer-plugin:1.4.1:display-info (display-info) @ pipeline-maven ---
+[INFO] Maven Version: 3.5.2
+[INFO] JDK Version: 1.8.0_151 normalized as: 1.8.0-151
+[INFO] OS Info: Arch: amd64 Family: unix Name: linux Version: 4.9.60-linuxkit-aufs
+[INFO]
+[INFO] --- maven-enforcer-plugin:1.4.1:enforce (display-info) @ pipeline-maven ---
+[INFO]
+[INFO] --- maven-localizer-plugin:1.24:generate (default) @ pipeline-maven ---
+[INFO]
+[INFO] >>> maven-javadoc-plugin:2.10.4:javadoc (default) > generate-sources @ pipeline-maven >>>
+[INFO]
+[INFO] --- maven-hpi-plugin:1.121:validate (default-validate) @ pipeline-maven ---
+[INFO]
+[INFO] --- maven-enforcer-plugin:1.4.1:display-info (display-info) @ pipeline-maven ---
+[INFO] Maven Version: 3.5.2
+[INFO] JDK Version: 1.8.0_151 normalized as: 1.8.0-151
+[INFO] OS Info: Arch: amd64 Family: unix Name: linux Version: 4.9.60-linuxkit-aufs
+[INFO]
+[INFO] --- maven-enforcer-plugin:1.4.1:enforce (display-info) @ pipeline-maven ---
+[INFO]
+[INFO] --- maven-localizer-plugin:1.24:generate (default) @ pipeline-maven ---
+[INFO]
+[INFO] <<< maven-javadoc-plugin:2.10.4:javadoc (default) < generate-sources @ pipeline-maven <<<
+[INFO]
+[INFO]
+[INFO] --- maven-javadoc-plugin:2.10.4:javadoc (default) @ pipeline-maven ---
+[INFO] Skipping javadoc generation
+[INFO]
+[INFO] --- maven-resources-plugin:3.0.2:resources (default-resources) @ pipeline-maven ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 66 resources
+[INFO]
+[INFO] --- maven-dependency-plugin:3.0.0:copy (copy-maven-spy-jar) @ pipeline-maven ---
+[INFO] Configured Artifact: org.jenkins-ci.plugins:pipeline-maven-spy:3.3.1-SNAPSHOT:jar
+[INFO] Copying pipeline-maven-spy-3.3.1-SNAPSHOT.jar to /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/target/classes/META-INF/lib/pipeline-maven-spy.jar
+[INFO]
+[INFO] --- maven-compiler-plugin:3.6.1:compile (default-compile) @ pipeline-maven ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 32 source files to /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/target/classes
+[INFO] /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/src/main/java/org/jenkinsci/plugins/pipeline/maven/WithMavenStepExecution.java: /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/src/main/java/org/jenkinsci/plugins/pipeline/maven/WithMavenStepExecution.java uses unchecked or unsafe operations.
+[INFO] /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/src/main/java/org/jenkinsci/plugins/pipeline/maven/WithMavenStepExecution.java: Recompile with -Xlint:unchecked for details.
+[INFO]
+[INFO] --- access-modifier-checker:1.7:enforce (default-enforce) @ pipeline-maven ---
+[INFO]
+[INFO] --- animal-sniffer-maven-plugin:1.15:check (check) @ pipeline-maven ---
+[INFO] Resolved signature org.codehaus.mojo.signature:java17 version as 1.0 from dependencyManagement
+[INFO] Checking unresolved references to org.codehaus.mojo.signature:java17:1.0
+[INFO]
+[INFO] --- maven-hpi-plugin:1.121:insert-test (default-insert-test) @ pipeline-maven ---
+[INFO]
+[INFO] --- gmaven-plugin:1.5-jenkins-3:generateTestStubs (test-in-groovy) @ pipeline-maven ---
+[INFO] No sources found for Java stub generation
+[INFO]
+[INFO] --- maven-resources-plugin:3.0.2:testResources (default-testResources) @ pipeline-maven ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 49 resources
+[INFO]
+[INFO] --- maven-dependency-plugin:3.0.0:copy (copy-binary-files) @ pipeline-maven ---
+[INFO] Configured Artifact: org.apache.maven:apache-maven:bin:3.5.0:zip
+[INFO] Copying apache-maven-3.5.0-bin.zip to /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/target/test-classes/apache-maven-3.5.0-bin.zip
+[INFO]
+[INFO] --- maven-compiler-plugin:3.6.1:testCompile (default-testCompile) @ pipeline-maven ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 24 source files to /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/target/test-classes
+[INFO] /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/src/test/java/org/jenkinsci/plugins/pipeline/maven/WithMavenStepTest.java: /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/src/test/java/org/jenkinsci/plugins/pipeline/maven/WithMavenStepTest.java uses or overrides a deprecated API.
+[INFO] /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/src/test/java/org/jenkinsci/plugins/pipeline/maven/WithMavenStepTest.java: Recompile with -Xlint:deprecation for details.
+[INFO] /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/target/generated-test-sources/injected/InjectedTest.java: /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/target/generated-test-sources/injected/InjectedTest.java uses unchecked or unsafe operations.
+[INFO] /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/target/generated-test-sources/injected/InjectedTest.java: Recompile with -Xlint:unchecked for details.
+[INFO]
+[INFO] --- maven-hpi-plugin:1.121:test-hpl (default-test-hpl) @ pipeline-maven ---
+[INFO] Generating /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/target/test-classes/the.hpl
+[INFO]
+[INFO] --- maven-hpi-plugin:1.121:resolve-test-dependencies (default-resolve-test-dependencies) @ pipeline-maven ---
+[INFO]
+[INFO] --- gmaven-plugin:1.5-jenkins-3:testCompile (test-in-groovy) @ pipeline-maven ---
+[INFO] No sources found to compile
+[INFO]
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ pipeline-maven ---
+[INFO] Tests are skipped.
+[INFO]
+[INFO] --- maven-license-plugin:1.7:process (default) @ pipeline-maven ---
+[INFO] Generated /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/target/pipeline-maven/WEB-INF/licenses.xml
+[INFO]
+[INFO] --- maven-hpi-plugin:1.121:hpi (default-hpi) @ pipeline-maven ---
+[INFO] Generating /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/target/pipeline-maven/META-INF/MANIFEST.MF
+[INFO] Checking for attached .jar artifact ...
+[INFO] Generating jar /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/target/pipeline-maven.jar
+[INFO] Building jar: /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/target/pipeline-maven.jar
+[INFO] Exploding webapp...
+[INFO] Copy webapp webResources to /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/target/pipeline-maven
+[INFO] Assembling webapp pipeline-maven in /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/target/pipeline-maven
+[INFO] Generating hpi /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/target/pipeline-maven.hpi
+[INFO] Building jar: /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/target/pipeline-maven.hpi
+[INFO]
+[INFO] --- maven-jar-plugin:3.0.2:test-jar (maybe-test-jar) @ pipeline-maven ---
+[INFO] Skipping packaging of the test-jar
+[INFO]
+[INFO] >>> findbugs-maven-plugin:3.0.4:check (findbugs) > :findbugs @ pipeline-maven >>>
+[INFO]
+[INFO] --- findbugs-maven-plugin:3.0.4:findbugs (findbugs) @ pipeline-maven ---
+[INFO]
+[INFO] <<< findbugs-maven-plugin:3.0.4:check (findbugs) < :findbugs @ pipeline-maven <<<
+[INFO]
+[INFO]
+[INFO] --- findbugs-maven-plugin:3.0.4:check (findbugs) @ pipeline-maven ---
+[INFO]
+[INFO] --- maven-install-plugin:2.5.2:install (default-install) @ pipeline-maven ---
+[INFO] Installing /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/target/pipeline-maven.hpi to /var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven/3.3.1-SNAPSHOT/pipeline-maven-3.3.1-SNAPSHOT.hpi
+[INFO] Installing /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/pom.xml to /var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven/3.3.1-SNAPSHOT/pipeline-maven-3.3.1-SNAPSHOT.pom
+[INFO] Installing /var/jenkins_home/workspace/pipeline-maven-plugin/jenkins-plugin/target/pipeline-maven.jar to /var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven/3.3.1-SNAPSHOT/pipeline-maven-3.3.1-SNAPSHOT.jar
+[INFO]
+[INFO] --- maven-deploy-plugin:2.8.2:deploy (default-deploy) @ pipeline-maven ---
+[INFO] Using alternate deployment repository central::default::file:///var/jenkins_home/.m2/repository
+[INFO] Downloading from central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven/3.3.1-SNAPSHOT/maven-metadata.xml
+[INFO] Downloaded from central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven/3.3.1-SNAPSHOT/maven-metadata.xml (959 B at 480 kB/s)
+[INFO] Uploading to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven/3.3.1-SNAPSHOT/pipeline-maven-3.3.1-20180212.214158-7.hpi
+[INFO] Uploaded to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven/3.3.1-SNAPSHOT/pipeline-maven-3.3.1-20180212.214158-7.hpi (3.0 MB at 49 MB/s)
+[INFO] Uploading to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven/3.3.1-SNAPSHOT/pipeline-maven-3.3.1-20180212.214158-7.pom
+[INFO] Uploaded to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven/3.3.1-SNAPSHOT/pipeline-maven-3.3.1-20180212.214158-7.pom (13 kB at 13 MB/s)
+[INFO] Downloading from central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven/maven-metadata.xml
+[INFO] Downloaded from central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven/maven-metadata.xml (431 B at 54 kB/s)
+[INFO] Uploading to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven/3.3.1-SNAPSHOT/maven-metadata.xml
+[INFO] Uploaded to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven/3.3.1-SNAPSHOT/maven-metadata.xml (959 B at 959 kB/s)
+[INFO] Uploading to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven/maven-metadata.xml
+[INFO] Uploaded to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven/maven-metadata.xml (431 B at 431 kB/s)
+[INFO] Uploading to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven/3.3.1-SNAPSHOT/pipeline-maven-3.3.1-20180212.214158-7.jar
+[INFO] Uploaded to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven/3.3.1-SNAPSHOT/pipeline-maven-3.3.1-20180212.214158-7.jar (230 kB at 46 MB/s)
+[INFO] Uploading to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven/3.3.1-SNAPSHOT/maven-metadata.xml
+[INFO] Uploaded to central: file:///var/jenkins_home/.m2/repository/org/jenkins-ci/plugins/pipeline-maven/3.3.1-SNAPSHOT/maven-metadata.xml (959 B at 959 kB/s)
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary:
+[INFO]
+[INFO] Pipeline Maven Integration Plugin Parent ........... SUCCESS [  0.238 s]
+[INFO] Maven Spy for the Pipeline Maven Integration Plugin  SUCCESS [  8.688 s]
+[INFO] Pipeline Maven Integration Plugin .................. SUCCESS [ 20.752 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 32.195 s
+[INFO] Finished at: 2018-02-12T21:41:58Z
+[INFO] Final Memory: 91M/234M
+[INFO] ------------------------------------------------------------------------
+[INFO] [jenkins-event-spy] Generated /var/jenkins_home/workspace/pipeline-maven-plugin@tmp/withMavenb1048c69/maven-spy-20180212-214126-18269295334818264046.log
+[Pipeline] }
+[Pipeline] // withMaven
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS

@@ -1,0 +1,21 @@
+@NonCPS
+def abortBuildIfTriggeredByJenkins() {
+    def validChangeDetected = false
+    def changeLogSets = currentBuild.changeSets
+    for (int i = 0; i < changeLogSets.size(); i++) {
+        def entries = changeLogSets[i].items
+        for (int j = 0; j < entries.length; j++) {
+            def entry = entries[j]
+            if(!entry.msg.matches("\\[sbt-release\\].*")){
+                validChangeDetected = true
+                println "Found commit by ${entry.author}"
+            }
+        }
+    }
+    // We are building if there are some walid changes or if there are no changes(so the build was triggered intentionally or it is the first run.)
+    if(!validChangeDetected && changeLogSets.size() != 0) {
+        currentBuild.result = 'NOT_BUILT'
+        error("Stopping to prevent auto trigger. No changes from authors other than sbt-release plugin")
+    }
+
+}

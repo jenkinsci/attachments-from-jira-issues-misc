@@ -1,0 +1,14 @@
+Index: main/core/src/main/java/hudson/tools/JDKInstaller.java
+===================================================================
+--- main/core/src/main/java/hudson/tools/JDKInstaller.java      (revision 32962)
++++ main/core/src/main/java/hudson/tools/JDKInstaller.java      (working copy)
+@@ -163,7 +163,7 @@
+         case SOLARIS:
+             fs.chmod(jdkBundle,0755);
+             if(launcher.launch().cmds(jdkBundle,"-noregister")
+-                .stdin(new ByteArrayInputStream("yes".getBytes())).stdout(out).pwd(expectedLocation).join()!=0)
++                .stdin(new ByteArrayInputStream("yes".getBytes())).stdout(out).pwd(new FilePath(launcher.getChannel(), expectedLocation)).join()!=0)
+                 throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK());
+
+             // JDK creates its own sub-directory, so pull them up
+

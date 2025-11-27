@@ -1,0 +1,534 @@
+Index: src/test/java/hudson/plugins/cobertura/CoberturaCoverageParserTest.java
+===================================================================
+--- src/test/java/hudson/plugins/cobertura/CoberturaCoverageParserTest.java	(revision 23042)
++++ src/test/java/hudson/plugins/cobertura/CoberturaCoverageParserTest.java	(working copy)
+@@ -61,7 +61,7 @@
+         print(result, 0);
+         assertNotNull(result);
+         assertEquals(CoverageResult.class, result.getClass());
+-        assertEquals("Cobertura Coverage Report", result.getName());
++        assertEquals(Messages.CoberturaCoverageParser_name(), result.getName());
+ //        assertEquals(10, result.getMethods());
+         assertEquals(2, result.getChildren().size());
+         CoverageResult subResult = result.getChild("<default>");
+@@ -84,7 +84,7 @@
+         print(result, 0);
+         assertNotNull(result);
+         assertEquals(CoverageResult.class, result.getClass());
+-        assertEquals("Cobertura Coverage Report", result.getName());
++        assertEquals(Messages.CoberturaCoverageParser_name(), result.getName());
+ //        assertEquals(10, result.getMethods());
+         assertEquals(2, result.getChildren().size());
+         CoverageResult subResult = result.getChild("<default>");
+Index: src/main/java/hudson/plugins/cobertura/CoberturaCoverageParser.java
+===================================================================
+--- src/main/java/hudson/plugins/cobertura/CoberturaCoverageParser.java	(revision 23042)
++++ src/main/java/hudson/plugins/cobertura/CoberturaCoverageParser.java	(working copy)
+@@ -106,7 +106,7 @@
+     public void startDocument() throws SAXException {
+         super.startDocument();
+         if (this.rootCoverage == null) {
+-            this.rootCoverage = new CoverageResult(CoverageElement.PROJECT, null, "Cobertura Coverage Report");
++            this.rootCoverage = new CoverageResult(CoverageElement.PROJECT, null, Messages.CoberturaCoverageParser_name());
+         }
+         stack.clear();
+         inSource = false;
+Index: src/main/java/hudson/plugins/cobertura/CoberturaBuildAction.java
+===================================================================
+--- src/main/java/hudson/plugins/cobertura/CoberturaBuildAction.java	(revision 23042)
++++ src/main/java/hudson/plugins/cobertura/CoberturaBuildAction.java	(working copy)
+@@ -118,7 +118,7 @@
+      * {@inheritDoc}
+      */
+     public String getDisplayName() {
+-        return "Coverage Report";  //To change body of implemented methods use File | Settings | File Templates.
++        return Messages.CoberturaBuildAction_displayName();  //To change body of implemented methods use File | Settings | File Templates.
+     }
+ 
+     /**
+Index: src/main/java/hudson/plugins/cobertura/CoberturaPublisher.java
+===================================================================
+--- src/main/java/hudson/plugins/cobertura/CoberturaPublisher.java	(revision 23042)
++++ src/main/java/hudson/plugins/cobertura/CoberturaPublisher.java	(working copy)
+@@ -356,7 +356,7 @@
+          * This human readable name is used in the configuration screen.
+          */
+         public String getDisplayName() {
+-            return "Publish Cobertura Coverage Report";
++            return Messages.MavenCoberturaPublisher_displayName();
+         }
+ 
+         /**
+Index: src/main/java/hudson/plugins/cobertura/MavenCoberturaAggregatedReport.java
+===================================================================
+--- src/main/java/hudson/plugins/cobertura/MavenCoberturaAggregatedReport.java	(revision 23042)
++++ src/main/java/hudson/plugins/cobertura/MavenCoberturaAggregatedReport.java	(working copy)
+@@ -49,7 +49,7 @@
+      * {@inheritDoc}
+      */
+     public String getDisplayName() {
+-        return "Coverage Report";
++        return Messages.MavenCoberturaAggregatedReport_displayName();
+     }
+ 
+     /**
+Index: src/main/java/hudson/plugins/cobertura/targets/CoverageMetric.java
+===================================================================
+--- src/main/java/hudson/plugins/cobertura/targets/CoverageMetric.java	(revision 23042)
++++ src/main/java/hudson/plugins/cobertura/targets/CoverageMetric.java	(working copy)
+@@ -7,12 +7,12 @@
+  * @since 10-Jul-2007 14:59:50
+  */
+ public enum CoverageMetric {
+-    PACKAGES("Packages"),
+-    FILES("Files"),
+-    CLASSES("Classes"),
+-    METHOD("Methods"),
+-    LINE("Lines"),
+-    CONDITIONAL("Conditionals");
++    PACKAGES(Messages.CoverageMetrics_Packages()),
++    FILES(Messages.CoverageMetrics_Files()),
++    CLASSES(Messages.CoverageMetrics_Classes()),
++    METHOD(Messages.CoverageMetrics_Methods()),
++    LINE(Messages.CoverageMetrics_Lines()),
++    CONDITIONAL(Messages.CoverageMetrics_Conditionals());
+ 
+     private final String name;
+ 
+Index: src/main/java/hudson/plugins/cobertura/targets/CoverageElement.java
+===================================================================
+--- src/main/java/hudson/plugins/cobertura/targets/CoverageElement.java	(revision 23042)
++++ src/main/java/hudson/plugins/cobertura/targets/CoverageElement.java	(working copy)
+@@ -7,11 +7,11 @@
+  * @since 22-Aug-2007 18:36:01
+  */
+ public enum CoverageElement {
+-    PROJECT("Project"),
+-    JAVA_PACKAGE("Package", PROJECT),
+-    JAVA_FILE("File", JAVA_PACKAGE),
+-    JAVA_CLASS("Class", JAVA_FILE),
+-    JAVA_METHOD("Method", JAVA_CLASS);
++    PROJECT(Messages.CoverageElement_Project()),
++    JAVA_PACKAGE(Messages.CoverageElement_Package(), PROJECT),
++    JAVA_FILE(Messages.CoverageElement_File(), JAVA_PACKAGE),
++    JAVA_CLASS(Messages.CoverageElement_Class(), JAVA_FILE),
++    JAVA_METHOD(Messages.CoverageElement_Method(), JAVA_CLASS);
+ 
+     private final CoverageElement parent;
+     private final String displayName;
+Index: src/main/java/hudson/plugins/cobertura/CoberturaProjectAction.java
+===================================================================
+--- src/main/java/hudson/plugins/cobertura/CoberturaProjectAction.java	(revision 23042)
++++ src/main/java/hudson/plugins/cobertura/CoberturaProjectAction.java	(working copy)
+@@ -45,7 +45,7 @@
+      * {@inheritDoc}
+      */
+     public String getDisplayName() {
+-        return "Coverage Report";
++        return Messages.CoberturaProjectAction_displayName();
+     }
+ 
+     /**
+Index: src/main/java/hudson/plugins/cobertura/MavenCoberturaPublisher.java
+===================================================================
+--- src/main/java/hudson/plugins/cobertura/MavenCoberturaPublisher.java	(revision 23042)
++++ src/main/java/hudson/plugins/cobertura/MavenCoberturaPublisher.java	(working copy)
+@@ -227,7 +227,7 @@
+          * {@inheritDoc}
+          */
+         public String getDisplayName() {
+-            return "Publish Cobertura Coverage Report";
++            return Messages.MavenCoberturaPublisher_displayName();
+         }
+ 
+         /**
+Index: src/main/resources/hudson/plugins/cobertura/Messages.properties
+===================================================================
+--- src/main/resources/hudson/plugins/cobertura/Messages.properties	(revision 23042)
++++ src/main/resources/hudson/plugins/cobertura/Messages.properties	(working copy)
+@@ -1 +1,7 @@
+-CoberturaBuildAction.description=Cobertura Coverage: {0}% ({1}) {2} 
+\ No newline at end of file
++CoberturaBuildAction.description=Cobertura Coverage: {0}% ({1}) {2}
++CoberturaCoverageParser.name=Cobertura Coverage Report
++CoberturaBuildAction.displayName=Coverage Report
++MavenCoberturaAggregatedReport.displayName=Coverage Report
++CoberturaProjectAction.displayName=Coverage Report
++MavenCoberturaPublisher.displayName=Publish Cobertura Coverage Report
++CoberturaPublisher.displayName=Publish Cobertura Coverage Report
+\ No newline at end of file
+Index: src/main/resources/hudson/plugins/cobertura/CoberturaPublisher/config.properties
+===================================================================
+--- src/main/resources/hudson/plugins/cobertura/CoberturaPublisher/config.properties	(revision 0)
++++ src/main/resources/hudson/plugins/cobertura/CoberturaPublisher/config.properties	(revision 0)
+@@ -0,0 +1,17 @@
++xml.report.pattern.description=\
++ This is a file name pattern that can be used to locate the cobertura xml report files \
++ (for example with Maven2 use <b>**/target/site/cobertura/coverage.xml</b>). \
++ The path is relative to the module root unless you have configured \
++ your SCM with multiple modules, in which case it is relative to the \
++ workspace root.  Note that the module root is SCM-specific, and may \
++ not be the same as the workspace root. \
++ <br/> \
++ Cobertura must be configured to generate XML reports for this plugin to function.
++only.stable.builds.description=Include only stable builds, i.e. exclude unstable and failed ones.
++metric.targets.description=\
++ Configure health reporting thresholds. <br/> \
++ For the <img src="{0}/images/16x16/health-80plus.gif" alt="100%"> \
++ row, leave blank to use the default value (i.e. 80). <br/> \
++ For the <img src="{0}/images/16x16/health-00to19.gif" alt="0%"> and \
++ <img src="{0}/images/16x16/yellow.gif" alt="0%"> rows, leave blank to \
++ use the default values (i.e. 0).
+
+Property changes on: src/main/resources/hudson/plugins/cobertura/CoberturaPublisher/config.properties
+___________________________________________________________________
+Added: svn:keywords
+   + Id Date Author Rev
+Added: svn:eol-style
+   + native
+
+Index: src/main/resources/hudson/plugins/cobertura/CoberturaPublisher/config.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/cobertura/CoberturaPublisher/config.jelly	(revision 23042)
++++ src/main/resources/hudson/plugins/cobertura/CoberturaPublisher/config.jelly	(working copy)
+@@ -1,31 +1,15 @@
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+-    <f:entry title="Cobertura xml report pattern"
+-             description="
+-             This is a file name pattern that can be used to locate the cobertura xml report files
+-             (for example with Maven2 use &lt;b&gt;**/target/site/cobertura/coverage.xml&lt;/b&gt;).
+-           The path is relative to the module root unless you have configured
+-           your SCM with multiple modules, in which case it is relative to the
+-           workspace root.  Note that the module root is SCM-specific, and may
+-           not be the same as the workspace root.
+-           &lt;br/&gt;
+-           Cobertura must be configured to generate XML reports for this plugin to function.
+-           ">
++    <f:entry title="${%Cobertura xml report pattern}"
++             description="${%xml.report.pattern.description}">
+         <f:textbox name="cobertura.coberturaReportFile" value="${instance.coberturaReportFile}"/>
+     </f:entry>
+-    <f:entry title="Consider only stable builds"
+-             description="Include only stable builds, i.e. exclude unstable and failed ones." >                                                                                           
++    <f:entry title="${%Consider only stable builds}"
++             description="${%only.stable.builds.description}" >
+        <f:checkbox name="cobertura.onlyStable" checked="${instance.onlyStable}" />                                                                                        
+     </f:entry>      
+-    <f:entry title="Coverage Metric Targets"
+-             description="
+-             Configure health reporting thresholds. &lt;br/&gt;
+-             For the &lt;img src='${rootURL}/images/16x16/health-80plus.gif' alt='100%'&gt;
+-             row, leave blank to use the default value (i.e. 80). &lt;br/&gt;
+-             For the &lt;img src='${rootURL}/images/16x16/health-00to19.gif' alt='0%'&gt; and
+-             &lt;img src='${rootURL}/images/16x16/yellow.gif' alt='0%'&gt; rows, leave blank to
+-             use the default values (i.e. 0).
+-    ">
++    <f:entry title="${%Coverage Metric Targets}"
++             description="${%metric.targets.description(rootURL)}">
+         <f:repeatable var="inst" varStatus="instStatus" items="${descriptor.getTargets(instance)}">
+             <table width="100%">
+                 <col width="25%"/>
+@@ -53,7 +37,7 @@
+                         </td>
+                         <th>
+                             <img src="${rootURL}/images/16x16/health-80plus.gif" alt="100%"
+-                                 title="Report health as 100% when coverage is greater than"/>
++                                 title="${%Report health as 100% when coverage is greater than}"/>
+                         </th>
+                         <td>
+                             <f:textbox name="cobertura.target.healthy"
+@@ -61,7 +45,7 @@
+                         </td>
+                         <th>
+                             <img src="${rootURL}/images/16x16/health-00to19.gif" alt="0%"
+-                                 title="Report health as 0% when coverage is less than"/>
++                                 title="${%Report health as 0% when coverage is less than}"/>
+                         </th>
+                         <td>
+                             <f:textbox name="cobertura.target.unhealthy"
+@@ -69,7 +53,7 @@
+                         </td>
+                         <th>
+                             <img src="${rootURL}/images/16x16/yellow.gif" alt="0%"
+-                                 title="Mark the build as unstable when coverage is less than"/>
++                                 title="${%Mark the build as unstable when coverage is less than}"/>
+                         </th>
+                         <td>
+                             <f:textbox name="cobertura.target.unstable"
+Index: src/main/resources/hudson/plugins/cobertura/CoberturaPublisher/config_ja.properties
+===================================================================
+--- src/main/resources/hudson/plugins/cobertura/CoberturaPublisher/config_ja.properties	(revision 0)
++++ src/main/resources/hudson/plugins/cobertura/CoberturaPublisher/config_ja.properties	(revision 0)
+@@ -0,0 +1,23 @@
++Cobertura\ xml\ report\ pattern=Cobertura XML\u30EC\u30DD\u30FC\u30C8 \u30D1\u30BF\u30FC\u30F3
++Consider\ only\ stable\ builds=\u5B89\u5B9A\u30D3\u30EB\u30C9\u306E\u307F\u96C6\u8A08
++Coverage\ Metric\ Targets=\u30AB\u30D0\u30EC\u30C3\u30B8\u30FB\u30E1\u30C8\u30EA\u30AF\u30B9\u306E\u5BFE\u8C61
++Report\ health\ as\ 100%\ when\ coverage\ is\ greater\ than=\
++ \u30AB\u30D0\u30EC\u30C3\u30B8\u304C\u3053\u306E\u5024\u4EE5\u4E0A\u306E\u5834\u5408\u3001\u72B6\u614B\u3092100%\u3068\u5831\u544A\u3057\u307E\u3059\u3002
++Report\ health\ as\ 0%\ when\ coverage\ is\ less\ than=\
++ \u30AB\u30D0\u30EC\u30C3\u30B8\u304C\u3053\u306E\u5024\u672A\u6E80\u306E\u5834\u5408\u3001\u72B6\u614B\u30920%\u3068\u5831\u544A\u3057\u307E\u3059\u3002
++Mark\ the\ build\ as\ unstable\ when\ coverage\ is\ less\ than=\
++ \u30AB\u30D0\u30EC\u30C3\u30B8\u304C\u3053\u306E\u5024\u672A\u6E80\u306E\u5834\u5408\u3001\u30D3\u30EB\u30C9\u3092\u4E0D\u5B89\u5B9A\u306B\u3057\u307E\u3059\u3002
++
++xml.report.pattern.description=\
++ cobertura\u306EXML\u30EC\u30DD\u30FC\u30C8\u30D5\u30A1\u30A4\u30EB\u3092\u7279\u5B9A\u3059\u308B\u305F\u3081\u306E\u30D5\u30A1\u30A4\u30EB\u540D\u306E\u30D1\u30BF\u30FC\u30F3\u3067\u3059(\u4F8B\u3048\u3070\u3001Maven2\u3067\u306F<b>**/target/site/cobertura/coverage.xml</b>\u3067\u3059)\u3002\
++ \u30D1\u30B9\u306F\u3001SCM\u3092\u8907\u6570\u306E\u30ED\u30B1\u30FC\u30B7\u30E7\u30F3\u3092\u6271\u3046\u3088\u3046\u306B\u8A2D\u5B9A\u3057\u306A\u3044\u9650\u308A(\u3053\u306E\u5834\u5408\u306F\u30EF\u30FC\u30AF\u30B9\u30DA\u30FC\u30B9\u306E\u30EB\u30FC\u30C8\u304B\u3089)\u3001\u30E2\u30B8\u30E5\u30FC\u30EB\u306E\u30EB\u30FC\u30C8\u304B\u3089\u306E\u76F8\u5BFE\u30D1\u30B9\u3067\u3059\u3002\
++ \u6CE8\u610F:\u30E2\u30B8\u30E5\u30FC\u30EB\u30EB\u30FC\u30C8\u306F\u4F7F\u7528\u3059\u308BSCM\u306B\u3088\u308A\u7570\u306A\u308A\u307E\u3059\u3057\u3001\u30EF\u30FC\u30AF\u30B9\u30DA\u30FC\u30B9\u306E\u30EB\u30FC\u30C8\u3068\u3082\u9055\u3046\u3053\u3068\u3082\u3042\u308A\u307E\u3059\u3002\
++ <br/> \
++ \u3053\u306E\u30D7\u30E9\u30B0\u30A4\u30F3\u3092\u6B63\u5E38\u306B\u52D5\u4F5C\u3055\u305B\u308B\u306B\u306F\u3001Cobertura\u304CXML\u30EC\u30DD\u30FC\u30C8\u3092\u751F\u6210\u3059\u308B\u3088\u3046\u306B\u8A2D\u5B9A\u3057\u306A\u304F\u3066\u306F\u306A\u308A\u307E\u305B\u3093\u3002
++only.stable.builds.description=\u5B89\u5B9A\u30D3\u30EB\u30C8\u306E\u307F\u96C6\u8A08\u3057\u307E\u3059\u3002\u4E0D\u5B89\u5B9A\u304A\u3088\u3073\u5931\u6557\u30D3\u30EB\u30C9\u306F\u5BFE\u8C61\u5916\u3067\u3059\u3002
++metric.targets.description=\
++ \u72B6\u614B\u306E\u95BE\u5024\u3092\u8A2D\u5B9A\u3057\u307E\u3059\u3002<br/> \
++ <img src="{0}/images/16x16/health-80plus.gif" alt="100%">\u3092\u8A2D\u5B9A\u3057\u306A\u3044\u3068\u3001\
++ \u30C7\u30D5\u30A9\u30EB\u30C8\u5024\u306E80\u3092\u4F7F\u7528\u3057\u307E\u3059\u3002 \
++ <img src="{0}/images/16x16/health-00to19.gif" alt="0%"> \u3068 \
++ <img src="{0}/images/16x16/yellow.gif" alt="0%"> \u3092\u8A2D\u5B9A\u3057\u306A\u3044\u3068\u3001\u30C7\u30D5\u30A9\u30EB\u30C8\u5024\u306E0\u3092\u4F7F\u7528\u3057\u307E\u3059\u3002
+\ No newline at end of file
+
+Property changes on: src/main/resources/hudson/plugins/cobertura/CoberturaPublisher/config_ja.properties
+___________________________________________________________________
+Added: svn:keywords
+   + Id Date Author Rev
+Added: svn:eol-style
+   + native
+
+Index: src/main/resources/hudson/plugins/cobertura/targets/Messages.properties
+===================================================================
+--- src/main/resources/hudson/plugins/cobertura/targets/Messages.properties	(revision 0)
++++ src/main/resources/hudson/plugins/cobertura/targets/Messages.properties	(revision 0)
+@@ -0,0 +1,12 @@
++CoverageMetrics.Packages=Packages
++CoverageMetrics.Files=Files
++CoverageMetrics.Classes=Classes
++CoverageMetrics.Methods=Methods
++CoverageMetrics.Lines=Lines
++CoverageMetrics.Conditionals=Conditionals
++
++CoverageElement.Project=Project
++CoverageElement.Package=Package
++CoverageElement.File=File
++CoverageElement.Class=Class
++CoverageElement.Method=Method
+
+Property changes on: src/main/resources/hudson/plugins/cobertura/targets/Messages.properties
+___________________________________________________________________
+Added: svn:keywords
+   + Id Date Author Rev
+Added: svn:eol-style
+   + native
+
+Index: src/main/resources/hudson/plugins/cobertura/targets/CoverageResult/index.properties
+===================================================================
+--- src/main/resources/hudson/plugins/cobertura/targets/CoverageResult/index.properties	(revision 0)
++++ src/main/resources/hudson/plugins/cobertura/targets/CoverageResult/index.properties	(revision 0)
+@@ -0,0 +1,10 @@
++coverage.breakdown.by=Coverage Breakdown by {0}
++reason.1=\
++ This is not the most recent build (to save on disk space, this plugin only keeps the \
++ most recent build's source code).
++reason.2=\
++ Cobertura found the source code but did not provide enough information to locate the \
++ source code.
++reason.3=\
++ Cobertura could not find the source code, so this plugin has no hope of finding it.
++
+
+Property changes on: src/main/resources/hudson/plugins/cobertura/targets/CoverageResult/index.properties
+___________________________________________________________________
+Added: svn:keywords
+   + Id Date Author Rev
+Added: svn:eol-style
+   + native
+
+Index: src/main/resources/hudson/plugins/cobertura/targets/CoverageResult/index.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/cobertura/targets/CoverageResult/index.jelly	(revision 23042)
++++ src/main/resources/hudson/plugins/cobertura/targets/CoverageResult/index.jelly	(working copy)
+@@ -3,14 +3,14 @@
+     <l:layout xmlns:cobertura="/hudson/plugins/cobertura/tags" css="/plugin/cobertura/css/style.css">
+         <st:include it="${it.owner}" page="sidepanel.jelly"/>
+         <l:main-panel>
+-            <h1>Code Coverage</h1>
++            <h1>${%Code Coverage}</h1>
+             <j:forEach var="parent" items="${it.parents}">
+                 <a href="${it.relativeUrl(parent)}">${parent.xmlTransform(parent.name)}</a>
+                 &gt;
+             </j:forEach>
+             <h2>${it.xmlTransform(it.name)}</h2>
+             <j:set var="metrics" value="${it.metrics}"/>
+-            <h3>Trend</h3>
++            <h3>${%Trend}</h3>
+             <j:if test="${it.previousResult != null}">
+             <img src="graph" width="500px" height="200px"/>
+             </j:if>
+@@ -44,10 +44,10 @@
+             </j:if>
+ 
+ 
+-            <h3>${it.element.displayName} Coverage Summary</h3>
++            <h3>${it.element.displayName} ${%Coverage Summary}</h3>
+             <table border="1px" class="pane">
+                 <tr>
+-                    <td>Name</td>
++                    <td>${%Name}</td>
+                     <j:forEach var="metric" items="${metrics}">
+                         <td>${metric.name}</td>
+                     </j:forEach>
+@@ -68,7 +68,7 @@
+             </table>
+ 
+             <j:if test="${it.sourceCodeLevel}">
+-                <h3>Source</h3>
++                <h3>${%Source}</h3>
+                 <j:choose>
+                     <j:when test="${it.sourceFileAvailable}">
+                         <div style="overflow-x:scroll;">
+@@ -85,19 +85,11 @@
+                     </j:when>
+                     <j:otherwise>
+                         <p>
+-                            <i>Source code is unavailable.</i> Some possible reasons are:
++                            <i>${%Source code is unavailable.}</i> ${%Some possible reasons are:}
+                             <ul>
+-                                <li>
+-                                    This is not the most recent build (to save on disk space, this plugin only keeps the
+-                                    most recent build's source code).
+-                                </li>
+-                                <li>
+-                                    Cobertura found the source code but did not provide enough information to locate the
+-                                    source code.
+-                                </li>
+-                                <li>
+-                                    Cobertura could not find the source code, so this plugin has no hope of finding it.
+-                                </li>
++                                <li>${%reason.1}</li>
++                                <li>${%reason.2}</li>
++                                <li>${%reason.3}</li>
+                             </ul>
+                         </p>
+                     </j:otherwise>
+@@ -106,10 +98,10 @@
+ 
+             <j:forEach var="element" items="${it.childElements}">
+                 <j:set var="childMetrics" value="${it.getChildMetrics(element)}"/>
+-                <h3>Coverage Breakdown by ${element.displayName}</h3>
++                <h3>${%coverage.breakdown.by(element.displayName)}</h3>
+                 <table border="1px" class="pane sortable">
+                     <tr>
+-                        <td>Name</td>
++                        <td>${%Name}</td>
+                         <j:forEach var="metric" items="${childMetrics}">
+                             <td>${metric.name}</td>
+                         </j:forEach>
+@@ -131,7 +123,7 @@
+                                         </tr></table></td>
+                                     </j:when>
+                                     <j:otherwise>
+-                                        <td data="101">N/A</td>
++                                        <td data="101">${%N/A}</td>
+                                     </j:otherwise>
+                                 </j:choose>
+                             </j:forEach>
+Index: src/main/resources/hudson/plugins/cobertura/targets/CoverageResult/index_ja.properties
+===================================================================
+--- src/main/resources/hudson/plugins/cobertura/targets/CoverageResult/index_ja.properties	(revision 0)
++++ src/main/resources/hudson/plugins/cobertura/targets/CoverageResult/index_ja.properties	(revision 0)
+@@ -0,0 +1,16 @@
++Code\ Coverage=\u30B3\u30FC\u30C9\u30FB\u30AB\u30D0\u30EC\u30C3\u30B8
++Trend=\u63A8\u79FB
++Coverage\ Summary=\u30AB\u30D0\u30EC\u30C3\u30B8\u306E\u8981\u7D04
++Name=\u540D\u524D
++Source=\u30BD\u30FC\u30B9
++Source\ code\ is\ unavailable.=\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\u3092\u8868\u793A\u3067\u304D\u307E\u305B\u3093\u3002
++Some\ possible\ reasons\ are\:=\u3044\u304F\u3064\u304B\u306E\u539F\u56E0\u304C\u8003\u3048\u3089\u308C\u307E\u3059\u3002
++coverage.breakdown.by={0}\u3054\u3068\u306E\u30AB\u30D0\u30EC\u30C3\u30B8\u96C6\u8A08\u7D50\u679C
++N/A=N/A
++
++reason.1=\
++ \u3053\u306E\u30D3\u30EB\u30C9\u306F\u3064\u3044\u6700\u8FD1\u306E\u30D3\u30EB\u30C9\u3067\u306F\u3042\u308A\u307E\u305B\u3093(\u30C7\u30A3\u30B9\u30AF\u3092\u7BC0\u7D04\u3059\u308B\u305F\u3081\u306B\u3001\u30D7\u30E9\u30B0\u30A4\u30F3\u306F\u6700\u8FD1\u306E\u30D3\u30EB\u30C9\u306E\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\u306E\u307F\u4FDD\u5B58\u3057\u307E\u3059)\u3002
++reason.2=\
++ \u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\u3092\u898B\u3064\u3051\u307E\u3057\u305F\u304C\u3001\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\u3092\u7279\u5B9A\u3059\u308B\u3060\u3051\u306E\u5341\u5206\u306A\u60C5\u5831\u304C\u3042\u308A\u307E\u305B\u3093\u3002
++reason.3=\
++ \u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3067\u3057\u305F\u3002
+
+Property changes on: src/main/resources/hudson/plugins/cobertura/targets/CoverageResult/index_ja.properties
+___________________________________________________________________
+Added: svn:keywords
+   + Id Date Author Rev
+Added: svn:eol-style
+   + native
+
+Index: src/main/resources/hudson/plugins/cobertura/targets/Messages_ja.properties
+===================================================================
+--- src/main/resources/hudson/plugins/cobertura/targets/Messages_ja.properties	(revision 0)
++++ src/main/resources/hudson/plugins/cobertura/targets/Messages_ja.properties	(revision 0)
+@@ -0,0 +1,12 @@
++CoverageMetrics.Packages=\u30D1\u30C3\u30B1\u30FC\u30B8
++CoverageMetrics.Files=\u30D5\u30A1\u30A4\u30EB
++CoverageMetrics.Classes=\u30AF\u30E9\u30B9
++CoverageMetrics.Methods=\u30E1\u30BD\u30C3\u30C9
++CoverageMetrics.Lines=\u884C
++CoverageMetrics.Conditionals=\u6761\u4EF6
++
++CoverageElement.Project=\u30D7\u30ED\u30B8\u30A7\u30AF\u30C8
++CoverageElement.Package=\u30D1\u30C3\u30B1\u30FC\u30B8
++CoverageElement.File=\u30D5\u30A1\u30A4\u30EB
++CoverageElement.Class=\u30AF\u30E9\u30B9
++CoverageElement.Method=\u30E1\u30BD\u30C3\u30C9
+
+Property changes on: src/main/resources/hudson/plugins/cobertura/targets/Messages_ja.properties
+___________________________________________________________________
+Added: svn:keywords
+   + Id Date Author Rev
+Added: svn:eol-style
+   + native
+
+Index: src/main/resources/hudson/plugins/cobertura/CoberturaProjectAction/floatingBox_ja.properties
+===================================================================
+--- src/main/resources/hudson/plugins/cobertura/CoberturaProjectAction/floatingBox_ja.properties	(revision 0)
++++ src/main/resources/hudson/plugins/cobertura/CoberturaProjectAction/floatingBox_ja.properties	(revision 0)
+@@ -0,0 +1,2 @@
++Code\ Coverage=\u30B3\u30FC\u30C9\u30FB\u30AB\u30D0\u30EC\u30C3\u30B8
++
+
+Property changes on: src/main/resources/hudson/plugins/cobertura/CoberturaProjectAction/floatingBox_ja.properties
+___________________________________________________________________
+Added: svn:keywords
+   + Id Date Author Rev
+Added: svn:eol-style
+   + native
+
+Index: src/main/resources/hudson/plugins/cobertura/CoberturaProjectAction/floatingBox.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/cobertura/CoberturaProjectAction/floatingBox.jelly	(revision 23042)
++++ src/main/resources/hudson/plugins/cobertura/CoberturaProjectAction/floatingBox.jelly	(working copy)
+@@ -3,7 +3,7 @@
+     <j:set var="lastResult" value="${from.lastResult.result}"/>
+     <j:if test="${lastResult != null}">
+         <div class="test-trend-caption">
+-            Code Coverage
++            ${%Code Coverage}
+         </div>
+ 
+         <j:choose>
+Index: src/main/resources/hudson/plugins/cobertura/Messages_ja.properties
+===================================================================
+--- src/main/resources/hudson/plugins/cobertura/Messages_ja.properties	(revision 0)
++++ src/main/resources/hudson/plugins/cobertura/Messages_ja.properties	(revision 0)
+@@ -0,0 +1,7 @@
++CoberturaBuildAction.description=Cobertura \u30AB\u30D0\u30EC\u30C3\u30B8: {0}% ({1}) {2}
++CoberturaCoverageParser.name=Cobertura \u30AB\u30D0\u30EC\u30C3\u30B8\u30FB\u30EC\u30DD\u30FC\u30C8
++CoberturaBuildAction.displayName=\u30AB\u30D0\u30EC\u30C3\u30B8\u30FB\u30EC\u30DD\u30FC\u30C8
++MavenCoberturaAggregatedReport.displayName=\u30AB\u30D0\u30EC\u30C3\u30B8\u30FB\u30EC\u30DD\u30FC\u30C8
++CoberturaProjectAction.displayName=\u30AB\u30D0\u30EC\u30C3\u30B8\u30FB\u30EC\u30DD\u30FC\u30C8
++MavenCoberturaPublisher.displayName=Cobertura \u30AB\u30D0\u30EC\u30C3\u30B8\u30FB\u30EC\u30DD\u30FC\u30C8\u306E\u96C6\u8A08
++CoberturaPublisher.displayName=Cobertura \u30AB\u30D0\u30EC\u30C3\u30B8\u30FB\u30EC\u30DD\u30FC\u30C8\u306E\u96C6\u8A08
+
+Property changes on: src/main/resources/hudson/plugins/cobertura/Messages_ja.properties
+___________________________________________________________________
+Added: svn:keywords
+   + Id Date Author Rev
+Added: svn:eol-style
+   + native
+

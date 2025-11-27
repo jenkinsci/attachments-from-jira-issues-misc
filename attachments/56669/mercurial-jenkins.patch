@@ -1,0 +1,12 @@
+diff --git a/src/main/java/hudson/plugins/mercurial/MercurialSCM.java b/src/main/java/hudson/plugins/mercurial/MercurialSCM.java
+index e11cd3b..9d8b37f 100755
+--- a/src/main/java/hudson/plugins/mercurial/MercurialSCM.java
++++ b/src/main/java/hudson/plugins/mercurial/MercurialSCM.java
+@@ -813,6 +813,7 @@ public class MercurialSCM extends SCM implements Serializable {
+                 if (hgrc.exists()) {
+                     try (InputStream is = hgrc.read()) {
+                         Ini hgrcIni = new Ini(is);
++                        hgrcIni.getConfig().setEscape(false);
+                         hgrcIni.put("paths", "default", getSource(env));
+                         try (OutputStream os = hgrc.write()) {
+                             hgrcIni.store(os);

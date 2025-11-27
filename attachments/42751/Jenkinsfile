@@ -1,0 +1,25 @@
+pipeline {
+    agent any
+
+    environment {
+        rocketChannel = 'devsecops-jenkins-notif'
+    }
+
+    stages {
+        stage('RocketChat') {
+            steps {
+                script {
+                    for(int i=1; i < 4; i++) {
+                        rocketSend(
+                            attachments: [
+                                [$class: 'MessageAttachment', color: 'green', text: "${RUN_DISPLAY_URL}", title: 'Open BlueOcean details', collapsed: true]
+                            ],
+                            message: "Test (${i}) deployment STARTED", channel: rocketChannel, rawMessage: true)
+
+                        sleep 1
+                    }
+                }
+            }
+        }
+    }
+}

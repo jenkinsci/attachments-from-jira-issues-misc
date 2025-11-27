@@ -1,0 +1,30 @@
+Index: PerforceSCM.java
+===================================================================
+RCS file: /cvs/hudson/hudson/plugins/perforce/src/main/java/hudson/plugins/perforce/PerforceSCM.java,v
+retrieving revision 1.23
+diff -u -r1.23 PerforceSCM.java
+--- PerforceSCM.java	11 Nov 2007 22:18:49 -0000	1.23
++++ PerforceSCM.java	16 Dec 2007 21:32:20 -0000
+@@ -19,6 +19,7 @@
+ import java.io.IOException;
+ import java.net.URLDecoder;
+ import java.util.List;
++import java.util.Map;
+ 
+ import javax.servlet.ServletException;
+ 
+@@ -664,5 +665,14 @@
+ 			return "";
+ 		return new Integer(firstChange).toString();
+ 	}
++
++    @Override
++    public void buildEnvVars(AbstractBuild build, Map<String, String> env)
++    {
++        super.buildEnvVars(build, env);
++
++        int lastChange = getLastChange(build);
++            env.put("PERFORCE_REVISION", Integer.toString(lastChange));
++    }
+ }
+ 

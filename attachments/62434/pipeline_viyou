@@ -1,0 +1,53 @@
+script {
+    argFilesPath = "automation-services/test_library/to_be_migrated/src/regression_suite/run_environment/${env.PHASE}/${env.EDITION}/tenant*.txt"
+    argFiles = findFiles(glob: "${argFilesPath}")
+    def tests=[:]
+    argFiles.each { argFile ->
+        echo "tenant args file - ${argFile.getName()}"
+        if(env.IS_RESTORE_TENANT == 'true' && argFile.getName().contains('restore')){
+            tests["${argFile.getName()}"] = tenantCaseGroup(argFile)
+        } else if(env.IS_RESTORE_TENANT == 'false' && !argFile.getName().contains('restore')) {
+            tests["${argFile.getName()}"] = tenantCaseGroup(argFile)
+        }
+    }
+    parallel tests
+}
+
+def tenantCaseGroup(argFile) {
+    return {
+        stage("${argFile.getName()}") {
+            def args = readFile("${env.workspace}/${argFile}").split("\\r?\\n")
+            echo "args in ${argFile.getName()} - ${args}"
+            def sleep_time = args.find{it.contains("--variable SLEEPTIME:")}?args.find{it.contains("--variable SLEEPTIME:")}.split(":")[1]:0
+            echo "sleep time is: " + sleep_time
+            sleep(time: sleep_time, unit: "SECONDS")
+            def tenant = args.find{it.contains("--variable TENANT:")}?.split(":")[1]
+            echo "tenant is ${tenant}"
+            if(tenant == '') {
+                throw new Exception("tenant is not set for the cases.")
+            }
+            stashList.add(argFile.getName())
+            allureReportPath = "reports/${tenant}/allure"
+            allureReportList.add([path: "${allureReportPath}"])
+            if(args.find{it.contains("--variable SFUSERID:")}) {
+                if (env.CASES_BRANCH == 'master' || env.Include_Tags.contains('SalesForce')) {
+                    def sf_user_id = args.find{it.contains("--variable SFUSERID:")}?.split(":")[1]
+                    echo "sf_user_id is ${sf_user_id}"
+                    echo "Do lock integration"
+                    lock(resource: "integration-${sf_user_id}") {
+                        runRobotCase(argsFile:argFile.getName(),
+                                    tenantDBInfoMap:tenantDBInfoMap,
+                                    allureReportPath:allureReportPath)
+                    }
+                }
+            }
+            else{
+                echo "DO NOT lock integration"
+
+                runRobotCase(argsFile:argFile.getName(),
+                            tenantDBInfoMap:tenantDBInfoMap,
+                            allureReportPath:allureReportPath)
+            }
+        }
+    }
+}

@@ -1,0 +1,66 @@
+[TST_RJ_Build] $ cleartool desc -fmt %[found_bls]Xp stream:SCM_Prod@\ADS
+baseline:ASG_BUILD_INITIAL_LABEL_09042012_ASG_Build_IMPORT@\ADS baseline:ASG_SCRIPTS_INITIAL_LABEL_09042012_ASG_SCRIPTS_IMPORT@\ADS
+[TST_RJ_Build] $ cleartool lsbl -fmt %[depends_on_closure]Xp baseline:ASG_BUILD_INITIAL_LABEL_09042012_ASG_Build_IMPORT@\ADS
+
+[TST_RJ_Build] $ cleartool lsbl -fmt %[depends_on_closure]Xp baseline:ASG_SCRIPTS_INITIAL_LABEL_09042012_ASG_SCRIPTS_IMPORT@\ADS
+
+[TST_RJ_Build] $ cleartool desc -fmt %[found_bls]Xp stream:SCM_Prod@\ADS
+baseline:ASG_BUILD_INITIAL_LABEL_09042012_ASG_Build_IMPORT@\ADS baseline:ASG_SCRIPTS_INITIAL_LABEL_09042012_ASG_SCRIPTS_IMPORT@\ADS
+[useraccount_node_TST_RJ_Build_Jenkin_Snapshot] $ cleartool lsview -cview -s
+[INFO] computeChangeLogBeforeCheckout = false
+[INFO] computeChangeLogAfterCheckout  = true
+[TST_RJ_Build] $ cleartool lsview useraccount_node_TST_RJ_Build_Jenkin_Snapshot
+cleartool: Error: No matching entries found for view tag "useraccount_node_TST_RJ_Build_Jenkin_Snapshot".
+
+FATAL: UCM ClearCase failed. exit code=1
+[TST_RJ_Build] $ cleartool mkview -snapshot -stream SCM_Prod@\ADS -tag useraccount_node_TST_RJ_Build_Jenkin_Snapshot -stgloc -auto useraccount_node_TST_RJ_Build_Jenkin_Snapshot
+Selected Server Storage Location "Views".
+Created view.
+Host-local path: viewserver:D:\Clearcase_Storage\Views\BOIGROUP\useraccount\useraccount_node_TST_RJ_Build_Jenkin_Snapshot.vws
+Global path:     \\viewserver\Clearcase_Storage\Views\BOIGROUP\useraccount\useraccount_node_TST_RJ_Build_Jenkin_Snapshot.vws
+Created snapshot view directory "useraccount_node_TST_RJ_Build_Jenkin_Snapshot".
+Attached view to stream "SCM_Prod".
+
+Running cleartool update, this operation may take a while
+[useraccount_node_TST_RJ_Build_Jenkin_Snapshot] $ cleartool update -force -overwrite
+# ClearCase snapshot view update log
+# Update session parameters:
+# 
+FormatVersion:           4
+SnapshotView:            D:\Build\node\workspace\TST_RJ_Build\useraccount_node_TST_RJ_Build_Jenkin_Snapshot
+StartTime:               2015-11-06T11:40:22Z
+UserID:                  useraccount@servername
+ProcessID:               257808
+ConfigSpecSet:           FALSE
+PreviewOnly:             FALSE
+PreserveVOBTimes:        FALSE
+UpdateHijackedFiles:     TRUE
+RenameHijackedFiles:     FALSE
+# 
+# Actions taken to update the view:
+# 
+# 
+# Update session status:
+# 
+EndTime:                 2015-11-06T11:40:22Z
+BytesCopied:             0
+CancelledByUser:         FALSE
+[TST_RJ_Build] $ cleartool endview -server useraccount_node_TST_RJ_Build_Jenkin_Snapshot
+
+[TST_RJ_Build] $ cleartool desc -fmt %[found_bls]Xp stream:SCM_Prod@\ADS
+baseline:ASG_BUILD_INITIAL_LABEL_09042012_ASG_Build_IMPORT@\ADS baseline:ASG_SCRIPTS_INITIAL_LABEL_09042012_ASG_SCRIPTS_IMPORT@\ADS
+oldBaseline : UcmRevisionState[timestamp=1446809956386, baselines=[baseline:ASG_BUILD_INITIAL_LABEL_09042012_ASG_Build_IMPORT@\ADS, baseline:ASG_SCRIPTS_INITIAL_LABEL_09042012_ASG_SCRIPTS_IMPORT@\ADS], loadRules=[]]
+newBaseline : UcmRevisionState[timestamp=1446810019113, baselines=[baseline:ASG_BUILD_INITIAL_LABEL_09042012_ASG_Build_IMPORT@\ADS, baseline:ASG_SCRIPTS_INITIAL_LABEL_09042012_ASG_SCRIPTS_IMPORT@\ADS], loadRules=[]]
+[useraccount_node_TST_RJ_Build_Jenkin_Snapshot] $ cleartool pwv -root
+D:\Build\node\workspace\TST_RJ_Build\useraccount_node_TST_RJ_Build_Jenkin_Snapshot
+
+[TST_RJ_Build] $ cleartool desc -fmt %[component]Xp baseline:ASG_BUILD_INITIAL_LABEL_09042012_ASG_Build_IMPORT@\ADS
+component:ASG_Build@\ADS
+[TST_RJ_Build] $ cleartool desc -fmt %[component]Xp baseline:ASG_SCRIPTS_INITIAL_LABEL_09042012_ASG_SCRIPTS_IMPORT@\ADS
+component:ASG_SCRIPTS@\ADS
+[TST_RJ_Build] $ cleartool desc -fmt %[component]Xp baseline:ASG_BUILD_INITIAL_LABEL_09042012_ASG_Build_IMPORT@\ADS
+component:ASG_Build@\ADS
+[TST_RJ_Build] $ cleartool desc -fmt %[component]Xp baseline:ASG_SCRIPTS_INITIAL_LABEL_09042012_ASG_SCRIPTS_IMPORT@\ADS
+component:ASG_SCRIPTS@\ADS
+[TST_RJ_Build] $ cleartool lsview useraccount_node_TST_RJ_Build_Jenkin_Snapshot
+  useraccount_node_TST_RJ_Build_Jenkin_Snapshot \\viewserver\Clearcase_Storage\Views\BOIGROUP\useraccount\useraccount_node_TST_RJ_Build_Jenkin_Snapshot.vws

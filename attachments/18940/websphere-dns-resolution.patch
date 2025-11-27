@@ -1,0 +1,12 @@
+Index: src/main/java/hudson/plugins/active_directory/ActiveDirectorySecurityRealm.java
+===================================================================
+--- src/main/java/hudson/plugins/active_directory/ActiveDirectorySecurityRealm.java	(revisão 24281)
++++ src/main/java/hudson/plugins/active_directory/ActiveDirectorySecurityRealm.java	(cópia de trabalho)
+@@ -143,6 +143,7 @@
+         public DirContext createDNSLookupContext() throws NamingException {
+             Hashtable env = new Hashtable();
+             env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.dns.DnsContextFactory");
++            env.put("java.naming.provider.url", "dns:");
+             return new InitialDirContext(env);
+         }
+ 

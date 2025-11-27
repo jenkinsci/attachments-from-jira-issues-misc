@@ -1,0 +1,18 @@
+Index: AccurevSCM.java
+===================================================================
+--- AccurevSCM.java	(revision 24483)
++++ AccurevSCM.java	(working copy)
+@@ -1014,11 +1014,11 @@
+                               OutputStream os,
+                               FilePath workspace) throws IOException, InterruptedException {
+         int rv;
+-        DESCRIPTOR.ACCUREV_LOCK.lock();
++        //DESCRIPTOR.ACCUREV_LOCK.lock();
+         try {
+             rv = launcher.launch().cmds(cmd).envs(env).stdin(in).stdout(os).pwd(workspace).join();
+         } finally {
+-            DESCRIPTOR.ACCUREV_LOCK.unlock();
++           // DESCRIPTOR.ACCUREV_LOCK.unlock();
+         }
+         return rv;
+     }

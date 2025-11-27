@@ -1,0 +1,35 @@
+[ZAP Jenkins Plugin] LOAD SCRIPT FOR AUTHENTICATION
+4901 [ZAP-ProxyThread-6] INFO org.zaproxy.zap.authentication.ScriptBasedAuthenticationMethodType - Loaded script for API:authenticate.js
+
+[ZAP Jenkins Plugin] AUTH CONFIG:
+5150 [ZAP-ProxyThread-7] ERROR org.zaproxy.zap.extension.api.API - Failed to convert API response to XML: INVALID_CHARACTER_ERR: An invalid or illegal XML character is specified. 
+org.w3c.dom.DOMException: INVALID_CHARACTER_ERR: An invalid or illegal XML character is specified. 
+at com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl.createElement(CoreDocumentImpl.java:665)
+at org.zaproxy.zap.extension.api.ApiResponseSet.toXML(ApiResponseSet.java:64)
+at org.zaproxy.zap.extension.api.API.responseToXml(API.java:785)
+at org.zaproxy.zap.extension.api.API.convertViewActionApiResponse(API.java:652)
+at org.zaproxy.zap.extension.api.API.handleApiRequest(API.java:520)
+at org.parosproxy.paros.core.proxy.ProxyThread.processHttp(ProxyThread.java:499)
+at org.parosproxy.paros.core.proxy.ProxyThread.run(ProxyThread.java:335)
+at java.lang.Thread.run(Thread.java:748)
+ERROR: org.zaproxy.clientapi.core.ClientApiException: Internal Error
+at org.zaproxy.clientapi.core.ApiResponseFactory.getResponse(ApiResponseFactory.java:32)
+at org.zaproxy.clientapi.core.ClientApi.callApi(ClientApi.java:312)
+at org.zaproxy.clientapi.gen.Authentication.getAuthenticationMethod(Authentication.java:56)
+at org.jenkinsci.plugins.zap.ZAPDriver.setUpScriptBasedAuth(ZAPDriver.java:1530)
+at org.jenkinsci.plugins.zap.ZAPDriver.setUpAuthentication(ZAPDriver.java:1715)
+at org.jenkinsci.plugins.zap.ZAPDriver.executeZAP(ZAPDriver.java:1184)
+at org.jenkinsci.plugins.zap.ZAPBuilder$ZAPDriverCallable.invoke(ZAPBuilder.java:448)
+at org.jenkinsci.plugins.zap.ZAPBuilder$ZAPDriverCallable.invoke(ZAPBuilder.java:436)
+at hudson.FilePath.act(FilePath.java:1075)
+at hudson.FilePath.act(FilePath.java:1058)
+at org.jenkinsci.plugins.zap.ZAPBuilder.perform(ZAPBuilder.java:292)
+at hudson.tasks.BuildStepMonitor$1.perform(BuildStepMonitor.java:20)
+at hudson.model.AbstractBuild$AbstractBuildExecution.perform(AbstractBuild.java:741)
+at hudson.model.Build$BuildExecution.build(Build.java:206)
+at hudson.model.Build$BuildExecution.doRun(Build.java:163)
+at hudson.model.AbstractBuild$AbstractBuildExecution.run(AbstractBuild.java:504)
+at hudson.model.Run.execute(Run.java:1853)
+at hudson.model.FreeStyleBuild.run(FreeStyleBuild.java:43)
+at hudson.model.ResourceController.execute(ResourceController.java:97)
+at hudson.model.Executor.run(Executor.java:427)

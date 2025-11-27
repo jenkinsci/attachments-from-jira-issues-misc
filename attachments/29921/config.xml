@@ -1,0 +1,284 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Moteur d&apos;optimisation Crystal</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <org.jenkins.ci.plugins.html5__notifier.JobPropertyImpl plugin="html5-notifier-plugin@1.5">
+      <skip>false</skip>
+    </org.jenkins.ci.plugins.html5__notifier.JobPropertyImpl>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>OTHERTEST</name>
+          <description>Enable / Disable the complete set of tests.</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>ON</string>
+              <string>OFF</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>ACTIVATE_OPTIM_CAPA</name>
+          <description>Enable / Disable the capacity optimization Python functions.</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>ON</string>
+              <string>OFF</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>USE_LABELS</name>
+          <description>Select the test to be performed using labels</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>LEVEL1</string>
+              <string>OFF</string>
+              <string>LEVEL2</string>
+              <string>LEVEL3</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>REMOVE_TEST_DIR</name>
+          <description>Remove and reconstruct the test direction</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>ON</string>
+              <string>OFF</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>RM_ENABLE_XPRESS_PACKING</name>
+          <description>Include Xpress shared libraries in archive</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>ON</string>
+              <string>OFF</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>RM_ENABLE_LICENSES_PACKING</name>
+          <description>Include COE (and Xpress if relevant) licenses in the archive</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>ON</string>
+              <string>OFF</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>DO_TESTS</name>
+          <description>Perform the tests</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>ON</string>
+              <string>OFF</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>GERRIT_REFSPEC</name>
+          <description>Variable to allow the project to be built without Jenkins</description>
+          <defaultValue>refs/heads/master</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.24">
+      <autoRebuild>false</autoRebuild>
+    </com.sonyericsson.rebuild.RebuildSettings>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.3.5">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <refspec>$GERRIT_REFSPEC</refspec>
+        <url>ssh://jenkins-service@git.artelys.lan:29418/CrystalOptimizationEngine</url>
+        <credentialsId>0d55cc74-a585-40f5-9e1d-ce1b17ca4d04</credentialsId>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>$GERRIT_PATCHSET_REVISION</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <gitTool>git</gitTool>
+    <submoduleCfg class="list"/>
+    <extensions>
+      <hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+        <relativeTargetDir>RiskManager</relativeTargetDir>
+      </hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+      <hudson.plugins.git.extensions.impl.UserIdentity>
+        <name>ycollette</name>
+        <email>yann.collette@artelys.com</email>
+      </hudson.plugins.git.extensions.impl.UserIdentity>
+      <hudson.plugins.git.extensions.impl.BuildChooserSetting>
+        <buildChooser class="com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.GerritTriggerBuildChooser" plugin="gerrit-trigger@2.14.0">
+          <separator>#</separator>
+        </buildChooser>
+      </hudson.plugins.git.extensions.impl.BuildChooserSetting>
+    </extensions>
+  </scm>
+  <assignedNode>Windows64_Gromit</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <jdk>(Default)</jdk>
+  <triggers>
+    <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.GerritTrigger plugin="gerrit-trigger@2.14.0">
+      <spec></spec>
+      <gerritProjects>
+        <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.data.GerritProject>
+          <compareType>PLAIN</compareType>
+          <pattern>CrystalOptimizationEngine</pattern>
+          <branches>
+            <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.data.Branch>
+              <compareType>ANT</compareType>
+              <pattern>**</pattern>
+            </com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.data.Branch>
+          </branches>
+        </com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.data.GerritProject>
+      </gerritProjects>
+      <skipVote>
+        <onSuccessful>false</onSuccessful>
+        <onFailed>false</onFailed>
+        <onUnstable>false</onUnstable>
+        <onNotBuilt>false</onNotBuilt>
+      </skipVote>
+      <silentMode>false</silentMode>
+      <notificationLevel></notificationLevel>
+      <silentStartMode>false</silentStartMode>
+      <escapeQuotes>true</escapeQuotes>
+      <noNameAndEmailParameters>false</noNameAndEmailParameters>
+      <dependencyJobsNames></dependencyJobsNames>
+      <readableMessage>false</readableMessage>
+      <buildStartMessage></buildStartMessage>
+      <buildFailureMessage></buildFailureMessage>
+      <buildSuccessfulMessage></buildSuccessfulMessage>
+      <buildUnstableMessage></buildUnstableMessage>
+      <buildNotBuiltMessage></buildNotBuiltMessage>
+      <buildUnsuccessfulFilepath></buildUnsuccessfulFilepath>
+      <customUrl></customUrl>
+      <serverName>Gerrit Artelys</serverName>
+      <triggerOnEvents>
+        <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginChangeMergedEvent/>
+        <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginDraftPublishedEvent/>
+        <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginPatchsetCreatedEvent>
+          <excludeDrafts>false</excludeDrafts>
+          <excludeTrivialRebase>false</excludeTrivialRebase>
+          <excludeNoCodeChange>false</excludeNoCodeChange>
+        </com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginPatchsetCreatedEvent>
+        <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginRefUpdatedEvent/>
+      </triggerOnEvents>
+      <dynamicTriggerConfiguration>false</dynamicTriggerConfiguration>
+      <triggerConfigURL></triggerConfigURL>
+      <triggerInformationAction/>
+    </com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.GerritTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.BatchFile>
+      <command>call &quot;C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\vcvarsall.bat&quot; amd64&#xd;
+&#xd;
+if exist RM_INSTALL_64 rmdir /s /q RM_INSTALL_64&#xd;
+if not exist RM_BUILD_64 mkdir RM_BUILD_64&#xd;
+cd RM_BUILD_64&#xd;
+&#xd;
+if exist *.zip del *.zip&#xd;
+&#xd;
+if &quot;%REMOVE_TEST_DIR%&quot; == &quot;ON&quot; (&#xd;
+  rmdir /s /q tests&#xd;
+)&#xd;
+&#xd;
+if &quot;%USE_LABELS%&quot; NEQ &quot;OFF&quot; (&#xd;
+  set ALL_TEST=ON&#xd;
+) else (&#xd;
+  set ALL_TEST=OFF&#xd;
+)&#xd;
+&#xd;
+REM e:\JENKINS\CMake-2.8\bin\cmake.exe -DGIT_ROOT_DIR:FilePath=&quot;e:\JENKINS&quot;&#xd;
+&#xd;
+cmake.exe -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_INSTALL_PREFIX=../RM_INSTALL_64 -DRM_USE_XPRESS=ON -DRM_USE_SYMPHONY=OFF -DRM_XPRESS_DIR:FilePath=&quot;c:/xpressmp_64_780&quot; -DRM_ENABLE_DOWNLOAD_PYTHON=ON -DRM_USE_OPENMP=OFF -DRM_USE_THREADS=OFF -DRM_USE_ABC=ON -DRM_ABC_LEVEL=2 -DCPACK_GENERATOR:String=&quot;ZIP&quot; -DGIT_BRANCH:String=&quot;%GIT_BRANCH%&quot; -DENABLE_OTHER_TEST=%OTHERTEST% -DENABLE_ALL_TEST=%ALL_TEST% -DRM_ENABLE_DOWNLOAD_MPI=OFF -DRM_ENABLE_DOWNLOAD_MPI4PY=OFF -DRM_ENABLE_OPTIM_CAPA=%ACTIVATE_OPTIM_CAPA% -DRM_USE_SYMPHONY=OFF -G &quot;NMake Makefiles&quot; ../RiskManager&#xd;
+&#xd;
+nmake&#xd;
+&#xd;
+REM Remove the old test directory to avoid cumulative test analysis&#xd;
+rmdir /s /q Testing&#xd;
+&#xd;
+REM  Bug ctest: we can&apos;t use both -L and -LE flags - fixed in cmake 3.1&#xd;
+&#xd;
+if &quot;%DO_TESTS%&quot; == &quot;ON&quot; (&#xd;
+  ctest.exe -C Experimental -T Start&#xd;
+  if &quot;%USE_LABELS%&quot; == &quot;OFF&quot; (&#xd;
+    ctest.exe -j 4 -C Experimental -T Test -R Xpress --no-compress-output&#xd;
+  ) else (&#xd;
+    ctest.exe -j 4 -C Experimental -T Test -R Xpress --no-compress-output -L %USE_LABELS%&#xd;
+  )&#xd;
+  &#xd;
+)&#xd;
+</command>
+    </hudson.tasks.BatchFile>
+    <hudson.tasks.BatchFile>
+      <command>call &quot;C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\vcvarsall.bat&quot; x86&#xd;
+&#xd;
+if exist RM_INSTALL_32 rmdir /s /q RM_INSTALL_32&#xd;
+if not exist RM_BUILD_32 mkdir RM_BUILD_32&#xd;
+cd RM_BUILD_32&#xd;
+&#xd;
+if exist *.zip del *.zip&#xd;
+&#xd;
+if &quot;%REMOVE_TEST_DIR%&quot; == &quot;ON&quot; (&#xd;
+  rmdir /s /q tests&#xd;
+)&#xd;
+&#xd;
+if &quot;%USE_LABELS%&quot; NEQ &quot;OFF&quot; (&#xd;
+  set ALL_TEST=ON&#xd;
+) else (&#xd;
+  set ALL_TEST=OFF&#xd;
+)&#xd;
+&#xd;
+cmake.exe -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_INSTALL_PREFIX=../RM_INSTALL_32 -DRM_USE_XPRESS=ON -DRM_USE_SYMPHONY=OFF -DRM_XPRESS_DIR:FilePath=&quot;c:/xpressmp_32_780&quot; -DRM_ENABLE_DOWNLOAD_PYTHON=ON -DRM_USE_OPENMP=OFF -DRM_USE_THREADS=OFF -DRM_USE_ABC=ON -DRM_ABC_LEVEL=2 -DCPACK_GENERATOR:String=&quot;ZIP&quot; -DGIT_BRANCH:String=&quot;%GIT_BRANCH%&quot; -DENABLE_OTHER_TEST=%OTHERTEST% -DENABLE_ALL_TEST=%ALL_TEST% -DRM_ENABLE_DOWNLOAD_MPI=OFF -DRM_ENABLE_DOWNLOAD_MPI4PY=OFF -DRM_ENABLE_OPTIM_CAPA=%ACTIVATE_OPTIM_CAPA% -DRM_USE_SYMPHONY=OFF -G &quot;NMake Makefiles&quot; ../RiskManager&#xd;
+&#xd;
+nmake&#xd;
+&#xd;
+REM Remove the old test directory to avoid cumulative test analysis&#xd;
+rmdir /s /q Testing&#xd;
+&#xd;
+&#xd;
+REM  Bug ctest: we can&apos;t use both -L and -LE flags - fixed in cmake 3.1&#xd;
+&#xd;
+if &quot;%DO_TESTS%&quot; == &quot;ON&quot; (&#xd;
+  ctest.exe -C Experimental -T Start&#xd;
+  if &quot;%USE_LABELS%&quot; == &quot;OFF&quot; (&#xd;
+    ctest.exe -j 4 -C Experimental -T Test -R Xpress --no-compress-output&#xd;
+  ) else (&#xd;
+    ctest.exe -j 4 -C Experimental -T Test -R Xpress --no-compress-output -L %USE_LABELS%&#xd;
+  )&#xd;
+  &#xd;
+)&#xd;
+</command>
+    </hudson.tasks.BatchFile>
+  </builders>
+  <publishers>
+    <hudson.plugins.chucknorris.CordellWalkerRecorder plugin="chucknorris@0.5">
+      <factGenerator/>
+    </hudson.plugins.chucknorris.CordellWalkerRecorder>
+    <hudson.tasks.Mailer plugin="mailer@1.15">
+      <recipients>yann.collette@artelys.com</recipients>
+      <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>false</sendToIndividuals>
+    </hudson.tasks.Mailer>
+  </publishers>
+  <buildWrappers>
+    <hudson.plugins.ansicolor.AnsiColorBuildWrapper plugin="ansicolor@0.4.1">
+      <colorMapName>xterm</colorMapName>
+    </hudson.plugins.ansicolor.AnsiColorBuildWrapper>
+    <hudson.plugins.screenshot.ScreenshotBuildWrapper plugin="screenshot@1.1"/>
+  </buildWrappers>
+</project>

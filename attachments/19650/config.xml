@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson.ivy.IvyModuleSet>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.plugins.mercurial.MercurialSCM">
+    <installation>hg</installation>
+    <source>C:\Users\Tom Howard\Projects\TIBant</source>
+    <modules></modules>
+    <clean>false</clean>
+    <forest>false</forest>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector"/>
+  <concurrentBuild>false</concurrentBuild>
+  <ivyFilePattern>ivy.xml</ivyFilePattern>
+  <ivySettingsFile>config/ivysettings.xml</ivySettingsFile>
+  <ivyBuilderType class="hudson.ivy.builder.AntIvyBuilderType">
+    <targets>-lib C:/Program Files/apache-ivy-2.1.0/ivy-2.1.0.jar clean dist</targets>
+    <antName>1.7.0</antName>
+    <antOpts></antOpts>
+    <buildFile></buildFile>
+    <antProperties></antProperties>
+  </ivyBuilderType>
+  <aggregatorStyleBuild>true</aggregatorStyleBuild>
+  <incrementalBuild>false</incrementalBuild>
+  <ignoreUpstreamChanges>true</ignoreUpstreamChanges>
+  <archivingDisabled>false</archivingDisabled>
+  <publishers>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>build/*.zip,build/*.html</artifacts>
+      <latestOnly>false</latestOnly>
+    </hudson.tasks.ArtifactArchiver>
+    <hudson.tasks.Fingerprinter>
+      <targets></targets>
+      <recordBuildArtifacts>true</recordBuildArtifacts>
+    </hudson.tasks.Fingerprinter>
+  </publishers>
+  <buildWrappers>
+    <org.jfrog.hudson.ivy.ArtifactoryIvyConfigurator>
+      <details>
+        <artifactoryName>http://localhost:8081/artifactory</artifactoryName>
+        <repositoryKey>dist</repositoryKey>
+      </details>
+      <username>admin</username>
+      <password>Ymxhbms=</password>
+      <deployArtifacts>true</deployArtifacts>
+      <deployBuildInfo>true</deployBuildInfo>
+      <includeEnvVars>false</includeEnvVars>
+    </org.jfrog.hudson.ivy.ArtifactoryIvyConfigurator>
+  </buildWrappers>
+</hudson.ivy.IvyModuleSet>

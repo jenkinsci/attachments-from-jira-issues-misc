@@ -1,0 +1,573 @@
+Index: main/core/src/main/java/hudson/model/UpdateCenter.java
+===================================================================
+--- main/core/src/main/java/hudson/model/UpdateCenter.java	(revision 13657)
++++ main/core/src/main/java/hudson/model/UpdateCenter.java	(working copy)
+@@ -1,5 +1,6 @@
+ package hudson.model;
+ 
++import hudson.ExtensionPoint;
+ import hudson.Functions;
+ import hudson.PluginManager;
+ import hudson.PluginWrapper;
+@@ -11,6 +12,8 @@
+ import hudson.util.VersionNumber;
+ import static hudson.util.TimeUnit2.DAYS;
+ import net.sf.json.JSONObject;
++
++import org.acegisecurity.Authentication;
+ import org.apache.commons.io.input.CountingInputStream;
+ import org.apache.commons.io.IOUtils;
+ import org.kohsuke.stapler.DataBoundConstructor;
+@@ -41,6 +44,8 @@
+ import java.util.concurrent.atomic.AtomicInteger;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
++import java.util.regex.Matcher;
++import java.util.regex.Pattern;
+ 
+ /**
+  * Controls update center capability.
+@@ -48,7 +53,12 @@
+  * <p>
+  * The main job of this class is to keep track of the latest update center metadata file, and perform installations.
+  * Much of the UI about choosing plugins to install is done in {@link PluginManager}.
+- *
++ * <p>
++ * The update center can be configured to contact alternate servers for updates
++ * and plugins, and to use alternate strategies for downloading, installing
++ * and updating components. See the Javadocs for {@link UpdateCenterConfigurator}
++ * for more information.
++ * 
+  * @author Kohsuke Kawaguchi
+  * @since 1.220
+  */
+@@ -86,6 +96,104 @@
+     private final Vector<UpdateCenterJob> jobs = new Vector<UpdateCenterJob>();
+ 
+     /**
++     * Update center configuration data
++     */
++    private UpdateCenterConfigurator config;
++    
++    /**
++     * Default configuration
++     */
++    private static final UpdateCenterConfigurator DEFAULT_CONFIG = new UpdateCenterConfigurator(
++            new ConnectionCheckStrategy() {
++                public void checkConnection(ConnectionCheckJob job, String connectionCheckUrl) throws IOException {
++                    testConnection(new URL(connectionCheckUrl + "?uctest"));
++                }
++
++                public void checkUpdateCenter(ConnectionCheckJob job, String updateCenterUrl) throws IOException {
++                    testConnection(new URL(updateCenterUrl));
++                }
++                
++                private void testConnection(URL url) throws IOException {
++                    InputStream in = ProxyConfiguration.open(url).getInputStream();
++                    IOUtils.copy(in,new ByteArrayOutputStream());
++                    in.close();
++                }                    
++            },
++            new ValidationStrategy() {
++                public void preValidate(DownloadJob job, URL src) throws IOException {
++                    if(!src.toExternalForm().startsWith(job.configuration.getPluginRepositoryBaseUrl())) {
++                        throw new IOException("Installation of plugin from "+src+" is not allowed");
++                    }                    
++                }
++                
++                public void postValidate(DownloadJob job, File src) throws IOException {
++                }
++            },
++            new DownloadStrategy() {
++                public File download(DownloadJob job, URL src) throws IOException {
++                    // In the future if we are to open up update center to 3rd party, we need more elaborate scheme
++                    // like signing to ensure the safety of the bits.
++                    URLConnection con = ProxyConfiguration.open(src);
++                    int total = con.getContentLength();
++                    CountingInputStream in = new CountingInputStream(con.getInputStream());
++                    byte[] buf = new byte[8192];
++                    int len;
++
++                    File dst = job.getDestination();
++                    File tmp = new File(dst.getPath()+".tmp");
++                    OutputStream out = new FileOutputStream(tmp);
++
++                    LOGGER.info("Downloading "+job.getName());
++                    while((len=in.read(buf))>=0) {
++                        out.write(buf,0,len);
++                        job.status = job.new Installing(total==-1 ? -1 : in.getCount()*100/total);
++                    }
++
++                    in.close();
++                    out.close();
++                    
++                    return tmp;
++                }
++                
++            },
++            new InstallStrategy() {
++                public void install(DownloadJob job, File src, File dst) throws IOException {
++                    job.replace(dst, src);
++                }
++                
++            },
++            new UpgradeStrategy() {
++                public void upgrade(DownloadJob job, File src, File dst) throws IOException {
++                    job.replace(dst, src);
++                }
++            },
++            "http://www.google.com",
++            "https://hudson.dev.java.net/",
++            "https://hudson.dev.java.net/"
++        );
++
++    /**
++     * Create update center to get plugins/updates from hudson.dev.java.net
++     */
++    public UpdateCenter() {
++        configure(DEFAULT_CONFIG);
++    }
++    
++    /**
++     * Configures update center to get plugins/updates from alternate servers,
++     * and optionally using alternate strategies for downloading, installing
++     * and upgrading.
++     * 
++     * @param config Configuration data
++     * @see UpdateCenterConfigurator
++     */
++    public void configure(UpdateCenterConfigurator config) {
++        if (config!=null) {
++            this.config = config;
++        }
++    }
++    
++    /**
+      * Returns true if it's time for us to check for new version.
+      */
+     public boolean isDue() {
+@@ -142,7 +250,7 @@
+     public void doUpgrade(StaplerResponse rsp) throws IOException, ServletException {
+         requirePOST();
+         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+-        HudsonUpgradeJob job = new HudsonUpgradeJob();
++        HudsonUpgradeJob job = new HudsonUpgradeJob(Hudson.getAuthentication());
+         if(!Lifecycle.get().canRewriteHudsonWar()) {
+             sendError("Hudson upgrade not supported in this running mode");
+             return;
+@@ -258,6 +366,14 @@
+     }
+ 
+     /**
++     * Exposed to get rid of hardcoding of the URL that serves up update-center.json
++     * in Javascript.
++     */
++    public String getUrl() {
++        return config.getUpdateCenterUrl();
++    }
++    
++    /**
+      * In-memory representation of the update center data.
+      */
+     public final class Data {
+@@ -387,7 +503,7 @@
+          */
+         public void install() {
+             Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+-            addJob(new InstallationJob(this));
++            addJob(new InstallationJob(this, Hudson.getAuthentication()));
+         }
+ 
+         /**
+@@ -400,6 +516,226 @@
+     }
+ 
+     /**
++     * Configuration data for control the update center's behaviors. The update
++     * center's defaults will check internet connectivity by trying to connect
++     * to www.google.com; will download plugins, the plugin catalog and updates
++     * from hudson.dev.java.net; and will install plugins with file system
++     * operations. This class, in conjunction with the {@link ConnectionCheckStrategy},
++     * {@link DownloadStrategy}, {@link InstallStrategy}, and {@link UpgradeStrategy}
++     * interfaces provides hooks to customize any of these behaviors.
++     * 
++     * @author Dean Yu
++     * @since 1.265
++     */
++    public static final class UpdateCenterConfigurator {
++        /**
++         * Create an immutable update center configuration. Null may be passed
++         * in for any parameter to use Hudson's default for that behavior or value.
++         * 
++         * @param c A {@link ConnectionCheckStrategy} implementation. If not null,
++         *          Hudson will use this strategy for checking network connectivity
++         *          before trying to download a plugin or upgrade. If null, Hudson's
++         *          default behavior will try to connect to {@link #connectionCheckUrl}
++         *          followed by a connection to {@link #updateCenterUrl}.
++         * @param v A {@link ValidationStrategy} implementation. If not null, Hudson
++         *          will use this strategy to validate a resource before downloading it,
++         *          and to validate the downloaded resource before installing it. If
++         *          null, Hudson's default behavior is to enforce that the URL of
++         *          the resource starts with {@link #pluginRepositoryBaseUrl} before
++         *          the resource is downloaded.
++         * @param d A {@link DownloadStrategy} implementation. If not null, Hudson
++         *          will use this strategy to download a plugin or core upgrade. The
++         *          download strategy Hudson uses by default will download the
++         *          resource from the URL specified in the catalog. Regardless of
++         *          the strategy, Hudson will always enforce that the URL starts
++         *          with the value of {@link #pluginRepositoryBaseUrl}.
++         * @param i A {@link InstallStrategy} implementation. If not null, Hudson
++         *          will use this strategy to move the downloaded file into its
++         *          final destination. If null, Hudson will simply rename the
++         *          downloaded file.
++         * @param u A {@link UpgradeStrategy} implementation. If not null, Hudson
++         *          will use this strategy to upgrade itself.
++         * @param connectionCheckUrl A string containing an "always up" URL. If
++         *          null is passed, Hudson will use "http://www.google.com".
++         * @param updateCenterUrl A string containing the URL to retrieve the update-center.json
++         *          file from. If null, Hudson will use "https://hudson.dev.java.net/".
++         * @param pluginRepositoryBaseUrl A string containing the base URL for
++         *          plugin downloads. Hudson enforces that all plugins must be downloaded
++         *          from this domain. If null, Hudson will use "https://hudson.dev.java.net/".
++         */
++        public UpdateCenterConfigurator(ConnectionCheckStrategy c, ValidationStrategy v,
++                DownloadStrategy d, InstallStrategy i,UpgradeStrategy u,
++                String connectionCheckUrl, String updateCenterUrl, String pluginRepositoryBaseUrl) {
++            connectionChecker = c==null ? UpdateCenter.DEFAULT_CONFIG.getConnectionCheckStrategy() : c;
++            validator = v==null ? UpdateCenter.DEFAULT_CONFIG.getValidationStrategy() : v;
++            downloader = d==null ? UpdateCenter.DEFAULT_CONFIG.getDownloadStrategy() : d;
++            installer = i==null ? UpdateCenter.DEFAULT_CONFIG.getInstallStrategy() : i;
++            upgrader = u==null ? UpdateCenter.DEFAULT_CONFIG.getUpgradeStrategy() : u;
++            this.connectionCheckUrl = Util.fixEmptyAndTrim(connectionCheckUrl)==null ? UpdateCenter.DEFAULT_CONFIG.getConnectionCheckUrl() : connectionCheckUrl;
++            this.updateCenterUrl = Util.fixEmptyAndTrim(updateCenterUrl)==null ? UpdateCenter.DEFAULT_CONFIG.getUpdateCenterUrl() : updateCenterUrl;
++            this.pluginRepositoryBaseUrl = Util.fixEmptyAndTrim(pluginRepositoryBaseUrl)==null ? UpdateCenter.DEFAULT_CONFIG.getPluginRepositoryBaseUrl() : pluginRepositoryBaseUrl;
++        }
++        
++        public ConnectionCheckStrategy getConnectionCheckStrategy() {
++            return connectionChecker;
++        }
++        
++        public ValidationStrategy getValidationStrategy() {
++            return validator;
++        }
++        
++        public DownloadStrategy getDownloadStrategy() {
++            return downloader;
++        }
++        
++        public InstallStrategy getInstallStrategy() {
++            return installer;
++        }
++        
++        public UpgradeStrategy getUpgradeStrategy() {
++            return upgrader;
++        }
++        
++        public String getConnectionCheckUrl() {
++            return connectionCheckUrl;
++        }
++        
++        public String getUpdateCenterUrl() {
++            return updateCenterUrl;
++        }
++        
++        public String getPluginRepositoryBaseUrl() {
++            return pluginRepositoryBaseUrl;
++        }
++        
++        private ConnectionCheckStrategy connectionChecker;
++        private ValidationStrategy validator;
++        private DownloadStrategy downloader;
++        private InstallStrategy installer;
++        private UpgradeStrategy upgrader;
++        private String connectionCheckUrl;
++        private String updateCenterUrl;
++        private String pluginRepositoryBaseUrl;
++    }
++    
++    /**
++     * Determine network connectivity before attempting to download. You will typically only
++     * ever need to implement this interface if you plan to fetch plugins
++     * over a transport protocol other than HTTP.
++     */
++    public interface ConnectionCheckStrategy extends ExtensionPoint {
++        /**
++         * Check network connectivity by trying to establish a connection to
++         * the host in connectionCheckUrl.
++         * 
++         * @param job The connection checker that is invoking this strategy.
++         * @param connectionCheckUrl A string containing the URL of a domain
++         *          that is assumed to be always available.
++         * @throws IOException if a connection can't be established
++         */
++        public void checkConnection(ConnectionCheckJob job, String connectionCheckUrl) throws IOException;
++        
++        /**
++         * Check connection to update center server.
++         * 
++         * @param job The connection checker that is invoking this strategy.
++         * @param updateCenterUrl A sting containing the URL of the update center host.
++         * @throws IOException if a connection to the update center server can't be established.
++         */
++        public void checkUpdateCenter(ConnectionCheckJob job, String updateCenterUrl) throws IOException;
++    }
++    
++    /**
++     * Hooks for validating a resource before and after it is downloaded. This
++     * interface defines two validation points. Prevalidation allows validation
++     * of the URI (URL) a plugin or upgrade resource will be downloaded from.
++     * Post-validation allows validation of the resource after it has been
++     * downloaded. The default implementation enforces that the resource is
++     * hosted by {@link UpdateCenterConfigurator#pluginRepositoryBaseUrl} before
++     * it is downloaded. It does no additional validation of the downloaded
++     * bits. 
++     */
++    public interface ValidationStrategy extends ExtensionPoint {
++        /**
++         * Validate the URL of the resource before downloading it.
++         * 
++         * @param job The download job that is invoking this strategy. This job is
++         *          responsible for managing the status of the download and installation.
++         * @param src The location of the resource on the network
++         * @throws IOException if the validation fails
++         */
++        public void preValidate(DownloadJob job, URL src) throws IOException;
++        
++        /**
++         * Validate the resource after it has been downloaded, before it is
++         * installed.
++         * 
++         * @param job The download job that is invoking this strategy. This job is
++         *          responsible for managing the status of the download and installation.
++         * @param src The location of the downloaded resource.
++         * @throws IOException if the validation fails.
++         */
++        public void postValidate(DownloadJob job, File src) throws IOException;
++    }
++    
++    /**
++     * Retrieve a plugin or core upgrade to a temporary location. Implement this interface if you
++     * need to do more than read a byte stream from an Internet host. The download
++     * job will not call this strategy if the resource does not originate from
++     * the host specified by {@link UpdateCenterConfigurator#pluginRepositoryBaseUrl}.
++     */
++    public interface DownloadStrategy extends ExtensionPoint {
++        /**
++         * Download a plugin or core upgrade in preparation for installing it
++         * into its final location. Implementations will normally download the
++         * resource into a temporary location and hand off a reference to this
++         * location to the install or upgrade strategy to move into the final location.
++         * 
++         * @param job The download job that is invoking this strategy. This job is
++         *          responsible for managing the status of the download and installation.
++         * @param src The URL to the resource to be downloaded.
++         * @return A File object that describes the downloaded resource.
++         * @throws IOException if there were problems downloading the resource.
++         * @see DownloadJob
++         */
++        public File download(DownloadJob job, URL src) throws IOException;
++    }
++    
++    /**
++     * Installs the downloaded plugin into its final location. Implement this interface
++     * if you need to do more than move the temporary file into place.
++     */
++    public interface InstallStrategy extends ExtensionPoint {
++        /**
++         * Called after a plugin has been downloaded to move it into its final
++         * location.
++         * 
++         * @param job The install job that is invoking this strategy.
++         * @param src The temporary location of the plugin.
++         * @param dst The final destination to install the plugin to.
++         * @throws IOException if there are problems installing the resource.
++         */
++        public void install(DownloadJob job, File src, File dst) throws IOException;
++    }
++    
++    /**
++     * Installs the downloaded upgrade into its final location. Implement this
++     * interface if you need to do more than move the temporary file into place.
++     */
++    public interface UpgradeStrategy extends ExtensionPoint {
++        /**
++         * Called after an upgrade has been downloaded to move it into its final
++         * location.
++         * 
++         * @param job The upgrade job that is invoking this strategy.
++         * @param src The temporary location of the upgrade.
++         * @param dst The final destination to install the upgrade to.
++         * @throws IOException if there are problems installing the resource.
++         */
++        public void upgrade(DownloadJob job, File src, File dst) throws IOException;
++    }
++    
++    /**
+      * Things that {@link UpdateCenter#installerService} executes.
+      *
+      * This object will have the <tt>row.jelly</tt> which renders the job on UI.
+@@ -419,19 +755,21 @@
+ 
+         public void run() {
+             try {
++                String connectionCheckUrl = config.getConnectionCheckUrl();
++                
+                 statuses.add(Messages.UpdateCenter_Status_CheckingInternet());
+                 try {
+-                    testConnection(new URL("http://www.google.com/"));
++                    config.getConnectionCheckStrategy().checkConnection(this, connectionCheckUrl);
+                 } catch (IOException e) {
+                     if(e.getMessage().contains("Connection timed out")) {
+                         // Google can't be down, so this is probably a proxy issue
+-                        statuses.add(Messages.UpdateCenter_Status_ConnectionFailed("www.google.com"));
++                        statuses.add(Messages.UpdateCenter_Status_ConnectionFailed(connectionCheckUrl));
+                         return;
+                     }
+                 }
+ 
+                 statuses.add(Messages.UpdateCenter_Status_CheckingJavaNet());
+-                testConnection(new URL("https://hudson.dev.java.net/?uctest"));
++                config.getConnectionCheckStrategy().checkUpdateCenter(this, config.getUpdateCenterUrl());
+ 
+                 statuses.add(Messages.UpdateCenter_Status_Success());
+             } catch (UnknownHostException e) {
+@@ -451,12 +789,6 @@
+                 return statuses.toArray(new String[statuses.size()]);
+             }
+         }
+-
+-        private void testConnection(URL url) throws IOException {
+-            InputStream in = ProxyConfiguration.open(url).getInputStream();
+-            IOUtils.copy(in,new ByteArrayOutputStream());
+-            in.close();
+-        }
+     }
+ 
+     /**
+@@ -489,41 +821,40 @@
+          */
+         protected abstract void onSuccess();
+ 
++        /**
++         * So custom strategies have access to the configuration data
++         */
++        public final UpdateCenterConfigurator configuration = config;
++        
++        private Authentication authentication;
++        
++        /**
++         * Get the user that initiated this job
++         */
++        public Authentication getUser()
++        {
++            return this.authentication;
++        }
++        
++        protected DownloadJob(Authentication authentication)
++        {
++            this.authentication = authentication;
++        }
++        
+         public void run() {
+             try {
+-                LOGGER.info("Starting the installation of "+getName());
++                LOGGER.info("Starting the installation of "+getName()+" on behalf of "+getUser().getName());
+ 
+                 URL src = getURL();
+ 
+-                // for security reasons, only install from hudson.dev.java.net for now, which is also conveniently
+-                // https to guarantee transport level security.
+-                if(!src.toExternalForm().startsWith("https://hudson.dev.java.net/")) {
+-                    throw new IOException("Installation from non-official repository at "+src+" is not support yet");
+-                }
++                config.getValidationStrategy().preValidate(this, src);
+ 
+-                // In the future if we are to open up update center to 3rd party, we need more elaborate scheme
+-                // like signing to ensure the safety of the bits.
+-                URLConnection con = ProxyConfiguration.open(src);
+-                int total = con.getContentLength();
+-                CountingInputStream in = new CountingInputStream(con.getInputStream());
+-                byte[] buf = new byte[8192];
+-                int len;
+-
+                 File dst = getDestination();
+-                File tmp = new File(dst.getPath()+".tmp");
+-                OutputStream out = new FileOutputStream(tmp);
+-
+-                LOGGER.info("Downloading "+getName());
+-                while((len=in.read(buf))>=0) {
+-                    out.write(buf,0,len);
+-                    status = new Installing(total==-1 ? -1 : in.getCount()*100/total);
+-                }
+-
+-                in.close();
+-                out.close();
+-
+-                replace(dst, tmp);
+-
++                File tmp = config.getDownloadStrategy().download(this, src);
++                
++                config.getValidationStrategy().postValidate(this, tmp);
++                config.getInstallStrategy().install(this, tmp, dst);
++                
+                 LOGGER.info("Installation successful: "+getName());
+                 status = new Success();
+                 onSuccess();
+@@ -606,7 +937,8 @@
+ 
+         private final PluginManager pm = Hudson.getInstance().getPluginManager();
+ 
+-        public InstallationJob(Plugin plugin) {
++        public InstallationJob(Plugin plugin, Authentication auth) {
++            super(auth);
+             this.plugin = plugin;
+         }
+ 
+@@ -632,7 +964,8 @@
+      * Represents the state of the upgrade activity of Hudson core.
+      */
+     public final class HudsonUpgradeJob extends DownloadJob {
+-        public HudsonUpgradeJob() {
++        public HudsonUpgradeJob(Authentication auth) {
++            super(auth);
+         }
+ 
+         protected URL getURL() throws MalformedURLException {
+Index: main/core/src/main/resources/hudson/model/UpdateCenter/PageDecoratorImpl/footer.jelly
+===================================================================
+--- main/core/src/main/resources/hudson/model/UpdateCenter/PageDecoratorImpl/footer.jelly	(revision 13657)
++++ main/core/src/main/resources/hudson/model/UpdateCenter/PageDecoratorImpl/footer.jelly	(working copy)
+@@ -10,7 +10,8 @@
+     <script>
+       updateCenter.postBackURL = "${rootURL}/updateCenter/postBack";
+       updateCenter.info = { version:"${h.version}" }; 
++      updateCenter.url = "${h.updateCenterUrl}";
+       Behaviour.addLoadEvent(updateCenter.checkUpdates);
+     </script>
+   </j:if>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>
+Index: main/war/resources/scripts/hudson-behavior.js
+===================================================================
+--- main/war/resources/scripts/hudson-behavior.js	(revision 13657)
++++ main/war/resources/scripts/hudson-behavior.js	(working copy)
+@@ -1319,9 +1319,10 @@
+     postBackURL : null,
+     info: {},
+     completionHandler: null,
++    url: "https://hudson.dev.java.net/",
+ 
+     checkUpdates : function() {
+-        loadScript("https://hudson.dev.java.net/update-center.json?"+Hash.toQueryString(updateCenter.info));
++        loadScript(updateCenter.url+"update-center.json?"+Hash.toQueryString(updateCenter.info));
+     },
+ 
+     post : function(data) {
+@@ -1369,4 +1370,4 @@
+             }
+         });
+     }, 5000);
+-}
+\ No newline at end of file
++}

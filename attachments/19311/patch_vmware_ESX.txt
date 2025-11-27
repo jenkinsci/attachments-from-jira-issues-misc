@@ -1,0 +1,1158 @@
+Index: pom.xml
+===================================================================
+--- pom.xml	(revision 29840)
++++ pom.xml	(working copy)
+@@ -4,7 +4,7 @@
+     <parent>
+         <groupId>org.jvnet.hudson.plugins</groupId>
+         <artifactId>plugin</artifactId>
+-        <version>1.318</version>
++        <version>1.353</version>
+         <relativePath>../pom.xml</relativePath>
+     </parent>
+ 
+@@ -19,13 +19,13 @@
+             <groupId>org.jvnet.hudson.main</groupId>
+             <artifactId>hudson-war</artifactId>
+             <type>war</type>
+-            <version>[1.215,)</version>
++            <version>1.353</version>
+             <scope>test</scope>
+         </dependency>
+         <dependency>
+             <groupId>org.jvnet.hudson.main</groupId>
+             <artifactId>hudson-core</artifactId>
+-            <version>[1.215,)</version>
++            <version>1.353</version>
+             <scope>provided</scope>
+         </dependency>
+         <dependency>
+Index: src/main/java/hudson/plugins/vmware/HostType.java
+===================================================================
+--- src/main/java/hudson/plugins/vmware/HostType.java	(revision 29840)
++++ src/main/java/hudson/plugins/vmware/HostType.java	(working copy)
+@@ -1,18 +1,12 @@
+ package hudson.plugins.vmware;
+ 
+-import org.kohsuke.stapler.Stapler;
+-import hudson.util.EnumConverter;
+ 
+ /**
+  * TODO javadoc.
+-*
+-* @author Stephen Connolly
+-* @since 20-May-2008 22:55:55
+-*/
++ * 
++ * @author Stephen Connolly
++ * @since 20-May-2008 22:55:55
++ */
+ public enum HostType {
+-    VMWARE_SERVER;
+-
+-    static {
+-        Stapler.CONVERT_UTILS.register(new EnumConverter(), HostType.class);
+-    }
++	VMWARE_SERVER, ESX;
+ }
+Index: src/main/java/hudson/plugins/vmware/PluginImpl.java
+===================================================================
+--- src/main/java/hudson/plugins/vmware/PluginImpl.java	(revision 29840)
++++ src/main/java/hudson/plugins/vmware/PluginImpl.java	(working copy)
+@@ -3,8 +3,10 @@
+ import hudson.Plugin;
+ import static hudson.Util.fixNull;
+ import hudson.model.Hudson;
++import hudson.util.EnumConverter;
+ import hudson.util.FormValidation;
+ import org.kohsuke.stapler.QueryParameter;
++import org.kohsuke.stapler.Stapler;
+ import org.kohsuke.stapler.StaplerRequest;
+ import org.kohsuke.stapler.StaplerResponse;
+ 
+@@ -27,7 +29,23 @@
+  */
+ public class PluginImpl extends Plugin {
+ 
+-    /**
++    /* (non-Javadoc)
++	 * @see hudson.Plugin#start()
++	 */
++	@Override
++	public void start() throws Exception {
++		super.start();
++		
++    	LOGGER.info("Register HostType converter");
++        Stapler.CONVERT_UTILS.register(new EnumConverter(), HostType.class);
++        LOGGER.info("Register VMWrapperPowerDownMode converter");
++        Stapler.CONVERT_UTILS.register(new EnumConverter(), VMWrapperPowerDownMode.class);
++        LOGGER.info("Register VMWrapperPowerUpMode converter");
++        Stapler.CONVERT_UTILS.register(new EnumConverter(), VMWrapperPowerUpMode.class);
++        
++	}
++
++	/**
+      * Returns the plugin instance.
+      *
+      * @return The plugin instance.
+Index: src/main/java/hudson/plugins/vmware/VMWrapperPowerDownMode.java
+===================================================================
+--- src/main/java/hudson/plugins/vmware/VMWrapperPowerDownMode.java	(revision 29840)
++++ src/main/java/hudson/plugins/vmware/VMWrapperPowerDownMode.java	(working copy)
+@@ -1,35 +1,22 @@
+ package hudson.plugins.vmware;
+ 
+-import org.kohsuke.stapler.Stapler;
+-
+ import java.io.Serializable;
+ 
+-import hudson.util.EnumConverter;
+-
+ /**
+  * TODO javadoc.
+-*
+-* @author Stephen Connolly
+-* @since 20-May-2008 23:00:22
+-*/
++ * 
++ * @author Stephen Connolly
++ * @since 20-May-2008 23:00:22
++ */
+ public enum VMWrapperPowerDownMode implements Serializable {
+-    NORMAL("Power off"),
+-    SUSPEND("Suspend"),
+-    CREATE_POWER_OFF("Take snapshot before power off"),
+-    CREATE_NORMAL("Take snapshot after power off"),
+-    CREATE_SUSPEND("Take snapshot after suspend"),
+-    NOTHING("Do nothing"),;
+-    private String description;
++	NORMAL("Power off"), SUSPEND("Suspend"), CREATE_POWER_OFF("Take snapshot before power off"), CREATE_NORMAL("Take snapshot after power off"), CREATE_SUSPEND("Take snapshot after suspend"), NOTHING("Do nothing"), ;
++	private String description;
+ 
+-    VMWrapperPowerDownMode(String description) {
+-        this.description = description;
+-    }
++	VMWrapperPowerDownMode(String description) {
++		this.description = description;
++	}
+ 
+-    public String getDescription() {
+-        return description;
+-    }
+-
+-    static {
+-        Stapler.CONVERT_UTILS.register(new EnumConverter(), VMWrapperPowerDownMode.class);
+-    }
++	public String getDescription() {
++		return description;
++	}
+ }
+Index: src/main/java/hudson/plugins/vmware/VMWrapperPowerUpMode.java
+===================================================================
+--- src/main/java/hudson/plugins/vmware/VMWrapperPowerUpMode.java	(revision 29840)
++++ src/main/java/hudson/plugins/vmware/VMWrapperPowerUpMode.java	(working copy)
+@@ -1,11 +1,7 @@
+ package hudson.plugins.vmware;
+ 
+-import org.kohsuke.stapler.Stapler;
+-
+ import java.io.Serializable;
+ 
+-import hudson.util.EnumConverter;
+-
+ /**
+  * TODO javadoc.
+ *
+@@ -28,8 +24,4 @@
+     public String getDescription() {
+         return description;
+     }
+-
+-    static {
+-        Stapler.CONVERT_UTILS.register(new EnumConverter(), VMWrapperPowerUpMode.class);
+-    }
+ }
+Index: src/main/java/hudson/plugins/vmware/VMwareActivationWrapper.java
+===================================================================
+--- src/main/java/hudson/plugins/vmware/VMwareActivationWrapper.java	(revision 29840)
++++ src/main/java/hudson/plugins/vmware/VMwareActivationWrapper.java	(working copy)
+@@ -1,13 +1,5 @@
+ package hudson.plugins.vmware;
+ 
+-import java.io.IOException;
+-import java.io.Serializable;
+-import java.util.ArrayList;
+-import java.util.List;
+-import java.util.Map;
+-import java.util.concurrent.TimeUnit;
+-import java.util.logging.Logger;
+-
+ import hudson.Extension;
+ import hudson.Launcher;
+ import hudson.model.AbstractBuild;
+@@ -17,476 +9,469 @@
+ import hudson.model.ResourceActivity;
+ import hudson.model.ResourceList;
+ import hudson.model.Result;
+-import hudson.plugins.vmware.vix.VixHostConfig;
+-import hudson.plugins.vmware.vix.VixVirtualComputer;
+ import hudson.plugins.vmware.vix.VixHost;
++import hudson.plugins.vmware.vix.VixHostConfig;
+ import hudson.plugins.vmware.vix.VixLibraryManager;
++import hudson.plugins.vmware.vix.VixVirtualComputer;
+ import hudson.plugins.vmware.vix.VixVirtualComputerConfig;
+ import hudson.tasks.BuildWrapper;
++
++import java.io.IOException;
++import java.io.Serializable;
++import java.util.ArrayList;
++import java.util.List;
++import java.util.Map;
++import java.util.concurrent.TimeUnit;
++import java.util.logging.Logger;
++
+ import net.sf.json.JSONObject;
+-import org.kohsuke.stapler.StaplerRequest;
++
+ import org.kohsuke.stapler.DataBoundConstructor;
++import org.kohsuke.stapler.StaplerRequest;
+ 
+ /**
+  * Created by IntelliJ IDEA.
+- *
++ * 
+  * @author Stephen Connolly
+  * @since 26-Sep-2007 16:06:28
+  */
+ public class VMwareActivationWrapper extends BuildWrapper implements ResourceActivity {
+ 
+-    public transient String vixLibraryPath;
+-    public transient String hostName;
+-    public transient String username;
+-    public transient String password;
+-    public transient int portNumber;
+-    public transient boolean suspend;
+-    public transient boolean waitForTools;
+-    public transient boolean revert;
+-    public transient String configFile;
+-    private List<VMActivationConfig> machines;
++	public transient String vixLibraryPath;
++	public transient String hostName;
++	public transient String username;
++	public transient String password;
++	public transient int portNumber;
++	public transient boolean suspend;
++	public transient boolean waitForTools;
++	public transient boolean revert;
++	public transient String configFile;
++	private List<VMActivationConfig> machines;
+ 
+-    private void importOldConfig() {
+-        assert machines == null;
+-        machines = new ArrayList<VMActivationConfig>();
+-        VixHostConfig hostConfig = null;
+-        if (vixLibraryPath != null) {
+-            // pull legacy config
+-            hostConfig =
+-                    new VixHostConfig(vixLibraryPath, hostName, portNumber, HostType.VMWARE_SERVER, username, password);
+-            boolean found = false;
+-            for (VixHostConfig h : DESCRIPTOR.getHosts()) {
+-                if (h.equals(hostConfig)) {
+-                    found = true;
+-                    hostConfig = h;
+-                    break;
+-                }
+-            }
+-            if (!found) {
+-                hostConfig = new VixHostConfig(
+-                        hostConfig.getUsername() + "@" + hostConfig.getHostType() + ":" + hostConfig
+-                                .getPortNumber(), vixLibraryPath, hostName, portNumber, HostType.VMWARE_SERVER,
+-                        username,
+-                        password);
+-                DESCRIPTOR.addHost(hostConfig);
+-            }
++	private void importOldConfig() {
++		assert machines == null;
++		machines = new ArrayList<VMActivationConfig>();
++		VixHostConfig hostConfig = null;
++		if (vixLibraryPath != null) {
++			// pull legacy config
++			hostConfig = new VixHostConfig(vixLibraryPath, hostName, portNumber, HostType.VMWARE_SERVER, username, password);
++			boolean found = false;
++			for (VixHostConfig h : DESCRIPTOR.getHosts()) {
++				if (h.equals(hostConfig)) {
++					found = true;
++					hostConfig = h;
++					break;
++				}
++			}
++			if (!found) {
++				hostConfig = new VixHostConfig(hostConfig.getUsername() + "@" + hostConfig.getHostType() + ":" + hostConfig.getPortNumber(), vixLibraryPath, hostName, portNumber, HostType.VMWARE_SERVER, username, password);
++				DESCRIPTOR.addHost(hostConfig);
++			}
+ 
+-        }
+-        if (hostConfig == null) {
+-            hostConfig = DESCRIPTOR.getHosts().get(0);
+-        }
+-        if (configFile != null && !"".equals(configFile)) {
+-            final VMWrapperPowerUpMode powerUpMode;
+-            if (waitForTools) {
+-                powerUpMode = revert ? VMWrapperPowerUpMode.REVERT_WAIT : VMWrapperPowerUpMode.NORMAL_WAIT;
+-            } else {
+-                powerUpMode = revert ? VMWrapperPowerUpMode.REVERT : VMWrapperPowerUpMode.NORMAL;
+-            }
+-            final VMWrapperPowerDownMode powerDownMode =
+-                    suspend ? VMWrapperPowerDownMode.SUSPEND : VMWrapperPowerDownMode.NORMAL;
+-            machines.add(new VMActivationConfig(
+-                    powerUpMode,
+-                    powerDownMode,
+-                    0,
+-                    false,
+-                    null,
+-                    0,
+-                    new VixVirtualComputerConfig(configFile, hostConfig)
+-            ));
+-        }
+-    }
++		}
++		if (hostConfig == null) {
++			hostConfig = DESCRIPTOR.getHosts().get(0);
++		}
++		if (configFile != null && !"".equals(configFile)) {
++			final VMWrapperPowerUpMode powerUpMode;
++			if (waitForTools) {
++				powerUpMode = revert ? VMWrapperPowerUpMode.REVERT_WAIT : VMWrapperPowerUpMode.NORMAL_WAIT;
++			} else {
++				powerUpMode = revert ? VMWrapperPowerUpMode.REVERT : VMWrapperPowerUpMode.NORMAL;
++			}
++			final VMWrapperPowerDownMode powerDownMode = suspend ? VMWrapperPowerDownMode.SUSPEND : VMWrapperPowerDownMode.NORMAL;
++			machines.add(new VMActivationConfig(powerUpMode, powerDownMode, 0, false, null, 0, new VixVirtualComputerConfig(configFile, hostConfig)));
++		}
++	}
+ 
+-    public List<VMActivationConfig> getMachines() {
+-        if (machines == null) {
+-            importOldConfig();
+-        }
+-        return machines;
+-    }
++	public List<VMActivationConfig> getMachines() {
++		if (machines == null) {
++			importOldConfig();
++		}
++		return machines;
++	}
+ 
+-    public void setMachines(List<VMActivationConfig> machines) {
+-        this.machines = machines;
+-    }
++	public void setMachines(List<VMActivationConfig> machines) {
++		this.machines = machines;
++	}
+ 
+-    @Override
+-    public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener buildListener)
+-            throws IOException, InterruptedException {
+-        final class VMC {
++	@Override
++	public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener buildListener) throws IOException, InterruptedException {
++		final class VMC {
+ 
+-            private final VixVirtualComputer vm;
+-            private final VixHost host;
+-            private long powerTime;
+-            private final VMActivationConfig cfg;
++			private final VixVirtualComputer vm;
++			private final VixHost host;
++			private long powerTime;
++			private final VMActivationConfig cfg;
+ 
+-            public VMC(VixVirtualComputer vm, VixHost host, VMActivationConfig cfg) {
+-                this.vm = vm;
+-                this.host = host;
+-                this.powerTime = powerTime; //XXX this does nothing
+-                this.cfg = cfg;
+-            }
++			public VMC(VixVirtualComputer vm, VixHost host, VMActivationConfig cfg) {
++				this.vm = vm;
++				this.host = host;
++				this.powerTime = powerTime; // XXX this does nothing
++				this.cfg = cfg;
++			}
+ 
+-            public void prepareFeedback(BuildListener listener) {
+-                if (cfg.isWaitForFeedback()) {
+-                    listener.getLogger().println(Messages.VMwareActivationWrapper_LogFeedbackPrepare(
+-                            cfg.getFeedbackKey(), cfg.toString()));
+-                    PluginImpl.clearVMIP(cfg.getFeedbackKey());
+-                    PluginImpl.watchVMIP(cfg.getFeedbackKey());
+-                }
+-            }
++			public void prepareFeedback(BuildListener listener) {
++				if (cfg.isWaitForFeedback()) {
++					listener.getLogger().println(Messages.VMwareActivationWrapper_LogFeedbackPrepare(cfg.getFeedbackKey(), cfg.toString()));
++					PluginImpl.clearVMIP(cfg.getFeedbackKey());
++					PluginImpl.watchVMIP(cfg.getFeedbackKey());
++				}
++			}
+ 
+-            public boolean awaitFeedback(BuildListener listener) {
+-                if (cfg.isWaitForFeedback()) {
+-                    listener.getLogger().println(Messages.VMwareActivationWrapper_LogFeedbackStartWait(
+-                            cfg.getFeedbackKey(), cfg));
+-                    try {
+-                        final boolean result = PluginImpl.awaitVMIP(cfg.getFeedbackKey(),
+-                                cfg.getFeedbackTimeout(), TimeUnit.SECONDS);
+-                        if (result) {
+-                            listener.getLogger().println(Messages.VMwareActivationWrapper_LogFeedbackResult(
+-                                    cfg.getFeedbackKey(), PluginImpl.getVMIP(cfg.getFeedbackKey())));
+-                        } else {
+-                            listener.getLogger().println(Messages.VMwareActivationWrapper_LogTimedOut());
+-                        }
+-                        return result;
+-                    } catch (InterruptedException e) {
+-                        listener.getLogger().println(Messages.VMwareActivationWrapper_LogInterrupted());
+-                        e.printStackTrace(listener.getLogger());
+-                        return false;
+-                    }
+-                }
+-                return true;
+-            }
++			public boolean awaitFeedback(BuildListener listener) {
++				if (cfg.isWaitForFeedback()) {
++					listener.getLogger().println(Messages.VMwareActivationWrapper_LogFeedbackStartWait(cfg.getFeedbackKey(), cfg));
++					try {
++						final boolean result = PluginImpl.awaitVMIP(cfg.getFeedbackKey(), cfg.getFeedbackTimeout(), TimeUnit.SECONDS);
++						if (result) {
++							listener.getLogger().println(Messages.VMwareActivationWrapper_LogFeedbackResult(cfg.getFeedbackKey(), PluginImpl.getVMIP(cfg.getFeedbackKey())));
++						} else {
++							listener.getLogger().println(Messages.VMwareActivationWrapper_LogTimedOut());
++						}
++						return result;
++					} catch (InterruptedException e) {
++						listener.getLogger().println(Messages.VMwareActivationWrapper_LogInterrupted());
++						e.printStackTrace(listener.getLogger());
++						return false;
++					}
++				}
++				return true;
++			}
+ 
+-            public void powerUp(BuildListener listener) {
+-                listener.getLogger()
+-                        .println(Messages.VMwareActivationWrapper_LogPreBuildStarted(cfg));
+-                switch (cfg.getPowerUpMode()) {
+-                    case NOTHING:
+-                        break;
+-                    case REVERT:
+-                    case REVERT_WAIT:
+-                        listener.getLogger().println(Messages.VMwareActivationWrapper_LogRevertingVM());
+-                        vm.revertToSnapshot();
+-                    case NORMAL:
+-                    case NORMAL_WAIT:
+-                        listener.getLogger().println(Messages.VMwareActivationWrapper_LogPoweringUpVM());
+-                        vm.powerOn();
+-                        break;
+-                    default:
+-                        break;
+-                }
+-                switch (cfg.getPowerUpMode()) {
+-                    case NORMAL_WAIT:
+-                    case REVERT_WAIT:
+-                        listener.getLogger()
+-                                .println(Messages.VMwareActivationWrapper_LogWaitingForToolsStartup());
+-                        vm.waitForToolsInGuest(cfg.waitTimeout);
+-                        break;
+-                    default:
+-                        break;
+-                }
+-                powerTime = System.currentTimeMillis();
+-                listener.getLogger().println(Messages.VMwareActivationWrapper_LogPrebuildCompleted(cfg));
+-            }
++			public void powerUp(BuildListener listener) {
++				listener.getLogger().println(Messages.VMwareActivationWrapper_LogPreBuildStarted(cfg));
++				switch (cfg.getPowerUpMode()) {
++					case NOTHING:
++						break;
++					case REVERT:
++					case REVERT_WAIT:
++						listener.getLogger().println(Messages.VMwareActivationWrapper_LogRevertingVM());
++						vm.revertToSnapshot();
++					case NORMAL:
++					case NORMAL_WAIT:
++						listener.getLogger().println(Messages.VMwareActivationWrapper_LogPoweringUpVM());
++						vm.powerOn();
++						break;
++					default:
++						break;
++				}
++				switch (cfg.getPowerUpMode()) {
++					case NORMAL_WAIT:
++					case REVERT_WAIT:
++						listener.getLogger().println(Messages.VMwareActivationWrapper_LogWaitingForToolsStartup());
++						vm.waitForToolsInGuest(cfg.waitTimeout);
++						break;
++					default:
++						break;
++				}
++				powerTime = System.currentTimeMillis();
++				listener.getLogger().println(Messages.VMwareActivationWrapper_LogPrebuildCompleted(cfg));
++			}
+ 
+-            public void powerDown(BuildListener buildListener) {
+-                buildListener.getLogger()
+-                        .println(Messages.VMwareActivationWrapper_LogPostBuildActionsStarting(cfg));
++			public void powerDown(BuildListener buildListener) {
++				buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogPostBuildActionsStarting(cfg));
+ 
+-                while (System.currentTimeMillis() < powerTime + 10000L) {
+-                    buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogWaitingForBIOSBoot());
+-                    try {
+-                        Thread.sleep(1000L);
+-                    } catch (InterruptedException e) {
+-                        // ignore
+-                    }
+-                }
++				while (System.currentTimeMillis() < powerTime + 10000L) {
++					buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogWaitingForBIOSBoot());
++					try {
++						Thread.sleep(1000L);
++					} catch (InterruptedException e) {
++						// ignore
++					}
++				}
+ 
+-                switch (cfg.getPowerDownMode()) {
+-                    case CREATE_POWER_OFF:
+-                        buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogTakingSnapshot());
+-                        vm.createSnapshot("", "", true);
+-                        break;
+-                    case NOTHING:
+-                    case NORMAL:
+-                    case SUSPEND:
+-                    case CREATE_SUSPEND:
+-                    case CREATE_NORMAL:
+-                    default:
+-                        break;
+-                }
++				switch (cfg.getPowerDownMode()) {
++					case CREATE_POWER_OFF:
++						buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogTakingSnapshot());
++						vm.createSnapshot("", "", true);
++						break;
++					case NOTHING:
++					case NORMAL:
++					case SUSPEND:
++					case CREATE_SUSPEND:
++					case CREATE_NORMAL:
++					default:
++						break;
++				}
+ 
+-                switch (cfg.getPowerDownMode()) {
+-                    case SUSPEND:
+-                    case CREATE_SUSPEND:
+-                        buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogSuspending());
+-                        vm.suspend();
+-                        break;
+-                    case NORMAL:
+-                    case CREATE_POWER_OFF:
+-                    case CREATE_NORMAL:
+-                        buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogPoweringOff());
+-                        vm.powerOff();
+-                        break;
+-                    case NOTHING:
+-                    default:
+-                        break;
+-                }
++				switch (cfg.getPowerDownMode()) {
++					case SUSPEND:
++					case CREATE_SUSPEND:
++						buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogSuspending());
++						vm.suspend();
++						break;
++					case NORMAL:
++					case CREATE_POWER_OFF:
++					case CREATE_NORMAL:
++						buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogPoweringOff());
++						vm.powerOff();
++						break;
++					case NOTHING:
++					default:
++						break;
++				}
+ 
+-                switch (cfg.getPowerDownMode()) {
+-                    case CREATE_SUSPEND:
+-                        buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogTakingSnapshot());
+-                        vm.createSnapshot("", "", true);
+-                        break;
+-                    case CREATE_NORMAL:
+-                        buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogTakingSnapshot());
+-                        vm.createSnapshot("", "", false);
+-                        break;
+-                    case NOTHING:
+-                    case NORMAL:
+-                    case SUSPEND:
+-                    case CREATE_POWER_OFF:
+-                    default:
+-                        break;
+-                }
++				switch (cfg.getPowerDownMode()) {
++					case CREATE_SUSPEND:
++						buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogTakingSnapshot());
++						vm.createSnapshot("", "", true);
++						break;
++					case CREATE_NORMAL:
++						buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogTakingSnapshot());
++						vm.createSnapshot("", "", false);
++						break;
++					case NOTHING:
++					case NORMAL:
++					case SUSPEND:
++					case CREATE_POWER_OFF:
++					default:
++						break;
++				}
+ 
+-                vm.close();
+-                buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogDisconnecting());
+-                host.disconnect();
+-                buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogDone());
++				vm.close();
++				buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogDisconnecting());
++				host.disconnect();
++				buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogDone());
+ 
+-                buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogPostBuildActionsComplete(cfg));
+-            }
++				buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogPostBuildActionsComplete(cfg));
++			}
+ 
+-        }
+-        class EnvironmentImpl extends Environment {
++		}
++		class EnvironmentImpl extends Environment {
+ 
+-            private final List<VMC> vms;
++			private final List<VMC> vms;
+ 
+-            public EnvironmentImpl(List<VMC> vms) {
+-                this.vms = vms;
+-            }
++			public EnvironmentImpl(List<VMC> vms) {
++				this.vms = vms;
++			}
+ 
+-            @Override
+-            public boolean tearDown(AbstractBuild build, BuildListener buildListener) throws IOException, InterruptedException {
+-                for (VMC vm : vms) {
+-                    vm.powerDown(buildListener);
+-                }
+-                return true;
+-            }
++			@Override
++			public boolean tearDown(AbstractBuild build, BuildListener buildListener) throws IOException, InterruptedException {
++				for (VMC vm : vms) {
++					vm.powerDown(buildListener);
++				}
++				return true;
++			}
+ 
+-            @Override
+-            public void buildEnvVars(Map<String, String> map) {
+-                super.buildEnvVars(map);
+-                for (String key : PluginImpl.getVMs()) {
+-                    map.put(key, PluginImpl.getVMIP(key));
+-                }
+-            }
+-        }
+-        List<VMC> vms = new ArrayList<VMC>();
+-        try {
+-            for (VMActivationConfig machine : machines) {
+-                final VixHostConfig config = machine.getConfig().getHost();
+-                buildListener.getLogger()
+-                        .println(Messages.VMwareActivationWrapper_LogOpeningVixConnection(config.toPseudoUri()));
+-                VixHost host = VixLibraryManager.getHostInstance(config);
+-                try {
+-                    buildListener.getLogger().println(
+-                            Messages.VMwareActivationWrapper_LogOpeningVirtualMachine(machine));
+-                    VixVirtualComputer vm = host.open(machine.getConfig());
+-                    try {
+-                        final VMC vmc = new VMC(vm, host, machine);
+-                        vmc.prepareFeedback(buildListener);
+-                        vmc.powerUp(buildListener);
+-                        vms.add(vmc);
+-                    } catch (VMwareRuntimeException e) {
+-                        vm.close();
+-                        throw e;
+-                    }
+-                } catch (VMwareRuntimeException e) {
+-                    host.disconnect();
+-                    throw e;
+-                }
+-            }
+-        } catch (VMwareRuntimeException e) {
+-            buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogVixError(e.getMessage()));
+-            e.printStackTrace(buildListener.getLogger());
+-            build.setResult(Result.FAILURE);
+-            for (VMC vmc : vms) {
+-                vmc.powerDown(buildListener);
+-            }
+-            return null;
+-        }
+-        for (VMC vmc : vms) {
+-            if (!vmc.awaitFeedback(buildListener)) {
+-                build.setResult(Result.FAILURE);
+-                for (VMC vmc2 : vms) {
+-                    vmc2.powerDown(buildListener);
+-                }
+-                return null;
+-            }
+-        }
+-        return new EnvironmentImpl(vms);
+-    }
++			@Override
++			public void buildEnvVars(Map<String, String> map) {
++				super.buildEnvVars(map);
++				for (String key : PluginImpl.getVMs()) {
++					map.put(key, PluginImpl.getVMIP(key));
++				}
++			}
++		}
++		List<VMC> vms = new ArrayList<VMC>();
++		try {
++			for (VMActivationConfig machine : machines) {
++				final VixHostConfig config = machine.getConfig().getHost();
++				buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogOpeningVixConnection(config.toPseudoUri()));
++				VixHost host = VixLibraryManager.getHostInstance(config);
++				try {
++					buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogOpeningVirtualMachine(machine));
++					VixVirtualComputer vm = host.open(machine.getConfig());
++					try {
++						final VMC vmc = new VMC(vm, host, machine);
++						vmc.prepareFeedback(buildListener);
++						vmc.powerUp(buildListener);
++						vms.add(vmc);
++					} catch (VMwareRuntimeException e) {
++						vm.close();
++						throw e;
++					}
++				} catch (VMwareRuntimeException e) {
++					host.disconnect();
++					throw e;
++				}
++			}
++		} catch (VMwareRuntimeException e) {
++			buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogVixError(e.getMessage()));
++			e.printStackTrace(buildListener.getLogger());
++			build.setResult(Result.FAILURE);
++			for (VMC vmc : vms) {
++				vmc.powerDown(buildListener);
++			}
++			return null;
++		}
++		for (VMC vmc : vms) {
++			if (!vmc.awaitFeedback(buildListener)) {
++				build.setResult(Result.FAILURE);
++				for (VMC vmc2 : vms) {
++					vmc2.powerDown(buildListener);
++				}
++				return null;
++			}
++		}
++		return new EnvironmentImpl(vms);
++	}
+ 
+-    @Override
+-    public Descriptor<BuildWrapper> getDescriptor() {
+-        return DESCRIPTOR;
+-    }
++	@Override
++	public Descriptor<BuildWrapper> getDescriptor() {
++		return DESCRIPTOR;
++	}
+ 
+-    @Extension
+-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
++	@Extension
++	public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
+ 
+-    public ResourceList getResourceList() {
+-        ResourceList resources = new ResourceList();
+-        for (VMActivationConfig machine : machines) {
+-            resources.w(new Resource(machine.toString()));
+-        }
+-        return resources;
+-    }
++	public ResourceList getResourceList() {
++		ResourceList resources = new ResourceList();
++		for (VMActivationConfig machine : machines) {
++			resources.w(new Resource(machine.toString()));
++		}
++		return resources;
++	}
+ 
+-    public String getDisplayName() {
+-        return DESCRIPTOR.getDisplayName();
+-    }
++	public String getDisplayName() {
++		return DESCRIPTOR.getDisplayName();
++	}
+ 
+-    public static final class DescriptorImpl extends Descriptor<BuildWrapper> {
++	public static final class DescriptorImpl extends Descriptor<BuildWrapper> {
+ 
+-        private List<VixHostConfig> hosts;
++		private List<VixHostConfig> hosts;
+ 
+-        DescriptorImpl() {
+-            super(VMwareActivationWrapper.class);
+-            load();
+-        }
++		DescriptorImpl() {
++			super(VMwareActivationWrapper.class);
++			load();
++		}
+ 
+-        public String getDisplayName() {
+-            return Messages.VMwareActivationWrapper_DescriptorImpl_DisplayName();
+-        }
++		public String getDisplayName() {
++			return Messages.VMwareActivationWrapper_DescriptorImpl_DisplayName();
++		}
+ 
+-        @Override
+-        public VMwareActivationWrapper newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+-            VMwareActivationWrapper w = new VMwareActivationWrapper();
+-            req.bindParameters(w, "vmware-activation.");
+-            w.setMachines(req.bindParametersToList(VMActivationConfig.class, "vmware-activation.machine."));
+-            return w;
+-        }
++		@Override
++		public VMwareActivationWrapper newInstance(StaplerRequest req, JSONObject formData) throws FormException {
++			VMwareActivationWrapper w = new VMwareActivationWrapper();
++			req.bindParameters(w, "vmware-activation.");
++			w.setMachines(req.bindParametersToList(VMActivationConfig.class, "vmware-activation.machine."));
++			return w;
++		}
+ 
+-        @Override
+-        public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
+-            req.bindParameters(this, "vmware.");
+-            hosts = req.bindParametersToList(VixHostConfig.class, "vmware.host.");
+-            save();
+-            return super.configure(req, formData);
+-        }
++		@Override
++		public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
++			req.bindParameters(this, "vmware.");
++			hosts = req.bindParametersToList(VixHostConfig.class, "vmware.host.");
++			save();
++			return super.configure(req, formData);
++		}
+ 
+-        public List<VixHostConfig> getHosts() {
+-            if (hosts == null) {
+-                hosts = new ArrayList<VixHostConfig>();
+-                // provide default if we have none
+-                hosts.add(new VixHostConfig());
+-            }
+-            return hosts;
+-        }
++		public List<VixHostConfig> getHosts() {
++			if (hosts == null) {
++				hosts = new ArrayList<VixHostConfig>();
++				// provide default if we have none
++				hosts.add(new VixHostConfig());
++			}
++			return hosts;
++		}
+ 
+-        public void setHosts(List<VixHostConfig> hosts) {
+-            this.hosts = hosts;
+-        }
++		public void setHosts(List<VixHostConfig> hosts) {
++			this.hosts = hosts;
++		}
+ 
+-        public VixHostConfig getHost(String name) {
+-            for (VixHostConfig host : hosts) {
+-                if (name.equals(host.getName())) {
+-                    return host;
+-                }
+-            }
+-            return null;
+-        }
++		public VixHostConfig getHost(String name) {
++			for (VixHostConfig host : hosts) {
++				if (name.equals(host.getName())) {
++					return host;
++				}
++			}
++			return null;
++		}
+ 
+-        public String[] getHostNames() {
+-            String[] result = new String[hosts.size()];
+-            for (int i = 0; i < result.length; i++) {
+-                result[i] = hosts.get(i).getName();
+-            }
+-            return result;
+-        }
++		public String[] getHostNames() {
++			String[] result = new String[hosts.size()];
++			for (int i = 0; i < result.length; i++) {
++				result[i] = hosts.get(i).getName();
++			}
++			return result;
++		}
+ 
+-        public void addHost(VixHostConfig hostConfig) {
+-            hosts.add(hostConfig);
+-            save();
+-        }
++		public void addHost(VixHostConfig hostConfig) {
++			hosts.add(hostConfig);
++			save();
++		}
+ 
+-        public VMWrapperPowerUpMode[] getPowerUpModes() {
+-            return VMWrapperPowerUpMode.values();
+-        }
++		public VMWrapperPowerUpMode[] getPowerUpModes() {
++			return VMWrapperPowerUpMode.values();
++		}
+ 
+-        public VMWrapperPowerDownMode[] getPowerDownModes() {
+-            return VMWrapperPowerDownMode.values();
+-        }
++		public VMWrapperPowerDownMode[] getPowerDownModes() {
++			return VMWrapperPowerDownMode.values();
++		}
+ 
+-    }
++	}
+ 
+-    public static final class VMActivationConfig implements Serializable {
++	public static final class VMActivationConfig implements Serializable {
+ 
+-        private final VMWrapperPowerUpMode powerUpMode;
+-        private final VMWrapperPowerDownMode powerDownMode;
+-        private final int waitTimeout;
+-        private final boolean waitForFeedback;
+-        private final String feedbackKey;
+-        private final int feedbackTimeout;
+-        private final VixVirtualComputerConfig config;
++		private final VMWrapperPowerUpMode powerUpMode;
++		private final VMWrapperPowerDownMode powerDownMode;
++		private final int waitTimeout;
++		private final boolean waitForFeedback;
++		private final String feedbackKey;
++		private final int feedbackTimeout;
++		private final VixVirtualComputerConfig config;
+ 
+-        @Override
+-        public String toString() {
+-            return config.toPseudoUri();
+-        }
++		@Override
++		public String toString() {
++			return config.toPseudoUri();
++		}
+ 
+-        @DataBoundConstructor
+-        public VMActivationConfig(VMWrapperPowerUpMode powerUpMode, VMWrapperPowerDownMode powerDownMode,
+-                                  int waitTimeout,
+-                                  boolean waitForFeedback, String feedbackKey, int feedbackTimeout,
+-                                  VixVirtualComputerConfig config) {
+-            this.powerUpMode = powerUpMode;
+-            this.powerDownMode = powerDownMode;
+-            this.waitTimeout = waitTimeout;
+-            this.waitForFeedback = waitForFeedback;
+-            this.feedbackKey = feedbackKey;
+-            this.feedbackTimeout = feedbackTimeout;
+-            this.config = config;
+-        }
++		@DataBoundConstructor
++		public VMActivationConfig(VMWrapperPowerUpMode powerUpMode, VMWrapperPowerDownMode powerDownMode, int waitTimeout, boolean waitForFeedback, String feedbackKey, int feedbackTimeout, String host, String vmxFilePath) {
++			this.powerUpMode = powerUpMode;
++			this.powerDownMode = powerDownMode;
++			this.waitTimeout = waitTimeout;
++			this.waitForFeedback = waitForFeedback;
++			this.feedbackKey = feedbackKey;
++			this.feedbackTimeout = feedbackTimeout;
++			this.config = new VixVirtualComputerConfig(vmxFilePath, DESCRIPTOR.getHost(host));
++		}
+ 
+-        public int getWaitTimeout() {
+-            return waitTimeout <= 0 ? 300 : waitTimeout;
+-        }
++		public VMActivationConfig(VMWrapperPowerUpMode powerUpMode, VMWrapperPowerDownMode powerDownMode, int waitTimeout, boolean waitForFeedback, String feedbackKey, int feedbackTimeout, VixVirtualComputerConfig virtualComputerConfig) {
++			this.powerUpMode = powerUpMode;
++			this.powerDownMode = powerDownMode;
++			this.waitTimeout = waitTimeout;
++			this.waitForFeedback = waitForFeedback;
++			this.feedbackKey = feedbackKey;
++			this.feedbackTimeout = feedbackTimeout;
++			this.config = virtualComputerConfig;
++		}
+ 
+-        public VMWrapperPowerUpMode getPowerUpMode() {
+-            return powerUpMode;
+-        }
++		public int getWaitTimeout() {
++			return waitTimeout <= 0 ? 300 : waitTimeout;
++		}
+ 
+-        public VMWrapperPowerDownMode getPowerDownMode() {
+-            return powerDownMode;
+-        }
++		public VMWrapperPowerUpMode getPowerUpMode() {
++			return powerUpMode;
++		}
+ 
+-        public String getPreBuild() {
+-            return powerUpMode == null ? null : powerUpMode.toString();
+-        }
++		public VMWrapperPowerDownMode getPowerDownMode() {
++			return powerDownMode;
++		}
+ 
+-        public String getPostBuild() {
+-            return powerDownMode == null ? null : powerDownMode.toString();
+-        }
++		public String getPreBuild() {
++			return powerUpMode == null ? null : powerUpMode.toString();
++		}
+ 
+-        public boolean isWaitForFeedback() {
+-            return waitForFeedback && feedbackKey != null && feedbackKey.trim().length() > 0;
+-        }
++		public String getPostBuild() {
++			return powerDownMode == null ? null : powerDownMode.toString();
++		}
+ 
+-        public String getFeedbackKey() {
+-            return feedbackKey;
+-        }
++		public boolean isWaitForFeedback() {
++			return waitForFeedback && feedbackKey != null && feedbackKey.trim().length() > 0;
++		}
+ 
+-        public int getFeedbackTimeout() {
+-            return feedbackTimeout < 0 ? 300 : feedbackTimeout;
+-        }
++		public String getFeedbackKey() {
++			return feedbackKey;
++		}
+ 
+-        public VixVirtualComputerConfig getConfig() {
+-            return config;
+-        }
+-    }
++		public int getFeedbackTimeout() {
++			return feedbackTimeout < 0 ? 300 : feedbackTimeout;
++		}
+ 
+-    private static final Logger LOGGER = Logger.getLogger(VMwareActivationWrapper.class.getName());
++		public VixVirtualComputerConfig getConfig() {
++			return config;
++		}
++	}
++
++	private static final Logger LOGGER = Logger.getLogger(VMwareActivationWrapper.class.getName());
+ }
+Index: src/main/java/hudson/plugins/vmware/vix/Vix.java
+===================================================================
+--- src/main/java/hudson/plugins/vmware/vix/Vix.java	(revision 29840)
++++ src/main/java/hudson/plugins/vmware/vix/Vix.java	(working copy)
+@@ -324,6 +324,8 @@
+         public static final int DEFAULT = 1;
+         public static final int VMWARE_SERVER = 2;
+         public static final int VMWARE_WORKSTATION = 3;
++        public static final int VMWARE_PLAYER= 4;
++        public static final int ESX =10;
+     }
+ 
+     int VixHost_Connect(int apiVersion,
+Index: src/main/java/hudson/plugins/vmware/vix/VixHost.java
+===================================================================
+--- src/main/java/hudson/plugins/vmware/vix/VixHost.java	(revision 29840)
++++ src/main/java/hudson/plugins/vmware/vix/VixHost.java	(working copy)
+@@ -82,7 +82,14 @@
+             int jobHandle = 0;
+             try {
+                 switch (config.getHostType()) {
+-                    case VMWARE_SERVER:
++                    case ESX:
++                        jobHandle = getLibrary().VixHost_Connect(-1, Vix.ServiceProvider.ESX,
++                                "https://"+config.getHostName()+":"+config.getPortNumber()+"/sdk", config.getPortNumber(), config.getUsername(),
++                                config.getPassword(),
++                                0, Vix.Handle.INVALID, null, null);
++                        break;
++
++                	case VMWARE_SERVER:
+                     default:
+                         jobHandle = getLibrary().VixHost_Connect(1, Vix.ServiceProvider.VMWARE_SERVER,
+                                 config.getHostName(), config.getPortNumber(), config.getUsername(),
+Index: src/main/java/hudson/plugins/vmware/vix/VixVirtualComputer.java
+===================================================================
+--- src/main/java/hudson/plugins/vmware/vix/VixVirtualComputer.java	(revision 29840)
++++ src/main/java/hudson/plugins/vmware/vix/VixVirtualComputer.java	(working copy)
+@@ -1,10 +1,11 @@
+ package hudson.plugins.vmware.vix;
+ 
+-import com.sun.jna.ptr.IntByReference;
+ import hudson.plugins.vmware.VMwareRuntimeException;
+ 
+ import java.util.logging.Logger;
+ 
++import com.sun.jna.ptr.IntByReference;
++
+ /**
+  * TODO javadoc.
+  *
+Index: src/main/resources/hudson/plugins/vmware/VMwareActivationWrapper/config.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/vmware/VMwareActivationWrapper/config.jelly	(revision 29840)
++++ src/main/resources/hudson/plugins/vmware/VMwareActivationWrapper/config.jelly	(working copy)
+@@ -15,18 +15,18 @@
+                     <f:textbox name="vmware-activation.machine.vmxFilePath" value="${machine.vmxFilePath}"/>
+                 </f:entry>
+                 <f:entry title="Pre-build">
+-                    <select class="setting-input" name="vmware-activation.machine.preBuild">
++                    <select class="setting-input" name="vmware-activation.machine.powerUpMode">
+                         <j:forEach var="i" items="${descriptor.powerUpModes}">
+-                            <f:option selected="${i.toString()==machine.preBuild}" value="${i.toString()}">
++                            <f:option selected="${i.toString()==machine.powerUpMode}" value="${i.toString()}">
+                                 ${i.description}
+                             </f:option>
+                         </j:forEach>
+                     </select>
+                 </f:entry>
+                 <f:entry title="Post-build">
+-                    <select class="setting-input" name="vmware-activation.machine.postBuild">
++                    <select class="setting-input" name="vmware-activation.machine.powerDownMode">
+                         <j:forEach var="i" items="${descriptor.powerDownModes}">
+-                            <f:option selected="${i.toString()==machine.postBuild}" value="${i.toString()}">
++                            <f:option selected="${i.toString()==machine.powerDownMode}" value="${i.toString()}">
+                                 ${i.description}
+                             </f:option>
+                         </j:forEach>
+Index: src/main/resources/hudson/plugins/vmware/VMwareActivationWrapper/global.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/vmware/VMwareActivationWrapper/global.jelly	(revision 29840)
++++ src/main/resources/hudson/plugins/vmware/VMwareActivationWrapper/global.jelly	(working copy)
+@@ -27,6 +27,10 @@
+                     <f:entry title="password">
+                         <input class="setting-input" type="password"
+                                name="vmware.host.password" value="${host.password}"/>
++                    </f:entry>                    
++                    <f:entry title="hostType">
++                        <input class="setting-input" type="hostType"
++                               name="vmware.host.hostType" value="${host.hostType}"/>
+                     </f:entry>
+                     <f:advanced>
+                         <f:entry title="port">

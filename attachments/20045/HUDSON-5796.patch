@@ -1,0 +1,70 @@
+Index: src/main/java/hudson/plugins/seleniumhq/SeleniumhqProjectAction.java
+===================================================================
+--- src/main/java/hudson/plugins/seleniumhq/SeleniumhqProjectAction.java	(révision 37132)
++++ src/main/java/hudson/plugins/seleniumhq/SeleniumhqProjectAction.java	(copie de travail)
+@@ -2,12 +2,13 @@
+ 
+ import hudson.FilePath;
+ import hudson.Functions;
++import hudson.model.AbstractProject;
+ import hudson.model.Actionable;
+ import hudson.model.Build;
+ import hudson.model.DirectoryBrowserSupport;
+-import hudson.model.Project;
+ import hudson.model.ProminentProjectAction;
+ import hudson.model.Result;
++import hudson.model.Run;
+ import hudson.util.Area;
+ import hudson.util.ChartUtil;
+ import hudson.util.ColorPalette;
+@@ -38,9 +39,9 @@
+ 
+ public class SeleniumhqProjectAction extends Actionable implements ProminentProjectAction {
+     
+-	private final Project<?, ?> project;
++	private final AbstractProject<?, ?> project;
+ 
+-    public SeleniumhqProjectAction(Project<?, ?> project) {
++    public SeleniumhqProjectAction(AbstractProject<?, ?> project) {
+         this.project = project;
+     }
+     
+@@ -77,7 +78,7 @@
+ 	}
+ 	
+     public SeleniumhqBuildAction getLastResult() {
+-        for (Build<?, ?> b = project.getLastBuild(); b != null; b = b.getPreviousBuild()) {
++        for (Run<?, ?> b = project.getLastBuild(); b != null; b = b.getPreviousBuild()) {
+             if (b.getResult() == Result.FAILURE)
+                 continue;
+             SeleniumhqBuildAction r = b.getAction(SeleniumhqBuildAction.class);
+Index: src/main/java/hudson/plugins/seleniumhq/SeleniumhqPublisher.java
+===================================================================
+--- src/main/java/hudson/plugins/seleniumhq/SeleniumhqPublisher.java	(révision 37132)
++++ src/main/java/hudson/plugins/seleniumhq/SeleniumhqPublisher.java	(copie de travail)
+@@ -10,7 +10,6 @@
+ import hudson.model.AbstractProject;
+ import hudson.model.Action;
+ import hudson.model.BuildListener;
+-import hudson.model.Project;
+ import hudson.model.Result;
+ import hudson.remoting.VirtualChannel;
+ import hudson.tasks.BuildStepDescriptor;
+@@ -78,7 +77,7 @@
+ 
+     @Override
+     public Action getProjectAction(AbstractProject<?,?> project) {
+-        return project instanceof Project ? new SeleniumhqProjectAction((Project)project) : null;
++        return new SeleniumhqProjectAction(project);
+     }
+ 
+     /** Gets the directory where the Clover Report is stored for the given project. */
+@@ -224,7 +223,7 @@
+ 
+         @Override
+         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+-            return Project.class.isAssignableFrom(jobType);
++            return true;
+         }
+ 
+         /** Creates a new instance of {@link SeleniumhqPublisher} from a submitted form. */

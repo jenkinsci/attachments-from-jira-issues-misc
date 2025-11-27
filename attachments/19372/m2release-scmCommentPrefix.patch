@@ -1,0 +1,78 @@
+Index: src/main/java/org/jvnet/hudson/plugins/m2release/M2ReleaseAction.java
+===================================================================
+--- src/main/java/org/jvnet/hudson/plugins/m2release/M2ReleaseAction.java	(revision 30450)
++++ src/main/java/org/jvnet/hudson/plugins/m2release/M2ReleaseAction.java	(working copy)
+@@ -138,6 +138,8 @@
+ 		final boolean specifyScmCredentials = httpParams.containsKey("specifyScmCredentials"); //$NON-NLS-1$
+ 		final String scmUsername = specifyScmCredentials ? ((String[])httpParams.get("scmUsername"))[0] : null; //$NON-NLS-1$
+ 		final String scmPassword = specifyScmCredentials ? ((String[])httpParams.get("scmPassword"))[0] : null; //$NON-NLS-1$
++		final boolean specifyScmCommentPrefix = httpParams.containsKey("specifyScmCommentPrefix"); //$NON-NLS-1$
++		final String scmCommentPrefix = specifyScmCommentPrefix ? ((String[])httpParams.get("scmCommentPrefix"))[0] : null; //$NON-NLS-1$
+ 		
+ 		if (httpParams.containsKey("specifyVersions")) {
+ 			versions = new HashMap<String,String>();
+@@ -159,6 +161,7 @@
+ 				m2Wrapper.setRepoDescription(repoDescription);
+ 				m2Wrapper.setScmUsername(scmUsername);
+ 				m2Wrapper.setScmPassword(scmPassword);
++				m2Wrapper.setScmCommentPrefix(scmCommentPrefix);
+ 			}
+ 		}
+ 		// redirect to status page
+Index: src/main/java/org/jvnet/hudson/plugins/m2release/M2ReleaseBuildWrapper.java
+===================================================================
+--- src/main/java/org/jvnet/hudson/plugins/m2release/M2ReleaseBuildWrapper.java	(revision 30450)
++++ src/main/java/org/jvnet/hudson/plugins/m2release/M2ReleaseBuildWrapper.java	(working copy)
+@@ -81,6 +81,7 @@
+ 	private transient String              repoDescription;
+ 	private transient String              scmUsername;
+ 	private transient String              scmPassword;
++	private transient String              scmCommentPrefix;
+ 	
+ 	public String                         releaseGoals        = DescriptorImpl.DEFAULT_RELEASE_GOALS;
+ 	
+@@ -128,6 +129,10 @@
+ 					thisBuildGoals = "-Dpassword=" + scmPassword + " " + thisBuildGoals;
+ 				}
+ 				
++				if (scmCommentPrefix != null) {
++					thisBuildGoals = "-DscmCommentPrefix=" + scmCommentPrefix + " " + thisBuildGoals;
++				}
++				
+ 				mmSet.setGoals(thisBuildGoals);
+ 			}
+ 			else {
+@@ -232,6 +237,10 @@
+ 		this.scmPassword = scmPassword;
+ 	}
+ 
++	public void setScmCommentPrefix(String scmCommentPrefix) {
++		this.scmCommentPrefix = scmCommentPrefix;
++	}
++
+ 	private String generateVersionString(int buildNumber) {
+ 		// -Dproject.rel.org.mycompany.group.project=version ....
+ 		StringBuilder sb = new StringBuilder();
+Index: src/main/resources/org/jvnet/hudson/plugins/m2release/M2ReleaseAction/index.jelly
+===================================================================
+--- src/main/resources/org/jvnet/hudson/plugins/m2release/M2ReleaseAction/index.jelly	(revision 30450)
++++ src/main/resources/org/jvnet/hudson/plugins/m2release/M2ReleaseAction/index.jelly	(working copy)
+@@ -31,6 +31,11 @@
+ 							<f:password name="scmPassword" value="" />
+ 						</f:entry>
+ 					</f:optionalBlock>
++					<f:optionalBlock name="specifyScmCommentPrefix" title="Specify SCM comment prefix" checked="false">
++						<f:entry title="SCM Comment Prefix">
++							<f:textbox name="scmCommentPrefix" value="" />
++						</f:entry>
++					</f:optionalBlock>
+ 					<j:if test="${it.nexusSupportEnabled}">
+ 						<f:section title="Nexus Pro Support">
+ 							<f:optionalBlock name="closeNexusStage" title="Close Nexus Staging Repository" checked="true">
+@@ -55,4 +60,4 @@
+ 
+ 		</l:main-panel>
+ 	</l:layout>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>

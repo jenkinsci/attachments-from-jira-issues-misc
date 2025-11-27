@@ -1,0 +1,12 @@
+--- ./StatusCommand.java	2007-10-10 14:11:08.037852600 -0500
++++ /cygdrive/c/tmp/StatusCommand.java	2007-10-10 14:15:56.419022200 -0500
+@@ -70,6 +70,9 @@ public class StatusCommand implements Bo
+ 					lastBuild = lastBuild.getPreviousBuild();
+ 				}
+ 				if (lastBuild != null) {
++					// convert spaces in job names to encoded character representation
++					String lastBuildUrl = lastBuild.getUrl().replaceAll(" ", "%20");
++					
+ 					msg.append("last build: ").append(lastBuild.getNumber())
+ 					.append(": ").append(lastBuild.getResult()).append(": ")
+ 					.append(Hudson.getInstance().getRootUrl()).append(lastBuild.getUrl());

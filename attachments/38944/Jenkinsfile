@@ -1,0 +1,38 @@
+node {
+    dir('target') {
+        perfReport([
+            sourceDataFiles: 'rt_B2B.csv;rt_SSP.csv',
+            modePerformancePerTestCase: true, 
+            modeThroughput: true, 
+            graphType: 'PRT', 
+            modeEvaluation: true, 
+            // Standard Mode:
+            modeOfThreshold: true, 
+            failBuildIfNoResultFile: true, 
+            relativeUnstableThresholdNegative: 5,
+            relativeUnstableThresholdPositive: 5,
+            relativeFailedThresholdNegative: 10,
+            relativeFailedThresholdPositive: 10,
+            compareBuildPrevious: true,
+            configType: 'PRT',
+            // Expert Mode:
+            constraints: [
+                [$class: 'RelativeConstraint', 
+                    meteredValue: 'LINE90', 
+                    operator: 'NOT_GREATER', 
+                    relatedPerfReport: 'rt_B2B.csv', 
+                    escalationLevel: 'ERROR', 
+                    success: false, 
+                    testCaseBlock: [testCase: 'QueryPlace'], 
+                    previousResultsBlock: [
+                        choicePreviousResults: true,
+                        previousResultsString: '1',
+                        timeframeStartString: '', 
+                        timeframeEndString: ''
+                    ],
+                    tolerance: 5.0
+                ]
+            ]
+        ])
+    }
+}

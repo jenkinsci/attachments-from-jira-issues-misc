@@ -1,0 +1,48 @@
+Index: hudson/plugins/release/src/main/java/hudson/plugins/release/ReleaseWrapper.java
+===================================================================
+--- hudson/plugins/release/src/main/java/hudson/plugins/release/ReleaseWrapper.java	(revision 20125)
++++ hudson/plugins/release/src/main/java/hudson/plugins/release/ReleaseWrapper.java	(working copy)
+@@ -16,6 +16,7 @@
+ import hudson.model.ParameterValue;
+ import hudson.model.ParametersAction;
+ import hudson.model.ParametersDefinitionProperty;
++import hudson.model.Result;
+ import hudson.model.StringParameterValue;
+ import hudson.tasks.BuildStep;
+ import hudson.tasks.BuildWrapper;
+@@ -115,18 +116,23 @@
+             @Override
+             public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException,
+                     InterruptedException {
+-                
+-                // save build
+-                build.keepLog();
+-                
+-                // only set description if we can derive version
+-                if (releaseBuildBadge.getReleaseVersion() != null) {
+-                
+-	                // set build description to indicate release
+-	                build.setDescription("Release # " + releaseBuildBadge.getReleaseVersion());
+-                }
+-	                
+-                return executeBuildSteps(postBuildSteps, build, launcher, listener);
++
++				boolean success = Result.SUCCESS.equals(build.getResult());
++
++				if (success) {
++					// save build
++					build.keepLog();
++
++					// only set description if we can derive version
++					if (releaseBuildBadge.getReleaseVersion() != null) {
++
++						// set build description to indicate release
++						build.setDescription("Release # " + releaseBuildBadge.getReleaseVersion());
++					}
++
++					success = executeBuildSteps(postBuildSteps, build, launcher, listener);
++				}
++				return success;
+             }
+         };
+     }

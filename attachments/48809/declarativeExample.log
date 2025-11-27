@@ -1,0 +1,126 @@
+Started by user Allan BURDAJEWICZ
+Running in Durability level: MAX_SURVIVABILITY
+[Pipeline] Start of Pipeline
+[Pipeline] stage
+[Pipeline] { (a)
+[Pipeline] podTemplate
+[Pipeline] {
+[Pipeline] node
+Agent testdefaults-29-l2d6r-655hh-1xb0k is provisioned from template Kubernetes Pod Template
+---
+apiVersion: "v1"
+kind: "Pod"
+metadata:
+  annotations:
+    buildUrl: "http://mm-1.cloudbees-core.svc.cluster.local/mm-1/job/testDefaults/29/"
+  labels:
+    jenkins: "slave"
+    jenkins/testDefaults_29-l2d6r: "true"
+  name: "testdefaults-29-l2d6r-655hh-1xb0k"
+spec:
+  containers:
+  - env:
+    - name: "JENKINS_SECRET"
+      value: "********"
+    - name: "JENKINS_AGENT_NAME"
+      value: "testdefaults-29-l2d6r-655hh-1xb0k"
+    - name: "JENKINS_NAME"
+      value: "testdefaults-29-l2d6r-655hh-1xb0k"
+    - name: "JENKINS_AGENT_WORKDIR"
+      value: "/home/jenkins/agent"
+    - name: "JENKINS_URL"
+      value: "http://mm-1.cloudbees-core.svc.cluster.local/mm-1/"
+    image: "jenkins/jnlp-slave:3.27-1-alpine"
+    name: "jnlp"
+    volumeMounts:
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+  nodeSelector: {}
+  restartPolicy: "Never"
+  volumes:
+  - emptyDir: {}
+    name: "workspace-volume"
+
+Running on testdefaults-29-l2d6r-655hh-1xb0k in /home/jenkins/agent/workspace/testDefaults
+[Pipeline] {
+[Pipeline] echo
+hello world!
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // podTemplate
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (b)
+[Pipeline] podTemplate
+[Pipeline] {
+[Pipeline] node
+Agent testdefaults-29-h41mz-rqpc7-smfcr is provisioned from template Kubernetes Pod Template
+---
+apiVersion: "v1"
+kind: "Pod"
+metadata:
+  annotations:
+    buildUrl: "http://mm-1.cloudbees-core.svc.cluster.local/mm-1/job/testDefaults/29/"
+  labels:
+    jenkins: "slave"
+    jenkins/testDefaults_29-h41mz: "true"
+  name: "testdefaults-29-h41mz-rqpc7-smfcr"
+spec:
+  containers:
+  - args:
+    - "/var/jenkins_config/jenkins-agent"
+    command:
+    - "/bin/sh"
+    env:
+    - name: "JENKINS_SECRET"
+      value: "********"
+    - name: "JENKINS_AGENT_NAME"
+      value: "testdefaults-29-h41mz-rqpc7-smfcr"
+    - name: "JENKINS_NAME"
+      value: "testdefaults-29-h41mz-rqpc7-smfcr"
+    - name: "JENKINS_AGENT_WORKDIR"
+      value: "/home/jenkins/agent"
+    - name: "JENKINS_URL"
+      value: "http://mm-1.cloudbees-core.svc.cluster.local/mm-1/"
+    image: "jenkins/slave:alpine"
+    imagePullPolicy: "IfNotPresent"
+    name: "jnlp"
+    resources:
+      limits: {}
+      requests: {}
+    securityContext:
+      privileged: false
+    tty: true
+    volumeMounts:
+    - mountPath: "/var/jenkins_config"
+      name: "volume-0"
+      readOnly: false
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+    workingDir: "/home/jenkins/agent"
+  nodeSelector: {}
+  restartPolicy: "Never"
+  volumes:
+  - configMap:
+      name: "jenkins-agent"
+    name: "volume-0"
+  - emptyDir:
+      medium: ""
+    name: "workspace-volume"
+
+Running on testdefaults-29-h41mz-rqpc7-smfcr in /home/jenkins/agent/workspace/testDefaults
+[Pipeline] {
+[Pipeline] echo
+hello world!
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // podTemplate
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] End of Pipeline
+Finished: SUCCESS

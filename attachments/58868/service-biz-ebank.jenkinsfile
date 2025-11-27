@@ -1,0 +1,20 @@
+// pipelined common code base
+@Library(['jenkinslib-tools@master']) _
+// git repo
+def gitHttpUrl="http://10.254.254.62/xxxxxx/public-grp/public-grp.git"
+// Specifies the token of a hook event for the repository
+def triggerToken="http://10.254.254.62/xxxxxx/public-grp/public-grp.git"
+// Specify the agent node on which the pipeline runs
+def agentNode="slave-ci"
+// Specify the pipeline configuration file
+def propUrl="xxxxxx-biz/ebank-service/ci.yml"
+// Specify the CI project name of the project
+def projectName='ebank'
+// Specifies the type of the project
+def projectType="service"
+// Ci timeout setting (seconds)
+def timeoutSeconds=900
+// Regular expression to trigger hook (submit file filter triggers CI)
+def triggerRegex='^xxxxxx-biz/ebank-service/.*'
+// Execution line
+pipelineToCi(gitHttpUrl,triggerToken,agentNode,propUrl,projectName,projectType,timeoutSeconds,triggerRegex)

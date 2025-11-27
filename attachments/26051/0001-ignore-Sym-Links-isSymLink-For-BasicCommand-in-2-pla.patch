@@ -1,0 +1,144 @@
+From 14e1b562c86c2ca97cc3057d8250035055fa5236 Mon Sep 17 00:00:00 2001
+From: James Coleman <jamesc@dspsrv.com>
+Date: Wed, 4 Jun 2014 16:22:27 +0100
+Subject: [PATCH] ignore Sym Links (isSymLink) For BasicCommand in 2 places
+ when recursing into directories - solves problem with cvs upodate and
+ recursive symlinks
+
+---
+ .../lib/cvsclient/command/BasicCommand.java        | 104 ++++++++++++++++-----
+ 1 file changed, 79 insertions(+), 25 deletions(-)
+
+diff --git a/src/main/java/org/netbeans/lib/cvsclient/command/BasicCommand.java b/src/main/java/org/netbeans/lib/cvsclient/command/BasicCommand.java
+index bfc6840..f803aa0 100644
+--- a/src/main/java/org/netbeans/lib/cvsclient/command/BasicCommand.java
++++ b/src/main/java/org/netbeans/lib/cvsclient/command/BasicCommand.java
+@@ -134,6 +134,40 @@ public abstract class BasicCommand extends BuildableCommand {
+     }
+ 
+     /**
++     * Return true if file is a symbolic link.
++     * Symbolic links are ignored by other cvs clients.
++     * Symbolic link to dir within cvs tree can cause infinate loop of cvs update following symlink. 
++     * Solution when recursive check is directory a symlink and ignore it if so.
++     * @param file name of file/dir/symlink to test
++     * @return true if file is actually a symbolic link, false if not 
++     */
++    public static boolean isSymLink(File file) {
++        if (file == null)
++	    return false;
++        File canon;
++        if (file.getParent() == null) {
++            canon = file;
++        } else {
++	    try {
++		File canonDir = file.getParentFile().getCanonicalFile();
++		canon = new File(canonDir, file.getName());
++	    }
++	    catch (IOException ex) {
++                //Logger.getLogger(BasicCommand.class.getName()).log(Level.SEVERE, null, ex);
++		System.err.println("File check error. file:" + file + " exception:" + ex);
++		return false;
++	    }
++        }
++        try {
++            return !canon.getCanonicalFile().equals(canon.getAbsoluteFile());
++        } catch (IOException ex) {
++            //Logger.getLogger(BasicCommand.class.getName()).log(Level.SEVERE, null, ex);
++    	    System.err.println("File check#2 error. file:" + file + " exception:" + ex);
++            return false;
++        }
++    }
++
++    /**
+      * Set the files and/or directories on which to execute the command. The way
+      * these are processed is:
+      * <P>
+@@ -389,13 +423,24 @@ public abstract class BasicCommand extends BuildableCommand {
+         for (final Iterator<?> it = clientServices.getEntries(directory); it.hasNext();) {
+             final Entry entry = (Entry) it.next();
+             final File file = new File(directory, entry.getName());
+-            if (entry.isDirectory()) {
+-                if (isRecursive()) {
+-                    subDirectories.add(new File(directory, entry.getName()));
+-                }
+-            } else {
+-                addRequestForFile(file, entry);
+-            }
++
++	    // Ignore symbolic links. 
++            // Avoid infinate loops if symlink to directory in same tree. 
++            // Consistent behaviour as other cvs clients.
++	    if (!isSymLink(file)) {
++		if (entry.isDirectory()) {
++		    if (isRecursive()) {
++			subDirectories.add(new File(directory, entry.getName()));
++		    }
++		}
++		else {
++		    addRequestForFile(file, entry);
++		}
++	    } 
++            else {
++		System.err.println("jco DEBUG: Ignore symlink file:" + file);
++	    }
++
+             localFiles.remove(file);
+         }
+ 
+@@ -473,25 +518,34 @@ public abstract class BasicCommand extends BuildableCommand {
+      * Adds a DirectoryRequest (and maybe a StickyRequest) to the request list.
+      */
+     protected final void addDirectoryRequest(final File directory) {
+-        // remove localPath prefix from directory. If left with
+-        // nothing, use dot (".") in the directory request
+-        final String dir = getRelativeToLocalPathInUnixStyle(directory);
+ 
+-        try {
+-            final String repository = clientServices.getRepositoryForDirectory(directory.getAbsolutePath());
+-            addRequest(new DirectoryRequest(dir, repository));
+-            final String tag = clientServices.getStickyTagForDirectory(directory);
+-            if (tag != null) {
+-                addRequest(new StickyRequest(tag));
+-            }
+-        } catch (final FileNotFoundException ex) {
+-            // we can ignore this exception safely because it just means
+-            // that the user has deleted a directory referenced in a
+-            // CVS/Entries file
+-        } catch (final IOException ex) {
+-            System.err.println("An error occurred reading the respository " + "for the directory " + dir + ": " + ex);
+-            ex.printStackTrace();
+-        }
++	if (isSymLink(directory)) {
++	    System.err.println("jco DEBUG: addDirReq Ignore symlink file:" + directory);
++	} 
++	else {
++
++	    // remove localPath prefix from directory. If left with
++	    // nothing, use dot (".") in the directory request
++	    final String dir = getRelativeToLocalPathInUnixStyle(directory);
++
++	    try {
++		final String repository = clientServices.getRepositoryForDirectory(directory.getAbsolutePath());
++		addRequest(new DirectoryRequest(dir, repository));
++		final String tag = clientServices.getStickyTagForDirectory(directory);
++		if (tag != null) {
++		    addRequest(new StickyRequest(tag));
++		}
++	    } catch (final FileNotFoundException ex) {
++		// we can ignore this exception safely because it just means
++		// that the user has deleted a directory referenced in a
++		// CVS/Entries file
++	    } catch (final IOException ex) {
++		System.err.println("An error occurred reading the respository " + "for the directory " + dir + ": " + ex);
++		ex.printStackTrace();
++	    }
++
++	}
++
+     }
+ 
+     /**
+-- 
+1.8.3.1
+

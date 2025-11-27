@@ -1,0 +1,222 @@
+Index: src/main/java/hudson/plugins/findbugs/FindBugsPublisher.java
+===================================================================
+--- src/main/java/hudson/plugins/findbugs/FindBugsPublisher.java	(revision 16029)
++++ src/main/java/hudson/plugins/findbugs/FindBugsPublisher.java	(working copy)
+@@ -32,12 +32,16 @@
+     public static final PluginDescriptor FIND_BUGS_DESCRIPTOR = new FindBugsDescriptor();
+     /** Ant file-set pattern of files to work with. */
+     private final String pattern;
++    /** Ant file-set pattern of files where we will search for sources. */
++    private final String projectPattern;
+ 
+     /**
+      * Creates a new instance of <code>FindBugsPublisher</code>.
+      *
+      * @param pattern
+      *            Ant file-set pattern to scan for FindBugs files
++     * @param projectPattern
++     *            Ant file-set pattern of files where we will search for sources.
+      * @param threshold
+      *            Annotation threshold to be reached if a build should be considered as
+      *            unstable.
+@@ -67,13 +71,14 @@
+     // CHECKSTYLE:OFF
+     @SuppressWarnings("PMD.ExcessiveParameterList")
+     @DataBoundConstructor
+-    public FindBugsPublisher(final String pattern, final String threshold, final String newThreshold,
+-            final String failureThreshold, final String newFailureThreshold,
++    public FindBugsPublisher(final String pattern, final String projectPattern, final String threshold, 
++            final String newThreshold, final String failureThreshold, final String newFailureThreshold,
+             final String healthy, final String unHealthy,
+             final String height, final String thresholdLimit, final String defaultEncoding) {
+         super(threshold, newThreshold, failureThreshold, newFailureThreshold,
+                 healthy, unHealthy, height, thresholdLimit, defaultEncoding, "FINDBUGS");
+         this.pattern = pattern;
++        this.projectPattern = projectPattern;
+     }
+     // CHECKSTYLE:ON
+ 
+@@ -86,6 +91,15 @@
+         return pattern;
+     }
+ 
++    /**
++     * Returns the Ant file-set pattern of files where we will search for sources.
++     *
++     * @return Ant file-set pattern of files where we will search for sources.
++     */
++    public String getProjectPattern() {
++        return projectPattern;
++    }
++
+     /** {@inheritDoc} */
+     @Override
+     public Action getProjectAction(final AbstractProject<?, ?> project) {
+@@ -98,7 +112,7 @@
+         logger.log("Collecting findbugs analysis files...");
+         FilesParser collector = new FilesParser(logger, StringUtils.defaultIfEmpty(getPattern(), DEFAULT_PATTERN),
+                 new FindBugsParser(build.getProject().getWorkspace()),
+-                isMavenBuild(build), isAntBuild(build));
++                isMavenBuild(build), isAntBuild(build), getProjectPattern());
+         ParserResult project = build.getProject().getWorkspace().act(collector);
+         FindBugsResult result = new FindBugsResultBuilder().build(build, project, getDefaultEncoding());
+ 
+Index: src/main/java/hudson/plugins/findbugs/FindBugsReporter.java
+===================================================================
+--- src/main/java/hudson/plugins/findbugs/FindBugsReporter.java	(revision 16029)
++++ src/main/java/hudson/plugins/findbugs/FindBugsReporter.java	(working copy)
+@@ -124,7 +124,7 @@
+         sources.addAll(pom.getTestCompileSourceRoots());
+ 
+         FilesParser findBugsCollector = new FilesParser(logger, determineFileName(mojo),
+-                    new FindBugsParser(build.getModuleSetRootDir(), sources), true, false);
++                    new FindBugsParser(build.getModuleSetRootDir(), sources), true, false, null);
+ 
+         return getTargetPath(pom).act(findBugsCollector);
+     }
+Index: src/main/java/hudson/plugins/findbugs/util/FilesParser.java
+===================================================================
+--- src/main/java/hudson/plugins/findbugs/util/FilesParser.java	(revision 16029)
++++ src/main/java/hudson/plugins/findbugs/util/FilesParser.java	(working copy)
+@@ -33,6 +33,8 @@
+     private final boolean isMavenBuild;
+     /** Determines whether this build uses ant. */
+     private final boolean isAntBuild;
++    /** Ant file-set pattern of files where we will search for sources. */
++    private final String projectPattern;
+ 
+     /**
+      * Creates a new instance of <code>CheckstyleCollector</code>.
+@@ -47,13 +49,16 @@
+      *            determines whether this build uses maven
+      * @param isAntBuild
+      *            determines whether this build uses maven
++     * @param projectPattern
++     *            Ant file-set pattern of files where we will search for sources.
+      */
+-    public FilesParser(final PluginLogger logger, final String filePattern, final AnnotationParser parser, final boolean isMavenBuild, final boolean isAntBuild) {
++    public FilesParser(final PluginLogger logger, final String filePattern, final AnnotationParser parser, final boolean isMavenBuild, final boolean isAntBuild, final String projectPattern) {
+         this.logger = logger;
+         this.filePattern = filePattern;
+         this.parser = parser;
+         this.isMavenBuild = isMavenBuild;
+         this.isAntBuild = isAntBuild;
++        this.projectPattern = projectPattern;
+     }
+ 
+     /**
+@@ -69,7 +74,7 @@
+ 
+     /** {@inheritDoc} */
+     public ParserResult invoke(final File workspace, final VirtualChannel channel) throws IOException {
+-        ParserResult result = new ParserResult(new FilePath(workspace));
++        ParserResult result = new ParserResult(new FilePath(workspace), projectPattern);
+ 
+         try {
+             String[] fileNames = new FileFinder(filePattern).find(workspace);
+@@ -156,4 +161,4 @@
+             log(errorMessage);
+         }
+     }
+-}
+\ No newline at end of file
++}
+Index: src/main/java/hudson/plugins/findbugs/util/ParserResult.java
+===================================================================
+--- src/main/java/hudson/plugins/findbugs/util/ParserResult.java	(revision 16029)
++++ src/main/java/hudson/plugins/findbugs/util/ParserResult.java	(working copy)
+@@ -25,6 +25,8 @@
+  * @author Ulli Hafner
+  */
+ public class ParserResult implements Serializable {
++    /** Default FindBugs project pattern. */
++    public static final String DEFAULT_PROJECT_PATTERN = "**/*";
+     /** Unique ID of this class. */
+     private static final long serialVersionUID = -8414545334379193330L;
+     /** The parsed annotations. */
+@@ -44,12 +46,14 @@
+     /** A mapping of relative file names to absolute file names. */
+     @SuppressWarnings("Se")
+     private final Map<String, String> fileNameCache = new HashMap<String, String>();
++    /** Ant file-set pattern of files where we will search for sources. */
++    private final String projectPattern;
+ 
+     /**
+      * Creates a new instance of {@link ParserResult}.
+      */
+     public ParserResult() {
+-        this((FilePath)null);
++        this((FilePath)null, null);
+     }
+ 
+     /**
+@@ -57,8 +61,10 @@
+      *
+      * @param workspace
+      *            the workspace to find the files in
++     * @param projectPattern 
++     *            the pattern to search for files
+      */
+-    public ParserResult(final FilePath workspace) {
++    public ParserResult(final FilePath workspace, final String projectPattern) {
+         this.workspace = workspace;
+ 
+         Priority[] priorities = Priority.values();
+@@ -66,6 +72,12 @@
+         for (int priority = 0; priority < priorities.length; priority++) {
+             annotationCountByPriority.put(priorities[priority], 0);
+         }
++
++        if (projectPattern == null || projectPattern.equals("")) {
++            this.projectPattern = DEFAULT_PROJECT_PATTERN;
++        } else {
++            this.projectPattern = projectPattern;
++        }
+     }
+ 
+ 
+@@ -76,7 +88,7 @@
+      *            the annotations to add
+      */
+     public ParserResult(final Collection<FileAnnotation> annotations) {
+-        this((FilePath)null);
++        this((FilePath)null, null);
+ 
+         addAnnotations(annotations);
+     }
+@@ -115,7 +127,7 @@
+      *             if the user cancels the search
+      */
+     private void populateFileNameCache() throws IOException, InterruptedException {
+-        String[] allFiles = workspace.act(new FileFinder("**/*"));
++        String[] allFiles = workspace.act(new FileFinder(projectPattern));
+         for (String file : allFiles) {
+             String fileName = new File(file).getName();
+             if (fileNameCache.containsKey(fileName)) {
+Index: src/main/resources/hudson/plugins/findbugs/FindBugsPublisher/config.properties
+===================================================================
+--- src/main/resources/hudson/plugins/findbugs/FindBugsPublisher/config.properties	(revision 16029)
++++ src/main/resources/hudson/plugins/findbugs/FindBugsPublisher/config.properties	(working copy)
+@@ -3,3 +3,6 @@
+              		Basedir of the fileset is <a href='ws/'>the workspace root</a>. \
+              		If no value is set, then the default '**/findbugs.xml' is used. Be sure not to include any \
+     		 		non-report files into this pattern.
++description.projectPattern=<a href='http://ant.apache.org/manual/CoreTypes/fileset.html'>Fileset 'includes'</a> \
++             		setting that specifies where to look for source code and related files.
++    		 		
+\ No newline at end of file
+Index: src/main/resources/hudson/plugins/findbugs/FindBugsPublisher/config.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/findbugs/FindBugsPublisher/config.jelly	(revision 16029)
++++ src/main/resources/hudson/plugins/findbugs/FindBugsPublisher/config.jelly	(working copy)
+@@ -6,6 +6,10 @@
+ 			checkUrl="'descriptorByName/FindBugsPublisher/checkPattern?value='+escape(this.value)" />
+ 	</f:entry>
+    <f:advanced>
++    <f:entry title="${%Project files pattern}">
++        <f:textbox name="projectPattern" value="${instance.projectPattern}"
++            checkUrl="'descriptorByName/FindBugsPublisher/checkPattern?value='+escape(this.value)" />
++    </f:entry>
+     <u:thresholds id="findbugs"/>
+     <u:trendHeight/>
+     <u:defaultEncoding id="findbugs"/>

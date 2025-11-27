@@ -1,0 +1,31 @@
+From a9e1b3c7bbb5b461a526c3f42045047f4f474889 Mon Sep 17 00:00:00 2001
+From: Armin Novak <armin.novak@gmail.com>
+Date: Wed, 18 Nov 2015 20:31:06 +0100
+Subject: [PATCH] A fix for JENKINS-30114:
+
+Now merging custom environment variables defined for build tool
+steps with the job environment of jenkins.
+---
+ src/main/java/hudson/plugins/cmake/CmakeBuilder.java | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/src/main/java/hudson/plugins/cmake/CmakeBuilder.java b/src/main/java/hudson/plugins/cmake/CmakeBuilder.java
+index c49af04..7fbb6c8 100644
+--- a/src/main/java/hudson/plugins/cmake/CmakeBuilder.java
++++ b/src/main/java/hudson/plugins/cmake/CmakeBuilder.java
+@@ -272,8 +272,11 @@ public class CmakeBuilder extends Builder {
+                     toolCall = buildBuildToolCallWithCmake(cmakeBin,
+                             theBuildDir, step.getCommandArguments(envs));
+                 }
++
++                EnvVars buildEnv = envs;
++                buildEnv.overrideAll(step.getEnvironmentVars(envs, listener));
+                 if (0 != launcher.launch().pwd(theBuildDir)
+-                        .envs(step.getEnvironmentVars(envs, listener))
++                        .envs(buildEnv)
+                         .stdout(listener).cmds(toolCall).join()) {
+                     return false; // invokation failed
+                 }
+-- 
+2.1.4
+

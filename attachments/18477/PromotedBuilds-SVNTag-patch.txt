@@ -1,0 +1,123 @@
+### Eclipse Workspace Patch 1.0
+#P svn-tag
+Index: src/main/java/hudson/plugins/svn_tag/SvnTagPublisher.java
+===================================================================
+--- src/main/java/hudson/plugins/svn_tag/SvnTagPublisher.java	(revision 14806)
++++ src/main/java/hudson/plugins/svn_tag/SvnTagPublisher.java	(working copy)
+@@ -6,8 +6,10 @@
+ 
+ import hudson.Launcher;
+ import hudson.model.AbstractBuild;
++import hudson.model.AbstractProject;
+ import hudson.model.BuildListener;
+ import hudson.model.Descriptor;
++import hudson.tasks.BuildStepDescriptor;
+ import static hudson.plugins.svn_tag.SvnTagPlugin.CONFIG_PREFIX;
+ import static hudson.plugins.svn_tag.SvnTagPlugin.DESCRIPTION;
+ import hudson.tasks.Publisher;
+@@ -95,7 +97,7 @@
+     }
+ 
+     public static final class SvnTagDescriptorImpl
+-            extends Descriptor<Publisher> {
++            extends BuildStepDescriptor<Publisher> {
+ 
+         private String defaultTagBaseURL = null;
+ 
+@@ -220,5 +222,11 @@
+                 }
+             }.process();
+         }
++
++		@Override
++		public boolean isApplicable(Class<? extends AbstractProject> jobType) {
++			// need to check if this is a subversion project??
++			return true;
++		}
+     }
+ }
+Index: src/main/java/hudson/plugins/svn_tag/SvnTagPlugin.java
+===================================================================
+--- src/main/java/hudson/plugins/svn_tag/SvnTagPlugin.java	(revision 14806)
++++ src/main/java/hudson/plugins/svn_tag/SvnTagPlugin.java	(working copy)
+@@ -54,23 +54,6 @@
+     }
+ 
+     /**
+-     * Returns the root project value.
+-     *
+-     * @param project the given project value.
+-     * @return the root project value.
+-     */
+-    @SuppressWarnings({"MethodParameterOfConcreteClass"})
+-    private static AbstractProject getRootProject(AbstractProject project) {
+-        //noinspection InstanceofInterfaces
+-        if (project.getParent() instanceof Hudson) {
+-            return project;
+-        } else {
+-            //noinspection CastToConcreteClass
+-            return getRootProject((AbstractProject) project.getParent());
+-        }
+-    }
+-
+-    /**
+      * True if the operation was successful.
+      *
+      * @param abstractBuild build
+@@ -93,8 +76,7 @@
+             return true;
+         }
+ 
+-        AbstractProject<?, ?> rootProject =
+-                getRootProject(abstractBuild.getProject());
++        AbstractProject<?, ?> rootProject = abstractBuild.getProject().getRootProject();
+ 
+         Map<String, String> env;
+ 
+#P hudson-core
+Index: src/main/java/hudson/model/AbstractProject.java
+===================================================================
+--- src/main/java/hudson/model/AbstractProject.java	(revision 14806)
++++ src/main/java/hudson/model/AbstractProject.java	(working copy)
+@@ -219,6 +219,19 @@
+     }
+ 
+     /**
++     * Returns the root project value.
++     *
++     * @return the root project value.
++     */
++	public AbstractProject getRootProject() {
++        if (this.getParent() instanceof Hudson) {
++            return this;
++        } else {
++            return ((AbstractProject) this.getParent()).getRootProject();
++        }
++    }
++
++    /**
+      * Gets the directory where the module is checked out.
+      *
+      * @return
+#P promoted-builds
+Index: src/main/java/hudson/plugins/promoted_builds/PromotionProcess.java
+===================================================================
+--- src/main/java/hudson/plugins/promoted_builds/PromotionProcess.java	(revision 14806)
++++ src/main/java/hudson/plugins/promoted_builds/PromotionProcess.java	(working copy)
+@@ -51,6 +51,16 @@
+         save();
+     }
+ 
++    /**
++     * Returns the root project value.
++     *
++     * @return the root project value.
++     */
++    @Override
++    public AbstractProject getRootProject() {
++    	return getParent().getOwner().getRootProject();
++    }
++    
+     @Override
+     public JobPropertyImpl getParent() {
+         return (JobPropertyImpl)super.getParent();

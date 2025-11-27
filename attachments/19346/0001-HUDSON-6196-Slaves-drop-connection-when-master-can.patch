@@ -1,0 +1,40 @@
+From e37703a772c5089cca1bb3c3da4ca7092d0f86c4 Mon Sep 17 00:00:00 2001
+From: Jukka Zitting <jukka@jzitting.dev.day.com>
+Date: Mon, 19 Apr 2010 10:52:59 +0200
+Subject: [PATCH] HUDSON-6196: Slaves drop connection when master can't be bothered
+
+Make the ping timeout configurable through a system property.
+---
+ .../src/main/java/hudson/remoting/PingThread.java  |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/remoting/src/main/java/hudson/remoting/PingThread.java b/remoting/src/main/java/hudson/remoting/PingThread.java
+index 09cee3f..68fc7de 100644
+--- a/remoting/src/main/java/hudson/remoting/PingThread.java
++++ b/remoting/src/main/java/hudson/remoting/PingThread.java
+@@ -87,7 +87,11 @@ public abstract class PingThread extends Thread {
+     private void ping() throws IOException, InterruptedException {
+         Future<?> f = channel.callAsync(new Ping());
+         try {
+-            f.get(TIME_OUT,MILLISECONDS);
++            if (TIME_OUT > 0) {
++                f.get(TIME_OUT,MILLISECONDS);
++            } else {
++                f.get();
++            }
+         } catch (ExecutionException e) {
+             if (e.getCause() instanceof RequestAbortedException)
+                 return; // connection has shut down orderly.
+@@ -114,7 +118,8 @@ public abstract class PingThread extends Thread {
+      * Time out in milliseconds.
+      * If the response doesn't come back by then, the channel is considered dead.
+      */
+-    private static final long TIME_OUT = 60*1000; // 1 min
++    private static final long TIME_OUT =
++        Long.getLong("hudson.remoting.PingThread.TIME_OUT", 60*1000); // 1 min
+ 
+     private static final Logger LOGGER = Logger.getLogger(PingThread.class.getName());
+ }
+-- 
+1.6.2.5
+

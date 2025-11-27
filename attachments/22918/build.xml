@@ -1,0 +1,337 @@
+<project name="Flex Ant Tasks Build Script" default="info">
+	<property environment="env" description="Umgebungsvariablen von Hudson" />
+	<property name="FLEX_HOME" value="${env.FLEX_HOME}"/>
+	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
+
+	<xmlproperty file="${basedir}/build_properties.xml" semanticAttributes="true" description="die Property Datei der Integration" />
+	
+	<target name="info">
+		<echo>Build für StandardLife FleX STM</echo>
+		<echo>target 'main' baut die Flex Oberfläche</echo>
+		<echo>target 'update_flex_war_test' und 'update_axis_war_test' editieren die wars für die test-stages</echo>
+		<echo>target 'update_flex_war_test' und 'update_axis_war_test' editieren die wars für die produktiv Umgebung</echo>
+	</target>
+	
+	<target name="main" description="builds Flex and AIR environment" depends="clean, build_flex, build_flex_artefakt, build_webservices_artefakt" />
+
+	<taskdef name="xmltask"
+			classname="com.oopsconsultancy.xmltask.ant.XmlTask"
+	         classpath="${basedir}/xmltask.jar"
+	         description=""
+	/>
+	         	
+	<target name="clean" description="cleans target directory">
+		<delete dir="target" failonerror="false"/>
+	</target>
+	
+
+
+
+	<target name="build_webservices_artefakt" description="baut und kopiert alle BBV Webservices in ein axis2.war">
+		<echo message="####################### build_webservices_artefakt ############################"/>
+		<tempfile description="temporäres Directory in dem das axis2.war zusammengepackt wird" 
+			destdir="${java.io.tmpdir}" property="local.webservice.stlflex" prefix="STL_WS-" />
+		<macro_getAxis2 dest="${local.webservice.stlflex}" />
+		
+		<property name="local.axis2file" value="${local.webservice.stlflex}/axis2.war"/>		
+		
+		<zip destfile="${local.axis2file}" update="true" duplicate="fail"
+			description="der zip Task geht davon aus das alle Artefakte vorhanden sind"
+		>
+			<zipfileset dir="${basedir}" includes="**/STL_AusdruckService_*.aar" prefix="WEB-INF/services/" />
+			<zipfileset dir="${basedir}" includes="**/STL_Beratungsservice_STM*.aar" prefix="WEB-INF/services/" />
+			<zipfileset dir="${basedir}" includes="**/AttachmentHandler*.mar" prefix="WEB-INF/modules/" />
+		</zip>
+		
+		<copy  file="${local.axis2file}" tofile="target/standardlife-axis2.war" verbose="true"/>
+		
+		<delete file="${local.axis2file}"/>
+	</target>
+
+	<target name="build_flex" description="kompiliert die Flex-Sourcen zu *.swfs">
+		<echo message="####################### build_flex ############################"/>
+		
+		<tempfile description="temporäres Directory in dem die flex gui zusammengepackt wird"
+		          destdir="${java.io.tmpdir}"
+		          property="local.flex.stl"
+		          prefix="Flex-STL-"
+		/>	
+		<compile_flex srcpath="src/STL_FlexSTM.mxml" 
+			targetpath="target/flex/STL_FlexSTM.swf" configfile="flex-config.xml" />
+		<compile_flex srcpath="src/PageBasisdaten.mxml" 
+			targetpath="target/flex/PageBasisdaten.swf" configfile="flex-config.xml" />
+		<compile_flex srcpath="src/PageFinanzdaten.mxml" 
+			targetpath="target/flex/PageFinanzdaten.swf" configfile="flex-config.xml" />
+		<compile_flex srcpath="src/PageFinanzierung.mxml" 
+				targetpath="target/flex/PageFinanzierung.swf" configfile="flex-config.xml" />
+		<compile_flex srcpath="src/PageProdukte.mxml" 
+			targetpath="target/flex/PageProdukte.swf" configfile="flex-config.xml" />
+		<compile_flex srcpath="src/PageStufenmodell.mxml" 
+			targetpath="target/flex/PageStufenmodell.swf" configfile="flex-config.xml" />
+		<compile_flex srcpath="src/PageVersorgungsanspruecheSTM.mxml" 
+			targetpath="target/flex/PageVersorgungsanspruecheSTM.swf" configfile="flex-config.xml" />
+		<compile_flex srcpath="src/assets/stylesheet/flexstm.css" 
+				targetpath="target/flex/assets/stylesheet/flexstm.swf" configfile="flex-config.xml" />
+	</target>
+
+	<target name="build_flex_artefakt" description="baut aus dem Flex ein war ">
+		<zip destfile="target/standardlife-flexSTM.war" update="true">
+			<zipfileset dir="target/flex">
+				<include name="*.swf"/>
+			</zipfileset>
+			<zipfileset dir="target/flex/assets/stylesheet" prefix="assets/stylesheet">
+				<include name="*.swf"/>
+			</zipfileset>
+			<zipfileset dir="src">
+				<include name="*.ico"/>
+				<include name="*.js"/>
+				<include name="*.swf"/>
+				<include name="*.html"/>
+				<include name="*.png"/>
+				<include name="*.jsp"/>
+			</zipfileset>
+			<zipfileset dir="src/assets" prefix="assets">
+				<include name="**/**"/>
+			</zipfileset>
+		</zip>
+	</target>
+
+	<description>editiert das flex artefakt richtig für test</description>
+	<target name="update_flex_war_test" description="damit die test flex anwendung auf das richtige axis2 zeigt">
+		<description>axis2*.war finden</description>
+		<macro_find dir="${basedir}" name="*axis2*war" property="local.axis2.artefakt"/>
+		<echo>Found: ${local.axis2.artefakt}</echo>
+		<description>axis2*.war Namen ermitteln und als Property dem Macro übergeben</description>
+		<basename property="local.webappname" file="${local.axis2.artefakt}" suffix=".war"/>
+		<macro_update_flex_war axis2path="${local.webappname}"/>
+	</target>
+	
+	<description>editiert das flex artefakt richtig für produktiv</description>
+	<target name="update_flex_war_produktiv" description="da produktiv das axis2 immer axis2 heisst">
+		<macro_update_flex_war axis2path="axis2"/>
+		<macro_find dir="${basedir}" name="*flex*war" property="local.flex.rename.artefakt"/>
+		<move file="${local.flex.rename.artefakt}" tofile="Root.war"/>
+		<delete file="${local.flex.rename.artefakt}"/>
+	</target>
+	
+	<description>editiert das axis2 richtig für test</description>
+	<target name="update_axis_war_test" description="damit die test flex anwendung auf das richtige axis2 zeigt">
+		<description>axis2*.war finden</description>
+		<macro_find dir="${basedir}" name="*axis2*war" property="local.axis2.artefakt"/>
+		<echo>Found: ${local.axis2.artefakt}</echo>
+		<description>axis2*.war Namen ermitteln und als Property dem Macro übergeben</description>
+		<basename property="local.webappname" file="${local.axis2.artefakt}" suffix=".war"/>
+		<macro_update_axis_war axis2path="${local.webappname}"/>
+	</target>
+	
+	<description>editiert das axis2 richtig für produktiv</description>
+	<target name="update_axis_war_produktiv" description="da produktiv das axis2 immer axis2 heisst">
+		<description>axis2*.war finden</description>
+		<macro_find dir="${basedir}" name="*axis2*war" property="local.axis2.rename.artefakt"/>
+		<echo>Found: ${local.axis2.rename.artefakt}</echo>
+		<macro_update_axis_war axis2path="axis2"/>
+		<move file="${local.axis2.rename.artefakt}" tofile="axis2.war"/>
+		<delete file="${local.axis2.rename.artefakt}"/>
+	</target>
+	
+	<description>
+		das Skript geht davon aus dass sich 2 WAR Dateien im Root befinden, nämlich z.B. axis2-stl.war und flex.war.
+		Ist das der Fall wird die Datei parameter.xml im flex.war mit der richtigen URL zu axis2-stl.war befüllt,
+		damit die wars auch auf den test stages funktionieren, wird hierdran rumgedreht.
+		Default bleibt weiterhin localhost:8080/axis2
+	</description>
+	<macrodef name="macro_update_flex_war" >		
+		<attribute name="axis2path" default="../axis2"/>
+		<sequential>
+			<description>flex*.war finden</description>
+			<macro_find dir="${basedir}" name="*flex*war" property="local.flex.artefakt"/>
+			<echo>Found: ${local.flex.artefakt}</echo>
+			
+			<description>parameter.xml aus flex*.war auspacken</description>
+			<unzip dest="${basedir}" src="${local.flex.artefakt}" >
+				<patternset>
+		        	<include name="assets/properties/parameter.xml"/>
+		   		</patternset>
+		    	<mapper type="flatten"/>
+			</unzip>
+			
+			<description>parameter.xml aus flex*.war entfernen</description>
+			<zip destfile="${local.flex.artefakt}">			
+				<zipfileset src="${local.flex.artefakt}" excludes="assets/properties/parameter.xml"/>
+			</zip>
+			
+			<description>parameter.xml umbenennen in input_parameter.xml</description>
+			<move file="${basedir}/parameter.xml" tofile="${basedir}/input_parameter.xml"/>
+			
+			<description>property für input_parameter.xml</description>
+			<property name="local.input.parameter.file" value="${basedir}/input_parameter.xml"/>
+			
+			<description>input_parameter.xml mit richtigem Pfad für axis2 editieren</description>
+			<xmltask source="${local.input.parameter.file}" dest="${basedir}/parameter.xml" >
+				<replace path="FlexABA/EndpointURI/text()" withText="../@{axis2path}/services/STL_Beratungsservice_STM"/>
+			</xmltask>
+			
+			<description>neu geschriebene Datei wieder in flex*.war reinpacken</description>
+			<zip destfile="${local.flex.artefakt}" update="true" description="neu geschriebene Datei wieder reinpacken">			
+					<zipfileset dir="${basedir}" includes="parameter.xml" prefix="assets/properties/" />		
+			</zip>
+		</sequential>
+	</macrodef>
+	
+	<description>
+			das Skript geht davon aus dass sich 1 WAR Datei im Root befindet, nämlich z.B. axis2-stl.war.
+			Ist das der Fall wird die Datei services.xml im axis2*.war mit der richtigen URL zu AusdruckService befüllt,
+			damit die wars auch auf den test stages sowie produktiv funktionieren, wird hierdran rumgedreht.
+		</description>
+		<macrodef name="macro_update_axis_war" >		
+			<attribute name="axis2path" default="../axis2"/>
+			<sequential>
+				<echo>*axis*.war finden</echo>
+				<macro_find dir="${basedir}" name="*axis*war" property="local.axis.artefakt"/>
+				<echo>Found: ${local.axis.artefakt}</echo>
+				
+				<echo>STL_Beratungsservice_STM-*.aar aus axis*.war auspacken</echo>
+				<unzip dest="${basedir}" src="${local.axis.artefakt}">
+					<patternset>
+			        	<include name="**/*Beratungsservice*.aar"/>
+			   		</patternset>
+			    	<mapper type="flatten"/>
+				</unzip>
+				
+				<property name="local.axis.tempartefakt" value="${basedir}/temp-axis2.war"/>
+				
+				<echo>STL_Beratungsservice_STM-*.aar aus axis*.war entfernen</echo>
+				<zip destfile="${local.axis.tempartefakt}">			
+					<zipfileset src="${local.axis.artefakt}" >
+						<patternset>
+				        	<exclude name="**/*Beratungsservice*.aar"/>
+				   		</patternset>
+					</zipfileset>
+				</zip>
+				
+				<delete file="${local.axis.artefakt}" failonerror="true" verbose="true"/>
+				<move file="${local.axis.tempartefakt}" tofile="${local.axis.artefakt}"/>
+	
+				<echo>STL_Beratungsservice*.aar finden</echo>
+				<macro_find dir="${basedir}" name="STL_Beratungsservice*.aar" property="local.beratungsservice.artefakt"/>
+				<echo>Found: ${local.beratungsservice.artefakt}</echo>
+				
+				<echo>services.xml aus STL_Beratungsservice_STM-*.aar</echo>
+				<unzip dest="${basedir}" src="${local.beratungsservice.artefakt}" >
+					<patternset>
+			        	<include name="**/services.xml"/>
+			   		</patternset>
+			    	<mapper type="flatten"/>
+				</unzip>								
+				<property name="local.beratungsservice.tempartefakt" value="${basedir}/temp-beratungsservice.aar"/>
+					
+				<echo>**/services.xml aus-*.aar entfernen</echo>
+				<zip destfile="${local.beratungsservice.tempartefakt}">			
+					<zipfileset src="${local.beratungsservice.artefakt}" >
+						<patternset>
+				        	<exclude name="**/services.xml"/>
+				   		</patternset>
+					</zipfileset>
+				</zip>
+				
+				<echo>ursprüngliches war löschen und temp war umbenennen</echo>
+				<delete file="${local.beratungsservice.artefakt}" failonerror="true" verbose="true"/>
+				<move file="${local.beratungsservice.tempartefakt}" tofile="${local.beratungsservice.artefakt}"/>
+																
+				<echo>services.xml umbenennen in input_services.xml</echo>
+				<move file="${basedir}/services.xml" tofile="${basedir}/input_services.xml" verbose="true"/>
+				
+				<echo>property für input_parameter.xml</echo>
+				<property name="local.input.services.file" value="${basedir}/input_services.xml"/>
+				
+				<echo>input_services.xml mit richtigem Pfad für axis2 für AusdruckService editieren der 3. parameter tag wird editiert</echo>
+				<xmltask source="${local.input.services.file}" dest="${basedir}/services.xml">
+					<replace
+						path="serviceGroup/service/parameter[3]/text()" 
+						withText="http://localhost:8080/@{axis2path}/services/STL_AusdruckService"
+					/>
+				</xmltask>
+				
+				<delete file="${local.input.services.file}" failonerror="false" verbose="true"/>				
+				
+				<echo>neu geschriebene Datei wieder in STL_Beratungsservice*.aar reinpacken</echo>
+				<zip destfile="${local.beratungsservice.artefakt}" update="true"  description="neu geschriebene Datei wieder reinpacken">			
+						<zipfileset dir="${basedir}" includes="services.xml" prefix="Meta-inf/" />		
+				</zip>
+				
+				<echo>axis2 war wieder mit STL_Beratungsservice füllen</echo>
+				<echo>upgedatetes STL_Beratungsservice*.aar wieder in axis2 reinpacken</echo>
+				<echo>axis2 ${local.axis.artefakt}</echo>
+				<echo>service ${local.beratungsservice.artefakt}</echo>
+				
+				<zip destfile="${local.axis.artefakt}" update="true">
+					<zipfileset dir="${basedir}" includes="STL_Beratungsservice*.aar" prefix="WEB-INF/services"/>
+				</zip>				
+			</sequential>
+		</macrodef>
+
+		
+	<macrodef name="macro_getAxis2" 
+		description="Holt das Standard Axis2 version 1.5.6 vom Fileserver und extrahiert das axis2.war">
+		<attribute name="dest" />
+		<sequential>
+			<copy todir="@{dest}" verbose="true">
+				<fileset dir="${is2.dir.axis2}">
+					<include name="${is2.dir.axis2.zipfilename}" />
+				</fileset>
+			</copy>
+
+			<unzip dest="@{dest}" src="${local.webservice.stlflex}/${is2.dir.axis2.zipfilename}">
+				<patternset>
+					<include name="axis2.war" />
+				</patternset>
+			</unzip>
+			<delete file="@{dest}/${is2.dir.axis2.zipfilename}" verbose="true" failonerror="true" deleteonexit="true" />
+		</sequential>
+	</macrodef>
+
+	<macrodef name="macro_unzipArchive" description="entpackt das axis2.war">
+		<attribute name="dest" />
+		<attribute name="archive" />
+		<sequential>
+			<unzip dest="@{dest}" src="@{archive}">
+			</unzip>
+			<delete file="@{archive}" verbose="true" failonerror="true" deleteonexit="true" />
+		</sequential>
+	</macrodef>
+
+	<macrodef name="macro_find">
+		<attribute name="dir" />
+		<attribute name="name" />
+		<attribute name="property" />
+		<sequential>
+			<pathconvert property="@{property}.matches" pathsep="${line.separator}">
+				<fileset dir="@{dir}">
+					<include name="@{name}" />
+				</fileset>
+			</pathconvert>
+			<loadresource property="@{property}">
+				<string value="${@{property}.matches}" />
+				<filterchain>
+					<headfilter lines="1" />
+				</filterchain>
+			</loadresource>
+		</sequential>
+	</macrodef>
+
+	<macrodef name="compile_flex">
+		<attribute name="srcpath" default="NOT SET" />
+		<attribute name="targetpath" default="NOT SET"/>
+		<attribute name="configfile" default="flex-config.xml"/>
+		<sequential>
+			<mxmlc file="@{srcpath}" output="@{targetpath}" incremental="true" 
+					fork="true" maxmemory="512m">
+				<load-config filename="${FLEX_HOME}/frameworks/@{configfile}" />
+				<compiler.library-path dir="libs" append="true">
+					<include name="*.swc" />
+				</compiler.library-path>
+				<source-path path-element="${FLEX_HOME}/frameworks" />
+			</mxmlc>
+		</sequential>
+	</macrodef>
+</project>

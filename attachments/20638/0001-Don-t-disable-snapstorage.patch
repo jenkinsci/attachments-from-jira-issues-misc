@@ -1,0 +1,25 @@
+From 7c090b0ecdc68ed59f818d702dc89cecac3685e8 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?J=C3=B8rgen=20P.=20Tjern=C3=B8?= <jtjerno@mylookout.com>
+Date: Fri, 8 Jul 2011 16:13:08 -0700
+Subject: [PATCH] Don't disable snapstorage.
+
+---
+ .../plugins/android_emulator/EmulatorConfig.java   |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
+
+diff --git a/src/main/java/hudson/plugins/android_emulator/EmulatorConfig.java b/src/main/java/hudson/plugins/android_emulator/EmulatorConfig.java
+index ac950f6..4fa9e14 100644
+--- a/src/main/java/hudson/plugins/android_emulator/EmulatorConfig.java
++++ b/src/main/java/hudson/plugins/android_emulator/EmulatorConfig.java
+@@ -281,8 +281,6 @@ class EmulatorConfig implements Serializable {
+             // For subsequent boots, start from the "jenkins" snapshot
+             sb.append(" -snapshot "+ Constants.SNAPSHOT_NAME);
+             sb.append(" -no-snapshot-save");
+-        } else if (sdkSupportsSnapshots) {
+-            sb.append(" -no-snapstorage");
+         }
+ 
+         // Options
+-- 
+1.7.3.4
+

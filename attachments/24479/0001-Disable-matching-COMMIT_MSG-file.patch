@@ -1,0 +1,24 @@
+From 284bb296096d49a9511640d8d3664e9cd50984ba Mon Sep 17 00:00:00 2001
+From: Milan Gerza <milan.gerza@zoomint.com>
+Date: Fri, 4 Oct 2013 16:00:52 +0200
+Subject: [PATCH] Disable matching COMMIT_MSG file
+
+---
+ .../trigger/hudsontrigger/data/GerritProject.java  |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/gerrithudsontrigger/src/main/java/com/sonyericsson/hudson/plugins/gerrit/trigger/hudsontrigger/data/GerritProject.java b/gerrithudsontrigger/src/main/java/com/sonyericsson/hudson/plugins/gerrit/trigger/hudsontrigger/data/GerritProject.java
+index a1f2888..c09e81f 100644
+--- a/gerrithudsontrigger/src/main/java/com/sonyericsson/hudson/plugins/gerrit/trigger/hudsontrigger/data/GerritProject.java
++++ b/gerrithudsontrigger/src/main/java/com/sonyericsson/hudson/plugins/gerrit/trigger/hudsontrigger/data/GerritProject.java
+@@ -225,6 +225,7 @@ public class GerritProject implements Describable<GerritProject> {
+     private boolean isInterestingFile(List<String> files) {
+         if (filePaths != null && filePaths.size() > 0) {
+             for (FilePath f : filePaths) {
++                if (f.equals("/COMMIT_MSG")) continue;
+                 if (f.isInteresting(files)) {
+                     return true;
+                 }
+-- 
+1.7.9.5
+

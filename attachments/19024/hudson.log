@@ -1,0 +1,98 @@
+﻿Started by user bestgecd
+[workspace] $ cvs -q -z3 update -PdC -D "Thursday, January 14, 2010 3:18:52 PM UTC"
+cvs server: cannot open directory . for empty check: Input/output error
+$ no changes detected
+Parsing POMs
+[workspace] $ java -Xmx192M -Dmaven.scm.provider.cvs.implementation=cvs_native -cp D:\ada\hudson\plugins\maven-plugin\WEB-INF\lib\maven-agent-1.339.jar;C:\ada\maven\2.2.1\boot\classworlds-1.1.jar hudson.maven.agent.Main C:\ada\maven\2.2.1 C:\ada\tomcat\6.0.20\webapps\hudson\WEB-INF\lib\remoting-1.339.jar D:\ada\hudson\plugins\maven-plugin\WEB-INF\lib\maven-interceptor-1.339.jar 52336 D:\ada\hudson\plugins\maven-plugin\WEB-INF\lib\maven2.1-interceptor-1.2.jar
+<===[HUDSON REMOTING CAPACITY]===>���channel started
+Executing Maven:  -B -f D:\ada\hudson\jobs\traintrack\workspace\pom.xml clean install site
+[INFO] Scanning for projects...
+[INFO] Reactor build order: 
+[INFO]   OSCA TrainTrack :: Parent
+[INFO]   OSCA TrainTrack :: Web Archive
+[INFO]   OSCA TrainTrack :: Enterprise Archive
+[INFO] ------------------------------------------------------------------------
+[INFO] Building OSCA TrainTrack :: Parent
+[INFO]    task-segment: [clean, install, site]
+[INFO] ------------------------------------------------------------------------
+[INFO] [clean:clean {execution: default-clean}]
+[INFO] Deleting directory D:\ada\hudson\jobs\traintrack\workspace\target
+[INFO] [site:attach-descriptor {execution: default-attach-descriptor}]
+[INFO] [install:install {execution: default-install}]
+[INFO] Installing D:\ada\hudson\jobs\traintrack\workspace\pom.xml to D:\ada\m2\repository\gov\mo\courts\traintrack\traintrack\0.0.1-SNAPSHOT\traintrack-0.0.1-SNAPSHOT.pom
+[INFO] [site:site {execution: default-site}]
+[INFO] Generating "About" report.
+[INFO] Generating "Issue Tracking" report.
+[INFO] Generating "Project Team" report.
+[INFO] Generating "Dependencies" report.
+[INFO] Generating "Continuous Integration" report.
+[INFO] Generating "Source Repository" report.
+[HUDSON] Archiving D:\ada\hudson\jobs\traintrack\workspace\pom.xml to D:\ada\hudson\jobs\traintrack\modules\gov.mo.courts.traintrack$traintrack\builds\2010-01-14_09-18-57\archive\gov.mo.courts.traintrack\traintrack\0.0.1-SNAPSHOT\pom.xml
+[HUDSON] Archiving D:\ada\m2\repository\gov\mo\courts\traintrack\traintrack\0.0.1-SNAPSHOT\traintrack-0.0.1-SNAPSHOT.pom to D:\ada\hudson\jobs\traintrack\modules\gov.mo.courts.traintrack$traintrack\builds\2010-01-14_09-18-57\archive\gov.mo.courts.traintrack\traintrack\0.0.1-SNAPSHOT\traintrack-0.0.1-SNAPSHOT.pom
+[INFO] ------------------------------------------------------------------------
+[ERROR] FATAL ERROR
+[INFO] ------------------------------------------------------------------------
+[INFO] This SCM url 'scm:cvs:sserver:source:/oscaappdev:traintrack' is invalid due to the following errors:
+ * Unknown transport: sserver
+For more information about SCM URL Format, please refer to: http://maven.apache.org/scm/scm-url-format.html
+[INFO] ------------------------------------------------------------------------
+[INFO] Trace
+java.lang.IllegalArgumentException: This SCM url 'scm:cvs:sserver:source:/oscaappdev:traintrack' is invalid due to the following errors:
+ * Unknown transport: sserver
+For more information about SCM URL Format, please refer to: http://maven.apache.org/scm/scm-url-format.html
+	at org.apache.maven.report.projectinfo.ScmReport$ScmRenderer.getScmRepository(ScmReport.java:720)
+	at org.apache.maven.report.projectinfo.ScmReport$ScmRenderer.renderBody(ScmReport.java:222)
+	at org.apache.maven.reporting.AbstractMavenReportRenderer.render(AbstractMavenReportRenderer.java:65)
+	at org.apache.maven.report.projectinfo.ScmReport.executeReport(ScmReport.java:124)
+	at org.apache.maven.reporting.AbstractMavenReport.generate(AbstractMavenReport.java:90)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at hudson.maven.agent.ComponentInterceptor.invoke(ComponentInterceptor.java:47)
+	at hudson.maven.agent.PluginManagerInterceptor$3.invoke(PluginManagerInterceptor.java:229)
+	at $Proxy3.generate(Unknown Source)
+	at org.apache.maven.plugins.site.ReportDocumentRenderer.renderDocument(ReportDocumentRenderer.java:139)
+	at org.apache.maven.doxia.siterenderer.DefaultSiteRenderer.renderModule(DefaultSiteRenderer.java:269)
+	at org.apache.maven.doxia.siterenderer.DefaultSiteRenderer.render(DefaultSiteRenderer.java:101)
+	at org.apache.maven.plugins.site.SiteMojo.renderLocale(SiteMojo.java:133)
+	at org.apache.maven.plugins.site.SiteMojo.execute(SiteMojo.java:100)
+	at org.apache.maven.plugin.DefaultPluginManager.executeMojo(DefaultPluginManager.java:490)
+	at hudson.maven.agent.PluginManagerInterceptor.executeMojo(PluginManagerInterceptor.java:182)
+	at org.apache.maven.lifecycle.DefaultLifecycleExecutor.executeGoals(DefaultLifecycleExecutor.java:694)
+	at org.apache.maven.lifecycle.DefaultLifecycleExecutor.executeGoalWithLifecycle(DefaultLifecycleExecutor.java:556)
+	at org.apache.maven.lifecycle.DefaultLifecycleExecutor.executeGoal(DefaultLifecycleExecutor.java:535)
+	at org.apache.maven.lifecycle.DefaultLifecycleExecutor.executeGoalAndHandleFailures(DefaultLifecycleExecutor.java:387)
+	at org.apache.maven.lifecycle.DefaultLifecycleExecutor.executeTaskSegments(DefaultLifecycleExecutor.java:348)
+	at org.apache.maven.lifecycle.DefaultLifecycleExecutor.execute(DefaultLifecycleExecutor.java:180)
+	at org.apache.maven.lifecycle.LifecycleExecutorInterceptor.execute(LifecycleExecutorInterceptor.java:65)
+	at org.apache.maven.DefaultMaven.doExecute(DefaultMaven.java:328)
+	at org.apache.maven.DefaultMaven.execute(DefaultMaven.java:138)
+	at org.apache.maven.cli.MavenCli.main(MavenCli.java:362)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.codehaus.classworlds.Launcher.launchEnhanced(Launcher.java:315)
+	at org.codehaus.classworlds.Launcher.launch(Launcher.java:255)
+	at hudson.maven.agent.Main.launch(Main.java:165)
+	at hudson.maven.MavenBuilder.call(MavenBuilder.java:159)
+	at hudson.maven.MavenModuleSetBuild$Builder.call(MavenModuleSetBuild.java:688)
+	at hudson.maven.MavenModuleSetBuild$Builder.call(MavenModuleSetBuild.java:632)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:104)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:48)
+	at hudson.remoting.Request$2.run(Request.java:270)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:441)
+	at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:303)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:138)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:619)
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 10 seconds
+[INFO] Finished at: Thu Jan 14 09:19:09 CST 2010
+[INFO] Final Memory: 33M/81M
+[INFO] ------------------------------------------------------------------------
+channel stopped
+Sending e-mails to: david.mankin@courts.mo.gov cory.bestgen@courts.mo.gov
+Finished: FAILURE

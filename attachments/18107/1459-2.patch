@@ -1,0 +1,20 @@
+Index: src/main/resources/hudson/scm/SubversionSCM/config.jelly
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/resources/hudson/scm/SubversionSCM/config.jelly,v
+retrieving revision 1.15
+diff -u -r1.15 config.jelly
+--- src/main/resources/hudson/scm/SubversionSCM/config.jelly	17 Feb 2008 09:01:05 -0000	1.15
++++ src/main/resources/hudson/scm/SubversionSCM/config.jelly	23 Mar 2008 08:01:44 -0000
+@@ -25,6 +25,11 @@
+       But this causes the artifacts from the previous build to remain when a new build starts.">
+     <f:checkbox name="svn_use_update" checked="${h.defaultToTrue(scm.useUpdate)}"/>
+   </f:entry>
++  <f:entry title="Delete if locked"
++    description="
++      Hudson will check if the workspace is locked, and do a clean checkout if it is.">
++    <f:checkbox name="svn_delete_if_locked" checked="${h.defaultToTrue(scm.isDeleteIfLocked())}"/>
++  </f:entry>
+ 
+   <t:listScmBrowsers name="svn.browser" />  
+ </j:jelly>
+\ No newline at end of file

@@ -1,0 +1,876 @@
+// Omni uses a Declarative Pipeline
+pipeline {
+	environment {
+		// This is who is guaranteed to be emailed if build fails/aborts/etc
+		EMAIL_IBI_RECIPIENTS = "jeffrey_bennett@ibi.com,Don_Schaefer@ibi.com,Alan_Horowitz@ibi.com,Ioan_Fintescu@ibi.com"
+		EMAIL_SS_RECIPIENTS = "jeffrey_bennett@ibi.com,Don_Schaefer@ibi.com,opanchys@softserveinc.com"
+		
+		// Name of the corresponding branch in omni-ss-project
+		SS_BRANCH_NAME = "${env.BRANCH_NAME}"
+		
+		// Which Maven should we use
+		MAVEN_VERSION = "Maven 3.x-latest"
+			
+		// JDK to use in general
+		JDK_LATEST_VERSION = "JDK 8-latest"
+		
+		// JDK to use for grails
+		JDK_GRAILS_VERSION = "JDK 7-latest"
+		
+		// Publish things in Jenkins:  true=not-published, false=published
+		PUBLISH_ARTIFACTS_DISABLED = "true"
+		PUBLISH_OPENTASKS_DISABLED = "true"
+		PUBLISH_FINDBUGS_DISABLED = "true"
+		
+		// Sonar location	
+		SONAR_HOST_URL = "http://omnibld0.ibi.com:9000"
+		IWJIRA_HOST_URL = "http://iwjira.ibi.com:8080"
+		GITREPO_HOST_URL = "http://omnibld0.ibi.com:8082"
+		GITREPO_BRANCH = "E0RIJG2bEe"
+		
+		WORKSPACE_ROOT = "/var/lib/jenkins/workspace"
+		PROJECT_ROOT = "${env.WORKSPACE_ROOT}/omni-pipeline_${env.BRANCH_NAME}"
+		
+		// Status
+		PROJECT_BUILT = "false"
+		REGULAR_BUILT = "false"
+		GRAILS_BUILT = "false"
+		
+		// These modules will be skipped by regular (Java8) build stage, and 
+		// get built by special (Java7) stage.  The version of Grails (2.3.5)
+		// we use requires Java 7.
+		// This should be every module under omni/xmc/360viewer
+		// -pl \!:omni-xmc-360viewer,\!:omni-xmc-360viewer-opmc360viewer,\!:omni-xmc-360viewer-opmcappogc,\!:omni-xmc-360viewer-opmccommon,\!:omni-xmc-360viewer-opmcconfig,\!:omni-xmc-360viewer-opmccore,\!:omni-xmc-360viewer-opmcdashboard,\!:omni-xmc-360viewer-opmcdatadict,\!:omni-xmc-360viewer-opmcdqm,\!:omni-xmc-360viewer-opmcgrouping,\!:omni-xmc-360viewer-opmcmaster,\!:omni-xmc-360viewer-opmcomnigen,\!:omni-xmc-360viewer-opmcproxy,\!:omni-xmc-360viewer-opmcrealm,\!:omni-xmc-360viewer-opmcremediation,\!:omni-xmc-360viewer-opmcsecurity,\!:omni-xmc-360viewer-opmcworkbench
+		SKIP_SS_GRAILS_MODULES = '-pl '+
+			'!:omni-xmc-360viewer,'+
+			'!:omni-xmc-360viewer-opmc360viewer,'+
+			'!:omni-xmc-360viewer-opmcappogc,'+
+			'!:omni-xmc-360viewer-opmccommon,'+
+			'!:omni-xmc-360viewer-opmcconfig,'+
+			'!:omni-xmc-360viewer-opmccore,'+
+			'!:omni-xmc-360viewer-opmcdashboard,'+
+			'!:omni-xmc-360viewer-opmcdatadict,'+
+			'!:omni-xmc-360viewer-opmcdqm,'+
+			'!:omni-xmc-360viewer-opmcgrouping,'+
+			'!:omni-xmc-360viewer-opmcmaster,'+
+			'!:omni-xmc-360viewer-opmcomnigen,'+
+			'!:omni-xmc-360viewer-opmcproxy,'+
+			'!:omni-xmc-360viewer-opmcrealm,'+
+			'!:omni-xmc-360viewer-opmcremediation,'+
+			'!:omni-xmc-360viewer-opmcsecurity,'+
+			'!:omni-xmc-360viewer-opmcworkbench'
+		
+		// Make Steps conditional - in general, these should all be true
+		RUN_STEPS = "true"
+		RUN_SS_STEPS = "true"
+		RUN_UPDATEJIRA = "true"
+	}
+
+	options {
+	    // Only run one build at a time
+	    disableConcurrentBuilds()
+	    
+	    // We will manage SCM ourselves - largely because we need to go to different repos for different things
+	    // skipDefaultCheckout()
+	    
+	    // fail-fast
+	    skipStagesAfterUnstable()
+	    
+	    // TIME-IME-IME-IME, is on my side, yes it is
+	    timestamps()
+	    
+	    // Space is big. Really big. You just won't believe how vastly, 
+	    // hugely, mind-bogglingly big it is. I mean, you may think it's 
+	    // a long way down the road to the chemist, but that's just 
+	    // peanuts to space.
+	    buildDiscarder(logRotator(artifactNumToKeepStr: '1'))
+	}
+
+	agent any
+	triggers {
+		pollSCM 'H/5 * * * *'
+		snapshotDependencies()
+	}
+
+	stages {
+		stage('Prepare') {
+			parallel {
+
+
+				stage('Prepare (regular) omni-project') {
+					when {
+					    expression { return env.RUN_STEPS =="true" }
+					}
+					steps {
+						// Reduce slack spam
+			 			// JOB - #33 Build Started after 35 min (Open)
+			 			//slackSend channel: '#jenkins',
+		 				//	color: 'good',
+		 				//	message: env.JOB_NAME+' - #'+env.BUILD_NUMBER+' Build Started (<'+env.BUILD_URL+'|Open>)'  
+		
+						echo 'Git retrieval omni-project'
+						git branch: env.BRANCH_NAME,
+								poll: false,
+								changelog: false,
+								url: 'http://omnibld0.ibi.com:8082/scm/git/omni-project'			    
+
+						echo "last changes - omni-project"
+						lastChanges format: 'LINE', 
+								matchWordsThreshold: '0.25', 
+								matching: 'NONE', 
+								matchingMaxComparisons: '1000', 
+								showFiles: true, 
+								since: 'PREVIOUS_REVISION', 
+								specificBuild: '', 
+								specificRevision: '', 
+								synchronisedScroll: true, 
+								vcsDir: "${env.PROJECT_ROOT}"
+					}		                      
+				}
+				stage('Prepare (regular) omni-ss-project') {
+					when {
+					    expression { return env.RUN_SS_STEPS =="true" }
+					}
+					steps {
+						// Reduce slack spam
+			 			// JOB - #33 Build Started after 35 min (Open)
+			 			//slackSend channel: '#jenkins',
+		 				//	color: 'good',
+		 				//	message: env.JOB_NAME+' - #'+env.BUILD_NUMBER+' Build Started (<'+env.BUILD_URL+'|Open>)'  
+		
+						dir('omni-ss-project') {
+							echo 'Git retrieval omni-ss-project'
+							git branch: env.SS_BRANCH_NAME,
+								poll: true,
+								changelog: true,
+								url: 'http://omnibld2.ibi.com:8082/scm/git/omni-ss-project'			    
+
+							echo "last changes - omni-ss-project"
+							lastChanges format: 'LINE', 
+									matchWordsThreshold: '0.25', 
+									matching: 'NONE', 
+									matchingMaxComparisons: '1000', 
+									showFiles: true, 
+									since: 'PREVIOUS_REVISION', 
+									specificBuild: '', 
+									specificRevision: '', 
+									synchronisedScroll: true, 
+									vcsDir: "${env.PROJECT_ROOT}/omni-ss-project"
+						}
+					}		                      
+				}
+				stage('Prepare (grails) omni-ss-project') {
+					agent { node { label 'grails' } }
+					environment {
+					    PATH = "/usr/local/share/grails-2.3.5/bin/:$PATH"
+					}
+
+					when {
+					    expression { return env.RUN_SS_STEPS =="true" }
+					}
+					steps {
+						// Reduce slack spam
+			 			// JOB - #33 Build Started after 35 min (Open)
+			 			//slackSend channel: '#jenkins',
+		 				//	color: 'good',
+		 				//	message: env.JOB_NAME+' - #'+env.BUILD_NUMBER+' Build Started (<'+env.BUILD_URL+'|Open>)'  
+		
+						dir('omni-ss-project') {
+							echo 'Git retrieval omni-ss-project'
+							git branch: env.SS_BRANCH_NAME,
+								poll: false,
+								changelog: false,
+								url: 'http://omnibld2.ibi.com:8082/scm/git/omni-ss-project'			    
+						}
+					}		                      
+				}
+			}				
+		}
+		stage('Phase #1') {
+			parallel {
+				stage('Building omni-project') {
+					when {
+					    expression { return env.RUN_STEPS =="true" }
+					}
+
+					steps {
+						echo 'Building'
+				
+						withMaven(
+							maven: env.MAVEN_VERSION,
+							jdk: env.JDK_LATEST_VERSION,
+							mavenOpts: '-Xms256m -Xmx4096m -XX:-UseGCOverheadLimit',
+							options: [	
+									artifactsPublisher(disabled: env.PUBLISH_ARTIFACTS_DISABLED ),
+									openTasksPublisher(disabled: env.PUBLISH_OPENTASKS_DISABLED),
+									findbugsPublisher(disabled: env.PUBLISH_FINDBUGS_DISABLED)]) {
+							
+							sh "mvn -U -T 9 clean deploy"
+						}
+					}
+					post {
+						always {
+						    script {
+						    	PROJECT_BUILT = "true"
+						    }
+							echo "PROJECT_BUILT=${PROJECT_BUILT}"
+						}
+					}
+				}
+                        
+				// We are obsessed with being clean
+				// We build things at different layers on different agents.
+				// In the event that a layer changes agent, there is the possibility
+				// of leaving something extra around (e.g a TEST*.xml file) since
+				// the build moved to a new agent, thus causing the abandoned file
+				// to be double counted.
+				// This cleans every agent from the top-down - i.e. thoroughly.
+				
+				// We used to clean thoroughly, but a module expecting grails 3.x cannot
+				// effectively be cleaned by a node having grails 2.x.  i.e. 'grails clean'
+				// goes belly up for opmc-xmc-app-ogc (3.x module) when grails 2.x is used.
+				// We now do surgical cleaning
+			    
+				stage('Clean 360viewer (grails)') {
+					
+					agent { node { label 'grails' } }
+					environment {
+					    PATH = "/usr/local/share/grails-2.3.5/bin/:$PATH"
+					}
+				
+					when {
+					    expression { return env.RUN_SS_STEPS == "true" }
+					}
+					steps {
+
+						dir('omni-ss-project/omni/xmc/360viewer') {
+							withMaven(
+								maven: env.MAVEN_VERSION,
+								jdk: env.JDK_GRAILS_VERSION,
+								
+								// We do not need publishers from this mvn run
+								options: [	
+										artifactsPublisher(disabled: true ),
+										openTasksPublisher(disabled: true),
+										findbugsPublisher(disabled: true)]) {
+							
+								// do the clean in a specific directory - surgical cleaning
+								sh "mvn -T 1 clean "//+env.MAVEN_ARGS
+							}
+						}
+					}
+				}
+				stage('Clean omni-ss-project (regular)') {
+					environment {
+					    PATH = "/usr/local/share/grails-3.3.6/bin/:$PATH"
+					}
+				
+					when {
+					    expression { return env.RUN_SS_STEPS == "true" }
+					}
+					steps {
+						// Apparently, cleaning OmniDesigner requires a OmniDesigner/bundles/target/repository to exist
+						// We do this to create it.  Very bizarre
+						dir('omni-ss-project/omni/OmniDesigner/bundles') {
+							withMaven(
+						        maven: env.MAVEN_VERSION,
+								jdk: env.JDK_LATEST_VERSION,
+								options: [	
+										artifactsPublisher(disabled: env.PUBLISH_ARTIFACTS_DISABLED),
+										openTasksPublisher(disabled: env.PUBLISH_OPENTASKS_DISABLED),
+										findbugsPublisher(disabled: env.PUBLISH_FINDBUGS_DISABLED)]) {
+						
+								// We will do a clean here since 'bundles' is not attached to the root POM
+								// and does not get cleaned by the cleanser (way) above.
+								sh "mvn clean install "
+							}
+						}
+						
+						dir('omni-ss-project') {
+							withMaven(
+								maven: env.MAVEN_VERSION,
+								jdk: env.JDK_LATEST_VERSION,
+								
+								// we do not need publishers on this mvn run
+								options: [	
+										artifactsPublisher(disabled: true ),
+										openTasksPublisher(disabled: true),
+										findbugsPublisher(disabled: true)]) {
+	
+								sh "mvn -T 1 clean "
+							}
+						}
+					}
+				}
+			}
+		}
+
+		stage('Phase #2') {
+			
+			parallel {
+			
+				stage('Sonarqube omni-project') {
+					when {
+					    expression { return env.RUN_STEPS == "true" }
+					}
+					steps {
+					    script {
+						    if (env.BRANCH_NAME == 'develop') {
+								echo 'SonarQube Analyzing'
+		
+								withSonarQubeEnv("SonarQubeInstall") {
+									
+									// requires SonarQube Scanner for Maven 3.2+
+									sh 'mvn -T 1 org.sonarsource.scanner.maven:sonar-maven-plugin:sonar'
+								}
+							} else {
+								echo "Skipping SonarQube on ${env.BRANCH_NAME}"									      
+							}
+						}
+					}
+				}
+				stage('Whitesource omni-project') {
+					when {
+					    expression { return env.RUN_STEPS == "true" }
+					}
+					steps {
+						echo 'WHITESOURCE'
+					
+						script {
+						    if (env.BRANCH_NAME == 'develop') {
+								echo 'Updating whitesource regular' 
+								sh "mvn -T 1 org.whitesource:whitesource-maven-plugin:update"
+							} else {
+								echo 'Skipping whitesource'									      
+							}
+						}
+					}
+				}
+				// Build the old '11' (360-viewer)
+				// Grails portion of '11' is in this special stage due to it needing a
+				// particular environment. 
+				stage('Build omni-ss-project (grails)') {
+				
+					// Grails, the tool, uses a grailsWorkingDir, which by default
+					// is $USER_HOME/.grails.  Project builds make use of the
+					// working dir for portions of the build.  Unfortunately, there
+					// is collision if two grails builds occur simulaneously within
+					// files in the grailsWorkingDir.  To avoid this, we force
+					// grails builds to use the 'grails' node, which has a single
+					// executor, and prevent multiple grails builds from occurring
+					// simultaneously.   In the future, we should look to not use
+					// a shared grailsWorkingDir so we can do multiple concurrent
+					// builds.
+					agent { node { label 'grails' } }
+					environment {
+					    PATH = "/usr/local/share/grails-2.3.5/bin/:$PATH"
+					}
+				
+					when {
+					    expression { return env.RUN_SS_STEPS == "true" }
+					}
+					steps {
+						// echo env.JOB_NAME+' - #'+env.BUILD_NUMBER+' Step Started (<'+env.BUILD_URL+'|Open>)'
+						
+			 			// slackSend channel: '#jenkins',
+		 				//	color: 'good',
+		 				//	message: env.JOB_NAME+' - #'+env.BUILD_NUMBER+' Step Started (<'+env.BUILD_URL+'|Open>)'  
+
+						// Grails (v2.3.5) uses JDK 7.
+						// We know that Grails (v2.3.11) and all Grails (2.4.0+)
+						// are JDK 8 compliant.
+						dir('omni-ss-project/omni/xmc/360viewer') {
+							withMaven(
+								maven: env.MAVEN_VERSION,
+								jdk: env.JDK_GRAILS_VERSION,
+								options: [	
+										artifactsPublisher(disabled: env.PUBLISH_ARTIFACTS_DISABLED),
+										openTasksPublisher(disabled: env.PUBLISH_OPENTASKS_DISABLED),
+										findbugsPublisher(disabled: env.PUBLISH_FINDBUGS_DISABLED)]) {
+							
+								sh "mvn -T 4 deploy "//+env.MAVEN_ARGS
+							}
+						}
+					}
+					post {
+						always {
+						    
+						    //echo 'publishing junit'
+ 							//junit '**/omni/xmc/360viewer/**/TEST*.xml' 			  
+
+						    script {
+						    	GRAILS_BUILT = "true"
+						    }
+							echo "GRAILS_BUILT=${GRAILS_BUILT}"
+						}
+					}
+				}
+
+				// Build the old '02' (omni-domainod), '03' (omni-dqmengine), '04', (omni-dqmonitor),
+				// '05' (DQMUpdater), '06' (DQWorkbenchService), '11' (360-viewer) and '11.5' (remediation)
+				// Grails portion of '11' is split out to its own stage due to it needing a special
+				// environment. 
+				stage('Build omni-ss-project (regular)') {
+				
+					environment {
+					    PATH = "/usr/local/share/grails-3.3.6/bin/:$PATH"
+					}
+
+					when {
+					    expression { return env.RUN_SS_STEPS == "true" }
+					}
+					
+					steps {
+						// echo env.JOB_NAME+' - #'+env.BUILD_NUMBER+' Step Started (<'+env.BUILD_URL+'|Open>)'
+						
+			 			// slackSend channel: '#jenkins',
+		 				//	color: 'good',
+		 				//	message: env.JOB_NAME+' - #'+env.BUILD_NUMBER+' Step Started (<'+env.BUILD_URL+'|Open>)'  
+
+						// We need to first do a build in the 'bundles' directory, which modifies
+						// some files used in the subsequent build.
+						dir('omni-ss-project/omni/OmniDesigner/bundles') {
+							withMaven(
+								maven: env.MAVEN_VERSION,
+								jdk: env.JDK_LATEST_VERSION,
+								options: [	
+										artifactsPublisher(disabled: env.PUBLISH_ARTIFACTS_DISABLED),
+										openTasksPublisher(disabled: env.PUBLISH_OPENTASKS_DISABLED),
+										findbugsPublisher(disabled: env.PUBLISH_FINDBUGS_DISABLED)]) {
+		
+								// We will do a clean here since 'bundles' is not attached to the root POM
+								// and does not get cleaned by the cleanser (way) above.
+								sh "mvn clean install"
+							}
+						}
+
+						dir('omni-ss-project') {
+							withMaven(
+								maven: env.MAVEN_VERSION,
+								jdk: env.JDK_LATEST_VERSION,
+								options: [	
+										artifactsPublisher(disabled: env.PUBLISH_ARTIFACTS_DISABLED),
+										openTasksPublisher(disabled: env.PUBLISH_OPENTASKS_DISABLED),
+										findbugsPublisher(disabled: env.PUBLISH_FINDBUGS_DISABLED)]) {
+							
+								// This skips things being done in the grails (i.e. 360 viewer)
+								sh "mvn -T 1 -P eclipse-luna,product deploy "+env.SKIP_SS_GRAILS_MODULES
+							}
+						}
+					}
+					post {
+						always {
+							// Skip 360viewer and OmniDesigner
+						    //echo 'publishing junit'
+
+						    script {
+								REGULAR_BUILT = "true"
+						    }
+							echo "REGULAR_BUILT=${REGULAR_BUILT}"
+						}
+					}
+				}
+			}
+		}
+
+		stage('Phase #3') {
+			parallel {
+				stage('Whitesource omni-ss-project') {
+					when {
+					    expression { return env.RUN_SS_STEPS == "true" }
+					}
+
+					steps {
+						dir('omni-ss-project') {
+		
+							echo 'WHITESOURCE'
+						
+							script {
+							    if (env.BRANCH_NAME == 'develop') {
+									echo 'Updating whitesource regular' 
+									sh "mvn -T 1 org.whitesource:whitesource-maven-plugin:update"
+								} else {
+									echo 'Skipping whitesource'									      
+								}
+							}
+						}
+					}
+				}
+				stage('Build omnigen-packaging') {
+
+					agent { node { label 'installanywhere && Windows' } }
+
+					when {
+					    expression { return env.RUN_STEPS == "true" }
+					}
+
+					steps {
+					    
+						dir('omni/omnigen-packaging') {
+							withMaven(
+								maven: env.MAVEN_VERSION,
+								jdk: env.JDK_LATEST_VERSION,
+								options: [	
+										artifactsPublisher(disabled: env.PUBLISH_ARTIFACTS_DISABLED),
+										openTasksPublisher(disabled: env.PUBLISH_OPENTASKS_DISABLED),
+										findbugsPublisher(disabled: env.PUBLISH_FINDBUGS_DISABLED)]) {
+		
+								bat "mvn -U clean deploy"
+							}
+						}
+					}
+				}
+			}
+		}
+		stage('Phase #4') {
+			parallel {
+			    stage('Whitesource omnigen-packaging') {
+
+					agent { node { label 'installanywhere && Windows' } }
+
+					when {
+					    expression { return env.RUN_STEPS == "true" }
+					}
+					steps {
+						dir('omni/omnigen-packaging') {
+							echo 'WHITESOURCE'
+						
+							script {
+							    if (env.BRANCH_NAME == 'develop') {
+									echo 'Updating whitesource' 
+									bat "mvn -T 1 org.whitesource:whitesource-maven-plugin:update"
+								} else {
+									echo 'Skipping whitesource'									      
+								}
+							}
+						}
+			        }
+			    }
+			    stage('Collect Jacoco') {
+					when {
+					    expression { return env.RUN_STEPS == "true" }
+					}
+			    	steps {
+			
+						echo 'jacoco'
+						jacoco exclusionPattern: '**/BOOT-INF/**,'+
+								'org/dom4j/**/*,'+
+								'com/hevelian/**/*,'+
+								'org/apache/**/*,'+
+								'org/wso2/carbon/**/*,'+
+								'liquibase/ext/**/*,'+
+								'async/**,'+
+								'cal/**,'+
+								'chat/**,'+
+								'checkbox/**,'+
+								'colors/**,'+
+								'compressionFilters/**,'+
+								'dates/**,'+
+								'error/**,'+
+								'examples/**,'+
+								'filters/**,'+
+								'jsp2*/**,'+
+								'listeners/**,'+
+								'nonblocking*/**,'+
+								'num/**,'+
+								'sessions/**,'+
+								'util/**,'+
+								'validators/**,'+
+								'websocket*/**,'+
+								'**/*Example.class,'+
+								'**/*HtmlTagLib*.class,'+
+								'**/ServletToJsp.class,'+
+								'com/ibi/dib/dbms/liquibase/**/*,'+
+								'com/ibi/omni/test/model/**/*,'+
+								'com/ibi/omnigen/model/**/*,'+
+								'com/ibi/omnigen/ohd/model/**/*,'+
+								'com/ibi/omnigen/view/**/*'
+			    	}
+				}
+			    stage('Record Issues') {
+					when {
+					    expression { return env.RUN_STEPS == "true" }
+					}
+			    	steps {
+			
+						echo 'RecordIssues'
+						recordIssues (
+							aggregatingResults: true, 
+							tools: [
+								checkStyle(), 
+								java(), 
+								mavenConsole(), 
+								spotBugs(useRankAsPriority: true),
+								taskScanner(highTags: 'TODO,FIXME', ignoreCase: true, includePattern: '**/src/**/*.java'), 
+								pmdParser()
+								])
+			    	}
+				}
+			    stage('Update Jira') {
+					when {
+					    expression { return env.RUN_UPDATEJIRA == "true" }
+					}
+			    	steps {
+			
+						echo 'Update Jira'
+						
+						script {
+							commentJiraIssues().each { jiraChange ->
+							    echo "jiraChange: "+jiraChange
+							    
+							    jiraAddComment( 
+					            		idOrKey: jiraChange.id,
+					            		site: "iwjira",
+					            		comment: jiraChange.comment,
+										failOnError: false,
+										auditLog: false
+					            )
+							}
+						}
+
+						echo "beyond script"
+			    	}
+				}
+			}
+		}
+	}
+	post {
+		always {
+			// Send slack based on actual outcome, not generically
+ 			// JOB - #33 Build Complete after 35 min (Open)
+ 			// slackSend channel: '#jenkins',
+ 			//	color: 'good',
+ 			//	message: env.JOB_NAME+' - #'+env.BUILD_NUMBER+' Build Complete after '+currentBuild.durationString+' (<'+env.BUILD_URL+'|Open>)'
+ 			
+	
+			echo 'ciGame()'
+		    ciGame()
+
+ 			// Doing junit here seems to double-count tests
+  			echo 'skip publishing junit'
+ 			//junit '**/TEST*.xml' 			  
+		}
+		success {
+  			echo "POST: SUCCESS:  Regular:${PROJECT_BUILT}"
+ 			echo 'sending slack'
+ 			// JOB - #33 Success after 35 min (Open)
+ 			slackSend channel: '#jenkins',
+ 				color: 'good',
+ 				message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} Success after ${currentBuild.durationString} (<${env.BUILD_URL}|Open>)"  
+ 				
+ 			//echo 'sending email'
+ 			// NO EMAIL on success
+ 			//emailext attachLog: true, 
+ 			//	body: 'See <'+env.BUILD_URL+'>', 
+ 			//	subject: 'Jenkins build is successful : '+env.JOB_NAME+' #'+env.BUILD_NUMBER, 
+ 			//	recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider'], [$class: 'CulpritsRecipientProvider']],,
+ 			//	to: env.EMAIL_IBI_RECIPIENTS	
+		}
+		unstable {
+  			echo 'POST: UNSTABLE'
+ 			echo 'sending slack'
+ 			// JOB - #33 Unstable after 35 min (Open)
+ 			slackSend channel: '#jenkins',
+ 				color: 'warning',
+ 				message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} Unstable after ${currentBuild.durationString} (<${env.BUILD_URL}|Open>)"  
+ 			
+ 			echo 'sending email'
+ 			// EMAIL:
+ 			// Jenkins build is unstable: 09-DeploymentBundleTool-trunk #716
+ 			// See <http://omnibld0.ibi.com:8080/job/09-DeploymentBundleTool-trunk/716/display/redirect>	
+ 			emailext attachLog: true, 
+  				body: "See <${env.BUILD_URL}>", 
+ 				subject: "Jenkins build is unstable: ${env.JOB_NAME} #${env.BUILD_NUMBER}", 
+ 				recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider'], [$class: 'CulpritsRecipientProvider']],
+ 				to: env.EMAIL_IBI_RECIPIENTS	
+		}
+		failure {
+  			echo "POST: FAILURE:  ${env.BUILD_URL}, ${BUILD_URL}, <${BUILD_URL}>, <${env.BUILD_URL}>"
+ 			echo 'sending slack'
+ 			// JOB - #33 Failure after 35 min (Open)
+ 			slackSend channel: '#jenkins',
+ 				color: 'danger',
+ 				message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} Failure after ${currentBuild.durationString} (<${env.BUILD_URL}|Open>)"  
+ 			
+ 			echo 'sending email'
+ 			// EMAIL:
+ 			// Build failed in Jenkins: 09-DeploymentBundleTool-trunk #716
+ 			// See <http://omnibld0.ibi.com:8080/job/09-DeploymentBundleTool-trunk/716/display/redirect>	
+ 			emailext attachLog: true, 
+ 				body: "See ${env.BUILD_URL}", 
+ 				subject: "Build failed in Jenkins: ${env.JOB_NAME} #${env.BUILD_NUMBER}", 
+ 				recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider'], [$class: 'CulpritsRecipientProvider']],
+ 				to: env.EMAIL_IBI_RECIPIENTS	
+		}
+		fixed {
+   			echo 'POST: FIXED'
+ 			echo 'sending slack'
+ 			// JOB - #33 Back to normal after 35 min (Open)
+ 			slackSend channel: '#jenkins',
+ 				color: 'good',
+ 				message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} Back to normal after ${currentBuild.durationString} (<${env.BUILD_URL}|Open>)"  
+ 			
+ 			echo 'sending email'
+ 			// EMAIL:
+ 			// Jenkins build is back to normal : 09-DeploymentBundleTool-trunk #716
+ 			// See <http://omnibld0.ibi.com:8080/job/09-DeploymentBundleTool-trunk/716/display/redirect>	
+ 			mail body: "See <${env.BUILD_URL}>", 
+ 				from: 'omni-jenkins@ibi.com', 
+ 				subject: "Jenkins build is back to normal : ${env.JOB_NAME} #${env.BUILD_NUMBER}", 
+ 				to: env.EMAIL_IBI_RECIPIENTS	
+		}
+		regression {
+  			echo 'POST: REGRESSION'
+ 			echo 'sending slack'
+ 			// JOB - #33 Regression after 35 min (Open)
+ 			slackSend channel: '#jenkins',
+ 				color: 'warning',
+ 				message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} Regression after ${currentBuild.durationString} (<${env.BUILD_URL}|Open>)"  
+ 			
+ 			echo 'sending email'
+ 			// EMAIL:
+ 			// Build failed in Jenkins: 09-DeploymentBundleTool-trunk #716
+ 			// See <http://omnibld0.ibi.com:8080/job/09-DeploymentBundleTool-trunk/716/display/redirect>	
+ 			emailext attachLog: true, 
+ 				body: "See ${env.BUILD_URL}", 
+ 				subject: "Build regression in Jenkins: ${env.JOB_NAME} #${env.BUILD_NUMBER}", 
+ 				recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider'], [$class: 'CulpritsRecipientProvider']],
+ 				to: env.EMAIL_IBI_RECIPIENTS	
+		}
+		aborted {
+  			echo 'POST: ABORTED'
+ 			echo 'sending slack'
+ 			// JOB - #33 Aborted after 35 min (Open)
+ 			slackSend channel: '#jenkins',
+ 				color: 'warning',
+ 				message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} Aborted after ${currentBuild.durationString} (<${env.BUILD_URL}|Open>)"  
+ 			
+ 			echo 'sending email'
+ 			// EMAIL:
+ 			// Build aborted in Jenkins: 09-DeploymentBundleTool-trunk #716
+ 			// See <http://omnibld0.ibi.com:8080/job/09-DeploymentBundleTool-trunk/716/display/redirect>	
+ 			emailext attachLog: true, 
+ 				body: "See <${env.BUILD_URL}>", 
+ 				subject: "Build aborted in Jenkins: ${env.JOB_NAME} #${env.BUILD_NUMBER}", 
+ 				recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider'], [$class: 'CulpritsRecipientProvider']],
+ 				to: env.EMAIL_IBI_RECIPIENTS	
+		}
+	}
+}
+
+
+@NonCPS
+def commentJiraIssues() {
+	echo "commentJiraIssues"
+	
+	def issue_pattern = "(OG|OGSD|OHD)-\\d+"
+	def jiraList = []
+		
+	// Find all relevant commit ids
+	currentBuild.changeSets.each {changeSet ->
+	    changeSet.each { commit ->
+//			echo "... commit: "+commit
+
+	        String commitId = commit.getCommitId()
+	        String msg = commit.getMsg()
+//	        echo "testing commit: "+msg
+	        
+	        msg.findAll(issue_pattern).each {id ->
+	            
+//	            echo "issue: "+id
+	            def ts = new Date(commit.getTimestamp())
+	
+	            // Add Jira to list
+	            String comment = "[JENKINS-PIPELINE]\n"+
+	            				"Current Build:  "+ currentBuild.absoluteUrl+"\n"+
+	            				"Git Commit ID:  ${env.GITREPO_HOST_URL}/scm/#changesetPanel;${env.GITREPO_BRANCH};"+commitId+"\n"+
+	            				"Commit Message: "+msg+"\n"+
+	            		  		"Author:         "+commit.getAuthor().getFullName()+"\n"+
+	            		  		"Timestamp:      "+ts.format("yyyyMMdd.HHmmss", TimeZone.getTimeZone('UTC'))+" UTC\n"+
+	            		  		"Files:          ["
+	            
+	            commit.getAffectedPaths().each { path ->
+	                 comment = comment + "\n" +
+	                 		path
+	            }
+	            comment = comment + "\n]"
+
+	            
+	            jiraList << [ id: id, comment: comment ]
+				            		  		
+//	            echo "... after add"
+	        }
+//	        echo "... after findAll"
+	    }
+	}
+	
+	// If we get here, we know that *THIS* build is successful
+    // test previousBuilds and relate all info for past
+    // unsuccessful builds
+
+	echo "testing previous builds"
+		        
+//    echo "currentBuild is: "+currentBuild
+    def run = currentBuild.previousBuild
+//    echo "run is: "+run
+    
+    while (run != null) {
+//    	echo "evaluating run: "+run.number+", "+run.currentResult
+    	
+		if (run.resultIsWorseOrEqualTo("UNSTABLE")) {
+//			echo "worse than success"
+			
+			run.changeSets.each {changeSet ->
+		    	changeSet.each { commit ->
+//					echo "... commit: "+commit
+							        
+			        String commitId = commit.getCommitId()
+			        String msg = commit.getMsg()
+//			        echo "...testing commit: "+msg
+			        
+			        msg.findAll(issue_pattern).each { id ->
+			            
+//			            echo "issue: "+id
+		
+						def ts = new Date(commit.getTimestamp())
+                    
+                    	String comment = "[JENKINS-PIPELINE]\n"+
+	            				"Current Build:  "+ currentBuild.absoluteUrl+"\n"+
+	            				"Git Commit ID:  ${env.GITREPO_HOST_URL}/scm/#changesetPanel;${env.GITREPO_BRANCH};"+commitId+"\n"+
+	            				"Commit Message: "+msg+"\n"+
+	            		  		"Author:         "+commit.getAuthor().getFullName()+"\n"+
+	            		  		"Timestamp:      "+ts.format("yyyyMMdd.HHmmss", TimeZone.getTimeZone('UTC'))+" UTC\n"+
+	            		  		"Files:          ["
+	            
+			            commit.getAffectedPaths().each { path ->
+	    		             comment = comment + "\n" +
+			                 	path
+	    		        }
+	            		comment = comment + "\n]"
+                    	
+			            // Add Jira to list
+						jiraList << [ id: id, comment: comment ]
+			            
+//			            echo "... after add"
+			        }
+			        
+//			        echo "... after findAll"
+				}
+		    }
+//			echo "end of commits for run"
+			
+			// iterate
+			run = run.previousBuild
+//		    echo "run is now: "+run
+			
+	   	} else {
+//	   		echo "was successful - ending loop"
+
+			// break out of loop
+			run = null
+	   	}
+    }
+//	echo "done with previous builds"
+//	echo "jiras: "+jiraList
+	jiraList		        
+}

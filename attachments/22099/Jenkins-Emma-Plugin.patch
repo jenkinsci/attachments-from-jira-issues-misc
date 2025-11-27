@@ -1,0 +1,45 @@
+diff --git a/src/main/java/hudson/plugins/emma/EmmaPublisher.java b/src/main/java/hudson/plugins/emma/EmmaPublisher.java
+index e9598b9..0fc657a 100644
+--- a/src/main/java/hudson/plugins/emma/EmmaPublisher.java
++++ b/src/main/java/hudson/plugins/emma/EmmaPublisher.java
+@@ -98,7 +98,7 @@
+     @Override
+     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+         final PrintStream logger = listener.getLogger();
+-        
++
+         // Make sure Emma actually ran
+         if (build instanceof MavenBuild) {
+             MavenBuild mavenBuild = (MavenBuild) build;
+@@ -113,7 +113,7 @@
+                 return true;
+             }
+         }
+-                
++
+         EnvVars env = build.getEnvironment(listener);
+         env.overrideAll(build.getBuildVariables());
+         includes = env.expand(includes);
+@@ -195,16 +195,18 @@
+         }
+         return false;
+     }
+-    
++
+     private boolean didEmmaRun(MavenBuild mavenBuild) {
+         for (ExecutedMojo mojo : mavenBuild.getExecutedMojos()) {
+-            if ("org.codehaus.mojo".equals(mojo.groupId) && "emma-maven-plugin".equals(mojo.artifactId)) {
+-                return true;
++            if ("emma-maven-plugin".equals(mojo.artifactId)) {
++                if ("org.codehaus.mojo".equals(mojo.groupId) || "org.sonatype.maven.plugin".equals(mojo.groupId)) {
++                    return true;
++                }
+             }
+         }
+         return false;
+     }
+-    
++
+     @Extension
+     public static final BuildStepDescriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
+ 

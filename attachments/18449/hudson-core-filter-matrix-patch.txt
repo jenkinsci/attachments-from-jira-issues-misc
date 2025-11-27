@@ -1,0 +1,228 @@
+### Eclipse Workspace Patch 1.0
+#P hudson-core
+Index: src/main/java/hudson/matrix/MatrixProject.java
+===================================================================
+--- src/main/java/hudson/matrix/MatrixProject.java	(revision 14663)
++++ src/main/java/hudson/matrix/MatrixProject.java	(working copy)
+@@ -1,5 +1,7 @@
+ package hudson.matrix;
+ 
++import groovy.lang.Binding;
++import groovy.lang.GroovyShell;
+ import hudson.CopyOnWrite;
+ import hudson.FilePath;
+ import hudson.XmlFile;
+@@ -7,7 +9,6 @@
+ import hudson.model.Action;
+ import hudson.model.DependencyGraph;
+ import hudson.model.Descriptor;
+-import hudson.model.Descriptor.FormException;
+ import hudson.model.Hudson;
+ import hudson.model.Item;
+ import hudson.model.ItemGroup;
+@@ -17,9 +18,10 @@
+ import hudson.model.Label;
+ import hudson.model.Node;
+ import hudson.model.SCMedItem;
++import hudson.model.Saveable;
+ import hudson.model.TopLevelItem;
+ import hudson.model.TopLevelItemDescriptor;
+-import hudson.model.Saveable;
++import hudson.model.Descriptor.FormException;
+ import hudson.tasks.BuildStep;
+ import hudson.tasks.BuildStepDescriptor;
+ import hudson.tasks.BuildWrapper;
+@@ -29,11 +31,7 @@
+ import hudson.triggers.Trigger;
+ import hudson.util.CopyOnWriteMap;
+ import hudson.util.DescribableList;
+-import net.sf.json.JSONObject;
+-import org.kohsuke.stapler.StaplerRequest;
+-import org.kohsuke.stapler.StaplerResponse;
+ 
+-import javax.servlet.ServletException;
+ import java.io.File;
+ import java.io.FileFilter;
+ import java.io.IOException;
+@@ -46,11 +44,19 @@
+ import java.util.LinkedHashSet;
+ import java.util.List;
+ import java.util.Map;
+-import java.util.Map.Entry;
+ import java.util.Set;
++import java.util.Map.Entry;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+ 
++import javax.servlet.ServletException;
++
++import net.sf.json.JSONObject;
++
++import org.apache.commons.lang.StringEscapeUtils;
++import org.kohsuke.stapler.StaplerRequest;
++import org.kohsuke.stapler.StaplerResponse;
++
+ /**
+  * {@link Job} that allows you to run multiple different configurations
+  * from a single setting.
+@@ -64,6 +70,11 @@
+      * This also includes special axis "label" and "jdk" if they are configured.
+      */
+     private volatile AxisList axes = new AxisList();
++    
++    /**
++     * The filter that is applied to combinatios. It is a Groovy if condition
++     */
++    private volatile String combinationFilter = new String();
+ 
+     /**
+      * List of active {@link Builder}s configured for this project.
+@@ -101,6 +112,7 @@
+     public AxisList getAxes() {
+         return axes;
+     }
++    
+ 
+     /**
+      * Reconfigures axes.
+@@ -111,7 +123,23 @@
+         save();
+     }
+ 
+-    protected void updateTransientActions() {
++    /**
++	 * @param combinationFilter the combinationFilter to set
++	 */
++	public void setCombinationFilter(String combinationFilter) throws IOException {
++		this.combinationFilter = new String(combinationFilter);
++		rebuildConfigurations();
++		save();
++	}
++
++	/**
++	 * @return the combinationFilter
++	 */
++	public String getCombinationFilter() {
++		return combinationFilter;
++	}
++
++	protected void updateTransientActions() {
+         synchronized(transientActions) {
+             super.updateTransientActions();
+ 
+@@ -272,13 +300,25 @@
+         // find all active configurations
+         Set<MatrixConfiguration> active = new LinkedHashSet<MatrixConfiguration>();
+         for (Combination c : axes.list()) {
+-            MatrixConfiguration config = configurations.get(c);
+-            if(config==null) {
+-                config = new MatrixConfiguration(this,c);
+-                config.save();
+-                configurations.put(config.getCombination(), config);
+-            }
+-            active.add(config);
++        	
++        	boolean res = true;
++        	
++        	if( !combinationFilter.equals("") )
++        	{
++        		res = evalGroovyExpression(c, combinationFilter);	
++        	}
++
++        	if( res == true )
++        	{
++        		System.out.println("Adding configuration: " + c.toString());
++	            MatrixConfiguration config = configurations.get(c);
++	            if(config==null) {
++	                config = new MatrixConfiguration(this,c);
++	                config.save();
++	                configurations.put(config.getCombination(), config);
++	            }
++	            active.add(config);
++        	}
+         }
+         this.activeConfigurations = active;
+     }
+@@ -442,6 +482,7 @@
+         super.submit(req, rsp);
+ 
+         AxisList newAxes = new AxisList();
++        String newCombinationFilter = new String();
+ 
+         // parse user axes
+         if(req.getParameter("hasAxes")!=null) {
+@@ -452,7 +493,13 @@
+                 if(a.values.isEmpty())  itr.remove();
+             }
+         }
+-
++        
++        if(req.getParameter("hasCombinationFilter")!=null) {
++        	newCombinationFilter = req.getParameter("combinationFilter");
++        }
++        
++        this.combinationFilter = newCombinationFilter;
++        
+         // parse system axes
+         newAxes.add(Axis.parsePrefixed(req,"jdk"));
+         if(req.getParameter("multipleNodes")!=null)
+@@ -469,6 +516,29 @@
+         rebuildConfigurations();
+     }
+ 
++    
++	static boolean evalGroovyExpression(Combination c, String expression)
++	{
++		Binding binding = new Binding();
++        for (Entry<String, String> e : c.entrySet())
++        	binding.setVariable( e.getKey(), "\"" + e.getValue() + "\"");
++		
++		String escapedExpression = "\"" + StringEscapeUtils.escapeJava(expression) + "\"";
++
++		GroovyShell shell = new GroovyShell(binding);
++
++		Object result = shell.evaluate( escapedExpression );
++		result = shell.evaluate( result.toString() );
++		if (result == null)
++		{
++			return false;
++		}
++		else
++		{
++			return result.equals(true);
++		}
++	}
++	
+     public DescriptorImpl getDescriptor() {
+         return DESCRIPTOR;
+     }
+Index: src/main/resources/hudson/matrix/MatrixProject/configure-entries.jelly
+===================================================================
+--- src/main/resources/hudson/matrix/MatrixProject/configure-entries.jelly	(revision 14663)
++++ src/main/resources/hudson/matrix/MatrixProject/configure-entries.jelly	(working copy)
+@@ -81,6 +81,14 @@
+         </f:repeatable>
+       </f:entry>
+     </f:optionalBlock>
++    
++    <f:optionalBlock name="hasCombinationFilter" title="${%Combination Filter}" checked="${!empty(it.combinationFilter)}"
++        help="/help/matrix/combinationfilter.html">
++	    <f:entry title="${%Filter}">
++	      <f:textbox name="combinationFilter" value="${it.combinationFilter}" />
++	    </f:entry>
++    </f:optionalBlock>
++
+   </f:section>
+ 
+   <p:config-buildWrappers />
+Index: src/main/resources/hudson/matrix/MatrixProject/configure-entries_tr.properties
+===================================================================
+--- src/main/resources/hudson/matrix/MatrixProject/configure-entries_tr.properties	(revision 14663)
++++ src/main/resources/hudson/matrix/MatrixProject/configure-entries_tr.properties	(working copy)
+@@ -9,3 +9,5 @@
+ Individual\ nodes=Tek nodlar
+ Labels=Etiketler
+ Axes=Eksenler
++Filter\ Combinations=Kombinasyonlari Filtrele
++Filter=Filtre
+\ No newline at end of file

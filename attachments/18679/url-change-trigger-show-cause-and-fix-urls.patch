@@ -1,0 +1,133 @@
+Index: src/main/java/com/redfin/hudson/PluginImpl.java
+===================================================================
+--- src/main/java/com/redfin/hudson/PluginImpl.java	(revision 19313)
++++ src/main/java/com/redfin/hudson/PluginImpl.java	(working copy)
+@@ -1,21 +1,9 @@
+ package com.redfin.hudson;
+ 
+ import hudson.Plugin;
+-import hudson.triggers.Triggers;
+ 
+ /**
+- * Entry point of a plugin.
+- *
+- * <p>
+- * There must be one {@link Plugin} class in each plugin.
+- * See javadoc of {@link Plugin} for more about what can be done on this class.
+- *
+- * @author Kohsuke Kawaguchi
++ * Now registered by Extension.
+  */
+ public class PluginImpl extends Plugin {
+-    public void start() throws Exception {
+-        // plugins normally extend Hudson by providing custom implementations
+-        // of 'extension points'. In this example, we'll add one builder.
+-        Triggers.TRIGGERS.add(UrlChangeTrigger.DESCRIPTOR);
+-    }
+ }
+Index: src/main/java/com/redfin/hudson/UrlChangeTrigger.java
+===================================================================
+--- src/main/java/com/redfin/hudson/UrlChangeTrigger.java	(revision 19313)
++++ src/main/java/com/redfin/hudson/UrlChangeTrigger.java	(working copy)
+@@ -1,14 +1,15 @@
+ package com.redfin.hudson;
+ 
+ import static hudson.Util.*;
++import hudson.Extension;
+ import hudson.model.BuildableItem;
++import hudson.model.Cause;
+ import hudson.model.Item;
+ import hudson.scheduler.CronTabList;
+ import hudson.triggers.Trigger;
+ import hudson.triggers.TriggerDescriptor;
+ import hudson.util.FormFieldValidator;
+ 
+-import java.io.BufferedOutputStream;
+ import java.io.BufferedReader;
+ import java.io.File;
+ import java.io.FileOutputStream;
+@@ -21,6 +22,7 @@
+ import java.security.DigestInputStream;
+ import java.security.MessageDigest;
+ import java.security.NoSuchAlgorithmException;
++import java.text.MessageFormat;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+ 
+@@ -130,7 +132,7 @@
+ 		    w.close();
+ 		}
+                 oldMd5 = currentMd5;
+-                job.scheduleBuild();
++                job.scheduleBuild(new URLContentChangedCause(url));
+             }
+         } catch (IOException e) {
+             throw new RuntimeException(e);
+@@ -141,16 +143,7 @@
+         return url;
+     }
+     
+-    @Override
+-    public TriggerDescriptor getDescriptor() {
+-        return DESCRIPTOR;
+-    }
+-    
+-    /**
+-     * Descriptor should be singleton.
+-     */
+-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
+-    
++    @Extension
+     public static final class DescriptorImpl extends TriggerDescriptor {
+ 
+         public DescriptorImpl() {
+@@ -201,4 +194,17 @@
+         
+     }
+ 
++    public static class URLContentChangedCause extends Cause {
++
++        private final URL url;
++
++	public URLContentChangedCause(URL url) {
++	    this.url = url;
++        }
++
++        @Override
++        public String getShortDescription() {
++            return MessageFormat.format("Triggered by change at URL {0}", url);
++        }
++    }
+ }
+Index: src/main/resources/com/redfin/hudson/UrlChangeTrigger/config.jelly
+===================================================================
+--- src/main/resources/com/redfin/hudson/UrlChangeTrigger/config.jelly	(revision 19313)
++++ src/main/resources/com/redfin/hudson/UrlChangeTrigger/config.jelly	(working copy)
+@@ -4,7 +4,7 @@
+ 
+     See global.jelly for a general discussion about jelly script.
+   -->
+-  <f:entry title="URL" help="${rootURL}/plugin/url-change-trigger/help-projectConfig.html">
++  <f:entry title="URL" help="/plugin/url-change-trigger/help-projectConfig.html">
+     <!--
+       ${builder.name} is EL-like (JEXL) expression that calls "builder.getName()" on our builder instance.
+       builder is set to null if the project is not configured with HelloWorldBuilder when
+@@ -12,5 +12,5 @@
+       evaluates to null, and you'll get an empty text box, which is just what we want.
+     -->
+     <f:textbox name="urlChangeTrigger.url" value="${instance.url}" />
+-	</f:entry>
+-</j:jelly>
+\ No newline at end of file
++  </f:entry>
++</j:jelly>
+Index: pom.xml
+===================================================================
+--- pom.xml	(revision 19313)
++++ pom.xml	(working copy)
+@@ -12,4 +12,5 @@
+   <description>This plugin allows you to trigger a Hudson build when the content of an URL changes.</description>
+   <packaging>hpi</packaging>
+   <version>1.2-SNAPSHOT</version>
++  <url>http://wiki.hudson-ci.org/display/HUDSON/URL+Change+Trigger</url>
+ </project>

@@ -1,0 +1,21 @@
+diff -purNw locks-and-latches-plugin.orig/src/main/java/hudson/plugins/locksandlatches/LockWrapper.java locks-and-latches-plugin/src/main/java/hudson/plugins/locksandlatches/LockWrapper.java
+--- locks-and-latches-plugin.orig/src/main/java/hudson/plugins/locksandlatches/LockWrapper.java	2011-03-16 10:13:56.487749443 +0100
++++ locks-and-latches-plugin/src/main/java/hudson/plugins/locksandlatches/LockWrapper.java	2011-03-16 10:27:33.402307028 +0100
+@@ -170,6 +170,17 @@ public class LockWrapper extends BuildWr
+         };
+     }
+ 
++    public void makeBuildVariables(AbstractBuild build, Map<String,String> variables) {
++        final StringBuilder names = new StringBuilder();
++        for (LockWaitConfig lock : locks) {
++            if (names.length() > 0) {
++                names.append(',');
++            }
++            names.append(lock.getName());
++        }
++        variables.put("LOCKS", names.toString());
++    }
++
+     public String getDisplayName() {
+         return DESCRIPTOR.getDisplayName();
+     }

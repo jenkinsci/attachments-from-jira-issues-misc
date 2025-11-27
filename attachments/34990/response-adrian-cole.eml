@@ -1,0 +1,113 @@
+Return-Path: <adrian.f.cole@gmail.com>
+Received: from fsun.fe.think ([unix socket])
+	 by fsun.fe.think (Cyrus v2.4.18-Fedora-RPM-2.4.18-2.fc24) with LMTPA;
+	 Fri, 25 Nov 2016 01:30:23 +0100
+X-Sieve: CMU Sieve 2.4
+Received: from listserv.isdn4linux.de (www.fritz-elfert.de [82.165.11.104])
+	by fsun.fe.think (8.15.2/8.15.2) with ESMTPS id uAP0UNnf023063
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=OK)
+	for <felfert@lbk.dyn.fritz-elfert.de>; Fri, 25 Nov 2016 01:30:23 +0100
+Received: from mail-oi0-x230.google.com (mail-oi0-x230.google.com [IPv6:2607:f8b0:4003:c06:0:0:0:230])
+	by listserv.isdn4linux.de (8.15.2/8.15.2) with ESMTPS id uAP0UI46007524
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=FAIL)
+	for <fritz@fritz-elfert.de>; Fri, 25 Nov 2016 01:30:20 +0100
+X-Virus-Status: Clean
+X-Virus-Scanned: clamav-milter 0.99.2 at listserv.isdn4linux.de
+Authentication-Results: listserv.isdn4linux.de;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=veuLiCj2
+Received: by mail-oi0-x230.google.com with SMTP id b126so65863712oia.2
+        for <fritz@fritz-elfert.de>; Thu, 24 Nov 2016 16:30:19 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to;
+        bh=rcEEzWJ6B3ekoKRHuoNMsNnX/Ne2EvCzXI2dFQjpgos=;
+        b=veuLiCj2DUVtuUIjEnU2lJ1XRE/8cAEKl2Ys7RCbz/BQW5LB+PdH8cYgvR3CCikHDW
+         SJcrZuEnl7AEEfTlcksyz54m8J836qZ0wpgtW3rlYXfXlpUIs4+rFaf7axxRYKfSxOLA
+         wbKGkCxNNwASUAV6N3fsgM/Bh/juWFeqS2tgRx8IG9CoavxU8EISC6WRjH/bSLaVBg5z
+         GE9aVVQj+x6YUmJiAi409Z5v0ZvxdZ0HPFcPCspAilyK2ngzLr9s46naR0wrvW77MImr
+         WQL68qPoTs+ph+Ab6PimwzJDo6yYhLHRacUyq+11M90X0U7hEdiH/IYhyL/FLEqVdiBH
+         ycUQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20130820;
+        h=x-gm-message-state:mime-version:in-reply-to:references:from:date
+         :message-id:subject:to;
+        bh=rcEEzWJ6B3ekoKRHuoNMsNnX/Ne2EvCzXI2dFQjpgos=;
+        b=e7o6EjvfI6T5RWga9TaXIB3u/TB/48eRiZnZDLyjLpnh4rzmTIQJghAbRlKz0jNJGQ
+         hkDWqfpRECy2jS4z42Ke/enLOml6+4Ill7DyTgWN7FqQGiOHNrnYBuE0c4dpUh100KUd
+         yGTmAKAAnr4PnUuXNDdH6EPKl3AjXzYyavDsoNhyMoNTaQNdNf9sxQQcsMJ2EMB2cN9x
+         iXU8gxFE8JItRnce34bYjIY/CushHbo4SSA8UgMIJfw8qlbv88bn1bv3jnnCCIhV48TA
+         ivSETPwYxZWjufPz0/IXR9y8aTwq/UqZ50/bCk1CiGX3cBTk7sDYGm0yiKxYfh2sZCTG
+         LFtQ==
+X-Gm-Message-State: AKaTC03B6wHclGdxqBWksjgin/NLnzNr2GKDBSKG4yQuGjSXZbvksJUUFs5nFeBRjPa1YtY9jHqf3IR0QbWBPQ==
+X-Received: by 10.157.29.240 with SMTP id w45mr3089774otw.132.1480033817109;
+ Thu, 24 Nov 2016 16:30:17 -0800 (PST)
+MIME-Version: 1.0
+Received: by 10.202.205.70 with HTTP; Thu, 24 Nov 2016 16:30:16 -0800 (PST)
+In-Reply-To: <fca80113-60ae-2387-5b9b-1ab750492749@fritz-elfert.de>
+References: <openzipkin/brave/pull/279@github.com> <openzipkin/brave/pull/279/c262833078@github.com>
+ <CAHzwyDtW_hyf0_JQp_rdiEOM1Jj-QbbvamcAmS0V_uPq1y2+6A@mail.gmail.com> <fca80113-60ae-2387-5b9b-1ab750492749@fritz-elfert.de>
+From: Adrian Cole <adrian.f.cole@gmail.com>
+Date: Fri, 25 Nov 2016 08:30:16 +0800
+Message-ID: <CAHzwyDsFVC7uQVAAjZ1EZCvTrBQq_fP_3VC+2AovLvAenA0waQ@mail.gmail.com>
+Subject: Re: Fwd: [openzipkin/brave] Adds builder(brave) and create(brave)
+ methods to all instrumentation (#279)
+To: Fritz Elfert <fritz@fritz-elfert.de>
+Content-Type: text/plain; charset=UTF-8
+X-Greylist: Sender passed SPF test, not delayed by milter-greylist-4.6 (listserv.isdn4linux.de [IPv6:2001:8d8:912:a9e:ab05:ddc6:eb4a:1ffd]); Fri, 25 Nov 2016 01:30:20 +0100 (CET)
+X-Spam-Status: No, score=-2.7 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FROM,RCVD_IN_DNSWL_LOW,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.1-i4l
+X-Spam-Checker-Version: SpamAssassin 3.4.1-i4l (2015-04-28) on
+	listserv.isdn4linux.de
+
+ASL 2 works for me. Thanks for hunting this down!
+
+On Fri, Nov 25, 2016 at 7:56 AM, Fritz Elfert <fritz@fritz-elfert.de> wrote:
+> On 25.11.2016 00:30, Adrian Cole wrote:
+>> Hi, Fritz.
+>>
+>> What's up?
+>>
+> Hi Adrian,
+>
+> Pretty simple, the plugin still has *no* license at all and I wanted to
+> get a consent about among the (previous) maintainers what license it
+> should be.
+>
+> FYI: About an hour ago, Vijay replied and now we have a simple majority
+> for ASL 2.0 anyway :-)
+>
+> -------- Forwarded Message --------
+> Subject: Licensing decision for jenkins jclouds plugin required
+> Date: Sat, 19 Nov 2016 03:29:57 +0100
+> From: Fritz Elfert <fritz@fritz-elfert.de>
+> To: mordred@inaugust.com, adrian@jclouds.org, mail@vijaykiran.com,
+> andrew.bayer@gmail.com, m.mavlyutov@gmail.com
+>
+> Hi guys,
+>
+> I am writing to you, because you were initiators resp. are
+> co-maintainers or major contributors of the JClouds Jenkins Plugin
+> https://wiki.jenkins-ci.org/display/JENKINS/JClouds+Plugin
+>
+> I am the current maintainer of this plugin and recently was asked about
+> its license. To my surprise, there was *no* licensing information *at*
+> *all* in any of the sources.
+>
+> My thoughts regarding a license were:
+> It uses apache-jclouds as its primary functionality and therefore it
+> should have the same license (Apache 2.0 License)
+>
+> Before officially choosing this license, I just want to ask for your
+> opinion:
+>
+> ==> Are you ok with choosing Apache 2.0 License for this plugin?
+>
+> I will only choose a license, if I get a simple majority (meaning: at
+> least 3 of you should agree). So please just take the time for a short
+> answer.
+>
+> Thanks
+>  -Fritz
+>
+>

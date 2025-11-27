@@ -1,0 +1,33 @@
+Index: src/main/java/hudson/plugins/copyartifact/CopyArtifact.java
+===================================================================
+--- src/main/java/hudson/plugins/copyartifact/CopyArtifact.java	(revision 37111)
++++ src/main/java/hudson/plugins/copyartifact/CopyArtifact.java	(working copy)
+@@ -141,7 +141,7 @@
+                 return isOptional();  // Fail build unless copy is optional
+             }
+             FilePath targetDir = build.getWorkspace(), baseTargetDir = targetDir;
+-            if (targetDir == null) {
++            if (targetDir == null || !targetDir.exists()) {
+                 console.println(Messages.CopyArtifact_MissingWorkspace()); // (see HUDSON-3330)
+                 return isOptional();  // Fail build unless copy is optional
+             }
+@@ -151,7 +151,8 @@
+             CopyMethod copier = Hudson.getInstance().getExtensionList(CopyMethod.class).get(0);
+ 
+             if (run instanceof MavenModuleSetBuild) {
+-                boolean ok = false;
++                // Copy artifacts from the build 
++                boolean ok = perform(run, expandedFilter, targetDir, baseTargetDir, copier, console);
+                 // Copy artifacts from all modules of this Maven build
+                 for (Run r : ((MavenModuleSetBuild)run).getModuleLastBuilds().values())
+                     ok |= perform(r, expandedFilter, targetDir, baseTargetDir, copier, console);
+@@ -182,8 +183,7 @@
+         // Check special case for copying from workspace instead of artifacts:
+         FilePath srcDir = (selector instanceof WorkspaceSelector && run instanceof AbstractBuild)
+                         ? ((AbstractBuild)run).getWorkspace() : new FilePath(run.getArtifactsDir());
+-        if (srcDir == null) {
+-            console.println(Messages.CopyArtifact_MissingWorkspace()); // (see HUDSON-3330)
++        if (srcDir == null || !srcDir.exists()) {
+             return isOptional();  // Fail build unless copy is optional
+         }
+ 

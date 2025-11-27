@@ -1,0 +1,27 @@
+
+pipeline {
+    agent any
+    options { skipDefaultCheckout() }
+    triggers {
+        cron('H/5 * * * *')
+    } 
+    stages {
+        stage('Build') { 
+            steps {
+                echo "Building : abcdef"
+				echo "Built!"
+            }
+    }
+        stage('Test') { 
+            steps {
+                echo "Testing: abcdef" 
+            }
+        }
+        stage('Deploy') { 
+            steps {
+                echo "Deploying abcdef" 
+            }
+        }
+    }
+}
+        

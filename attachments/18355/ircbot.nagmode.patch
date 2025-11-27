@@ -1,0 +1,166 @@
+Index: src/main/java/hudson/plugins/ircbot/IrcNotifier.java
+===================================================================
+--- src/main/java/hudson/plugins/ircbot/IrcNotifier.java	(revision 12694)
++++ src/main/java/hudson/plugins/ircbot/IrcNotifier.java	(working copy)
+@@ -8,6 +8,7 @@
+ import hudson.model.AbstractBuild;
+ import hudson.model.Hudson;
+ import hudson.model.Result;
++import hudson.model.Run;
+ import hudson.scm.ChangeLogSet;
+ import hudson.scm.ChangeLogSet.Entry;
+ 
+@@ -23,13 +24,15 @@
+ 
+     private static final Logger LOGGER = Logger.getLogger(IrcNotifier.class.getName());
+     
+-    static final void perform(AbstractBuild build, List<String> channels) {
++    static final void perform(AbstractBuild build, List<String> channels, boolean nag) {
+         if (build.getPreviousBuild() != null) {
+             // only broadcast change of status
+             if(build.getResult() != null && build.getPreviousBuild().getResult() != null){
+                 if (!build.getResult().toString().equals(
+                         build.getPreviousBuild().getResult().toString())) {
+                     publish(build, channels);
++                } else if (nag && build.getResult() != Result.SUCCESS) {
++                	publish(build, channels);
+                 }
+             } else {
+                 LOGGER.warning("results should not be null! current: " + build.getResult() + " previous: " + build.getPreviousBuild().getResult());
+@@ -54,6 +57,12 @@
+ 
+     private static void reportFailure(AbstractBuild build, List<String> channels) {
+         String status = "failed";
++        Run previous = build.getPreviousBuild(); 
++        if (previous != null) {
++        	if (previous.getResult() == Result.FAILURE) {
++        		status = "still failing";
++        	}
++        }
+         String suspects = calculateSuspectsString(build.getChangeSet());
+         IrcPublisher.DESCRIPTOR.bot.sendNotice(channels, build
+                 .getProject().getName()
+@@ -77,6 +86,12 @@
+ 
+     private static void reportUnstability(AbstractBuild build, List<String> channels) {
+         String status = "unstable";
++        Run previous = build.getPreviousBuild(); 
++        if (previous != null) {
++        	if (previous.getResult() == Result.UNSTABLE) {
++        		status = "still unstable";
++        	}
++        }
+         String suspects = calculateSuspectsString(build.getChangeSet());
+         IrcPublisher.DESCRIPTOR.bot.sendNotice(channels, build
+                 .getProject().getName()
+Index: src/main/java/hudson/plugins/ircbot/MavenIrcReporter.java
+===================================================================
+--- src/main/java/hudson/plugins/ircbot/MavenIrcReporter.java	(revision 12694)
++++ src/main/java/hudson/plugins/ircbot/MavenIrcReporter.java	(working copy)
+@@ -31,12 +31,14 @@
+      */
+     protected List<String> channels = new ArrayList<String>();
+     
++    private boolean nagMode;
++    
+     /**
+      * @see hudson.maven.MavenReporter#end(hudson.maven.MavenBuild, hudson.Launcher, hudson.model.BuildListener)
+      */
+     @Override
+     public boolean end(MavenBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+-        IrcNotifier.perform(build, channelList());
++        IrcNotifier.perform(build, channelList(), nagMode);
+         return true;
+     }
+     
+@@ -60,6 +62,14 @@
+         return sb.toString().trim();
+     }
+     
++    public boolean getNagMode() {
++    	return nagMode;
++    }
++    
++    public void setNagMode(boolean nagMode) {
++		this.nagMode = nagMode;
++	}
++    
+ 
+     /**
+      * @see hudson.maven.MavenReporter#getDescriptor()
+@@ -98,6 +108,10 @@
+                     }
+                 }
+             }
++            String nagMode = req.getParameter("nagMode");
++            if (nagMode != null) {
++            	result.setNagMode("on".equals(nagMode) || "true".equals(nagMode));
++            }
+             return result;
+         }
+     }
+Index: src/main/java/hudson/plugins/ircbot/IrcPublisher.java
+===================================================================
+--- src/main/java/hudson/plugins/ircbot/IrcPublisher.java	(revision 12694)
++++ src/main/java/hudson/plugins/ircbot/IrcPublisher.java	(working copy)
+@@ -40,6 +40,11 @@
+      * channels defined at the descriptor level.
+      */
+     public List<String> channels = new ArrayList<String>();
++    
++    /**
++     * Set to true if the irc publisher should nag for consecutive non-successful builds
++     */
++    private boolean nagMode;
+ 
+     /**
+      * 
+@@ -53,7 +58,7 @@
+      */
+     public boolean perform(Build<?, ?> build, Launcher launcher,
+             BuildListener listener) throws InterruptedException, IOException {
+-        IrcNotifier.perform(build, channelList());
++        IrcNotifier.perform(build, channelList(), nagMode);
+         return true;
+     }
+ 
+@@ -62,6 +67,14 @@
+                 : channels;
+     }
+ 
++    public void setNagMode(boolean nagMode) {
++		this.nagMode = nagMode;
++	}
++
++    public boolean getNagMode() {
++    	return nagMode;
++    }
++    
+     /**
+      * For the UI redisplay
+      * 
+@@ -242,6 +255,10 @@
+                     }
+                 }
+             }
++            String nagMode = req.getParameter("nagMode");
++            if (nagMode != null) {
++            	result.setNagMode("on".equals(nagMode) || "true".equals(nagMode));
++            }
+             return result;
+         }
+ 
+Index: src/main/resources/hudson/plugins/ircbot/IrcPublisher/config.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/ircbot/IrcPublisher/config.jelly	(revision 12694)
++++ src/main/resources/hudson/plugins/ircbot/IrcPublisher/config.jelly	(working copy)
+@@ -10,4 +10,8 @@
+   	<input class="setting-input" name="channels"
+       type="text" value="${instance.channels}"/>
+   </f:entry>
++  <f:entry title="Nag Mode"
++  	description="Publish results for consecutive non-successful builds">
++    <f:checkbox name="nagMode" checked="${instance.nagMode}"/>
++  </f:entry>
+ </j:jelly>
+\ No newline at end of file

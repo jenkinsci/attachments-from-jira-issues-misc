@@ -1,0 +1,123 @@
+Index: src/main/java/join/JoinTrigger.java
+===================================================================
+--- src/main/java/join/JoinTrigger.java	(revision 28791)
++++ src/main/java/join/JoinTrigger.java	(working copy)
+@@ -107,16 +107,17 @@
+     private DescribableList<Publisher,Descriptor<Publisher>> joinPublishers =
+         new DescribableList<Publisher,Descriptor<Publisher>>((Saveable)null);
+ 
+-    private boolean evenIfDownstreamUnstable;
++    private transient boolean evenIfDownstreamUnstable;
++    private String resultsAtLeast;
+     
+     public JoinTrigger() {
+-        this(new DescribableList<Publisher, Descriptor<Publisher>>((Saveable)null), "", false);
++        this(new DescribableList<Publisher, Descriptor<Publisher>>((Saveable)null), "", "SUCCESS");
+     }
+     
+-    public JoinTrigger(DescribableList<Publisher,Descriptor<Publisher>> publishers,String string, boolean b) {
++    public JoinTrigger(DescribableList<Publisher,Descriptor<Publisher>> publishers,String string, String resultsAtLeast) {
+         this.joinProjects = string;
+-        this.evenIfDownstreamUnstable = b;
+         this.joinPublishers = publishers;
++        this.resultsAtLeast = resultsAtLeast;
+     }
+ 
+     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+@@ -158,7 +159,7 @@
+             LOGGER.finer("Parsed " + publishers.size() + " publishers");
+             return new JoinTrigger(publishers,
+                 formData.getString("joinProjectsValue"),
+-                formData.has("evenIfDownstreamUnstable") && formData.getBoolean("evenIfDownstreamUnstable"));
++                formData.getString("resultsAtLeast"));
+         }
+ 
+         @Override
+@@ -334,8 +335,8 @@
+         return joinPublishers;
+     }
+ 
+-    public boolean getEvenIfDownstreamUnstable() {
+-        return this.evenIfDownstreamUnstable;
++    public String getResultsAtLeast() {
++        return this.resultsAtLeast;
+     }
+     
+     private Object readResolve() {
+Index: src/main/java/join/JoinAction.java
+===================================================================
+--- src/main/java/join/JoinAction.java	(revision 28791)
++++ src/main/java/join/JoinAction.java	(working copy)
+@@ -26,7 +26,8 @@
+     private List<String> completedDownstreamProjects;
+     private transient String joinProjects;
+     private DescribableList<Publisher, Descriptor<Publisher>> joinPublishers;
+-    private boolean evenIfDownstreamUnstable;
++    private transient boolean evenIfDownstreamUnstable;
++    private String resultsAtLeast;
+     private Result overallResult;
+     
+     public JoinAction(JoinTrigger joinTrigger, BuildTrigger buildTrigger, ArrayList<String> otherDownstream) {
+@@ -41,7 +42,7 @@
+         }
+         this.joinProjects = joinTrigger.getJoinProjectsValue();
+         this.joinPublishers = joinTrigger.getJoinPublishers();
+-        this.evenIfDownstreamUnstable = joinTrigger.getEvenIfDownstreamUnstable();
++        this.resultsAtLeast = joinTrigger.getResultsAtLeast();
+         this.completedDownstreamProjects = new LinkedList<String>();
+         this.overallResult = Result.SUCCESS;
+     }
+@@ -73,10 +74,10 @@
+     public void checkPendingDownstream(AbstractBuild<?,?> owner, TaskListener listener) {
+         if(pendingDownstreamProjects.isEmpty()) {
+             listener.getLogger().println("All downstream projects complete!");
+-            Result threshold = this.evenIfDownstreamUnstable ? Result.UNSTABLE : Result.SUCCESS;
+-            if(this.overallResult.isWorseThan(threshold)) {
+-                listener.getLogger().println("Minimum result threshold not met for join project");
+-            } else {
++            Result threshold = Result.fromString(this.resultsAtLeast);
++            boolean doJoinBuild = (this.resultsAtLeast.equals("any")
++                                   || this.overallResult.isBetterOrEqualTo(threshold));
++            if(doJoinBuild) {
+                 for(Publisher pub : this.joinPublishers) {
+                     try {
+                         pub.perform(owner, null, (BuildListener)listener);
+@@ -92,6 +93,8 @@
+                     listener.getLogger().println("Scheduling join project: " + project.getName());
+                     project.scheduleBuild(new JoinCause(owner));
+                 }
++            } else {
++                listener.getLogger().println("Minimum result threshold not met for join project");
+             }
+         } else {
+             listener.getLogger().println("Project " + owner.getProject().getName() + " still waiting for " + pendingDownstreamProjects.size() + " builds to complete");
+Index: src/main/resources/join/JoinTrigger/config.jelly
+===================================================================
+--- src/main/resources/join/JoinTrigger/config.jelly	(revision 28791)
++++ src/main/resources/join/JoinTrigger/config.jelly	(working copy)
+@@ -1,8 +1,12 @@
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+   <j:if test="${descriptor.showEvenIfUnstableOption(targetType)}">
+-    <f:entry title="" help="/plugin/join/help/evenUnstable.html">
+-      <f:checkbox id="buildTrigger.evenIfDownstreamUnstable" name="buildTrigger.evenIfDownstreamUnstable" checked="${instance.evenIfDownstreamUnstable}" />
+-      <label for="buildTrigger.evenIfDownstreamUnstable">${%Trigger even if some downstream projects are unstable}</label>
++    <f:entry title="${%Trigger when all downstream projects report this status or better}"
++             help="/plugin/join/help/evenUnstable.html">
++        <select class="setting-input" name="buildTrigger.resultsAtLeast">
++            <f:option value="SUCCESS" selected="${instance.resultsAtLeast=='SUCCESS'}">SUCCESS</f:option>
++            <f:option value="UNSTABLE" selected="${instance.resultsAtLeast=='UNSTABLE'}">UNSTABLE</f:option>
++            <f:option value="any" selected="${instance.resultsAtLeast=='any'}">any status</f:option>
++        </select>
+     </f:entry>
+   </j:if>
+   <f:entry title="${%Projects to build once, after all downstream projects have finished}"  
+Index: src/main/webapp/help/evenUnstable.html
+===================================================================
+--- src/main/webapp/help/evenUnstable.html	(revision 28791)
++++ src/main/webapp/help/evenUnstable.html	(working copy)
+@@ -1,3 +1,3 @@
+ <div>
+-When checked, the join projects will be started even if some downstream projects finish as 'unstable'
++You can force join projects to start even if some downstream projects finish as 'UNSTABLE' or worse.  Choose 'any status' to always run the join projects.
+ </div>
+\ No newline at end of file

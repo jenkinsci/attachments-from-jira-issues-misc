@@ -1,0 +1,45 @@
+From e88e473738dfe6f9ba77d2c3767736add12de9b8 Mon Sep 17 00:00:00 2001
+From: Adam Monsen <haircut@gmail.com>
+Date: Sat, 22 Oct 2011 22:23:36 -0700
+Subject: [PATCH] [FIXED JENKINS-11443] E-mail address as Jabber ID config setting.
+
+null was being returned by getConfiguredIMId() when
+* user's jabber ID was not set
+* user's email *WAS* set
+* setting "E-mail address as Jabber ID" was enabled
+
+It should have been returning the user's email address.
+
+This patch fixes the configuration setting "E-mail address as Jabber ID"
+when the conditions described above are met. The setting can be found
+at /configure under "Advanced..." for the Jabber Notification plugin.
+
+During testing I didn't receive any messages from the Jenkins Jabber
+robot, but this was probably just a misconfiguration in my local testing
+environment. The bot did reply to me when I directly IM'ed "!status" or
+"!build test" or whatever, it just wouldn't send automatic
+notifications. I was using two different users on jabber.org, one was my
+real ID, another was made just to test this patch. I debugged using
+Netbeans and (other than not receiving any automatic Jabber notification
+IMs from Jenkins) the code appeared to work as expected after adding the
+null check.
+---
+ .../jabber/im/transport/JabberPublisher.java       |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/src/main/java/hudson/plugins/jabber/im/transport/JabberPublisher.java b/src/main/java/hudson/plugins/jabber/im/transport/JabberPublisher.java
+index a0b9fa7..b6bbad2 100644
+--- a/src/main/java/hudson/plugins/jabber/im/transport/JabberPublisher.java
++++ b/src/main/java/hudson/plugins/jabber/im/transport/JabberPublisher.java
+@@ -65,7 +65,7 @@ public class JabberPublisher extends IMPublisher
+ 	protected String getConfiguredIMId(User user) {
+ 	    // if set, user property override all other settings:
+         JabberUserProperty jabberUserProperty = (JabberUserProperty) user.getProperties().get(JabberUserProperty.DESCRIPTOR);
+-        if (jabberUserProperty != null) {
++        if (jabberUserProperty != null && jabberUserProperty.getJid() != null) {
+             return jabberUserProperty.getJid();
+         }
+ 	    
+-- 
+1.7.4.1
+

@@ -1,0 +1,58 @@
+From 709bf3aafe34845733eee2a7904a061a9dd1f526 Mon Sep 17 00:00:00 2001
+From: Matt Ranostay <mranostay@gmail.com>
+Date: Thu, 5 May 2011 15:47:28 -0500
+Subject: [PATCH] Added timestamp sorting in LatestBuilds view
+
+Implements sorting of the timestamp colum by using millisecond sort data
+versus using the default alphanumeric sorting of the formatted string.
+
+This caused the issue of AM and PM times being group together instead
+of being consecutively ordered.
+
+Example with incorrect method:
+    May 4, 2011 06:04:36 AM
+    May 4, 2011 06:10:19 PM
+    May 4, 2011 10:04:43 AM
+
+Example with corrected sort data:
+    May 4, 2011 06:04:36 AM
+    May 4, 2011 10:04:43 AM
+    May 4, 2011 06:10:19 PM
+
+Signed-off-by: Matt Ranostay <mranostay@gmail.com>
+---
+ .../view/dashboard/builds/LatestBuilds.java        |    4 ++++
+ .../builds/LatestBuilds/latestbuilds.jelly         |    2 +-
+ 2 files changed, 5 insertions(+), 1 deletions(-)
+
+diff --git a/src/main/java/hudson/plugins/view/dashboard/builds/LatestBuilds.java b/src/main/java/hudson/plugins/view/dashboard/builds/LatestBuilds.java
+index 9abc75b..76a693c 100644
+--- a/src/main/java/hudson/plugins/view/dashboard/builds/LatestBuilds.java
++++ b/src/main/java/hudson/plugins/view/dashboard/builds/LatestBuilds.java
+@@ -33,6 +33,10 @@ public class LatestBuilds extends DashboardPortlet{
+     return numBuilds <= 0 ? 10 : numBuilds;
+   }
+ 
++  public String getTimestampSortData(Run run) {
++    return String.valueOf(run.getTimeInMillis());
++  } 
++
+   public String getTimestampString(Run run) {
+     return DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM).format(new Date(run.getTimeInMillis()));
+   }
+diff --git a/src/main/resources/hudson/plugins/view/dashboard/builds/LatestBuilds/latestbuilds.jelly b/src/main/resources/hudson/plugins/view/dashboard/builds/LatestBuilds/latestbuilds.jelly
+index 403f1c0..193522b 100644
+--- a/src/main/resources/hudson/plugins/view/dashboard/builds/LatestBuilds/latestbuilds.jelly
++++ b/src/main/resources/hudson/plugins/view/dashboard/builds/LatestBuilds/latestbuilds.jelly
+@@ -50,7 +50,7 @@ THE SOFTWARE.
+                   title="${build.iconColor.description}" />${build.displayName}
+               </a>
+             </td>
+-						<td>${it.getTimestampString(build)}</td>
++						<td data="${it.getTimestampSortData(build)}">${it.getTimestampString(build)}</td>
+ 					</tr>
+ 				</j:forEach>
+ 			</table>
+-- 
+1.7.0.4
+

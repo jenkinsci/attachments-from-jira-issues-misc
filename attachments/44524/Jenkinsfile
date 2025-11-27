@@ -1,0 +1,40 @@
+import hudson.model.Node
+import hudson.model.Slave
+import jenkins.model.Jenkins
+import hudson.FilePath;
+
+pipeline {
+	triggers {
+		cron('H 1 * * *')
+	}
+	agent {
+		node {
+		    label 'master'
+		}
+	}
+	stages {
+	   stage ('Wipe Out Slave Workspaces') {
+	       steps {
+        	   script {
+					Jenkins jenkins = Jenkins.instance
+					def jenkinsNodes = jenkins.nodes
+
+					for (Node node in jenkinsNodes) 
+					{
+						if (!node.getComputer().isOffline()) 
+						{           
+							if(node.getComputer().countBusy()==0)
+							{
+								FilePath fp = node.getRootPath().child("workspace");
+								println("Processing: " + node.getDisplayName())
+								println ("Wiping out: " + fp)
+								println("------------------")
+								fp.deleteRecursive(); 
+							}
+						}
+					}            		
+				}
+	       }
+	   }
+	}
+}

@@ -1,0 +1,84 @@
+pipeline {
+    agent {
+        label 'Docker'
+    }
+    options {
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '1'))
+        timestamps()
+    }
+    stages {
+        stage('Non-Parallel Stage') {
+            steps {
+                echo 'This stage will be executed first.'
+            }
+        }
+        stage('Parallel Stage') {
+            failFast true
+            parallel {
+                stage('Branch A') {
+                    agent {
+                        label "Docker"
+                    }
+                    steps {
+                        echo "On Branch A"
+                        sh "/usr/bin/stress --cpu 4 --io 4 --vm 2 --vm-bytes 128M --timeout 300s"
+                    }
+                }
+                stage('Branch B') {
+                    agent {
+                        label "Docker"
+                    }
+                    steps {
+                        echo "On Branch B"
+                        sh "/usr/bin/stress --cpu 4 --io 4 --vm 2 --vm-bytes 128M --timeout 300s"
+                    }
+                }
+                stage('Branch C') {
+                    agent {
+                        label "Docker"
+                    }
+                    stages {
+                        stage('Nested 1') {
+                            steps {
+                                echo "In stage Nested 1 within Branch C"
+                                sh "/usr/bin/stress --cpu 4 --io 4 --vm 2 --vm-bytes 128M --timeout 300s"
+                            }
+                        }
+                        stage('Nested 2') {
+                            steps {
+                                echo "In stage Nested 2 within Branch C"
+                                sh "/usr/bin/stress --cpu 4 --io 4 --vm 2 --vm-bytes 128M --timeout 300s"
+                            }
+                        }
+                    }
+                }
+                stage('Branch D') {
+                    agent {
+                        label "Docker"
+                    }
+                    stages {
+                        stage('Nested 1') {
+                            steps {
+                                echo "In stage Nested 1 within Branch D"
+                                sh "/usr/bin/stress --cpu 4 --io 4 --vm 2 --vm-bytes 128M --timeout 300s"
+                            }
+                        }
+                        stage('Nested 2') {
+                            steps {
+                                echo "In stage Nested 2 within Branch D"
+                                sh "/usr/bin/stress --cpu 4 --io 4 --vm 2 --vm-bytes 128M --timeout 300s"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    post {
+        cleanup {
+            echo 'One way or another, I have finished'
+            deleteDir() /* cleanup our workspace */
+        }
+    }
+}

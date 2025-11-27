@@ -1,0 +1,28 @@
+### Eclipse Workspace Patch 1.0
+#P hudson-trunk
+Index: hudson/main/maven-plugin/src/main/java/hudson/maven/PomInfo.java
+===================================================================
+--- hudson/main/maven-plugin/src/main/java/hudson/maven/PomInfo.java	(revision 28946)
++++ hudson/main/maven-plugin/src/main/java/hudson/maven/PomInfo.java	(working copy)
+@@ -74,6 +74,13 @@
+     public final String version;
+ 
+     /**
++     * Packaging type taken from POM.
++     *
++     * @see MavenProject#getPackaging()
++     */
++    public final String packaging;
++
++    /**
+      * Dependency of this project.
+      *
+      * See Maven's ProjectSorter class for the definition of the 'dependencies' in Maven.
+@@ -99,6 +106,7 @@
+ 
+     public PomInfo(MavenProject project, PomInfo parent, String relPath) {
+         this.name = new ModuleName(project);
++        this.packaging = project.getPackaging();
+         this.version = project.getVersion();
+         this.displayName = project.getName();
+         this.defaultGoal = project.getDefaultGoal();

@@ -1,0 +1,173 @@
+From 52a47c517291694e4e7d467c91fd14092c2c2860 Mon Sep 17 00:00:00 2001
+From: "Paul \"TBBle\" Hampson" <p_hampson@wargaming.net>
+Date: Mon, 13 Jul 2015 23:09:37 +1000
+Subject: [PATCH] Untested implementation of SimpleBuildStep for the Notifiers
+
+---
+ .../jenkinsci/plugins/p4/asset/AssetNotifier.java  | 38 +++++++++++--------
+ .../jenkinsci/plugins/p4/tagging/TagNotifier.java  | 43 ++++++++++++----------
+ 2 files changed, 45 insertions(+), 36 deletions(-)
+
+diff --git a/src/main/java/org/jenkinsci/plugins/p4/asset/AssetNotifier.java b/src/main/java/org/jenkinsci/plugins/p4/asset/AssetNotifier.java
+index aece002..8e094c6 100644
+--- a/src/main/java/org/jenkinsci/plugins/p4/asset/AssetNotifier.java
++++ b/src/main/java/org/jenkinsci/plugins/p4/asset/AssetNotifier.java
+@@ -20,6 +20,7 @@ import java.util.List;
+ import java.util.logging.Logger;
+ 
+ import jenkins.model.Jenkins;
++import jenkins.tasks.SimpleBuildStep;
+ 
+ import org.acegisecurity.Authentication;
+ import org.jenkinsci.plugins.p4.credentials.P4StandardCredentials;
+@@ -31,7 +32,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
+ import com.cloudbees.plugins.credentials.CredentialsProvider;
+ import com.cloudbees.plugins.credentials.domains.DomainRequirement;
+ 
+-public class AssetNotifier extends Notifier {
++public class AssetNotifier extends Notifier implements SimpleBuildStep {
+ 
+ 	private static Logger logger = Logger.getLogger(AssetNotifier.class
+ 			.getName());
+@@ -64,25 +65,27 @@ public class AssetNotifier extends Notifier {
+ 	}
+ 
+ 	@Override
+-	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
+-			BuildListener listener) throws InterruptedException, IOException {
++	public void perform(@Nonnull Run<?, ?> build, @Nonnull FilePath buildWorkspace,
++			@Nonnull Launcher launcher, @Nonnull TaskListener listener)
++			throws InterruptedException, IOException {
+ 
+ 		// return early if publish not required
+ 		if (publish.isOnlyOnSuccess() && build.getResult() != Result.SUCCESS) {
+-			return true;
++			return;
+ 		}
+ 
+ 		Workspace ws = (Workspace) workspace.clone();
+-		try {
+-			EnvVars envVars = build.getEnvironment(listener);
+-			ws.setExpand(envVars);
+-			ws.setRootPath(build.getWorkspace().getRemote());
+-			String desc = publish.getDescription();
+-			desc = ws.getExpand().format(desc, false);
+-			publish.setExpandedDesc(desc);
+-		} catch (IOException e) {
+-			e.printStackTrace();
++		EnvVars envVars;
++		if (build instanceof AbstractBuild) {
++			envVars = build.getEnvironment(listener);
++		} else {
++			envVars = new EnvVars();
+ 		}
++		ws.setExpand(envVars);
++		ws.setRootPath(buildWorkspace.getRemote());
++		String desc = publish.getDescription();
++		desc = ws.getExpand().format(desc, false);
++		publish.setExpandedDesc(desc);
+ 
+ 		// Create task
+ 		PublishTask task = new PublishTask(publish);
+@@ -90,9 +93,12 @@ public class AssetNotifier extends Notifier {
+ 		task.setCredential(credential);
+ 		task.setWorkspace(ws);
+ 
+-		FilePath buildWorkspace = build.getWorkspace();
+-		boolean success = buildWorkspace.act(task);
+-		return success;
++		if (!buildWorkspace.act(task))
++		{
++			// TODO: The PublisTask should throw this directly, with a better
++			// error message, from all its error paths.
++			throw new AbortException("Could not connect to Perforce");
++		}
+ 	}
+ 
+ 	public static DescriptorImpl descriptor() {
+diff --git a/src/main/java/org/jenkinsci/plugins/p4/tagging/TagNotifier.java b/src/main/java/org/jenkinsci/plugins/p4/tagging/TagNotifier.java
+index b7e0353..99494dd 100644
+--- a/src/main/java/org/jenkinsci/plugins/p4/tagging/TagNotifier.java
++++ b/src/main/java/org/jenkinsci/plugins/p4/tagging/TagNotifier.java
+@@ -16,11 +16,12 @@ import hudson.tasks.Publisher;
+ import java.util.logging.Logger;
+ 
+ import jenkins.model.Jenkins;
++import jenkins.tasks.SimpleBuildStep;
+ 
+ import org.jenkinsci.plugins.p4.workspace.Expand;
+ import org.kohsuke.stapler.DataBoundConstructor;
+ 
+-public class TagNotifier extends Notifier {
++public class TagNotifier extends Notifier implements SimpleBuildStep {
+ 
+ 	protected static final Logger LOGGER = Logger.getLogger(TagNotifier.class
+ 			.getName());
+@@ -44,35 +45,37 @@ public class TagNotifier extends Notifier {
+ 	}
+ 
+ 	@Override
+-	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
+-			BuildListener listener) throws InterruptedException {
++	public void perform(@Nonnull Run<?, ?> build, @Nonnull FilePath workspace,
++			@Nonnull Launcher launcher, @Nonnull BuildListener listener)
++			throws InterruptedException {
+ 
+ 		// Enable logging
+ 		this.listener = listener;
+ 
+ 		// return early if label not required
+ 		if (onlyOnSuccess && build.getResult() != Result.SUCCESS) {
+-			return true;
++			return;
+ 		}
+-		try {
+-			// Expand label name and description
+-			EnvVars env = build.getEnvironment(listener);
+-			Expand expand = new Expand(env);
+-			String name = expand.format(rawLabelName, false);
+-			String description = expand.format(rawLabelDesc, false);
+ 
+-			// Get TagAction and check for promoted builds
+-			TagAction tagAction = getTagAction(env, build);
+-
+-			// Label with TagAction
+-			tagAction.labelBuild(listener, name, description);
+-		} catch (Exception e) {
+-			e.printStackTrace();
++		// Expand label name and description
++		EnvVars env;
++		if (build instanceof AbstractBuild) {
++			env = build.getEnvironment(listener);
++		} else {
++			env = new EnvVars();
+ 		}
+-		return true;
++		Expand expand = new Expand(env);
++		String name = expand.format(rawLabelName, false);
++		String description = expand.format(rawLabelDesc, false);
++
++		// Get TagAction and check for promoted builds
++		TagAction tagAction = getTagAction(env, build);
++
++		// Label with TagAction
++		tagAction.labelBuild(listener, name, description);
+ 	}
+ 
+-	private TagAction getTagAction(EnvVars env, AbstractBuild<?, ?> build) {
++	private TagAction getTagAction(EnvVars env, Run<?, ?> build) {
+ 		TagAction tagAction = (TagAction) build.getAction(TagAction.class);
+ 
+ 		// process promoted builds?
+@@ -94,7 +97,7 @@ public class TagNotifier extends Notifier {
+ 			project = j.getItemByFullName(jobName, AbstractProject.class);
+ 
+ 			int buildNum = Integer.parseInt(buildNumber);
+-			build = (AbstractBuild<?, ?>) project.getBuildByNumber(buildNum);
++			build = (Run<?, ?>) project.getBuildByNumber(buildNum);
+ 			tagAction = (TagAction) build.getAction(TagAction.class);
+ 
+ 			if (tagAction == null) {
+-- 
+1.8.3.1
+

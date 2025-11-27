@@ -1,0 +1,63 @@
+Started by an SCM change
+[EnvInject] - Loading node environment variables.
+[EnvInject] - Preparing an environment for the build.
+[EnvInject] - Keeping Jenkins system variables.
+[EnvInject] - Keeping Jenkins build variables.
+[EnvInject] - Injecting contributions.
+Building remotely on 4a4b33e056ab@docker01 (jenkins-slave) in workspace /home/jenkins/workspace/openhab-sync-repos
+Cloning the remote Git repository
+Cloning repository ssh://git@github.com:22/openhab/openhab.git
+ > git init /home/jenkins/workspace/openhab-sync-repos # timeout=10
+Fetching upstream changes from ssh://git@github.com:22/openhab/openhab.git
+ > git --version # timeout=10
+using GIT_SSH to set credentials Jenkins Key (used to access git.dihei.ch and github/spali)
+ > git fetch --tags --progress ssh://git@github.com:22/openhab/openhab.git +refs/heads/*:refs/remotes/origin/* # timeout=30
+ > git config remote.origin.url ssh://git@github.com:22/openhab/openhab.git # timeout=10
+ > git config remote.origin.fetch +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git config remote.origin.url ssh://git@github.com:22/openhab/openhab.git # timeout=10
+Fetching upstream changes from ssh://git@github.com:22/openhab/openhab.git
+using GIT_SSH to set credentials Jenkins Key (used to access git.dihei.ch and github/spali)
+ > git fetch --tags --progress ssh://git@github.com:22/openhab/openhab.git +refs/heads/*:refs/remotes/origin/* # timeout=30
+ > git config remote.target.url ssh://git@git.dihei.ch:10022/spali/openhab # timeout=10
+Fetching upstream changes from ssh://git@git.dihei.ch:10022/spali/openhab
+using GIT_SSH to set credentials Jenkins Key (used to access git.dihei.ch and github/spali)
+ > git fetch --tags --progress ssh://git@git.dihei.ch:10022/spali/openhab +refs/heads/*:refs/remotes/target/* # timeout=30
+ > git config remote.target2.url ssh://git@github.com:22/spali/openhab.git # timeout=10
+Fetching upstream changes from ssh://git@github.com:22/spali/openhab.git
+using GIT_SSH to set credentials Jenkins Key (used to access git.dihei.ch and github/spali)
+ > git fetch --tags --progress ssh://git@github.com:22/spali/openhab.git +refs/heads/*:refs/remotes/target2/* # timeout=30
+Seen branch in repository origin/1.5.1
+Seen branch in repository origin/master
+Seen branch in repository target/1.5.1
+Seen branch in repository target/DateTimeTypeTest
+Seen branch in repository target/master
+Seen branch in repository target2/1.5.1
+Seen branch in repository target2/DateTimeTypeTest
+Seen branch in repository target2/master
+Seen 8 remote branches
+Checking out Revision a00d54b5c6a1625ccf791aa0ad4b995dae1dbfb7 (target2/master, origin/master, target/master)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f a00d54b5c6a1625ccf791aa0ad4b995dae1dbfb7
+ > git rev-list a00d54b5c6a1625ccf791aa0ad4b995dae1dbfb7 # timeout=10
+ > git rev-list a00d54b5c6a1625ccf791aa0ad4b995dae1dbfb7 # timeout=10
+ > git rev-list a00d54b5c6a1625ccf791aa0ad4b995dae1dbfb7 # timeout=10
+[EnvInject] - Executing scripts and injecting environment variables after the SCM step.
+[EnvInject] - Executing and processing the following script content: 
+echo GIT_BRANCH_NAME=$(echo ${GIT_BRANCH#*/}) >>environments.properties
+
+[openhab-sync-repos] $ /bin/sh -xe /tmp/hudson8008622025056246661.sh
++ echo master
++ echo GIT_BRANCH_NAME=master
+[EnvInject] - Script executed successfully.
+[EnvInject] - Injecting environment variables from a build step.
+[EnvInject] - Injecting as environment variables the properties file path 'environments.properties'
+[EnvInject] - Variables injected successfully.
+Pushing HEAD to branch master at repo target
+ > git config --get remote.target.url # timeout=10
+using GIT_SSH to set credentials Jenkins Key (used to access git.dihei.ch and github/spali)
+ > git push ssh://git@git.dihei.ch:10022/spali/openhab HEAD:master
+Pushing HEAD to branch master at repo target2
+ > git config --get remote.target2.url # timeout=10
+using GIT_SSH to set credentials Jenkins Key (used to access git.dihei.ch and github/spali)
+ > git push ssh://git@github.com:22/spali/openhab.git HEAD:master
+Finished: SUCCESS

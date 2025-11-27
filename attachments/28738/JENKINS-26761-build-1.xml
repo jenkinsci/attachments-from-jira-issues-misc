@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<flow-build plugin="workflow-job@1.2">
+  <actions>
+    <hudson.model.CauseAction>
+      <causes>
+        <hudson.model.Cause_-UserIdCause>
+          <userId>kbaltrinic</userId>
+        </hudson.model.Cause_-UserIdCause>
+      </causes>
+    </hudson.model.CauseAction>
+    <hudson.plugins.git.util.BuildData plugin="git@2.3.4">
+      <buildsByBranchName>
+        <entry>
+          <string>refs/remotes/origin/master</string>
+          <hudson.plugins.git.util.Build>
+            <marked plugin="git-client@1.15.0">
+              <sha1>fbdd09808bf0edca9053a805ac4eff0483915b8d</sha1>
+              <branches class="list">
+                <hudson.plugins.git.Branch>
+                  <sha1 reference="../../../sha1"/>
+                  <name>refs/remotes/origin/master</name>
+                </hudson.plugins.git.Branch>
+              </branches>
+            </marked>
+            <revision reference="../marked"/>
+            <hudsonBuildNumber>1</hudsonBuildNumber>
+          </hudson.plugins.git.util.Build>
+        </entry>
+      </buildsByBranchName>
+      <lastBuild reference="../buildsByBranchName/entry/hudson.plugins.git.util.Build"/>
+      <remoteUrls>
+        <string>ssh://git@stash:7999/CHEF/couchbase-alpha-cluster-1.git</string>
+      </remoteUrls>
+    </hudson.plugins.git.util.BuildData>
+    <hudson.plugins.git.GitTagAction plugin="git@2.3.4">
+      <tags class="hudson.util.CopyOnWriteMap$Tree">
+        <entry>
+          <string>refs/remotes/origin/master</string>
+          <list/>
+        </entry>
+      </tags>
+      <ws>/home/jenkins/workspace/couchbase-alpha-cluster-1</ws>
+    </hudson.plugins.git.GitTagAction>
+    <org.jenkinsci.plugins.workflow.steps.scm.MultiSCMRevisionState plugin="workflow-scm-step@1.2">
+      <revisionStates>
+        <entry>
+          <string>git ssh://git@stash:7999/CHEF/couchbase-alpha-cluster-1.git</string>
+          <hudson.scm.SCMRevisionState_-None/>
+        </entry>
+      </revisionStates>
+    </org.jenkinsci.plugins.workflow.steps.scm.MultiSCMRevisionState>
+    <org.jenkinsci.plugins.workflow.cps.EnvActionImpl plugin="workflow-cps@1.2">
+      <env class="tree-map"/>
+    </org.jenkinsci.plugins.workflow.cps.EnvActionImpl>
+  </actions>
+  <timestamp>1424374030135</timestamp>
+  <startTime>1424374030137</startTime>
+  <result>FAILURE</result>
+  <duration>10040</duration>
+  <keepLog>false</keepLog>
+  <execution class="org.jenkinsci.plugins.workflow.cps.CpsFlowExecution">
+    <result>FAILURE</result>
+    <script>new chef.Job().start(&apos;vagrant&apos;, &apos;CHEF&apos;, &apos;couchbase-alpha-cluster-1&apos;)</script>
+    <loadedScripts class="map">
+      <entry>
+        <string>Script1</string>
+        <string>cookbook = new chef.Cookbook()
+if(cookbook.validate()) {
+    //Don&apos;t publish cookbook if its not valid, try and you will fail.
+    cookbook.publish()
+}
+cookbook.emailResults(to: &apos;BRyan@cvent.com&apos;)
+cookbook.done()  //Call this or jenkins will not know if the job passed or failed.</string>
+      </entry>
+    </loadedScripts>
+    <owner class="flow-owner">
+      <job>couchbase-alpha-cluster-1</job>
+      <id>1</id>
+    </owner>
+    <iota>19</iota>
+    <head>1:19</head>
+  </execution>
+  <checkouts class="linked-list">
+    <org.jenkinsci.plugins.workflow.job.WorkflowRun_-SCMCheckout>
+      <scm class="hudson.plugins.git.GitSCM" plugin="git@2.3.4">
+        <configVersion>2</configVersion>
+        <userRemoteConfigs>
+          <hudson.plugins.git.UserRemoteConfig>
+            <url>ssh://git@stash:7999/CHEF/couchbase-alpha-cluster-1.git</url>
+            <credentialsId>e01b632a-4bb4-446b-9d93-793565f2293f</credentialsId>
+          </hudson.plugins.git.UserRemoteConfig>
+        </userRemoteConfigs>
+        <branches>
+          <hudson.plugins.git.BranchSpec>
+            <name>*/master</name>
+          </hudson.plugins.git.BranchSpec>
+        </branches>
+        <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+        <submoduleCfg class="list"/>
+        <extensions/>
+      </scm>
+      <node>chef-runner-01</node>
+      <workspace>/home/jenkins/workspace/couchbase-alpha-cluster-1</workspace>
+      <changelogFile>/var/lib/jenkins/jobs/couchbase-alpha-cluster-1/builds/1/changelog0.xml</changelogFile>
+      <pollingBaseline class="hudson.scm.SCMRevisionState$None" reference="../../../actions/org.jenkinsci.plugins.workflow.steps.scm.MultiSCMRevisionState/revisionStates/entry/hudson.scm.SCMRevisionState_-None"/>
+    </org.jenkinsci.plugins.workflow.job.WorkflowRun_-SCMCheckout>
+  </checkouts>
+</flow-build>

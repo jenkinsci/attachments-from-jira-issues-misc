@@ -1,0 +1,79 @@
+Started by user Paul Woolley
+Replayed #36
+Running in Durability level: MAX_SURVIVABILITY
+[Pipeline] Start of Pipeline
+[Pipeline] podTemplate
+[Pipeline] {
+[Pipeline] node
+Agent <<removed>> is provisioned from template Kubernetes Pod Template
+---
+apiVersion: "v1"
+kind: "Pod"
+metadata:
+  annotations:
+    buildUrl: <<removed>>
+  labels:
+    cloudbees.com/master: <<removed>>
+    jenkins: "slave"
+    jenkins/label: <<removed>>
+  name: <<removed>>
+spec:
+  containers:
+  - command:
+    - "cat"
+    image: "busybox"
+    name: "busybox"
+    tty: true
+    volumeMounts:
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+  - env:
+    - name: "JENKINS_SECRET"
+      value: <<removed>>
+    - name: "JENKINS_AGENT_NAME"
+      value: <<removed>>
+    - name: "JENKINS_NAME"
+      value: <<removed>>
+    - name: "JENKINS_AGENT_WORKDIR"
+      value: "/home/jenkins/agent"
+    - name: "JENKINS_URL"
+      value: <<removed>>
+    image: "063356183961.dkr.ecr.us-east-1.amazonaws.com/ubi/unified-distribution/agent:2.204.3.2"
+    name: "jnlp"
+    volumeMounts:
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+  nodeSelector:
+    beta.kubernetes.io/os: "linux"
+  restartPolicy: "Never"
+  securityContext: {}
+  volumes:
+  - emptyDir:
+      medium: ""
+    name: "workspace-volume"
+
+Running on <<removed>> in <<removed>>
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Do stuff)
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] container
+[Pipeline] {
+[Pipeline] sh
++ echo 'FOO=$$BAH'
+FOO=$$BAH
+[Pipeline] }
+[Pipeline] // container
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // podTemplate
+[Pipeline] End of Pipeline
+Finished: SUCCESS

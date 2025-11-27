@@ -1,0 +1,60 @@
+
+pipeline
+{
+    agent
+    {
+        node
+        {
+            label 'XXX'
+        }
+    }
+    
+    stages
+    {
+        stage('CleanWorkspace')
+        {
+            steps
+            {
+                cleanWs()
+            }
+        }
+        stage('Checkout')
+        {
+            steps
+            { 
+    			// Checkout
+            }
+        }
+        stage('Analysis')
+        {
+            steps
+            {
+			// Analyze code
+            }
+        }
+        stage('Build')
+        {
+            steps
+            { 
+			// Build code
+            }
+        }
+    }
+    
+    post
+    {
+        success
+        {
+            script
+            {                
+                archiveArtifacts artifacts: "XXXX", fingerprint: true
+            }
+            
+            // CIFS Publisher invoke
+        }
+        cleanup
+        {
+            step([$class: 'Mailer', notifyEveryUnstableBuild: true, recipients: 'XXX@XXX.com', sendToIndividuals: false])
+        }
+    }
+}

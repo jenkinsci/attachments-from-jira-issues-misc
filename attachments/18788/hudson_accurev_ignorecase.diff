@@ -1,0 +1,22 @@
+Index: src/main/java/hudson/plugins/accurev/AccurevSCM.java
+===================================================================
+--- src/main/java/hudson/plugins/accurev/AccurevSCM.java	(revision 21298)
++++ src/main/java/hudson/plugins/accurev/AccurevSCM.java	(working copy)
+@@ -345,7 +345,7 @@
+                 cmd.add("-b");
+                 cmd.add(this.stream);
+             }
+-            if (!accurevWorkspace.getHost().equals(remoteDetails.getHostName())) {
++            if (!accurevWorkspace.getHost().equalsIgnoreCase(remoteDetails.getHostName())) {
+                 listener.getLogger().println("Host needs to be updated.");
+                 needsRelocation = true;
+                 cmd.add("-m");
+@@ -354,7 +354,7 @@
+             final String oldStorage = accurevWorkspace.getStorage()
+                     .replace("/", remoteDetails.getFileSeparator())
+                     .replace("\\", remoteDetails.getFileSeparator());
+-            if (!oldStorage.equals(remoteDetails.getPath())) {
++            if (!new File(oldStorage).equals(new File(remoteDetails.getPath()))) {
+                 listener.getLogger().println("Storage needs to be updated.");
+                 needsRelocation = true;
+                 cmd.add("-l");

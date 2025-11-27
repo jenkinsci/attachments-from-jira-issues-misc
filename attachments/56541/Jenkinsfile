@@ -1,0 +1,11 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Execute') {
+            steps {
+                httpRequest(authentication: 'myCreds', contentType: 'TEXT_PLAIN', httpMode: 'GET', url: 'https://some.http.endpoint')
+            }
+        }
+    }
+}

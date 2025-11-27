@@ -1,0 +1,101 @@
+Started by user anonymous
+Building remotely on local-slave (slave) in workspace /Users/arnaud/Temp/jenkins-agent/workspace/freestyle
+Cloning the remote Git repository
+Cloning repository https://github.com/MavenDevoxxFR2015/demos.git
+ > git init /Users/arnaud/Temp/jenkins-agent/workspace/freestyle # timeout=10
+Fetching upstream changes from https://github.com/MavenDevoxxFR2015/demos.git
+ > git --version # timeout=10
+ > git fetch --tags --progress https://github.com/MavenDevoxxFR2015/demos.git +refs/heads/*:refs/remotes/origin/*
+ > git config remote.origin.url https://github.com/MavenDevoxxFR2015/demos.git # timeout=10
+ > git config remote.origin.fetch +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git config remote.origin.url https://github.com/MavenDevoxxFR2015/demos.git # timeout=10
+Fetching upstream changes from https://github.com/MavenDevoxxFR2015/demos.git
+ > git fetch --tags --progress https://github.com/MavenDevoxxFR2015/demos.git +refs/heads/*:refs/remotes/origin/*
+ > git rev-parse refs/remotes/origin/master^{commit} # timeout=10
+ > git rev-parse refs/remotes/origin/origin/master^{commit} # timeout=10
+Checking out Revision 8346cfc8a9a0069aa48b5720c01dc8be45c6eeaa (refs/remotes/origin/master)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 8346cfc8a9a0069aa48b5720c01dc8be45c6eeaa
+ > git rev-list 8346cfc8a9a0069aa48b5720c01dc8be45c6eeaa # timeout=10
+Unpacking http://www.eu.apache.org/dist/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz to /Users/arnaud/Temp/jenkins-agent/tools/hudson.tasks.Maven_MavenInstallation/maven-3.3 on local-slave
+[freestyle] $ /Users/arnaud/Temp/jenkins-agent/tools/hudson.tasks.Maven_MavenInstallation/maven-3.3/apache-maven-3.3.3/bin/mvn -f toolchains/pom-toolchain.xml -t /Users/arnaud/.m2/toolchains-test.xml -V clean package exec:exec javadoc:javadoc
+Apache Maven 3.3.3 (7994120775791599e205a5524ec3e0dfe41d4a06; 2015-04-22T13:57:37+02:00)
+Maven home: /Users/arnaud/Temp/jenkins-agent/tools/hudson.tasks.Maven_MavenInstallation/maven-3.3/apache-maven-3.3.3
+Java version: 1.7.0_75, vendor: Oracle Corporation
+Java home: /Library/Java/JavaVirtualMachines/jdk1.7.0_75.jdk/Contents/Home/jre
+Default locale: en_US, platform encoding: UTF-8
+OS name: "mac os x", version: "10.10.4", arch: "x86_64", family: "mac"
+[INFO] Scanning for projects...
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building Toolchains Demo 0.0.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ toolchain ---
+[INFO] 
+[INFO] --- maven-toolchains-plugin:1.1:toolchain (default) @ toolchain ---
+[INFO] Required toolchain: jdk [ version='1.6' ]
+[INFO] Found matching toolchain for type jdk: JDK[/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home]
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ toolchain ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/arnaud/Temp/jenkins-agent/workspace/freestyle/toolchains/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ toolchain ---
+[INFO] Toolchain in compiler-plugin: JDK[/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home]
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 1 source file to /Users/arnaud/Temp/jenkins-agent/workspace/freestyle/toolchains/target/classes
+[INFO] 
+[INFO] --- animal-sniffer-maven-plugin:1.14:check (check-java-compat) @ toolchain ---
+[INFO] Checking unresolved references to org.codehaus.mojo.signature:java15:1.0
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ toolchain ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/arnaud/Temp/jenkins-agent/workspace/freestyle/toolchains/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ toolchain ---
+[INFO] Toolchain in compiler-plugin: JDK[/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home]
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 1 source file to /Users/arnaud/Temp/jenkins-agent/workspace/freestyle/toolchains/target/test-classes
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.12.4:test (default-test) @ toolchain ---
+[INFO] Toolchain in surefire-plugin: JDK[/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home]
+[INFO] Surefire report directory: /Users/arnaud/Temp/jenkins-agent/workspace/freestyle/toolchains/target/surefire-reports
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running toolchains.MainTest
+[96mtoolchains.Main running on [1mJVM 1.6[0m
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.045 sec
+
+Results :
+
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] 
+[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ toolchain ---
+[INFO] Building jar: /Users/arnaud/Temp/jenkins-agent/workspace/freestyle/toolchains/target/toolchain-0.0.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- exec-maven-plugin:1.4.0:exec (default-cli) @ toolchain ---
+[INFO] Toolchain in exec-maven-plugin: JDK[/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home]
+[96mtoolchains.Main running on [1mJVM 1.6[0m
+[INFO] 
+[INFO] >>> maven-javadoc-plugin:2.10.1:javadoc (default-cli) > generate-sources @ toolchain >>>
+[INFO] 
+[INFO] --- maven-toolchains-plugin:1.1:toolchain (default) @ toolchain ---
+[INFO] Required toolchain: jdk [ version='1.6' ]
+[INFO] Found matching toolchain for type jdk: JDK[/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home]
+[INFO] 
+[INFO] <<< maven-javadoc-plugin:2.10.1:javadoc (default-cli) < generate-sources @ toolchain <<<
+[INFO] 
+[INFO] --- maven-javadoc-plugin:2.10.1:javadoc (default-cli) @ toolchain ---
+[INFO] Toolchain in javadoc-plugin: JDK[/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 10.905 s
+[INFO] Finished at: 2015-07-03T23:56:14+02:00
+[INFO] Final Memory: 24M/364M
+[INFO] ------------------------------------------------------------------------
+Finished: SUCCESS

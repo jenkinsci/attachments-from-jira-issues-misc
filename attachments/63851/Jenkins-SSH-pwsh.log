@@ -1,0 +1,55 @@
+Warning: no key algorithms provided; JENKINS-42959 disabled
+SSHLauncher{host='build10d-whs-04.dev.webmd.com', port=22, credentialsId='s.jenkins', jvmOptions='', javaPath='', prefixStartSlaveCmd='', suffixStartSlaveCmd='', launchTimeoutSeconds=60, maxNumRetries=10, retryWaitTime=15, sshHostKeyVerificationStrategy=hudson.plugins.sshslaves.verifiers.KnownHostsFileKeyVerificationStrategy, tcpNoDelay=true, trackCredentials=true}
+[01/24/25 13:55:08] [SSH] Opening SSH connection to build10d-whs-04.dev.webmd.com:22.
+Searching for build10d-whs-04.dev.webmd.com in C:\Users\whsbuilduser\.ssh\known_hosts
+Searching for build10d-whs-04.dev.webmd.com:22 in C:\Users\whsbuilduser\.ssh\known_hosts
+[01/24/25 13:55:08] [SSH] SSH host key matches key in Known Hosts file. Connection will be allowed.
+[01/24/25 13:55:08] [SSH] Authentication successful.
+[01/24/25 13:55:08] [SSH] The remote user's environment is:
+[31;1mSet-Variable: [31;1mCannot process command because of one or more missing mandatory parameters: Name.[0m
+Checking Java version in the PATH
+openjdk version "21.0.6" 2025-01-21 LTS
+OpenJDK Runtime Environment Microsoft-10800203 (build 21.0.6+7-LTS)
+OpenJDK 64-Bit Server VM Microsoft-10800203 (build 21.0.6+7-LTS, mixed mode, sharing)
+[01/24/25 13:55:10] [SSH] Checking java version of D:\J/jdk/bin/java
+Couldn't figure out the Java version of D:\J/jdk/bin/java
+[31;1mD:\J/jdk/bin/java: [31;1mThe term 'D:\J/jdk/bin/java' is not recognized as a name of a cmdlet, function, script file, or executable program.[0m
+[31;1m[31;1mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.[0m
+
+[01/24/25 13:55:10] [SSH] Checking java version of java
+[01/24/25 13:55:11] [SSH] java -version returned 21.0.6.
+[01/24/25 13:55:11] [SSH] Starting sftp client.
+ERROR: [01/24/25 13:55:11] [SSH] SFTP failed. Copying via SCP.
+java.io.IOException: The subsystem request failed.
+	at PluginClassLoader for trilead-api//com.trilead.ssh2.channel.ChannelManager.requestSubSystem(ChannelManager.java:741)
+	at PluginClassLoader for trilead-api//com.trilead.ssh2.Session.startSubSystem(Session.java:362)
+	at PluginClassLoader for trilead-api//com.trilead.ssh2.SFTPv3Client.<init>(SFTPv3Client.java:100)
+	at PluginClassLoader for trilead-api//com.trilead.ssh2.SFTPv3Client.<init>(SFTPv3Client.java:119)
+	at PluginClassLoader for trilead-api//com.trilead.ssh2.jenkins.SFTPClient.<init>(SFTPClient.java:43)
+	at PluginClassLoader for ssh-slaves//hudson.plugins.sshslaves.SSHLauncher.copyAgentJar(SSHLauncher.java:684)
+	at PluginClassLoader for ssh-slaves//hudson.plugins.sshslaves.SSHLauncher.lambda$launch$0(SSHLauncher.java:463)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: java.io.IOException: The server denied the request.
+	at PluginClassLoader for trilead-api//com.trilead.ssh2.channel.ChannelManager.requestSubSystem(ChannelManager.java:737)
+	... 10 more
+[31;1mtest: [31;1mThe term 'test' is not recognized as a name of a cmdlet, function, script file, or executable program.[0m
+[31;1m[31;1mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.[0m
+[01/24/25 13:55:27] [SSH] Remote file system root D:\J does not exist. Will try to create it...
+[31;1mNew-Item: [31;1mAn item with the specified name D:\J already exists.[0m
+Failed to create D:\J
+[01/24/25 13:55:28] [SSH] Copying latest remoting.jar...
+Expanded the channel window size to 4MB
+[01/24/25 13:55:28] [SSH] Starting agent process: cd "D:\J" && java  -jar remoting.jar -workDir D:\J -jar-cache D:\J/remoting/jarCache
+Jan 24, 2025 1:55:29 PM org.jenkinsci.remoting.engine.WorkDirManager initializeWorkDir
+INFO: Using D:\J\remoting as a remoting work directory
+Jan 24, 2025 1:55:29 PM org.jenkinsci.remoting.engine.WorkDirManager setupLogging
+INFO: Both error and output logs will be printed to D:\J\remoting
+<===[JENKINS REMOTING CAPACITY]===>channel started
+Remoting version: 3261.v9c670a_4748a_9
+Launcher: SSHLauncher
+Communication Protocol: Standard in/out
+This is a Windows agent
+Agent successfully connected and online

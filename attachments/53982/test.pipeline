@@ -1,0 +1,22 @@
+pipeline {
+	agent { label 'mylabel' }
+	stages {
+		stage('MyStage') {
+			steps {
+				checkout( [
+					$class: 'GitSCM',
+					branches: [[ name: 'refs/heads/master']],
+					userRemoteConfigs: [[
+					    credentialsId: 'id_rsa',
+					    url: 'ssh://blabla/asdf.git'
+					]],
+					extensions: [[
+					$class: 'PathRestriction',
+					includedRegions: 'asdf',
+					]],
+				])
+				sh 'echo "Hello world!"'
+			}
+		}
+	}
+}

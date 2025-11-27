@@ -1,0 +1,83 @@
+<maven2-moduleset plugin="maven-plugin@1.487">
+<actions/>
+<description/>
+<logRotator>
+<daysToKeep>-1</daysToKeep>
+<numToKeep>15</numToKeep>
+<artifactDaysToKeep>-1</artifactDaysToKeep>
+<artifactNumToKeep>-1</artifactNumToKeep>
+</logRotator>
+<keepDependencies>false</keepDependencies>
+<properties>
+<hudson.plugins.zentimestamp.ZenTimestampJobProperty plugin="zentimestamp@3.2">
+<changeBUILDID>true</changeBUILDID>
+<pattern>dd/MM/yyyy HH:mm:ss</pattern>
+</hudson.plugins.zentimestamp.ZenTimestampJobProperty>
+<com.cloudbees.plugins.deployer.DeployNowJobProperty plugin="cloudbees-deployer-plugin@3.7.9">
+<oneClickDeploy>false</oneClickDeploy>
+<configuration>
+<user>xxxx</user>
+<account>xxxx</account>
+<deployables/>
+</configuration>
+</com.cloudbees.plugins.deployer.DeployNowJobProperty>
+</properties>
+<scm class="hudson.scm.SubversionSCM" plugin="subversion@1.43">
+<locations>
+<hudson.scm.SubversionSCM_-ModuleLocation>
+<remote>http://svn/Exception</remote>
+<local>.</local>
+</hudson.scm.SubversionSCM_-ModuleLocation>
+</locations>
+<browser class="hudson.scm.browsers.ViewSVN">
+<url>http://svn/viewvc/repo/</url>
+</browser>
+<excludedRegions/>
+<includedRegions/>
+<excludedUsers/>
+<excludedRevprop/>
+<excludedCommitMessages/>
+<workspaceUpdater class="hudson.scm.subversion.UpdateUpdater"/>
+</scm>
+<assignedNode>gcdsin</assignedNode>
+<canRoam>false</canRoam>
+<disabled>false</disabled>
+<blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+<blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+<jdk>java-1.5.0-IBM</jdk>
+<triggers class="vector"/>
+<concurrentBuild>false</concurrentBuild>
+<rootModule>
+<groupId>br.com.cpqd.exception</groupId>
+<artifactId>Exception-jar</artifactId>
+</rootModule>
+<rootPOM>implementacao/Java/Exception-jar/pom.xml</rootPOM>
+<goals>clean install</goals>
+<mavenName>maven_3.0.4</mavenName>
+<aggregatorStyleBuild>true</aggregatorStyleBuild>
+<incrementalBuild>false</incrementalBuild>
+<perModuleEmail>true</perModuleEmail>
+<ignoreUpstremChanges>false</ignoreUpstremChanges>
+<archivingDisabled>false</archivingDisabled>
+<resolveDependencies>false</resolveDependencies>
+<processPlugins>false</processPlugins>
+<mavenValidationLevel>-1</mavenValidationLevel>
+<runHeadless>false</runHeadless>
+<settingConfigId/>
+<globalSettingConfigId/>
+<reporters/>
+<publishers/>
+<buildWrappers>
+<hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.3.2"/>
+<org.jenkinsci.plugins.buildnamesetter.BuildNameSetter plugin="build-name-setter@1.3">
+<template>Exception:${ENV,var="SVN_REVISION"}</template>
+</org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
+</buildWrappers>
+<prebuilders/>
+<postbuilders/>
+<runPostStepsIfResult>
+<name>FAILURE</name>
+<ordinal>2</ordinal>
+<color>RED</color>
+</runPostStepsIfResult>
+</maven2-moduleset>

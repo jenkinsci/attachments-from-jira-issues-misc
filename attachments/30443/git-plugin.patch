@@ -1,0 +1,15 @@
+diff --git a/src/main/java/hudson/plugins/git/GitStatus.java b/src/main/java/hudson/plugins/git/GitStatus.java
+index 32ba3d1..46fd759 100644
+--- a/src/main/java/hudson/plugins/git/GitStatus.java
++++ b/src/main/java/hudson/plugins/git/GitStatus.java
+@@ -108,8 +108,8 @@
+      * especially given that Git tends to support multiple access protocols.
+      */
+     public static boolean looselyMatches(URIish lhs, URIish rhs) {
+-        return StringUtils.equals(lhs.getHost(),rhs.getHost())
+-            && StringUtils.equals(normalizePath(lhs.getPath()), normalizePath(rhs.getPath()));
++        return StringUtils.equalsIgnoreCase(lhs.getHost(),rhs.getHost())
++            && StringUtils.equalsIgnoreCase(normalizePath(lhs.getPath()), normalizePath(rhs.getPath()));
+     }
+ 
+     private static String normalizePath(String path) {

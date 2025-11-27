@@ -1,0 +1,17 @@
+pipeline {
+    agent any
+    stages {
+        stage("Build") {
+            environment {
+                SSH_KEY_PATH = credentials("8de1fd77-7791-4f0c-8a23-91b279488c8f")
+                SSH_KEY = "${sh(script: 'cat ${SSH_KEY_PATH}', returnStdout: true)}"
+            }
+            steps {
+                echo "Building Docker image"
+                script {
+                    def image = docker.build("jenkins.onprem:5000/ffr-exporter", "--build-arg SSH_KEY .")
+                }
+            }
+        }
+    }
+}

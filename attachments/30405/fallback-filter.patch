@@ -1,0 +1,173 @@
+Index: src/main/java/hudson/views/AddRemoveFallbackFilter.java
+===================================================================
+--- src/main/java/hudson/views/AddRemoveFallbackFilter.java	(revision 0)
++++ src/main/java/hudson/views/AddRemoveFallbackFilter.java	(working copy)
+@@ -0,0 +1,70 @@
++package hudson.views;
++
++import hudson.Extension;
++import hudson.model.Descriptor;
++import hudson.model.TopLevelItem;
++import hudson.model.View;
++
++import java.util.ArrayList;
++import java.util.List;
++
++import org.kohsuke.stapler.DataBoundConstructor;
++
++/**
++ * Returns all jobs if no jobs added, or all jobs if no jobs added, depending on configuration.
++ * Does not modify the list of added jobs in the other cases.
++ *
++ * @author davidparsson
++ */
++public class AddRemoveFallbackFilter extends ViewJobFilter {
++
++	private String fallbackTypeString;
++	private FallbackTypes fallbackType;
++
++	static enum FallbackTypes {
++		ADD_ALL_IF_NONE_INCLUDED,
++		REMOVE_ALL_IF_ALL_INCLUDED
++	}
++
++	@DataBoundConstructor
++	public AddRemoveFallbackFilter(String fallbackTypeString) {
++		this.fallbackTypeString = fallbackTypeString;
++		this.fallbackType = FallbackTypes.valueOf(fallbackTypeString);
++	}
++
++	Object readResolve() {
++		if (fallbackTypeString != null) {
++			this.fallbackType = FallbackTypes.valueOf(fallbackTypeString);
++		}
++		return this;
++	}
++
++	public String getFallbackTypeString() {
++		return this.fallbackTypeString;
++	}
++
++	@Override
++	public List<TopLevelItem> filter(List<TopLevelItem> added, List<TopLevelItem> all, View filteringView) {
++		if (fallbackType == FallbackTypes.ADD_ALL_IF_NONE_INCLUDED && added.size() == 0) {
++			return new ArrayList<TopLevelItem>(all);
++		} else if (fallbackType == FallbackTypes.REMOVE_ALL_IF_ALL_INCLUDED && added.size() == all.size()) {
++			return new ArrayList<TopLevelItem>();
++		} else {
++			return added;
++		}
++	}
++
++	@Extension
++	public static class DescriptorImpl extends Descriptor<ViewJobFilter> {
++		@Override
++		public String getDisplayName() {
++			return "Fallback Filter";
++		}
++
++		@Override
++		public String getHelpFile() {
++			return "/plugin/view-job-filters/add-remove-fallback-help.html";
++		}
++	}
++
++}
+Index: src/main/resources/hudson/views/AddRemoveFallbackFilter/config.jelly
+===================================================================
+--- src/main/resources/hudson/views/AddRemoveFallbackFilter/config.jelly	(revision 0)
++++ src/main/resources/hudson/views/AddRemoveFallbackFilter/config.jelly	(working copy)
+@@ -0,0 +1,14 @@
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
++    xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
++    xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
++  <f:entry title="${%Action}">
++    <select name="fallbackTypeString" class="setting-input">
++      <f:option value="ADD_ALL_IF_NONE_INCLUDED" selected="${instance.fallbackTypeString == 'ADD_ALL_IF_NONE_INCLUDED'}">
++        ${%Add all jobs if no jobs are included}
++      </f:option>
++      <f:option value="REMOVE_ALL_IF_ALL_INCLUDED" selected="${instance.fallbackTypeString == 'REMOVE_ALL_IF_ALL_INCLUDED'}">
++        ${%Remove all jobs if all jobs are included}
++      </f:option>
++    </select>
++  </f:entry>
++</j:jelly>
+Index: src/main/webapp/add-remove-fallback-help.html
+===================================================================
+--- src/main/webapp/add-remove-fallback-help.html	(revision 0)
++++ src/main/webapp/add-remove-fallback-help.html	(working copy)
+@@ -0,0 +1,11 @@
++<div>
++<p>It is useful to place this filter after other filters, which sometimes may include all jobs or
++no jobs.Based on its configuration, this filter can do one of the following things:</p>
++<ul>
++    <li>Add all jobs to this view if no jobs are included by the previous filters.</li>
++    <li>Remove all jobs from this view if all jobs are included by the previous filters.</li>
++</ul>
++<p>This filter does not affect the list of jobs in the other cases. In other words, this filter
++can act as a fallback filter that ensures that this view either never will be empty or never will
++contain all jobs.</p>
++</div>
+Index: src/test/java/hudson/views/AddRemoveFallbackFilterTest.java
+===================================================================
+--- src/test/java/hudson/views/AddRemoveFallbackFilterTest.java	(revision 0)
++++ src/test/java/hudson/views/AddRemoveFallbackFilterTest.java	(working copy)
+@@ -0,0 +1,58 @@
++package hudson.views;
++
++import hudson.model.TopLevelItem;
++
++import java.util.List;
++
++import com.google.common.collect.Lists;
++
++import static hudson.views.AddRemoveFallbackFilter.FallbackTypes;
++
++public class AddRemoveFallbackFilterTest extends AbstractHudsonTest {
++
++	private AddRemoveFallbackFilter filter;
++	private List<TopLevelItem> all;
++	private List<TopLevelItem> added;
++	private List<TopLevelItem> filtered;
++
++	public void setUp() throws Exception {
++		super.setUp();
++		all = hudson.getItems();
++		assertFalse("Jenkins jobs are required to run these tests", all.isEmpty());
++	}
++
++	public void testShouldAddAllJobsWhenNoJobsPresent() throws Exception {
++		filter = new AddRemoveFallbackFilter(FallbackTypes.ADD_ALL_IF_NONE_INCLUDED.toString());
++		added = Lists.newArrayList();
++		filtered = filter.filter(added, all, null);
++
++		assertEquals("Expected ALL jobs to be in the filtered list", all, filtered);
++	}
++
++	public void testShouldNotModifyFilteredListWhenSomeJobPresent() throws Exception {
++		filter = new AddRemoveFallbackFilter(FallbackTypes.ADD_ALL_IF_NONE_INCLUDED.toString());
++		added = Lists.newArrayList(hudson.getItem("Job-1"));
++		filtered = filter.filter(added, all, null);
++
++		List<TopLevelItem> expected = Lists.newArrayList(hudson.getItem("Job-1"));
++		assertEquals("Expected only Job-1 to be in the filtered list", expected, filtered);
++	}
++
++	public void testShouldRemoveAllJobsWhenAllJobsPresent() throws Exception {
++		filter = new AddRemoveFallbackFilter(FallbackTypes.REMOVE_ALL_IF_ALL_INCLUDED.toString());
++		added = hudson.getItems();
++		filtered = filter.filter(added, all, null);
++
++		assertTrue("Expected NO jobs to be in the filtered list", filtered.isEmpty());
++	}
++
++	public void testShouldNotModifyFilteredListWhenAllJobsNotPresent() throws Exception {
++		filter = new AddRemoveFallbackFilter(FallbackTypes.REMOVE_ALL_IF_ALL_INCLUDED.toString());
++		added = Lists.newArrayList(hudson.getItem("Job-1"));
++		filtered = filter.filter(added, all, null);
++
++		List<TopLevelItem> expected = Lists.newArrayList(hudson.getItem("Job-1"));
++		assertEquals("Expected only Job-1 to be in the filtered list", expected, filtered);
++	}
++
++}

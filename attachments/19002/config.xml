@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<matrix-project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.plugins.clearcase.ClearCaseUcmSCM">
+    <viewName>${SHORT_COMPUTERNAME}_${JOB_NAME}</viewName>
+    <mkviewOptionalParam>-vws \\${COMPUTERNAME}\ClearCaseStorage\${CLEARCASE_VIEWNAME}.vws</mkviewOptionalParam>
+    <filteringOutDestroySubBranchEvent>false</filteringOutDestroySubBranchEvent>
+    <normalizedViewName>
+      <threadLocalHashCode>-535203586</threadLocalHashCode>
+    </normalizedViewName>
+    <useUpdate>false</useUpdate>
+    <removeViewOnRename>false</removeViewOnRename>
+    <excludedRegions></excludedRegions>
+    <loadRules>\WFX_CoretestExt\coretestext</loadRules>
+    <useDynamicView>false</useDynamicView>
+    <viewDrive>M:\</viewDrive>
+    <multiSitePollBuffer>0</multiSitePollBuffer>
+    <createDynView>false</createDynView>
+    <winDynStorageDir></winDynStorageDir>
+    <unixDynStorageDir></unixDynStorageDir>
+    <stream>CoretestExt_6.4.2_Int@\WFX_PVOB</stream>
+    <overrideBranchName></overrideBranchName>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector"/>
+  <concurrentBuild>false</concurrentBuild>
+  <axes>
+    <axis>
+      <name>PARTN</name>
+      <values>
+        <string>ON</string>
+        <string>OFF</string>
+        <string>ALL</string>
+      </values>
+    </axis>
+  </axes>
+  <builders>
+    <hudson.tasks.BatchFile>
+      <command>SET&#xd;
+cd %CLEARCASE_VIEWNAME%</command>
+    </hudson.tasks.BatchFile>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+  <runSequentially>false</runSequentially>
+  <touchStoneCombinationFilter>PARTN==&quot;ON&quot;</touchStoneCombinationFilter>
+  <touchStoneResultCondition>
+    <name>SUCCESS</name>
+    <ordinal>0</ordinal>
+    <color>BLUE</color>
+  </touchStoneResultCondition>
+</matrix-project>

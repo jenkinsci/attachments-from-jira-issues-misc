@@ -1,0 +1,441 @@
+import groovy.transform.Field
+
+@Field def RELEASEDVERSION = ''                        
+@Field def PIPELINEERROR = ''
+@Field def SPK='TEST'
+@Field def LOD=''
+@Field COMPONENT = ''
+
+def goPipeline()
+{
+    
+    pipeline
+    {
+         
+         agent none
+         
+         options
+         {
+                 timeout(time: 240, unit: 'MINUTES')
+                 disableConcurrentBuilds()
+                 buildDiscarder(logRotator(numToKeepStr: '3', artifactNumToKeepStr: '3'))
+                 skipStagesAfterUnstable()
+                 timestamps()
+
+         }
+         
+         stages
+         {
+
+               stage('Validate')
+               {
+                                       
+                     agent { label '@BUILDAGENT@' }
+                     
+                     steps
+                     {
+                             PIPELINEERROR = 'Error During Validate Stage'
+                             
+                             scmUtils.validatePomFiles()
+                             LOD = scmUtils.getLod()
+                             COMPONENT = scmUtils.getComponentName()
+                     }
+                     post
+                     {
+                             always
+                             {
+                                      step([$class: 'WsCleanup', cleanWhenFailure: true])
+                             }         
+                     }
+
+               }
+               
+                 
+               if(@RUNSONAR@)
+               {
+                    stage('Sonar')
+                    {
+                                       
+                       agent { label '@BUILDAGENT@' }
+                       
+                       @TOOLS@
+                       
+                       steps
+                       {
+                                      
+                                 PIPELINEERROR = 'Error Running Sonar Scan'
+                                 
+                                 if (isUnix())
+                                 {
+                                          dir( '@SONARWORKINGDIR@' )
+                                          {
+                                                  sh 'export'
+                                                  sh 'mvn -B @SONARMAVENGOALS@'
+                                          }        
+                                 } else {
+                                          dir( '@SONARWORKINGDIR@' )
+                                          {
+                                                  bat 'set'
+                                                  bat 'mvn -B @SONARMAVENGOALS@'
+                                          }
+                                 
+                                 }         
+                              
+                       }
+                       post {
+                               always {
+                                        step([$class: 'WsCleanup', cleanWhenFailure: true])
+                               }         
+                       }
+                    }
+                }    
+                 
+                stage('Build')
+                {
+                                       
+                       agent { label '@BUILDAGENT@' }
+                       
+                       @TOOLS@
+                       
+                       steps
+                       {
+                                      
+                                 PIPELINEERROR = 'Error During Build Stage'
+                                 
+                                 if (isUnix()) {
+                                          dir( '@BUILDWORKINGDIR@' )
+                                          {
+                                                  sh 'export'
+                                                  sh 'mvn -B @MAVENGOALS@'
+                                                  @DOWNSTREAMJOBS@
+                                          }        
+                                 } else {
+                                          dir( '@BUILDWORKINGDIR@' )
+                                          {
+                                                  bat 'set'
+                                                  bat 'mvn -B @MAVENGOALS@'
+                                                  @DOWNSTREAMJOBS@
+                                          }
+                                 }         
+                              
+                        }
+                        post {
+                                always {
+                                         step([$class: 'WsCleanup', cleanWhenFailure: true])
+                                         sleep 15
+                                }         
+                        }
+                 }
+                 
+                 stage('Release Artifacts')
+                 {
+                                                                
+                        agent { label '@BUILDAGENT@' }
+                        
+                        @TOOLS@
+
+                        steps
+                        {
+                            
+                            PIPELINEERROR = 'Error Releasing Artifacts'
+                            
+                            timeout(time: 10, unit: 'MINUTES')
+                            {
+                                
+                                if (isUnix())
+                                {
+                                        
+                                         RELEASEDVERSION = "17.08.${BUILD_NUMBER}"
+                                         
+                                         if(@RELEASEARTIFACTS@)
+                                         {
+                                                 sh """
+                                                         export releaseArtifact=true
+                                                         export releaseNumber=${RELEASEDVERSION}
+                                                         mvn -e validate
+                                                 """
+                                         }
+                                         
+                                         script
+                                         {
+                                                String releaseCurlCommand = scmUtils.generateArtifactData(SPK,RELEASEDVERSION,LOD,COMPONENT)
+                                                sh "${releaseCurlCommand}"
+                                         }
+                                
+                                } else {
+                                        echo 'Running on NT'
+                                }
+                            }             
+                        }
+                        post
+                        {
+                                always {
+                                        step([$class: 'WsCleanup', cleanWhenFailure: true])
+                        
+                                }
+                        }       
+                 }
+                            
+                 
+                 if(@RUNUNITTESTS@)
+                 {
+                        stage('Unit Test')
+                        {
+                                
+                                agent { label '@UNITTESTAGENT@' }
+                                
+                                @TOOLS@
+                                
+                                steps
+                                {
+                                        
+                                        PIPELINEERROR = 'Error Running Unit Tests'
+                                        
+                                        echo 'Code Unit Test Complete'
+                                        echo 'Env Token Test Complete'
+                                        
+                                }
+                                post
+                                {
+                                        always {
+                                                step([$class: 'WsCleanup', cleanWhenFailure: true])
+                                        
+                                        }
+                                }
+                        }
+                 }       
+                            
+                 
+                 if(@DEPLOYTOENV@)
+                 {
+                          
+                                                
+                        stage('Deploy SIT1')
+                        {
+                                                                
+                                agent { label '@DEPLOYAGENT@' }
+                                
+                                steps
+                                {
+                                
+                                        PIPELINEERROR = 'Error Deploying to SIT1'
+
+                                        if (isUnix())
+                                        {
+                                                dir( '@BUILDWORKINGDIR@' ) {
+                                                        sh "/bin/sh ./DEPLOY/deploy.sh SIT1 ${RELEASEDVERSION}"
+                                                }
+                                        } else {
+                                                echo 'Deploying SIT1'
+                                        }
+                                        
+                                        scmUtils.postEvent(SPK,'SIT-DEPLOY',LOD,COMPONENT)
+                                }
+                                post
+                                {
+                                        always {
+                                                step([$class: 'WsCleanup', cleanWhenFailure: true])
+                                
+                                        }
+                                }       
+                        }    
+                                                
+                        
+                        stage('SIT1 Test')
+                        {
+                                        
+                                agent { label '@BUILDAGENT@' }
+                       
+                                @TOOLS@
+                                
+                                steps
+                                {
+                                      
+                                        
+                                        PIPELINEERROR = 'Error Testing SIT1'
+
+                                        if(@TESTENV@)
+                                        {
+                                                if (isUnix())
+                                                {
+                                                        dir( '@TESTWORKINGDIR@' ) {
+                                                                sh 'export'
+                                                                sh 'mvn -B -DtestEnvironment=SIT1 @TESTMAVENGOALS@'
+                                                        }        
+                                                } else {
+                                                        dir( '@TESTWORKINGDIR@' ) {
+                                                                bat 'mvn -B -DtestEnvironment=SIT1 @TESTMAVENGOALS@'
+                                                        }
+                                                }         
+                              
+                                        }
+                                        
+                                        scmUtils.postEvent(SPK,'SIT-TEST',LOD,COMPONENT)
+                                }          
+                                post
+                                {
+                                      always
+                                      {
+                                              publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '@TESTWORKINGDIR@/target/cucumber/acceptance', reportFiles: '@TESTREPORTFILE@', reportName: '@TESTREPORTNAME@-SIT'])
+                                               step([$class: 'WsCleanup', cleanWhenFailure: true])
+                                      }
+                                }
+                        }
+                        
+                        stage('Deploy LTA')
+                        {
+                                                                
+                                agent { label 'PreProd_Deploy' }
+                                
+                                steps
+                                {
+                                
+                                        PIPELINEERROR = 'Error Deploying to LTA'
+
+                                        if (isUnix())
+                                        {
+                                                dir( '@BUILDWORKINGDIR@' ) {
+                                                        sh "/bin/sh ./DEPLOY/deploy.sh LTA ${RELEASEDVERSION}"
+                                                }
+                                        } else {
+                                                echo 'Deploying LTA'
+                                        }
+                                        
+                                        scmUtils.postEvent(SPK,'LTA-DEPLOY',LOD,COMPONENT)
+                                }
+                                post
+                                {
+                                        always {
+                                                step([$class: 'WsCleanup', cleanWhenFailure: true])
+                                
+                                        }
+                                }       
+                        }    
+                                                
+                        
+                        stage('LTA Test')
+                        {
+                                        
+                                agent { label '@BUILDAGENT@' }
+                       
+                                @TOOLS@
+                                
+                                steps
+                                {
+                                      
+                                        
+                                        PIPELINEERROR = 'Error Testing LTA'
+
+                                        if(@TESTENV@)
+                                        {
+                                                if (isUnix())
+                                                {
+                                                        dir( '@TESTWORKINGDIR@' ) {
+                                                                sh 'export'
+                                                                sh 'mvn -B -DtestEnvironment=LTA @TESTMAVENGOALS@'
+                                                        }        
+                                                } else {
+                                                        dir( '@TESTWORKINGDIR@' ) {
+                                                                bat 'mvn -B -DtestEnvironment=LTA @TESTMAVENGOALS@'
+                                                        }
+                                                }         
+                              
+                                        }
+                                        
+                                        scmUtils.postEvent(SPK,'LTA-TEST',LOD,COMPONENT)
+                                }          
+                                post
+                                {
+                                      always
+                                      {
+                                              publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '@TESTWORKINGDIR@/target/cucumber/acceptance', reportFiles: '@TESTREPORTFILE@', reportName: '@TESTREPORTNAME@-LTA'])
+                                               step([$class: 'WsCleanup', cleanWhenFailure: true])
+                                      }
+                                }
+                        }                        
+                        stage('Deploy LTB')
+                        {
+                                                                
+                                agent { label 'PreProd_Deploy' }
+                                
+                                steps
+                                {
+                                
+                                        PIPELINEERROR = 'Error Deploying to LTB'
+
+                                        if (isUnix())
+                                        {
+                                                dir( '@BUILDWORKINGDIR@' ) {
+                                                        sh "/bin/sh ./DEPLOY/deploy.sh LTB ${RELEASEDVERSION}"
+                                                }
+                                        } else {
+                                                echo 'Deploying LTB'
+                                        }
+                                        
+                                        scmUtils.postEvent(SPK,'LTB-DEPLOY',LOD,COMPONENT)
+                                }
+                                post
+                                {
+                                        always {
+                                                step([$class: 'WsCleanup', cleanWhenFailure: true])
+                                
+                                        }
+                                }       
+                        }    
+                                                
+                        
+                        stage('LTB Test')
+                        {
+                                        
+                                agent { label '@BUILDAGENT@' }
+                       
+                                @TOOLS@
+                                
+                                steps
+                                {
+                                      
+                                        
+                                        PIPELINEERROR = 'Error Testing LTB'
+
+                                        if(@TESTENV@)
+                                        {
+                                                if (isUnix())
+                                                {
+                                                        dir( '@TESTWORKINGDIR@' ) {
+                                                                sh 'export'
+                                                                sh 'mvn -B -DtestEnvironment=LTB @TESTMAVENGOALS@'
+                                                        }        
+                                                } else {
+                                                        dir( '@TESTWORKINGDIR@' ) {
+                                                                bat 'mvn -B -DtestEnvironment=LTB @TESTMAVENGOALS@'
+                                                        }
+                                                }         
+                              
+                                        }
+                                        
+                                        scmUtils.postEvent(SPK,'LTB-TEST',LOD,COMPONENT)
+                                }          
+                                post
+                                {
+                                      always
+                                      {
+                                              publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '@TESTWORKINGDIR@/target/cucumber/acceptance', reportFiles: '@TESTREPORTFILE@', reportName: '@TESTREPORTNAME@-LTB'])
+                                               step([$class: 'WsCleanup', cleanWhenFailure: true])
+                                      }
+                                }
+                        }    
+
+                   } //end of deployment if block
+         } // end of stages block
+         post
+         { 
+              failure {
+                      emailext body: '$DEFAULT_CONTENT', recipientProviders: [[$class: 'DevelopersRecipientProvider']], subject: "${JOB_NAME} - Build # ${BUILD_NUMBER} - FAILED - ${PIPELINEERROR}", to: "@EMAILDG@"
+              }
+              success {
+                      emailext body: '$DEFAULT_CONTENT', recipientProviders: [[$class: 'DevelopersRecipientProvider']], subject: "${JOB_NAME} - Build # ${BUILD_NUMBER} - SUCCESS", to: "@EMAILDG@"
+              }
+         }
+    }
+}
+return this

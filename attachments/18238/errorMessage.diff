@@ -1,0 +1,129 @@
+Index: main/core/src/test/java/hudson/tasks/junit/SuiteResultTest.java
+===================================================================
+--- main/core/src/test/java/hudson/tasks/junit/SuiteResultTest.java	(revision 10612)
++++ main/core/src/test/java/hudson/tasks/junit/SuiteResultTest.java	(working copy)
+@@ -75,4 +75,14 @@
+         assertEquals("make_test.t_basic_meta_t",sr1.getName());
+         assertTrue(!sr0.getStdout().equals(sr1.getStdout()));
+     }
++
++    public void testErrorDetails() throws Exception {
++        SuiteResult result = parseOne(getDataFile("junit-report-errror-details.xml"));
++
++        List<CaseResult> cases = result.getCases();
++        for (CaseResult caseResult : cases) {
++            assertEquals("Test class name is incorrect in " + caseResult.getDisplayName(), "some.package.somewhere.WhooHoo", caseResult.getClassName());
++        }
++        assertEquals("this normally has the string like, expected mullet, but got bream", cases.get(0).getErrorDetails());
++    }
+ }
+Index: main/core/src/test/resources/hudson/tasks/junit/junit-report-errror-details.xml
+===================================================================
+--- main/core/src/test/resources/hudson/tasks/junit/junit-report-errror-details.xml	(revision 0)
++++ main/core/src/test/resources/hudson/tasks/junit/junit-report-errror-details.xml	(revision 0)
+@@ -0,0 +1,9 @@
++<?xml version="1.0" encoding="UTF-8" ?>
++<testsuite errors="1" failures="0" hostname="whocares" name="vodafone.nip.services.types.TestStringMapType" tests="2" time="0.016" timestamp="2008-07-03T15:42:30">
++  <testcase classname="some.package.somewhere.WhooHoo" name="testHudsonReporting" time="0.016">
++    <error message="this normally has the string like, expected mullet, but got bream" type="org.junit.ComparisonFailure">	at some.package.somewhere.WhooHoo.testHudsonReporting(WhooHoo.java:48)
++</error>
++  </testcase>
++  <system-out><![CDATA[]]></system-out>
++  <system-err><![CDATA[]]></system-err>
++</testsuite>
+Index: main/core/src/main/java/hudson/tasks/junit/CaseResult.java
+===================================================================
+--- main/core/src/main/java/hudson/tasks/junit/CaseResult.java	(revision 10612)
++++ main/core/src/main/java/hudson/tasks/junit/CaseResult.java	(working copy)
+@@ -19,6 +19,7 @@
+     private final String testName;
+     private final boolean skipped;
+     private final String errorStackTrace;
++    private final String errorDetails;
+     private transient SuiteResult parent;
+ 
+     private transient ClassResult classResult;
+@@ -31,7 +32,7 @@
+     private /*final*/ int failedSince;
+ 
+     CaseResult(SuiteResult parent, String testClassName, Element testCase) {
+-        this(parent,testClassName,testCase.attributeValue("name"), getError(testCase), parseTime(testCase), isMarkedAsSkipped(testCase));
++        this(parent,testClassName,testCase.attributeValue("name"), getError(testCase), getErrorMessage(testCase), parseTime(testCase), isMarkedAsSkipped(testCase));
+     }
+ 
+     private static float parseTime(Element testCase) {
+@@ -67,6 +68,7 @@
+         testName = safe(testCaseName);
+         duration = parseTime(testCase); 
+         errorStackTrace = getError(testCase);
++        errorDetails = getErrorMessage(testCase);
+         skipped = isMarkedAsSkipped(testCase);
+     }
+ 
+@@ -74,13 +76,14 @@
+      * Used to create a fake failure, when Hudson fails to load data from XML files.
+      */
+     CaseResult(SuiteResult parent, String testName, String errorStackTrace) {
+-        this( parent, parent.getName(), testName, errorStackTrace, 0.0f, false );
++        this( parent, parent.getName(), testName, errorStackTrace, "", 0.0f, false );
+     }
+ 
+-    CaseResult(SuiteResult parent, String testClassName, String testName, String errorStackTrace, float duration, boolean skipped) {
++    CaseResult(SuiteResult parent, String testClassName, String testName, String errorStackTrace, String errorDetails, float duration, boolean skipped) {
+         this.className = testClassName;
+         this.testName = testName;
+         this.errorStackTrace = errorStackTrace;
++        this.errorDetails = errorDetails;
+         this.parent = parent;
+         this.duration = duration;
+         this.skipped = skipped;
+@@ -93,6 +96,19 @@
+         return testCase.elementText("failure");
+     }
+ 
++    private static String getErrorMessage(Element testCase) {
++
++        Element msg = testCase.element("error");
++        if (msg == null) {
++            msg = testCase.element("failure");
++        }
++        if (msg == null) {
++            return null; // no error or failure elements! damn!
++        }
++
++        return msg.attributeValue("message");
++    }
++
+     /**
+      * If the testCase element includes the skipped element (as output by TestNG), then
+      * the test has neither passed nor failed, it was never run.
+@@ -202,6 +218,14 @@
+     }
+ 
+     /**
++     * If there was an error or a failure, this is the text from the message.
++     */
++    @Exported
++    public String getErrorDetails() {
++        return errorDetails;
++    }
++
++    /**
+      * @return true if the test was not skipped and did not fail, false otherwise.
+      */
+     public boolean isPassed() {
+Index: main/core/src/main/resources/hudson/tasks/junit/CaseResult/index.jelly
+===================================================================
+--- main/core/src/main/resources/hudson/tasks/junit/CaseResult/index.jelly	(revision 10612)
++++ main/core/src/main/resources/hudson/tasks/junit/CaseResult/index.jelly	(working copy)
+@@ -26,7 +26,9 @@
+         <div style="text-align:right;">
+           ${%took(it.durationString)}
+         </div>
+-      
++	<h3>Error Message</h3>
++      <pre><st:out value="${it.errorDetails}"/></pre>
++	<h3>Stacktrace</h3>
+       <pre><st:out value="${it.errorStackTrace}"/></pre>
+ 
+       <j:if test="${!empty(it.parent.stdout)}">

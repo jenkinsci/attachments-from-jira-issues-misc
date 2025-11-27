@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<maven2-moduleset>
+  <actions/>
+  <description></description>
+  <logRotator>
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>5</numToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.security.AuthorizationMatrixProperty>
+      <useProjectSecurity>true</useProjectSecurity>
+    </hudson.security.AuthorizationMatrixProperty>
+    <hudson.plugins.disk__usage.DiskUsageProperty/>
+  </properties>
+  <scm class="hudson.scm.SubversionSCM">
+    <locations>
+      <hudson.scm.SubversionSCM_-ModuleLocation>
+        <remote>my_svn_host</remote>
+        <local>wsdl2java</local>
+      </hudson.scm.SubversionSCM_-ModuleLocation>
+    </locations>
+    <useUpdate>true</useUpdate>
+    <excludedRegions></excludedRegions>
+  </scm>
+  <assignedNode>neo</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <jdk>(Default)</jdk>
+  <triggers class="vector">
+    <hudson.triggers.SCMTrigger>
+      <spec>*/10 * * * *</spec>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+  <rootModule>
+    <groupId>pl.test.wsdl2ava</groupId>
+    <artifactId>wsdl2java-plugin</artifactId>
+  </rootModule>
+  <goals>clean install</goals>
+  <aggregatorStyleBuild>true</aggregatorStyleBuild>
+  <usePrivateRepository>false</usePrivateRepository>
+  <ignoreUpstremChanges>false</ignoreUpstremChanges>
+  <reporters/>
+  <publishers>
+    <hudson.plugins.sonar.SonarPublisher>
+      <jobAdditionalProperties></jobAdditionalProperties>
+      <installationName>Sonar</installationName>
+      <useSonarLight>false</useSonarLight>
+      <groupId></groupId>
+      <artifactId></artifactId>
+      <projectName></projectName>
+      <projectVersion>1.0</projectVersion>
+      <projectDescription></projectDescription>
+      <javaVersion>1.5</javaVersion>
+      <projectSrcDir></projectSrcDir>
+    </hudson.plugins.sonar.SonarPublisher>
+    <hudson.plugins.emotional__hudson.EmotionalHudsonPublisher/>
+    <hudson.plugins.cigame.GamePublisher/>
+  </publishers>
+  <buildWrappers/>
+</maven2-moduleset>

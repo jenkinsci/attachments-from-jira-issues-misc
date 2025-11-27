@@ -1,0 +1,16 @@
+Index: src/main/java/hudson/plugins/selenium/PluginImpl.java
+===================================================================
+--- src/main/java/hudson/plugins/selenium/PluginImpl.java	(revision 26353)
++++ src/main/java/hudson/plugins/selenium/PluginImpl.java	(working copy)
+@@ -77,7 +78,10 @@
+         File root = Hudson.getInstance().getRootDir();
+         channel = createSeleniumGridVM(root, listener);
+         hubLauncher = channel.callAsync(new HubLauncher(port));
+-
++        try {
++            // Give the HUB some time to start.
++            Thread.sleep(2000);
++        } catch (InterruptedException ignore) {}
+         Hudson.getInstance().getActions().add(this);
+     }
+ 

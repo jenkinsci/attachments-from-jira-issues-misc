@@ -1,0 +1,13 @@
+diff --git a/src/main/java/hudson/plugins/svn_tag/SvnTagPlugin.java b/src/main/java/hudson/plugins/svn_tag/SvnTagPlugin.java
+index 1348e1e..7094cbd 100644
+--- a/src/main/java/hudson/plugins/svn_tag/SvnTagPlugin.java
++++ b/src/main/java/hudson/plugins/svn_tag/SvnTagPlugin.java
+@@ -96,7 +96,7 @@ public class SvnTagPlugin {
+         // the build associated with the root level project.
+         scm.buildEnvVars(rootProject.getBuilds().get(0), env);
+ 
+-        SubversionSCM.ModuleLocation[] moduleLocations = scm.getLocations();
++        SubversionSCM.ModuleLocation[] moduleLocations = scm.getLocations(abstractBuild);
+ 
+         // environment variable "SVN_REVISION" doesn't contain revision number when multiple modules are
+         // specified. Instead, parse revision.txt and obtain the corresponding revision numbers.

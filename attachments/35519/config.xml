@@ -1,0 +1,202 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.security.AuthorizationMatrixProperty>
+      <permission>hudson.model.Item.Cancel:milmang</permission>
+      <permission>hudson.model.Item.Cancel:gargesap</permission>
+      <permission>hudson.model.Item.Delete:milmang</permission>
+      <permission>hudson.model.Item.Delete:gargesap</permission>
+      <permission>hudson.model.Item.Read:milmang</permission>
+      <permission>hudson.model.Item.Read:gargesap</permission>
+      <permission>hudson.model.Run.Delete:milmang</permission>
+      <permission>hudson.model.Run.Delete:gargesap</permission>
+      <permission>hudson.model.Item.Workspace:milmang</permission>
+      <permission>hudson.model.Item.Workspace:gargesap</permission>
+      <permission>hudson.model.Item.Build:milmang</permission>
+      <permission>hudson.model.Item.Build:gargesap</permission>
+      <permission>hudson.scm.SCM.Tag:milmang</permission>
+      <permission>hudson.model.Item.Configure:milmang</permission>
+      <permission>hudson.model.Item.Configure:gargesap</permission>
+      <permission>hudson.model.Item.Discover:milmang</permission>
+      <permission>hudson.model.Item.Discover:gargesap</permission>
+    </hudson.security.AuthorizationMatrixProperty>
+    <hudson.plugins.buildblocker.BuildBlockerProperty plugin="build-blocker-plugin@1.7.3">
+      <useBuildBlocker>false</useBuildBlocker>
+      <blockLevel>UNDEFINED</blockLevel>
+      <scanQueueFor>DISABLED</scanQueueFor>
+      <blockingJobs></blockingJobs>
+    </hudson.plugins.buildblocker.BuildBlockerProperty>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>11</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <hudson.plugins.disk__usage.DiskUsageProperty plugin="disk-usage@0.28"/>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@1.9.0">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit></paramsToUseForLimit>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    <EnvInjectJobProperty plugin="envinject@1.92.1">
+      <info>
+        <propertiesContent>SOLUTION_ROOT=Tools\BuildProcess\JenkinsMSEI\SelectiveCopyTool
+SOLUTION_NAME=SelectiveCopyTool.sln
+
+NGMP_ROOT=${JENKINS_ROOT}\NGMP.DIRECT.Sandbox
+SWPRODUCTION=${NGMP_ROOT}\SWProduction
+
+WORKSPACE_ROOT=${SWPRODUCTION}\${SOLUTION_ROOT}
+TARGET=${WORKSPACE_ROOT}\target
+
+
+</propertiesContent>
+        <loadFilesFromMaster>false</loadFilesFromMaster>
+      </info>
+      <on>true</on>
+      <keepJenkinsSystemVariables>true</keepJenkinsSystemVariables>
+      <keepBuildVariables>true</keepBuildVariables>
+      <overrideBuildParameters>false</overrideBuildParameters>
+      <contributors/>
+    </EnvInjectJobProperty>
+    <org.jvnet.hudson.plugins.shelveproject.ShelveProjectProperty plugin="shelve-project-plugin@1.5"/>
+  </properties>
+  <scm class="hudson.scm.IntegritySCM" plugin="integrity-plugin@2.0.2">
+    <ciServerURL>http://ds-jenk2-1.biotronik.com:8080/</ciServerURL>
+    <integrityURL>http://mks1.biotronik.de:7001</integrityURL>
+    <browser class="hudson.scm.browsers.IntegrityWebUI">
+      <url></url>
+    </browser>
+    <serverConfig>20177370-2359-4796-a3ac-ea5c0c6276eb</serverConfig>
+    <userName>TE_build_process</userName>
+    <password>jIsEOVG/wcX0CIzyHaQOXTyI7LTyOsfNcGDtIpopl+0=</password>
+    <configPath>/repository/CorporateMeasurementTechnologies/SWProduction/Tools/BuildProcess/JenkinsMSEI/SelectiveCopyTool/project.pj</configPath>
+    <includeList></includeList>
+    <excludeList></excludeList>
+    <checkpointLabel>${env[&apos;JOB_NAME&apos;]}-${env[&apos;BUILD_NUMBER&apos;]}-${new java.text.SimpleDateFormat(&quot;yyyy_MM_dd&quot;).format(new Date())}</checkpointLabel>
+    <configurationName>7404b1e8-9d2c-4c24-8d28-b1e6739e52a1</configurationName>
+    <cleanCopy>true</cleanCopy>
+    <CPBasedMode>false</CPBasedMode>
+    <skipAuthorInfo>false</skipAuthorInfo>
+    <lineTerminator>native</lineTerminator>
+    <restoreTimestamp>false</restoreTimestamp>
+    <checkpointBeforeBuild>false</checkpointBeforeBuild>
+    <alternateWorkspace></alternateWorkspace>
+    <fetchChangedWorkspaceFiles>false</fetchChangedWorkspaceFiles>
+    <deleteNonMembers>false</deleteNonMembers>
+    <checkoutThreadPoolSize>5</checkoutThreadPoolSize>
+    <checkoutThreadTimeout>5</checkoutThreadTimeout>
+  </scm>
+  <quietPeriod>30</quietPeriod>
+  <scmCheckoutRetryCount>3</scmCheckoutRetryCount>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>true</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>true</blockBuildWhenUpstreamBuilding>
+  <triggers>
+    <hudson.triggers.SCMTrigger>
+      <spec>35 * * * *</spec>
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <customWorkspace>${WORKSPACE_ROOT}</customWorkspace>
+  <builders>
+    <org.jenkinsci.plugins.managedscripts.WinBatchBuildStep plugin="managed-scripts@1.3">
+      <command>org.jenkinsci.plugins.managedscripts.WinBatchConfig1479922283528</command>
+    </org.jenkinsci.plugins.managedscripts.WinBatchBuildStep>
+    <org.jenkinsci.plugins.managedscripts.WinBatchBuildStep plugin="managed-scripts@1.3">
+      <command>org.jenkinsci.plugins.managedscripts.WinBatchConfig1425950853311</command>
+    </org.jenkinsci.plugins.managedscripts.WinBatchBuildStep>
+    <hudson.plugins.msbuild.MsBuildBuilder plugin="msbuild@1.26">
+      <msBuildName>msbuild4.0</msBuildName>
+      <msBuildFile>${SWPRODUCTION}\${SOLUTION_ROOT}\${SOLUTION_NAME}</msBuildFile>
+      <cmdLineArgs>/p:Configuration=Debug</cmdLineArgs>
+      <buildVariablesAsProperties>true</buildVariablesAsProperties>
+      <continueOnBuildFailure>false</continueOnBuildFailure>
+      <unstableIfWarnings>false</unstableIfWarnings>
+    </hudson.plugins.msbuild.MsBuildBuilder>
+    <org.jenkinsci.plugins.managedscripts.WinBatchBuildStep plugin="managed-scripts@1.3">
+      <command>org.jenkinsci.plugins.managedscripts.WinBatchConfig1478898363863</command>
+      <buildStepArgs>
+        <string>%WORKSPACE_ROOT%\\SelectiveCopy\bin\Debug</string>
+        <string>SelectiveCopy.exe</string>
+        <string>%BUILD_NUMBER%</string>
+      </buildStepArgs>
+    </org.jenkinsci.plugins.managedscripts.WinBatchBuildStep>
+    <org.jenkinsci.plugins.managedscripts.WinBatchBuildStep plugin="managed-scripts@1.3">
+      <command>org.jenkinsci.plugins.managedscripts.WinBatchConfig1478833970181</command>
+      <buildStepArgs>
+        <string>SelectiveCopy.zip</string>
+        <string>%WORKSPACE_ROOT%\\SelectiveCopy\bin\Debug</string>
+      </buildStepArgs>
+    </org.jenkinsci.plugins.managedscripts.WinBatchBuildStep>
+  </builders>
+  <publishers>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>target\*.*</artifacts>
+      <allowEmptyArchive>false</allowEmptyArchive>
+      <onlyIfSuccessful>false</onlyIfSuccessful>
+      <fingerprint>false</fingerprint>
+      <defaultExcludes>true</defaultExcludes>
+      <caseSensitive>true</caseSensitive>
+    </hudson.tasks.ArtifactArchiver>
+    <hudson.plugins.logparser.LogParserPublisher plugin="log-parser@2.0">
+      <unstableOnWarning>true</unstableOnWarning>
+      <failBuildOnError>true</failBuildOnError>
+      <showGraphs>false</showGraphs>
+      <parsingRulesPath>D:\Jenkins_BIN\logparserrules.txt</parsingRulesPath>
+      <useProjectRule>false</useProjectRule>
+    </hudson.plugins.logparser.LogParserPublisher>
+    <hudson.tasks.Fingerprinter>
+      <targets>**/*.dll</targets>
+    </hudson.tasks.Fingerprinter>
+    <hudson.plugins.jira.JiraIssueUpdater plugin="jira@2.3">
+      <issueSelector class="hudson.plugins.jira.selector.DefaultIssueSelector"/>
+      <labels/>
+    </hudson.plugins.jira.JiraIssueUpdater>
+    <hudson.tasks.Mailer plugin="mailer@1.18">
+      <recipients>grigoriy.milman@mst.com</recipients>
+      <dontNotifyEveryUnstableBuild>true</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>true</sendToIndividuals>
+    </hudson.tasks.Mailer>
+    <hudson.scm.IntegrityCheckpointAction plugin="integrity-plugin@2.0.2">
+      <checkpointLabel>${env[&apos;JOB_NAME&apos;]}-Build ${env[&apos;BUILD_NUMBER&apos;]}</checkpointLabel>
+      <logger class="org.apache.commons.logging.impl.SLF4JLocationAwareLog">
+        <name>hudson.scm.IntegrityCheckpointAction</name>
+      </logger>
+      <serverConfig>20177370-2359-4796-a3ac-ea5c0c6276eb</serverConfig>
+    </hudson.scm.IntegrityCheckpointAction>
+  </publishers>
+  <buildWrappers>
+    <org.jenkinsci.plugins.preSCMbuildstep.PreSCMBuildStepsWrapper plugin="preSCMbuildstep@0.3">
+      <buildSteps>
+        <org.jenkinsci.plugins.conditionalbuildstep.singlestep.SingleConditionalBuilder plugin="conditional-buildstep@1.3.5">
+          <condition class="org.jenkins_ci.plugins.run_condition.core.FileExistsCondition" plugin="run-condition@1.0">
+            <file>${SOLUTION_NAME}</file>
+            <baseDir class="org.jenkins_ci.plugins.run_condition.common.BaseDirectory$Workspace"/>
+          </condition>
+          <buildStep class="hudson.plugins.msbuild.MsBuildBuilder" plugin="msbuild@1.26">
+            <msBuildName>msbuild4.0</msBuildName>
+            <msBuildFile>${WORKSPACE_ROOT}\${SOLUTION_NAME}</msBuildFile>
+            <cmdLineArgs> /t:clean /p:configuration=Debug</cmdLineArgs>
+            <buildVariablesAsProperties>true</buildVariablesAsProperties>
+            <continueOnBuildFailure>false</continueOnBuildFailure>
+            <unstableIfWarnings>false</unstableIfWarnings>
+          </buildStep>
+          <runner class="org.jenkins_ci.plugins.run_condition.BuildStepRunner$DontRun" plugin="run-condition@1.0"/>
+        </org.jenkinsci.plugins.conditionalbuildstep.singlestep.SingleConditionalBuilder>
+      </buildSteps>
+      <failOnError>false</failOnError>
+    </org.jenkinsci.plugins.preSCMbuildstep.PreSCMBuildStepsWrapper>
+  </buildWrappers>
+</project>

@@ -1,0 +1,288 @@
+Index: src/main/java/hudson/plugins/promoted_builds/JobPropertyImpl.java
+===================================================================
+--- src/main/java/hudson/plugins/promoted_builds/JobPropertyImpl.java	(revision 36090)
++++ src/main/java/hudson/plugins/promoted_builds/JobPropertyImpl.java	(working copy)
+@@ -12,6 +12,7 @@
+ import hudson.model.Job;
+ import hudson.model.JobProperty;
+ import hudson.model.JobPropertyDescriptor;
++import hudson.plugins.promoted_builds.icons.PromotionIconExtension;
+ import hudson.tasks.BuildStep;
+ import net.sf.json.JSONArray;
+ import net.sf.json.JSONObject;
+@@ -267,5 +268,10 @@
+
+         // exposed for Jelly
+         public final Class<PromotionProcess> promotionProcessType = PromotionProcess.class;
++
++        // exposed for Jelly
++        public List<PromotionIconExtension> getPromotionIcons() {
++            return PromotionIconExtension.all();
++        }
+     }
+ }
+Index: src/main/java/hudson/plugins/promoted_builds/PromotionProcess.java
+===================================================================
+--- src/main/java/hudson/plugins/promoted_builds/PromotionProcess.java	(revision 36090)
++++ src/main/java/hudson/plugins/promoted_builds/PromotionProcess.java	(working copy)
+@@ -14,6 +14,7 @@
+ import hudson.model.Queue.Item;
+ import hudson.model.Run;
+ import hudson.model.Saveable;
++import hudson.plugins.promoted_builds.icons.PromotionIconExtension;
+ import hudson.tasks.BuildStep;
+ import hudson.tasks.BuildStepDescriptor;
+ import hudson.tasks.Builder;
+@@ -133,6 +134,15 @@
+             return sIcon;
+     }
+
++    public String getIconPlugin() {
++        PromotionIconExtension promotionIcon = PromotionIconExtension.getPromotionIcon(getIcon());
++        if(promotionIcon == null) {
++            return "promoted-builds";
++        } else {
++            return promotionIcon.getPlugin();
++        }
++    }
++
+     /**
+      * Checks if all the conditions to promote a build is met.
+      *
+Index: src/main/java/hudson/plugins/promoted_builds/icons/GoldStarPromotionIcon.java
+===================================================================
+--- src/main/java/hudson/plugins/promoted_builds/icons/GoldStarPromotionIcon.java	(revision 0)
++++ src/main/java/hudson/plugins/promoted_builds/icons/GoldStarPromotionIcon.java	(revision 0)
+@@ -0,0 +1,17 @@
++package hudson.plugins.promoted_builds.icons;
++
++import hudson.Extension;
++
++@Extension
++public class GoldStarPromotionIcon extends BasePromotionIcon {
++
++    @Override
++    public String getName() {
++        return "star-gold";
++    }
++
++    @Override
++    public String getDescription() {
++        return "Gold star";
++    }
++}
+Index: src/main/java/hudson/plugins/promoted_builds/icons/BlueStarPromotionIcon.java
+===================================================================
+--- src/main/java/hudson/plugins/promoted_builds/icons/BlueStarPromotionIcon.java	(revision 0)
++++ src/main/java/hudson/plugins/promoted_builds/icons/BlueStarPromotionIcon.java	(revision 0)
+@@ -0,0 +1,17 @@
++package hudson.plugins.promoted_builds.icons;
++
++import hudson.Extension;
++
++@Extension
++public class BlueStarPromotionIcon extends BasePromotionIcon {
++
++    @Override
++    public String getName() {
++        return "star-blue";
++    }
++
++    @Override
++    public String getDescription() {
++        return "Blue star";
++    }
++}
+Index: src/main/java/hudson/plugins/promoted_builds/icons/PurpleStarPromotionIcon.java
+===================================================================
+--- src/main/java/hudson/plugins/promoted_builds/icons/PurpleStarPromotionIcon.java	(revision 0)
++++ src/main/java/hudson/plugins/promoted_builds/icons/PurpleStarPromotionIcon.java	(revision 0)
+@@ -0,0 +1,17 @@
++package hudson.plugins.promoted_builds.icons;
++
++import hudson.Extension;
++
++@Extension
++public class PurpleStarPromotionIcon extends BasePromotionIcon {
++
++    @Override
++    public String getName() {
++        return "star-purple";
++    }
++
++    @Override
++    public String getDescription() {
++        return "Purple star";
++    }
++}
+Index: src/main/java/hudson/plugins/promoted_builds/icons/RedStarPromotionIcon.java
+===================================================================
+--- src/main/java/hudson/plugins/promoted_builds/icons/RedStarPromotionIcon.java	(revision 0)
++++ src/main/java/hudson/plugins/promoted_builds/icons/RedStarPromotionIcon.java	(revision 0)
+@@ -0,0 +1,17 @@
++package hudson.plugins.promoted_builds.icons;
++
++import hudson.Extension;
++
++@Extension
++public class RedStarPromotionIcon extends BasePromotionIcon {
++
++    @Override
++    public String getName() {
++        return "star-red";
++    }
++
++    @Override
++    public String getDescription() {
++        return "Red star";
++    }
++}
+Index: src/main/java/hudson/plugins/promoted_builds/icons/OrangeStarPromotionIcon.java
+===================================================================
+--- src/main/java/hudson/plugins/promoted_builds/icons/OrangeStarPromotionIcon.java	(revision 0)
++++ src/main/java/hudson/plugins/promoted_builds/icons/OrangeStarPromotionIcon.java	(revision 0)
+@@ -0,0 +1,17 @@
++package hudson.plugins.promoted_builds.icons;
++
++import hudson.Extension;
++
++@Extension
++public class OrangeStarPromotionIcon extends BasePromotionIcon {
++
++    @Override
++    public String getName() {
++        return "star-orange";
++    }
++
++    @Override
++    public String getDescription() {
++        return "Orange star";
++    }
++}
+Index: src/main/java/hudson/plugins/promoted_builds/icons/BasePromotionIcon.java
+===================================================================
+--- src/main/java/hudson/plugins/promoted_builds/icons/BasePromotionIcon.java	(revision 0)
++++ src/main/java/hudson/plugins/promoted_builds/icons/BasePromotionIcon.java	(revision 0)
+@@ -0,0 +1,8 @@
++package hudson.plugins.promoted_builds.icons;
++
++public abstract class BasePromotionIcon extends PromotionIconExtension {
++    @Override
++    public String getPlugin() {
++        return "promoted-builds";
++    }
++}
+Index: src/main/java/hudson/plugins/promoted_builds/icons/GreenStarPromotionIcon.java
+===================================================================
+--- src/main/java/hudson/plugins/promoted_builds/icons/GreenStarPromotionIcon.java	(revision 0)
++++ src/main/java/hudson/plugins/promoted_builds/icons/GreenStarPromotionIcon.java	(revision 0)
+@@ -0,0 +1,17 @@
++package hudson.plugins.promoted_builds.icons;
++
++import hudson.Extension;
++
++@Extension
++public class GreenStarPromotionIcon extends BasePromotionIcon {
++
++    @Override
++    public String getName() {
++        return "star-green";
++    }
++
++    @Override
++    public String getDescription() {
++        return "Green star";
++    }
++}
+\ No newline at end of file
+Index: src/main/java/hudson/plugins/promoted_builds/icons/PromotionIconExtension.java
+===================================================================
+--- src/main/java/hudson/plugins/promoted_builds/icons/PromotionIconExtension.java	(revision 0)
++++ src/main/java/hudson/plugins/promoted_builds/icons/PromotionIconExtension.java	(revision 0)
+@@ -0,0 +1,27 @@
++package hudson.plugins.promoted_builds.icons;
++
++import hudson.ExtensionList;
++import hudson.ExtensionPoint;
++import hudson.model.Hudson;
++
++public abstract class PromotionIconExtension implements ExtensionPoint {
++
++    public abstract String getPlugin();
++
++    public abstract String getName();
++
++    public abstract String getDescription();
++
++    public static ExtensionList<PromotionIconExtension> all() {
++        return Hudson.getInstance().getExtensionList(PromotionIconExtension.class);
++    }
++
++    public static PromotionIconExtension getPromotionIcon(String name) {
++        for (PromotionIconExtension extension : all()) {
++            if (extension.getName().equals(name)) {
++                return extension;
++            }
++        }
++        return null;
++    }
++}
+Index: src/main/resources/hudson/plugins/promoted_builds/JobPropertyImpl/config.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/promoted_builds/JobPropertyImpl/config.jelly	(revision 36090)
++++ src/main/resources/hudson/plugins/promoted_builds/JobPropertyImpl/config.jelly	(working copy)
+@@ -10,12 +10,9 @@
+             </f:entry>
+             <f:entry title="Icon">
+               <select class="setting-input" name="config.icon">
+-                <f:option selected="${s.icon=='star-gold'}"   value="star-gold">Gold star</f:option>
+-                <f:option selected="${s.icon=='star-blue'}"   value="star-blue">Blue star</f:option>
+-                <f:option selected="${s.icon=='star-green'}"  value="star-green">Green star</f:option>
+-                <f:option selected="${s.icon=='star-orange'}" value="star-orange">Orange star</f:option>
+-                <f:option selected="${s.icon=='star-purple'}" value="star-purple">Purple star</f:option>
+-                <f:option selected="${s.icon=='star-red'}"    value="star-red">Red star</f:option>
++                <j:forEach var="icon" items="${descriptor.promotionIcons}">
++                  <f:option selected="${s.icon==icon.name}" value="${icon.name}">${icon.description}</f:option>
++                </j:forEach>
+               </select>
+             </f:entry>
+             <f:section title="Criteria">
+Index: src/main/resources/hudson/plugins/promoted_builds/PromotedBuildAction/badge.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/promoted_builds/PromotedBuildAction/badge.jelly	(revision 36090)
++++ src/main/resources/hudson/plugins/promoted_builds/PromotedBuildAction/badge.jelly	(working copy)
+@@ -4,7 +4,7 @@
+       <a href="${link}promotion/">
+         <img width="16" height="16"
+           title="${status.name}"
+-          src="${rootURL}/plugin/promoted-builds/icons/16x16/${status.getProcess().getIcon()}.gif"/>
++          src="${rootURL}/plugin/${status.getProcess().getIconPlugin()}/icons/16x16/${status.getProcess().getIcon()}.gif"/>
+       </a>
+     </j:forEach>
+   </j:if>
+Index: src/main/resources/hudson/plugins/promoted_builds/PromotedBuildAction/index.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/promoted_builds/PromotedBuildAction/index.jelly	(revision 36090)
++++ src/main/resources/hudson/plugins/promoted_builds/PromotedBuildAction/index.jelly	(working copy)
+@@ -18,7 +18,7 @@
+       <!-- list promotions that are already attained -->
+       <j:forEach var="p" items="${it.promotions}">
+         <h2>
+-          <img src="${rootURL}/plugin/promoted-builds/icons/32x32/${p.getProcess().getIcon()}.gif"/> ${p.name}
++          <img src="${rootURL}/plugin/${p.getProcess().getIconPlugin()}/icons/32x32/${p.getProcess().getIcon()}.gif"/> ${p.name}
+         </h2>
+
+         <!-- history of this promotion -->
+Index: src/main/resources/hudson/plugins/promoted_builds/PromotedProjectAction/index.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/promoted_builds/PromotedProjectAction/index.jelly	(revision 36090)
++++ src/main/resources/hudson/plugins/promoted_builds/PromotedProjectAction/index.jelly	(working copy)
+@@ -7,7 +7,7 @@
+       <!-- list promotions that are already attained -->
+       <j:forEach var="c" items="${it.processes}">
+         <h2>
+-          <img src="${rootURL}/plugin/promoted-builds/icons/32x32/${c.getIcon()}.gif"/> ${c.name}
++          <img src="${rootURL}/plugin/${c.getIconPlugin()}/icons/32x32/${c.getIcon()}.gif"/> ${c.name}
+         </h2>
+
+         <j:set var="b" value="${it.getLatest(c)}" />

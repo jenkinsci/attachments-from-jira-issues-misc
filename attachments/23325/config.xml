@@ -1,0 +1,176 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <displayName>JUnit tests</displayName>
+  <logRotator>
+    <daysToKeep>30</daysToKeep>
+    <numToKeep>-1</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.CVSSCM" plugin="cvs@2.7">
+    <flatten>true</flatten>
+    <repositoryBrowser class="hudson.scm.browsers.ViewCVS">
+      <url>CENSORED</url>
+    </repositoryBrowser>
+    <repositories>
+      <hudson.scm.CvsRepository>
+        <cvsRoot>:MODE:USER@HOST:/PATH</cvsRoot>
+        <repositoryItems>
+          <hudson.scm.CvsRepositoryItem>
+            <modules>
+              <hudson.scm.CvsModule>
+                <localName></localName>
+                <remoteName>ADDITIONAL/PATH</remoteName>
+              </hudson.scm.CvsModule>
+            </modules>
+            <location class="hudson.scm.CvsRepositoryLocation$HeadRepositoryLocation">
+              <locationType>HEAD</locationType>
+              <useHeadIfNotFound>false</useHeadIfNotFound>
+            </location>
+          </hudson.scm.CvsRepositoryItem>
+        </repositoryItems>
+        <compressionLevel>-1</compressionLevel>
+        <excludedRegions>
+          <hudson.scm.ExcludedRegion>
+            <pattern>EXCLUDED1/.*</pattern>
+          </hudson.scm.ExcludedRegion>
+          <hudson.scm.ExcludedRegion>
+            <pattern>EXCLUDED2/.*</pattern>
+          </hudson.scm.ExcludedRegion>
+          <hudson.scm.ExcludedRegion>
+            <pattern>EXCLUDED3/.*</pattern>
+          </hudson.scm.ExcludedRegion>
+          <hudson.scm.ExcludedRegion>
+            <pattern>EXCLUDED4/.*</pattern>
+          </hudson.scm.ExcludedRegion>
+          <hudson.scm.ExcludedRegion>
+            <pattern>EXCLUDED5/.*</pattern>
+          </hudson.scm.ExcludedRegion>
+          <hudson.scm.ExcludedRegion>
+            <pattern>EXCLUDED6/.*</pattern>
+          </hudson.scm.ExcludedRegion>
+          <hudson.scm.ExcludedRegion>
+            <pattern>EXCLUDED7/.*</pattern>
+          </hudson.scm.ExcludedRegion>
+          <hudson.scm.ExcludedRegion>
+            <pattern>EXCLUDED8/.*</pattern>
+          </hudson.scm.ExcludedRegion>
+          <hudson.scm.ExcludedRegion>
+            <pattern>EXCLUDED9/.*</pattern>
+          </hudson.scm.ExcludedRegion>
+          <hudson.scm.ExcludedRegion>
+            <pattern>EXCLUDED10/.*</pattern>
+          </hudson.scm.ExcludedRegion>
+          <hudson.scm.ExcludedRegion>
+            <pattern>EXCLUDED11/.*</pattern>
+          </hudson.scm.ExcludedRegion>
+          <hudson.scm.ExcludedRegion>
+            <pattern>.*\.ext1</pattern>
+          </hudson.scm.ExcludedRegion>
+          <hudson.scm.ExcludedRegion>
+            <pattern>^[^/]*\.m$</pattern>
+          </hudson.scm.ExcludedRegion>
+        </excludedRegions>
+        <passwordRequired>false</passwordRequired>
+      </hudson.scm.CvsRepository>
+    </repositories>
+    <canUseUpdate>false</canUseUpdate>
+    <skipChangeLog>false</skipChangeLog>
+    <pruneEmptyDirectories>true</pruneEmptyDirectories>
+    <disableCvsQuiet>false</disableCvsQuiet>
+    <cleanOnFailedUpdate>false</cleanOnFailedUpdate>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>true</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector">
+    <hudson.triggers.SCMTrigger>
+      <spec>*/5 * * * *</spec>
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <customWorkspace>path/to/customWorkspace</customWorkspace>
+  <builders>
+    <hudson.tasks.Ant plugin="ant@1.1">
+      <targets>clean pmd smoke-test dist </targets>
+      <antName>1.8.0</antName>
+      <antOpts>-Xmx512m</antOpts>
+    </hudson.tasks.Ant>
+  </builders>
+  <publishers>
+    <hudson.plugins.pmd.PmdPublisher plugin="pmd@3.29">
+      <healthy></healthy>
+      <unHealthy></unHealthy>
+      <thresholdLimit>low</thresholdLimit>
+      <pluginName>[PMD] </pluginName>
+      <defaultEncoding></defaultEncoding>
+      <canRunOnFailed>false</canRunOnFailed>
+      <useDeltaValues>false</useDeltaValues>
+      <thresholds plugin="analysis-core@1.43">
+        <unstableTotalAll></unstableTotalAll>
+        <unstableTotalHigh></unstableTotalHigh>
+        <unstableTotalNormal></unstableTotalNormal>
+        <unstableTotalLow></unstableTotalLow>
+        <failedTotalAll></failedTotalAll>
+        <failedTotalHigh></failedTotalHigh>
+        <failedTotalNormal></failedTotalNormal>
+        <failedTotalLow></failedTotalLow>
+      </thresholds>
+      <shouldDetectModules>false</shouldDetectModules>
+      <dontComputeNew>true</dontComputeNew>
+      <doNotResolveRelativePaths>false</doNotResolveRelativePaths>
+      <pattern>reports/pmd/*.xml</pattern>
+    </hudson.plugins.pmd.PmdPublisher>
+    <hudson.plugins.chucknorris.CordellWalkerRecorder plugin="chucknorris@0.4">
+      <factGenerator/>
+    </hudson.plugins.chucknorris.CordellWalkerRecorder>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>Java/JAR.jar</artifacts>
+      <latestOnly>false</latestOnly>
+    </hudson.tasks.ArtifactArchiver>
+    <hudson.tasks.BuildTrigger>
+      <childProjects>NEXT PROJECT</childProjects>
+      <threshold>
+        <name>SUCCESS</name>
+        <ordinal>0</ordinal>
+        <color>BLUE</color>
+      </threshold>
+    </hudson.tasks.BuildTrigger>
+    <hudson.tasks.junit.JUnitResultArchiver>
+      <testResults>reports/tests/*.xml</testResults>
+      <keepLongStdio>true</keepLongStdio>
+      <testDataPublishers/>
+    </hudson.tasks.junit.JUnitResultArchiver>
+    <hudson.plugins.jacoco.JacocoPublisher plugin="jacoco@1.0.8">
+      <healthReports>
+        <minClass>0</minClass>
+        <maxClass>0</maxClass>
+        <minMethod>0</minMethod>
+        <maxMethod>0</maxMethod>
+        <minLine>0</minLine>
+        <maxLine>0</maxLine>
+        <minBranch>0</minBranch>
+        <maxBranch>0</maxBranch>
+        <minInstruction>0</minInstruction>
+        <maxInstruction>0</maxInstruction>
+        <minComplexity>0</minComplexity>
+        <maxComplexity>0</maxComplexity>
+      </healthReports>
+      <execPattern>**/jacoco-junit.exec</execPattern>
+      <classPattern>**/build</classPattern>
+      <sourcePattern>**/JavaSource</sourcePattern>
+    </hudson.plugins.jacoco.JacocoPublisher>
+    <hudson.tasks.Mailer plugin="mailer@1.4">
+      <recipients>MAILING_LIST</recipients>
+      <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>false</sendToIndividuals>
+    </hudson.tasks.Mailer>
+  </publishers>
+  <buildWrappers/>
+</project>

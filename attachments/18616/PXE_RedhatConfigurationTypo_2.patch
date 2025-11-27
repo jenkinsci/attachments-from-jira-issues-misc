@@ -1,0 +1,333 @@
+Index: hudson/plugins/pxe/src/main/java/hudson/plugins/pxe/RedHatBootCoonfiguration.java
+===================================================================
+--- hudson/plugins/pxe/src/main/java/hudson/plugins/pxe/RedHatBootCoonfiguration.java	(revision 17795)
++++ hudson/plugins/pxe/src/main/java/hudson/plugins/pxe/RedHatBootCoonfiguration.java	(working copy)
+@@ -1,151 +0,0 @@
+-package hudson.plugins.pxe;
+-
+-import hudson.Extension;
+-import hudson.Util;
+-import static hudson.util.FormValidation.error;
+-import org.jvnet.hudson.tftpd.Data;
+-import org.kohsuke.loopy.FileEntry;
+-import org.kohsuke.loopy.iso9660.ISO9660FileSystem;
+-import org.kohsuke.stapler.DataBoundConstructor;
+-import org.kohsuke.stapler.StaplerResponse;
+-
+-import java.io.BufferedReader;
+-import java.io.File;
+-import java.io.IOException;
+-import java.io.InputStreamReader;
+-import java.util.logging.Level;
+-import java.util.logging.Logger;
+-import java.util.Map;
+-import java.util.TreeMap;
+-import java.util.Arrays;
+-
+-/**
+- * RedHat/Fedora boot configuration.
+- *
+- * @author Kohsuke Kawaguchi
+- */
+-public class RedHatBootCoonfiguration extends LinuxBootConfiguration {
+-    public final String additionalPackages;
+-    public final String password;
+-
+-    @DataBoundConstructor
+-    public RedHatBootCoonfiguration(File iso, String password, String additionalPackages) {
+-        super(iso);
+-
+-        if(Util.fixEmptyAndTrim(password)==null)    password="hudson";
+-        if(!password.startsWith("$1$"))
+-            password = Crypt.cryptMD5("abcdefgh",password);
+-        this.password = password;
+-
+-        this.additionalPackages = Util.fixEmptyAndTrim(additionalPackages);
+-    }
+-
+-    protected String getIdSeed() {
+-        return getRelease().replaceAll("[ ()]","");
+-    }
+-
+-    protected FileEntry getTftpIsoMountDir(ISO9660FileSystem fs) throws IOException {
+-        return fs.get("/images/pxeboot");
+-    }
+-
+-    /**
+-     * Serves menu.txt by replacing variables.
+-     */
+-    public Data tftp(String fileName) throws IOException {
+-        if(fileName.equals("splash.jpg")) {
+-            ISO9660FileSystem fs = new ISO9660FileSystem(iso,false);
+-            return new FileEntryData(fs.grab("/isolinux/splash.jpg"));
+-        }
+-
+-        return super.tftp(fileName);
+-    }
+-
+-    /**
+-     * Serves the kickstart file
+-     */
+-    public void doKickstart(StaplerResponse rsp) throws IOException {
+-        serveMacroExpandedResource(rsp,"kickstart.txt");
+-    }
+-
+-    /**
+-     * Package list formatted in the kickstart format.
+-     */
+-    public String getPackageList() {
+-        // returning empty line breaks CentOS, so return something harmless
+-        if(additionalPackages==null)    return "# no additional packages";
+-        return Util.join(Arrays.asList(additionalPackages.split(" +")),"\n");
+-    }
+-
+-    @Extension
+-    public static class DescriptorImpl extends IsoBasedBootConfigurationDescriptor {
+-        public String getDisplayName() {
+-            return "RedHat/Fedora";
+-        }
+-
+-        /**
+-         * This returns string like "Fedora 10"
+-         *
+-         * TODO: where can we get the architecture information?
+-         */
+-        protected String getReleaseInfo(File iso) throws IOException {
+-            ISO9660FileSystem fs=null;
+-            try {
+-                try {
+-                    fs = new ISO9660FileSystem(iso,false);
+-                } catch (IOException e) {
+-                    LOGGER.log(Level.INFO,iso+" isn't an ISO file?",e);
+-                    throw error(iso+" doesn't look like an ISO file");
+-                }
+-
+-                FileEntry info = fs.get("/.treeinfo");
+-                if(info==null)
+-                    throw error(iso+" doesn't look like a RedHat/Fedora CD/DVD image");
+-
+-                /* On Fedora 10 DVD, this file contains:
+-                    [general]
+-                    family = Fedora
+-                    timestamp = 1227142151.33
+-                    variant = Fedora
+-                    totaldiscs = 1
+-                    version = 10
+-                    discnum = 1
+-                    packagedir =
+-                    arch = i386
+-
+-                   On CentOS, this entry was:
+-                    [general]
+-                    family = CentOS
+-                    timestamp = 1237646605.22
+-                    totaldiscs = 1
+-                    version = 5.3
+-                    discnum = 1
+-                    packagedir = CentOS
+-                    arch = i386
+-                 */
+-                Map<String,String> section = new TreeMap<String,String>();
+-                BufferedReader r = new BufferedReader(new InputStreamReader(info.read()));
+-                try {
+-                    String line;
+-                    while((line=r.readLine())!=null) {
+-                        if(line.contains(" = ")) {
+-                            String[] tokens = line.split("=");
+-                            section.put(tokens[0].trim(),tokens[1].trim());
+-                        }
+-                    }
+-                    if(!section.containsKey("family") || !section.containsKey("version") || !section.containsKey("arch"))
+-                        throw error(iso+" doesn't contain the name entry in media.repo");
+-                    // should be something like "CentOS 5.3 (i386)"
+-                    return Util.join(Arrays.asList(
+-                            section.get("family"),section.get("version"),"("+section.get("arch")+")")," ");
+-                } finally {
+-                    r.close();
+-                }
+-            } finally {
+-                if(fs!=null)
+-                    fs.close();
+-            }
+-        }
+-    }
+-
+-    private static final Logger LOGGER = Logger.getLogger(RedHatBootCoonfiguration.class.getName());
+-}
+Index: hudson/plugins/pxe/src/main/java/hudson/plugins/pxe/CentOSBootConfiguration.java
+===================================================================
+--- hudson/plugins/pxe/src/main/java/hudson/plugins/pxe/CentOSBootConfiguration.java	(revision 17795)
++++ hudson/plugins/pxe/src/main/java/hudson/plugins/pxe/CentOSBootConfiguration.java	(working copy)
+@@ -13,14 +13,14 @@
+  *
+  * @author Kohsuke Kawaguchi
+  */
+-public class CentOSBootConfiguration extends RedHatBootCoonfiguration {
++public class CentOSBootConfiguration extends RedHatBootConfiguration {
+     @DataBoundConstructor
+     public CentOSBootConfiguration(File iso, String password, String additionalPackages) {
+         super(iso, password, additionalPackages);
+     }
+ 
+     @Extension
+-    public static class DescriptorImpl extends RedHatBootCoonfiguration.DescriptorImpl {
++    public static class DescriptorImpl extends RedHatBootConfiguration.DescriptorImpl {
+         public String getDisplayName() {
+             return "CentOS";
+         }
+Index: hudson/plugins/pxe/src/main/java/hudson/plugins/pxe/RedHatBootConfiguration.java
+===================================================================
+--- hudson/plugins/pxe/src/main/java/hudson/plugins/pxe/RedHatBootConfiguration.java	(revision 17795)
++++ hudson/plugins/pxe/src/main/java/hudson/plugins/pxe/RedHatBootConfiguration.java	(working copy)
+@@ -24,12 +24,12 @@
+  *
+  * @author Kohsuke Kawaguchi
+  */
+-public class RedHatBootCoonfiguration extends LinuxBootConfiguration {
++public class RedHatBootConfiguration extends LinuxBootConfiguration {
+     public final String additionalPackages;
+     public final String password;
+ 
+     @DataBoundConstructor
+-    public RedHatBootCoonfiguration(File iso, String password, String additionalPackages) {
++    public RedHatBootConfiguration(File iso, String password, String additionalPackages) {
+         super(iso);
+ 
+         if(Util.fixEmptyAndTrim(password)==null)    password="hudson";
+@@ -147,5 +147,5 @@
+         }
+     }
+ 
+-    private static final Logger LOGGER = Logger.getLogger(RedHatBootCoonfiguration.class.getName());
++    private static final Logger LOGGER = Logger.getLogger(RedHatBootConfiguration.class.getName());
+ }
+
+Property changes on: hudson/plugins/pxe/src/main/java/hudson/plugins/pxe/RedHatBootConfiguration.java
+___________________________________________________________________
+Added: svn:mergeinfo
+
+Index: hudson/plugins/pxe/src/main/resources/hudson/plugins/pxe/RedHatBootCoonfiguration/menu.txt
+===================================================================
+--- hudson/plugins/pxe/src/main/resources/hudson/plugins/pxe/RedHatBootCoonfiguration/menu.txt	(revision 17795)
++++ hudson/plugins/pxe/src/main/resources/hudson/plugins/pxe/RedHatBootCoonfiguration/menu.txt	(working copy)
+@@ -1,24 +0,0 @@
+-menu background ${id}/splash.jpg
+-menu title ${release}
+-menu color border 0 #ffffffff #00000000
+-menu color sel 7 #ffffffff #ff000000
+-menu color title 0 #ffffffff #00000000
+-menu color tabmsg 0 #ffffffff #00000000
+-menu color unsel 0 #ffffffff #00000000
+-menu color hotsel 0 #ff000000 #ffffffff
+-menu color hotkey 7 #ffffffff #ff000000
+-menu color scrollbar 0 #ffffffff #00000000
+-
+-label install
+-  menu label ^Interactive Install
+-  kernel ${id}/vmlinuz
+-  append initrd=${id}/initrd.img text
+-
+-label autoinstall
+-  menu label ^Automatic Install for Hudson
+-  kernel ${id}/vmlinuz
+-  append initrd=${id}/initrd.img text ks=${absoluteUrl}/kickstart
+-
+-label mainmenu
+-    menu label ^Back to main menu
+-    kernel vesamenu.c32
+Index: hudson/plugins/pxe/src/main/resources/hudson/plugins/pxe/RedHatBootCoonfiguration/config.jelly
+===================================================================
+--- hudson/plugins/pxe/src/main/resources/hudson/plugins/pxe/RedHatBootCoonfiguration/config.jelly	(revision 17795)
++++ hudson/plugins/pxe/src/main/resources/hudson/plugins/pxe/RedHatBootCoonfiguration/config.jelly	(working copy)
+@@ -1,36 +0,0 @@
+-<!--
+-The MIT License
+-
+-Copyright (c) 2004-2009, Sun Microsystems, Inc.
+-
+-Permission is hereby granted, free of charge, to any person obtaining a copy
+-of this software and associated documentation files (the "Software"), to deal
+-in the Software without restriction, including without limitation the rights
+-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+-copies of the Software, and to permit persons to whom the Software is
+-furnished to do so, subject to the following conditions:
+-
+-The above copyright notice and this permission notice shall be included in
+-all copies or substantial portions of the Software.
+-
+-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+-THE SOFTWARE.
+--->
+-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+-	<f:entry title="${%RedHat DVD ISO file:}" field="iso">
+-    <f:textbox />
+-	</f:entry>
+-  <f:advanced>
+-    <f:entry title="${%Root Password:}" field="password">
+-      <f:password />
+-    </f:entry>
+-    <f:entry title="${%Additional Packages:}" field="additionalPackages">
+-      <f:textbox />
+-    </f:entry>
+-  </f:advanced>
+-</j:jelly>
+\ No newline at end of file
+Index: hudson/plugins/pxe/src/main/resources/hudson/plugins/pxe/RedHatBootCoonfiguration/kickstart.txt
+===================================================================
+--- hudson/plugins/pxe/src/main/resources/hudson/plugins/pxe/RedHatBootCoonfiguration/kickstart.txt	(revision 17795)
++++ hudson/plugins/pxe/src/main/resources/hudson/plugins/pxe/RedHatBootCoonfiguration/kickstart.txt	(working copy)
+@@ -1,30 +0,0 @@
+-# install a fresh system instead of upgrade
+-install
+-url --url=${absoluteUrl}/image
+-lang ${locale}
+-keyboard us
+-network --bootproto dhcp
+-rootpw  --iscrypted ${password}
+-firewall --service=ssh
+-authconfig --enableshadow
+-selinux --enforcing
+-timezone --utc ${timeZone}
+-bootloader --location=mbr
+-reboot
+-# wipe out HDD and start from scratch
+-clearpart --all
+-autopart
+-text
+-user --name=hudson --password=${password} --iscrypted
+-
+-%packages
+-@admin-tools
+-@base
+-@core
+-@editors
+-@gnome-desktop
+-@graphical-internet
+-@hardware-support
+-@java
+-${packageList}
+-%end
+
+Property changes on: hudson/plugins/pxe/src/main/resources/hudson/plugins/pxe/RedHatBootConfiguration
+___________________________________________________________________
+Added: svn:mergeinfo
+
+
+Property changes on: hudson/plugins/pxe/src/main/resources/hudson/plugins/pxe/PXE/help-rootPassword.html
+___________________________________________________________________
+Added: svn:mergeinfo
+
+Index: hudson/plugins/pxe/src/main/resources/hudson/plugins/pxe/PXE/help-rootPassword..html
+===================================================================
+--- hudson/plugins/pxe/src/main/resources/hudson/plugins/pxe/PXE/help-rootPassword..html	(revision 17795)
++++ hudson/plugins/pxe/src/main/resources/hudson/plugins/pxe/PXE/help-rootPassword..html	(working copy)
+@@ -1,3 +0,0 @@
+-<div>
+-    If you have specified the super user name, specify the corresondpoing password here.
+-</div>
+\ No newline at end of file

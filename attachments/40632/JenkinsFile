@@ -1,0 +1,33 @@
+Define in JenkinsFile:
+podTemplate(name: 'ms-build', label: 'ms-build', namespace: 'tested-namespace', imagePullSecrets: [ 'nexus-internalnexus-pull-secret' ], containers: [
+containerTemplate(name: 'ms-docker-build', image: 'internalnexus.corp.amdocs.com:7000/project/ms-docker-build:42', ttyEnabled: true, command: 'cat',
+envVars: [
+containerEnvVar(key: 'HTTPS_PROXY', value: 'http://internalproxy.corp.amdocs.com:8080'),
+containerEnvVar(key: 'HTTP_PROXY', value: 'http://internalproxy.corp.amdocs.com:8080'),
+containerEnvVar(key: 'NO_PROXY', value: 'localhost,127.0.0.1,.amdocs.com,dockerdaemon.dockerdaemondind.svc.cluster.local'),
+containerEnvVar(key: 'DOCKER_HOST', value: 'tcp://dockerdaemon.dockerdaemondind.svc.cluster.local:2375')
+])
+]
+)
+  {
+  node('ms-build') {
+    stage('Build') {
+      milestone(1)
+      lock(resource: 'Build', inversePrecedence: true) {
+        checkout scm
+        container('ms-docker-build') {
+          sh "git status"
+          milestone(2)
+        }
+      }
+    }
+    stage('Create Docker Image') {
+      lock(resource: 'Docker', inversePrecedence: true) {
+        container('ms-docker-build') {
+          sh "echo hello world"
+          milestone(3)
+        }
+      }
+    }
+  }
+}

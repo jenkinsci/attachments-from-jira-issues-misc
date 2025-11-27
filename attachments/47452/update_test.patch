@@ -1,0 +1,23 @@
+Index: src/test/java/org/jenkinsci/plugins/workflow/job/console/TaskListenerDecoratorTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/org/jenkinsci/plugins/workflow/job/console/TaskListenerDecoratorTest.java	(revision db692f18de005fe84d5a95b0bf74597fc8a201a8)
++++ src/test/java/org/jenkinsci/plugins/workflow/job/console/TaskListenerDecoratorTest.java	(date 1558457638000)
+@@ -77,6 +77,7 @@
+         r.assertLogContains("[job/p/1/] Started", b);
+         r.assertLogContains("[decorated] [filtered] [job/p/1/] Running on remote in ", b);
+         r.assertLogContains("[decorated via remote] [filtered via remote] [job/p/1/ via remote] printed a message on master=false", b);
++        r.assertLogContains("calling close()", b);
+         String log = JenkinsRule.getLog(b);
+         assertThat(log, log.indexOf("master=false"), lessThan(log.indexOf("// node")));
+     }
+@@ -97,6 +98,7 @@
+                     logger.write(b, 0, len);
+                 }
+                 @Override public void close() throws IOException {
++                    logger.write("calling close()".getBytes());
+                     super.close();
+                     logger.close();
+                 }

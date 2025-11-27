@@ -1,0 +1,39 @@
+#!groovy
+@Library('ipl-pipeline-shared@master') _
+
+
+pipeline {
+
+  agent {
+    label "${BUILD_NODE}"
+  }
+
+  stages {
+
+    stage('Build') {
+      steps {
+        echo "build started..."
+        sleep 2
+        sh "cp with-wrong-syntax"
+        echo "build done!"
+      }
+    }
+
+    stage('Test') {
+      steps {
+        echo "doing tests here..."
+      }
+    }
+  }
+
+  // ==================================================================================================================
+  // Post Actions
+  // ==================================================================================================================
+
+  post  {
+    always {
+      echo "result = ${currentBuild.result}"
+      echo "currentResult = ${currentBuild.currentResult}"
+    }
+  }
+}

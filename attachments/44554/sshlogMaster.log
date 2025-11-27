@@ -1,0 +1,65 @@
+SSHLauncher{host='*.*.*.*', port=22, credentialsId='*', jvmOptions='', javaPath='', prefixStartSlaveCmd='', suffixStartSlaveCmd='', launchTimeoutSeconds=210, maxNumRetries=10, retryWaitTime=15, sshHostKeyVerificationStrategy=hudson.plugins.sshslaves.verifiers.ManuallyTrustedKeyVerificationStrategy, tcpNoDelay=true, trackCredentials=true}
+[09/21/18 09:17:02] [SSH] Opening SSH connection to *.*.*.*:22.
+[09/21/18 09:17:02] [SSH] SSH host key matches key seen previously for this host. Connection will be allowed.
+[09/21/18 09:17:03] [SSH] Authentication successful.
+[09/21/18 09:17:05] [SSH] The remote user's environment is:
+[...]
+SSH_CLIENT=*.*.*.* 41982 22
+SSH_CONNECTION=*.*.*.* 41982 *.*.*.* 22
+[...]
+[09/21/18 09:17:05] [SSH] Checking java version of java
+[09/21/18 09:17:05] [SSH] java -version returned 10.0.2.
+[09/21/18 09:17:05] [SSH] Starting sftp client.
+[09/21/18 09:17:06] [SSH] Copying latest remoting.jar...
+[09/21/18 09:17:06] [SSH] Copied 776,265 bytes.
+Expanded the channel window size to 4MB
+[09/21/18 09:17:06] [SSH] Starting agent process: cd "C:/Jenkins" && java  -jar remoting.jar -workDir C:/Jenkins
+<===[JENKINS REMOTING CAPACITY]===>sept. 21, 2018 9:17:06 AM org.jenkinsci.remoting.engine.WorkDirManager initializeWorkDir
+INFOS: Using C:\Jenkins\remoting as a remoting work directory
+Both error and output logs will be printed to C:\Jenkins\remoting
+<===[JENKINS REMOTING CAPACITY]===>ERROR: Connection terminated
+ERROR: java.io.EOFException
+	at java.io.ObjectInputStream$PeekInputStream.readFully(ObjectInputStream.java:2680)
+	at java.io.ObjectInputStream$BlockDataInputStream.readShort(ObjectInputStream.java:3155)
+	at java.io.ObjectInputStream.readStreamHeader(ObjectInputStream.java:861)
+	at java.io.ObjectInputStream.<init>(ObjectInputStream.java:357)
+	at hudson.remoting.ObjectInputStreamEx.<init>(ObjectInputStreamEx.java:49)
+	at hudson.remoting.Command.readFrom(Command.java:140)
+	at hudson.remoting.Command.readFrom(Command.java:126)
+	at hudson.remoting.AbstractSynchronousByteArrayCommandTransport.read(AbstractSynchronousByteArrayCommandTransport.java:36)
+	at hudson.remoting.SynchronousCommandTransport$ReaderThread.run(SynchronousCommandTransport.java:63)
+Caused: java.io.IOException: Unexpected termination of the channel
+	at hudson.remoting.SynchronousCommandTransport$ReaderThread.run(SynchronousCommandTransport.java:77)
+Unexpected error in launching a agent. This is probably a bug in Jenkins.
+hudson.remoting.RequestAbortedException: java.io.IOException: Unexpected termination of the channel
+	at hudson.remoting.Request.abort(Request.java:340)
+	at hudson.remoting.Channel.terminate(Channel.java:1038)
+	at hudson.remoting.SynchronousCommandTransport$ReaderThread.run(SynchronousCommandTransport.java:96)
+	Suppressed: hudson.remoting.Channel$CallSiteStackTrace: Remote call to serverX
+		at hudson.remoting.Channel.attachCallSiteStackTrace(Channel.java:1741)
+		at hudson.remoting.Request.call(Request.java:202)
+		at hudson.remoting.Channel.call(Channel.java:954)
+		at hudson.slaves.SlaveComputer.setChannel(SlaveComputer.java:622)
+		at hudson.slaves.SlaveComputer.setChannel(SlaveComputer.java:432)
+		at hudson.plugins.sshslaves.SSHLauncher.startAgent(SSHLauncher.java:1032)
+		at hudson.plugins.sshslaves.SSHLauncher.access$500(SSHLauncher.java:128)
+		at hudson.plugins.sshslaves.SSHLauncher$2.call(SSHLauncher.java:866)
+		at hudson.plugins.sshslaves.SSHLauncher$2.call(SSHLauncher.java:831)
+		at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+		at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+		at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+		at java.lang.Thread.run(Thread.java:748)
+Caused by: java.io.IOException: Unexpected termination of the channel
+	at hudson.remoting.SynchronousCommandTransport$ReaderThread.run(SynchronousCommandTransport.java:77)
+Caused by: java.io.EOFException
+	at java.io.ObjectInputStream$PeekInputStream.readFully(ObjectInputStream.java:2680)
+	at java.io.ObjectInputStream$BlockDataInputStream.readShort(ObjectInputStream.java:3155)
+	at java.io.ObjectInputStream.readStreamHeader(ObjectInputStream.java:861)
+	at java.io.ObjectInputStream.<init>(ObjectInputStream.java:357)
+	at hudson.remoting.ObjectInputStreamEx.<init>(ObjectInputStreamEx.java:49)
+	at hudson.remoting.Command.readFrom(Command.java:140)
+	at hudson.remoting.Command.readFrom(Command.java:126)
+	at hudson.remoting.AbstractSynchronousByteArrayCommandTransport.read(AbstractSynchronousByteArrayCommandTransport.java:36)
+	at hudson.remoting.SynchronousCommandTransport$ReaderThread.run(SynchronousCommandTransport.java:63)
+[09/21/18 09:17:06] Launch failed - cleaning up connection
+[09/21/18 09:17:06] [SSH] Connection closed.

@@ -1,0 +1,109 @@
+=== Starting should_connect_agent(io.jenkins.docker.connector.DockerComputerJNLPConnectorTest)
+   0.010 [id=495]	INFO	o.jvnet.hudson.test.JenkinsRule#createWebServer: Running on http://localhost:…/jenkins/
+   0.124 [id=502]	INFO	jenkins.InitReactorRunner$1#onAttained: Started initialization
+   0.128 [id=507]	INFO	jenkins.InitReactorRunner$1#onAttained: Listed all plugins
+   0.263 [id=505]	INFO	jenkins.InitReactorRunner$1#onAttained: Prepared all plugins
+   0.266 [id=507]	INFO	jenkins.InitReactorRunner$1#onAttained: Started all plugins
+   0.267 [id=501]	INFO	jenkins.InitReactorRunner$1#onAttained: Augmented all extensions
+   0.915 [id=506]	INFO	jenkins.InitReactorRunner$1#onAttained: Loaded all jobs
+   0.931 [id=505]	INFO	jenkins.InitReactorRunner$1#onAttained: Completed initialization
+   1.044 [id=100]	INFO	c.n.j.plugins.docker.DockerCloud#provision: Asked to provision 1 slave(s) for: docker-agent
+   1.045 [id=100]	INFO	c.n.j.plugins.docker.DockerCloud#provision: Will provision 'jenkins/jnlp-slave', for label: 'docker-agent', in cloud: 'docker'
+   1.058 [id=100]	INFO	c.n.j.plugins.docker.DockerCloud#addProvisionedSlave: Provisioning 'jenkins/jnlp-slave' number '0' on 'docker'; Total containers: '2'
+   1.062 [id=100]	INFO	h.s.NodeProvisioner$StandardStrategyImpl#apply: Started provisioning Image of jenkins/jnlp-slave from docker with 1 executors. Remaining excess workload: 0
+   1.064 [id=325]	INFO	c.n.j.p.docker.DockerTemplate#pullImage: Pulling image 'jenkins/jnlp-slave:latest'. This may take awhile...
+   2.367 [id=325]	INFO	c.n.j.p.docker.DockerTemplate#pullImage: Finished pulling image 'jenkins/jnlp-slave:latest', took 1303 ms
+   2.367 [id=325]	INFO	c.n.j.p.docker.DockerTemplate#provisionNode: Trying to run container for jenkins/jnlp-slave
+   2.975 [id=62]	WARNING	jenkins.security.ClassFilterImpl#lambda$isBlacklisted$1: com.github.dockerjava.api.command.InspectContainerResponse in file:…/.m2/repository/com/github/docker-java/docker-java/3.0.14/docker-java-3.0.14.jar might be dangerous, so rejecting; see https://jenkins.io/redirect/class-filter/
+   2.989 [id=62]	WARNING	hudson.slaves.NodeProvisioner$2#run: Provisioned agent Image of jenkins/jnlp-slave failed to launch
+java.lang.UnsupportedOperationException: Refusing to marshal com.github.dockerjava.api.command.InspectContainerResponse for security reasons; see https://jenkins.io/redirect/class-filter/
+	at hudson.util.XStream2$BlacklistedTypesConverter.marshal(XStream2.java:543)
+	at com.thoughtworks.xstream.core.AbstractReferenceMarshaller.convert(AbstractReferenceMarshaller.java:69)
+	at com.thoughtworks.xstream.core.TreeMarshaller.convertAnother(TreeMarshaller.java:58)
+	at com.thoughtworks.xstream.core.AbstractReferenceMarshaller$1.convertAnother(AbstractReferenceMarshaller.java:84)
+	at hudson.util.RobustReflectionConverter.marshallField(RobustReflectionConverter.java:265)
+	at hudson.util.RobustReflectionConverter$2.writeField(RobustReflectionConverter.java:252)
+Caused: java.lang.RuntimeException: Failed to serialize io.jenkins.docker.connector.DockerComputerJNLPConnector$1#val$inspect for class io.jenkins.docker.connector.DockerComputerJNLPConnector$1
+	at hudson.util.RobustReflectionConverter$2.writeField(RobustReflectionConverter.java:256)
+	at hudson.util.RobustReflectionConverter$2.visit(RobustReflectionConverter.java:224)
+	at com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider.visitSerializableFields(PureJavaReflectionProvider.java:138)
+	at hudson.util.RobustReflectionConverter.doMarshal(RobustReflectionConverter.java:209)
+	at hudson.util.RobustReflectionConverter.marshal(RobustReflectionConverter.java:150)
+	at com.thoughtworks.xstream.core.AbstractReferenceMarshaller.convert(AbstractReferenceMarshaller.java:69)
+	at com.thoughtworks.xstream.core.TreeMarshaller.convertAnother(TreeMarshaller.java:58)
+	at com.thoughtworks.xstream.core.AbstractReferenceMarshaller$1.convertAnother(AbstractReferenceMarshaller.java:84)
+	at hudson.util.RobustReflectionConverter.marshallField(RobustReflectionConverter.java:265)
+	at hudson.util.RobustReflectionConverter$2.writeField(RobustReflectionConverter.java:252)
+Caused: java.lang.RuntimeException: Failed to serialize hudson.slaves.DelegatingComputerLauncher#launcher for class io.jenkins.docker.connector.DockerComputerConnector$1
+	at hudson.util.RobustReflectionConverter$2.writeField(RobustReflectionConverter.java:256)
+	at hudson.util.RobustReflectionConverter$2.visit(RobustReflectionConverter.java:224)
+	at com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider.visitSerializableFields(PureJavaReflectionProvider.java:138)
+	at hudson.util.RobustReflectionConverter.doMarshal(RobustReflectionConverter.java:209)
+	at hudson.util.RobustReflectionConverter.marshal(RobustReflectionConverter.java:150)
+	at com.thoughtworks.xstream.core.AbstractReferenceMarshaller.convert(AbstractReferenceMarshaller.java:69)
+	at com.thoughtworks.xstream.core.TreeMarshaller.convertAnother(TreeMarshaller.java:58)
+	at com.thoughtworks.xstream.core.AbstractReferenceMarshaller$1.convertAnother(AbstractReferenceMarshaller.java:84)
+	at hudson.util.RobustReflectionConverter.marshallField(RobustReflectionConverter.java:265)
+	at hudson.util.RobustReflectionConverter$2.writeField(RobustReflectionConverter.java:252)
+Caused: java.lang.RuntimeException: Failed to serialize hudson.model.Slave#launcher for class io.jenkins.docker.DockerTransientNode
+	at hudson.util.RobustReflectionConverter$2.writeField(RobustReflectionConverter.java:256)
+	at hudson.util.RobustReflectionConverter$2.visit(RobustReflectionConverter.java:224)
+	at com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider.visitSerializableFields(PureJavaReflectionProvider.java:138)
+	at hudson.util.RobustReflectionConverter.doMarshal(RobustReflectionConverter.java:209)
+	at hudson.util.RobustReflectionConverter.marshal(RobustReflectionConverter.java:150)
+	at com.thoughtworks.xstream.core.AbstractReferenceMarshaller.convert(AbstractReferenceMarshaller.java:69)
+	at com.thoughtworks.xstream.core.TreeMarshaller.convertAnother(TreeMarshaller.java:58)
+	at com.thoughtworks.xstream.core.TreeMarshaller.convertAnother(TreeMarshaller.java:43)
+	at com.thoughtworks.xstream.core.TreeMarshaller.start(TreeMarshaller.java:82)
+	at com.thoughtworks.xstream.core.AbstractTreeMarshallingStrategy.marshal(AbstractTreeMarshallingStrategy.java:37)
+	at com.thoughtworks.xstream.XStream.marshal(XStream.java:1026)
+	at com.thoughtworks.xstream.XStream.marshal(XStream.java:1015)
+	at com.thoughtworks.xstream.XStream.toXML(XStream.java:988)
+	at hudson.XmlFile.write(XmlFile.java:193)
+Caused: java.io.IOException
+	at hudson.XmlFile.write(XmlFile.java:200)
+	at jenkins.model.Nodes.persistNode(Nodes.java:160)
+	at jenkins.model.Nodes.addNode(Nodes.java:142)
+	at jenkins.model.Jenkins.addNode(Jenkins.java:2054)
+	at hudson.slaves.NodeProvisioner$2.run(NodeProvisioner.java:241)
+	at hudson.model.Queue._withLock(Queue.java:1370)
+	at hudson.model.Queue.withLock(Queue.java:1247)
+	at hudson.slaves.NodeProvisioner.update(NodeProvisioner.java:207)
+	at hudson.slaves.NodeProvisioner.access$000(NodeProvisioner.java:61)
+	at hudson.slaves.NodeProvisioner$1.run(NodeProvisioner.java:176)
+	at jenkins.util.ContextResettingExecutorService$1.run(ContextResettingExecutorService.java:28)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+   3.715 [id=541]	INFO	h.TcpSlaveAgentListener$ConnectionHandler#run: Accepted JNLP4-connect connection #9 from /127.0.0.1:…
+   8.442 [id=533]	INFO	hudson.model.Run#execute: test-docker-ssh #1 main build action completed: SUCCESS
+   8.511 [id=495]	WARNING	j.s.DefaultJnlpSlaveReceiver#channelClosed: Executing should_connect_agent(io.jenkins.docker.connector.DockerComputerJNLPConnectorTest) for docker-517115dde74e terminated
+java.nio.channels.ClosedChannelException
+	at org.jenkinsci.remoting.protocol.impl.ChannelApplicationLayer.onReadClosed(ChannelApplicationLayer.java:208)
+	at org.jenkinsci.remoting.protocol.ApplicationLayer.onRecvClosed(ApplicationLayer.java:222)
+	at org.jenkinsci.remoting.protocol.ProtocolStack$Ptr.onRecvClosed(ProtocolStack.java:832)
+	at org.jenkinsci.remoting.protocol.FilterLayer.onRecvClosed(FilterLayer.java:287)
+	at org.jenkinsci.remoting.protocol.impl.SSLEngineFilterLayer.onRecvClosed(SSLEngineFilterLayer.java:181)
+	at org.jenkinsci.remoting.protocol.impl.SSLEngineFilterLayer.switchToNoSecure(SSLEngineFilterLayer.java:283)
+	at org.jenkinsci.remoting.protocol.impl.SSLEngineFilterLayer.processWrite(SSLEngineFilterLayer.java:503)
+	at org.jenkinsci.remoting.protocol.impl.SSLEngineFilterLayer.processQueuedWrites(SSLEngineFilterLayer.java:248)
+	at org.jenkinsci.remoting.protocol.impl.SSLEngineFilterLayer.doSend(SSLEngineFilterLayer.java:200)
+	at org.jenkinsci.remoting.protocol.impl.SSLEngineFilterLayer.doCloseSend(SSLEngineFilterLayer.java:213)
+	at org.jenkinsci.remoting.protocol.ProtocolStack$Ptr.doCloseSend(ProtocolStack.java:800)
+	at org.jenkinsci.remoting.protocol.ApplicationLayer.doCloseWrite(ApplicationLayer.java:173)
+	at org.jenkinsci.remoting.protocol.impl.ChannelApplicationLayer$ByteBufferCommandTransport.closeWrite(ChannelApplicationLayer.java:313)
+	at hudson.remoting.Channel.close(Channel.java:1446)
+	at hudson.remoting.Channel.close(Channel.java:1399)
+	at org.jvnet.hudson.test.ChannelShutdownListener.onTearDown(ChannelShutdownListener.java:37)
+	at org.jvnet.hudson.test.JenkinsRule.after(JenkinsRule.java:455)
+	at org.jvnet.hudson.test.JenkinsRule$1.evaluate(JenkinsRule.java:557)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:748)
+   8.534 [id=495]	INFO	jenkins.model.Jenkins#cleanUp: Stopping Jenkins
+WARN: The method class org.apache.commons.logging.impl.SLF4JLogFactory#release() was invoked.
+WARN: Please see http://www.slf4j.org/codes.html#release for an explanation.
+   8.572 [id=495]	INFO	jenkins.model.Jenkins#cleanUp: Jenkins stopped

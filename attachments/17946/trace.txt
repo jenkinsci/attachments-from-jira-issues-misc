@@ -1,0 +1,63 @@
+hudson.util.IOException2: Unable to read /home/hudson/.hudson/jobs/foo/config.xml
+        at hudson.XmlFile.read(XmlFile.java:98)
+        at hudson.model.Items.load(Items.java:77)
+        at hudson.model.Hudson.load(Hudson.java:857)
+        at hudson.model.Hudson.<init>(Hudson.java:205)
+        at hudson.WebAppMain.contextInitialized(WebAppMain.java:85)
+        at winstone.WebAppConfiguration.<init>(WebAppConfiguration.java:885)
+        at winstone.HostConfiguration.initWebApp(HostConfiguration.java:131)
+        at winstone.HostConfiguration.<init>(HostConfiguration.java:73)
+        at winstone.HostGroup.initHost(HostGroup.java:85)
+        at winstone.HostGroup.<init>(HostGroup.java:45)
+        at winstone.Launcher.<init>(Launcher.java:194)
+        at winstone.Launcher.main(Launcher.java:389)
+        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+        at java.lang.reflect.Method.invoke(Method.java:585)
+        at Main.main(Main.java:50)
+Caused by: com.thoughtworks.xstream.converters.ConversionException: hudson.plugins.trac.TracRepositoryBrowser : hudson.plugins.trac.TracRepositoryBrowser
+---- Debugging information ----
+required-type       : hudson.scm.SubversionSCM 
+cause-message       : hudson.plugins.trac.TracRepositoryBrowser : hudson.plugins.trac.TracRepositoryBrowser 
+class               : hudson.maven.MavenModuleSet 
+message             : hudson.plugins.trac.TracRepositoryBrowser : hudson.plugins.trac.TracRepositoryBrowser 
+line number         : 19 
+path                : /hudson.maven.MavenModuleSet/scm/browser 
+cause-exception     : com.thoughtworks.xstream.alias.CannotResolveClassException 
+-------------------------------
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:45)
+        at com.thoughtworks.xstream.core.ReferenceByXPathUnmarshaller.convertAnother(ReferenceByXPathUnmarshaller.java:39)
+        at com.thoughtworks.xstream.converters.reflection.ReflectionConverter.unmarshal(ReflectionConverter.java:103)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:38)
+        at com.thoughtworks.xstream.core.ReferenceByXPathUnmarshaller.convertAnother(ReferenceByXPathUnmarshaller.java:39)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.start(TreeUnmarshaller.java:99)
+        at com.thoughtworks.xstream.core.ReferenceByXPathMarshallingStrategy.unmarshal(ReferenceByXPathMarshallingStrategy.java:12)
+        at com.thoughtworks.xstream.XStream.unmarshal(XStream.java:552)
+        at hudson.util.XStream2.unmarshal(XStream2.java:36)
+        at com.thoughtworks.xstream.XStream.unmarshal(XStream.java:540)
+        at com.thoughtworks.xstream.XStream.fromXML(XStream.java:490)
+        at hudson.XmlFile.read(XmlFile.java:94)
+        ... 16 more
+Caused by: com.thoughtworks.xstream.alias.CannotResolveClassException: hudson.plugins.trac.TracRepositoryBrowser : hudson.plugins.trac.TracRepositoryBrowser
+        at com.thoughtworks.xstream.mapper.DefaultMapper.realClass(DefaultMapper.java:35)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:18)
+        at com.thoughtworks.xstream.mapper.XmlFriendlyMapper.realClass(XmlFriendlyMapper.java:44)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:18)
+        at com.thoughtworks.xstream.mapper.ClassAliasingMapper.realClass(ClassAliasingMapper.java:49)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:18)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:18)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:18)
+        at com.thoughtworks.xstream.mapper.DynamicProxyMapper.realClass(DynamicProxyMapper.java:46)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:18)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:18)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:18)
+        at com.thoughtworks.xstream.mapper.ArrayMapper.realClass(ArrayMapper.java:70)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:18)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:18)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:18)
+        at com.thoughtworks.xstream.mapper.CachingMapper.realClass(CachingMapper.java:27)
+        at com.thoughtworks.xstream.converters.reflection.ReflectionConverter.determineType(ReflectionConverter.java:173)
+        at com.thoughtworks.xstream.converters.reflection.ReflectionConverter.unmarshal(ReflectionConverter.java:102)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:38)
+        ... 27 more

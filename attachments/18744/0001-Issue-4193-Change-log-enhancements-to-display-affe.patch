@@ -1,0 +1,208 @@
+From 96c5f8efc09da314064f02c46785588d1cdc4966 Mon Sep 17 00:00:00 2001
+From: Mike Robinet <mrobinet@ptc.com>
+Date: Mon, 10 Aug 2009 17:06:40 -0500
+Subject: [PATCH] Issue 4193 - Change log enhancements to display affected file paths.
+
+---
+ src/main/java/hudson/plugins/git/GitChangeSet.java |   51 ++++++++++++++---
+ .../plugins/git/GitChangeSetList/index.jelly       |    6 ++
+ .../java/hudson/plugins/git/GitChangeSetTest.java  |   59 ++++++++++++++++++++
+ 3 files changed, 107 insertions(+), 9 deletions(-)
+ create mode 100644 src/test/java/hudson/plugins/git/GitChangeSetTest.java
+
+diff --git a/src/main/java/hudson/plugins/git/GitChangeSet.java b/src/main/java/hudson/plugins/git/GitChangeSet.java
+index be0877b..69c2f76 100644
+--- a/src/main/java/hudson/plugins/git/GitChangeSet.java
++++ b/src/main/java/hudson/plugins/git/GitChangeSet.java
+@@ -2,6 +2,8 @@ package hudson.plugins.git;
+ 
+ import hudson.model.User;
+ import hudson.scm.ChangeLogSet;
++import hudson.scm.ChangeLogSet.AffectedFile;
++import hudson.scm.EditType;
+ import hudson.tasks.Mailer;
+ 
+ import java.io.IOException;
+@@ -21,7 +23,7 @@ public class GitChangeSet extends ChangeLogSet.Entry {
+ 	private String title;
+ 	private String id;
+ 
+-	private Collection<String> affectedPaths = new HashSet<String>();
++	private Collection<Path> paths = new HashSet<Path>();
+ 
+ 	public GitChangeSet(List<String> lines) {
+ 		if (lines.size() > 0) {
+@@ -31,7 +33,7 @@ public class GitChangeSet extends ChangeLogSet.Entry {
+ 
+ 	private void parseCommit(List<String> lines) {
+ 
+-		String comment = "";
++		String message = "";
+ 
+ 		for (String line : lines) {
+ 			if (line.length() > 0) {
+@@ -45,17 +47,17 @@ public class GitChangeSet extends ChangeLogSet.Entry {
+ 					this.authorEmail = line.substring(line.indexOf(" <") + 2, line.indexOf("> "));
+ 				} else if (line.startsWith("author ")) {
+ 				} else if (line.startsWith("    ")) {
+-					comment += line.substring(4) + "\n";
++					message += line.substring(4) + "\n";
+ 				} else if (line.startsWith("A\t") || line.startsWith("C\t") || line.startsWith("D\t")
+ 						|| line.startsWith("M\t") || line.startsWith("R\t") || line.startsWith("T\t")) {
+-					this.affectedPaths.add(line.substring(2));
++					this.paths.add(new Path(line.charAt(0), line.substring(2)));
+ 				} else {
+ 					// Ignore
+ 				}
+ 			}
+ 		}
+ 
+-		this.comment = comment;
++		this.comment = message;
+ 
+ 		int endOfFirstLine = this.comment.indexOf('\n');
+ 		if (endOfFirstLine == -1) {
+@@ -65,13 +67,22 @@ public class GitChangeSet extends ChangeLogSet.Entry {
+ 		}
+ 	}
+ 
++    @Override
+ 	public void setParent(ChangeLogSet parent) {
+ 		super.setParent(parent);
+ 	}
+ 
++    public Collection<Path> getPaths() {
++        return this.paths;
++    }
++
+ 	@Override
+ 	public Collection<String> getAffectedPaths() {
+-		return this.affectedPaths;
++        Collection<String> affectedPaths = new HashSet<String>(this.paths.size());
++        for (Path file : this.paths) {
++            affectedPaths.add(file.getPath());
++        }
++        return affectedPaths;
+ 	}
+ 
+ 	@Override
+@@ -103,8 +114,30 @@ public class GitChangeSet extends ChangeLogSet.Entry {
+ 		return this.id;
+ 	}
+ 
+-	public String getComment() {
+-		return this.comment;
+-	}
++    public String getComment() {
++        return this.comment;
++    }
++
++    public static class Path implements AffectedFile {
++
++        private char action;
++        private String path;
++
++        private Path(char action, String filePath) {
++            this.action = action;
++            this.path = filePath;
++        }
++
++        public String getPath() {
++            return path;
++        }
+ 
++        public EditType getEditType() {
++            if( action=='A' )
++                return EditType.ADD;
++            if( action=='D' )
++                return EditType.DELETE;
++            return EditType.EDIT;
++        }
++    }
+ }
+diff --git a/src/main/resources/hudson/plugins/git/GitChangeSetList/index.jelly b/src/main/resources/hudson/plugins/git/GitChangeSetList/index.jelly
+index b944c4e..c8aabd4 100644
+--- a/src/main/resources/hudson/plugins/git/GitChangeSetList/index.jelly
++++ b/src/main/resources/hudson/plugins/git/GitChangeSetList/index.jelly
+@@ -31,6 +31,12 @@
+           </div>
+         </td>
+       </tr>
++      <j:forEach var="p" items="${cs.paths}">
++        <tr>
++          <td width="16"><t:editTypeIcon type="${p.editType}"/></td>
++          <td>${p.path}</td>
++        </tr>
++      </j:forEach>
+     </j:forEach>
+   </table>
+ </j:jelly>
+\ No newline at end of file
+diff --git a/src/test/java/hudson/plugins/git/GitChangeSetTest.java b/src/test/java/hudson/plugins/git/GitChangeSetTest.java
+new file mode 100644
+index 0000000..655ffff
+--- /dev/null
++++ b/src/test/java/hudson/plugins/git/GitChangeSetTest.java
+@@ -0,0 +1,59 @@
++package hudson.plugins.git;
++
++import hudson.plugins.git.GitChangeSet.Path;
++import hudson.scm.EditType;
++import java.util.ArrayList;
++import java.util.Collection;
++import java.util.HashSet;
++import junit.framework.Assert;
++import junit.framework.TestCase;
++
++public class GitChangeSetTest extends TestCase {
++    
++    public GitChangeSetTest(String testName) {
++        super(testName);
++    }
++
++    public void testChangeSet() {
++        ArrayList<String> lines = new ArrayList<String>();
++        lines.add("Some header junk we should ignore...");
++        lines.add("header line 2");
++        lines.add("commit 123abc456def");
++        lines.add("tree 789ghi012jkl");
++        lines.add("parent 345mno678pqr");
++        lines.add("author John Author <jauthor@nospam.com> 1234567 -0600");
++        lines.add("commiter John Committer <jcommitter@nospam.com> 1234567 -0600");
++        lines.add("");
++        lines.add("    Commit title.");
++        lines.add("    Commit extended description.");
++        lines.add("");
++        lines.add("A\tsrc/test/add.file");
++        lines.add("M\tsrc/test/modified.file");
++        lines.add("D\tsrc/test/deleted.file");
++        GitChangeSet changeSet = new GitChangeSet(lines);
++
++        Assert.assertEquals("123abc456def", changeSet.getId());
++        Assert.assertEquals("Commit title.", changeSet.getMsg());
++        System.out.println("ACTUAL: " + changeSet.getComment());
++        Assert.assertEquals("Commit title.\nCommit extended description.\n", changeSet.getComment());
++        HashSet<String> expectedAffectedPaths = new HashSet<String>(7);
++        expectedAffectedPaths.add("src/test/add.file");
++        expectedAffectedPaths.add("src/test/modified.file");
++        expectedAffectedPaths.add("src/test/deleted.file");
++        Assert.assertEquals(expectedAffectedPaths, changeSet.getAffectedPaths());
++
++        Collection<Path> actualPaths = changeSet.getPaths();
++        for (Path path : actualPaths) {
++            if ("src/test/add.file".equals(path.getPath())) {
++                Assert.assertEquals(EditType.ADD, path.getEditType());
++            } else if ("src/test/modified.file".equals(path.getPath())) {
++                Assert.assertEquals(EditType.EDIT, path.getEditType());
++            } else if ("src/test/deleted.file".equals(path.getPath())) {
++                Assert.assertEquals(EditType.DELETE, path.getEditType());
++            } else {
++                Assert.fail("Unrecognized path.");
++            }
++        }
++    }
++
++}
+-- 
+1.6.1.9.g97c34
+

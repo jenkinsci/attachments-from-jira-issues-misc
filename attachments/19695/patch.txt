@@ -1,0 +1,243 @@
+### Eclipse Workspace Patch 1.0
+#P maven-plugin
+Index: src/main/java/hudson/maven/MavenModuleSetBuild.java
+===================================================================
+--- src/main/java/hudson/maven/MavenModuleSetBuild.java	(revision 34055)
++++ src/main/java/hudson/maven/MavenModuleSetBuild.java	(working copy)
+@@ -57,6 +57,8 @@
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+ 
++import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
++
+ import static hudson.model.Result.FAILURE;
+ 
+ /**
+@@ -209,7 +211,65 @@
+ 
+         return r;
+     }
++    
++    /**
++     * Returns the estimated duration for this builds.
++     * Takes only the modules into account which are actually being build in
++     * case of incremental builds.
++     */
++    @Override
++    public long getEstimatedDuration() {
++        
++        if (!project.isIncrementalBuild()) {
++            return super.getEstimatedDuration();
++        }
+ 
++        long result = 0;
++        
++        Map<MavenModule, List<MavenBuild>> moduleBuilds = getModuleBuilds();
++        for (List<MavenBuild> builds : moduleBuilds.values()) {
++            if (!builds.isEmpty()) {
++                MavenBuild build = builds.get(0);
++                if (build.getResult() != Result.NOT_BUILT) {
++                    if (build.getEstimatedDuration() != -1) {
++                        result += build.getEstimatedDuration();
++                    }
++                }
++            }
++        }
++        
++        result += estimateModuleSetBuildDurationOverhead(3);
++        
++        return result != 0 ? result : -1;
++    }
++    
++    /**
++     * Estimates the duration overhead the {@link MavenModuleSetBuild} itself adds
++     * to the sum of duration of the module builds.
++     */
++    private long estimateModuleSetBuildDurationOverhead(int numberOfBuilds) {
++        List<MavenModuleSetBuild> moduleSetBuilds = getPreviousBuildsOverThreshold(numberOfBuilds, Result.UNSTABLE);
++        
++        if (moduleSetBuilds.isEmpty()) {
++            return 0;
++        }
++        
++        long overhead = 0;
++        for(MavenModuleSetBuild moduleSetBuild : moduleSetBuilds) {
++            long sumOfModuleBuilds = 0;
++            for (List<MavenBuild> builds : moduleSetBuild.getModuleBuilds().values()) {
++                if (!builds.isEmpty()) {
++                    MavenBuild moduleBuild = builds.get(0);
++                    sumOfModuleBuilds += moduleBuild.getDuration();
++                }
++            }
++            
++            overhead += Math.max(0, moduleSetBuild.getDuration() - sumOfModuleBuilds);
++        }
++        
++        return Math.round((double)overhead / moduleSetBuilds.size());
++    }
++
+     @Override
+     public synchronized void delete() throws IOException {
+         super.delete();
+#P hudson-core
+Index: src/main/java/hudson/model/Executor.java
+===================================================================
+--- src/main/java/hudson/model/Executor.java	(revision 34172)
++++ src/main/java/hudson/model/Executor.java	(working copy)
+@@ -245,7 +245,7 @@
+     public int getProgress() {
+         Queue.Executable e = executable;
+         if(e==null)     return -1;
+-        long d = e.getParent().getEstimatedDuration();
++        long d = e.getEstimatedDuration();
+         if(d<0)         return -1;
+ 
+         int num = (int)(getElapsedTime()*100/d);
+@@ -266,7 +266,7 @@
+         if(e==null)     return false;
+ 
+         long elapsed = getElapsedTime();
+-        long d = e.getParent().getEstimatedDuration();
++        long d = e.getEstimatedDuration();
+         if(d>=0) {
+             // if it's taking 10 times longer than ETA, consider it stuck
+             return d*10 < elapsed;
+@@ -298,7 +298,7 @@
+         Queue.Executable e = executable;
+         if(e==null)     return Messages.Executor_NotAvailable();
+ 
+-        long d = e.getParent().getEstimatedDuration();
++        long d = e.getEstimatedDuration();
+         if(d<0)         return Messages.Executor_NotAvailable();
+ 
+         long eta = d-getElapsedTime();
+@@ -315,7 +315,7 @@
+         Queue.Executable e = executable;
+         if(e==null)     return -1;
+ 
+-        long d = e.getParent().getEstimatedDuration();
++        long d = e.getEstimatedDuration();
+         if(d<0)         return -1;
+ 
+         long eta = d-getElapsedTime();
+@@ -355,7 +355,7 @@
+         if (isIdle())
+             return Math.max(finishTime, owner.getConnectTime());
+         else {
+-            return Math.max(startTime + Math.max(0, executable.getParent().getEstimatedDuration()),
++            return Math.max(startTime + Math.max(0, executable.getEstimatedDuration()),
+                     System.currentTimeMillis() + 15000);
+         }
+     }
+Index: src/main/java/hudson/model/Queue.java
+===================================================================
+--- src/main/java/hudson/model/Queue.java	(revision 34172)
++++ src/main/java/hudson/model/Queue.java	(working copy)
+@@ -1131,6 +1131,15 @@
+          * Called by {@link Executor} to perform the task
+          */
+         void run();
++        
++        /**
++         * Estimate of how long will it take to execute this executable.
++         * Measured in milliseconds.
++         *
++         * @return -1 if it's impossible to estimate.
++         * @since 1.375
++         */
++        long getEstimatedDuration();
+ 
+         /**
+          * Used to render the HTML. Should be a human readable text of what this executable is.
+Index: src/main/java/hudson/model/Run.java
+===================================================================
+--- src/main/java/hudson/model/Run.java	(revision 34172)
++++ src/main/java/hudson/model/Run.java	(working copy)
+@@ -681,6 +681,29 @@
+             r=r.previousBuild;
+         return r;
+     }
++    
++    /**
++     * Returns the last 'numberOfBuilds' builds with a build result >= 'threshold'
++     * 
++     * @return a list with the builds (youngest build first).
++     *   May be smaller than 'numberOfBuilds' or even empty
++     *   if not enough builds satisfying the threshold have been found. Never null.
++     * @since 1.375
++     */
++    public List<RunT> getPreviousBuildsOverThreshold(int numberOfBuilds, Result threshold) {
++        List<RunT> result = new ArrayList<RunT>(numberOfBuilds);
++        
++        RunT r = getPreviousBuild();
++        while (r != null && result.size() < numberOfBuilds) {
++            if (!r.isBuilding() && 
++                 (r.getResult() != null && r.getResult().isBetterOrEqualTo(threshold))) {
++                result.add(r);
++            }
++            r = r.getPreviousBuild();
++        }
++        
++        return result;
++    }
+ 
+     public RunT getNextBuild() {
+         return nextBuild;
+@@ -1723,6 +1746,17 @@
+         return job.getBuildByNumber(number);
+     }
+ 
++    /**
++     * Returns the estimated duration for this run if it is currently running.
++     * Default to {@link Job#getEstimatedDuration()}, may be overridden in subclasses
++     * if duration may depend on run specific parameters (like incremental Maven builds).
++     * 
++     * @return the estimated duration in milliseconds
++     * @since 1.375
++     */
++    public long getEstimatedDuration() {
++        return project.getEstimatedDuration();
++    }
+ 
+     public static final XStream XSTREAM = new XStream2();
+     static {
+#P hudson-test-harness
+Index: src/test/java/hudson/maven/MavenMultiModuleTest.java
+===================================================================
+--- src/test/java/hudson/maven/MavenMultiModuleTest.java	(revision 34058)
++++ src/test/java/hudson/maven/MavenMultiModuleTest.java	(working copy)
+@@ -71,7 +71,34 @@
+ 	    assertTrue("duration of moduleset build should be greater-equal than sum of the module builds",
+ 	            pBuild.getDuration() >= summedModuleDuration);
+     }
++    
++    @Bug(6544)
++    public void testEstimatedDurationForIncrementalMultiModMaven()
++            throws Exception {
++        configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
++        MavenModuleSet m = createMavenProject();
++        m.getReporters().add(new TestReporter());
++        m.setScm(new ExtractResourceWithChangesSCM(getClass().getResource(
++                "maven-multimod.zip"), getClass().getResource(
++                "maven-multimod-changes.zip")));
+ 
++        buildAndAssertSuccess(m);
++
++        // Now run a second, incremental build with the changes.
++        m.setIncrementalBuild(true);
++        buildAndAssertSuccess(m);
++
++        MavenModuleSetBuild lastBuild = m.getLastBuild();
++        MavenModuleSetBuild previousBuild = lastBuild.getPreviousBuild();
++        assertNull("There should be only one previous build", previousBuild.getPreviousBuild());
++        
++        // since the estimated duration is calculated based on the previous builds
++        // and there was only one previous build (which built all modules) and this build
++        // did only build one module, the estimated duration of this build must be
++        // smaller than the duration of the previous build.
++        assertTrue(lastBuild.getEstimatedDuration() < previousBuild.getDuration());
++    }
++
+     /**
+      * NPE in {@code getChangeSetFor(m)} in {@link MavenModuleSetBuild} when incremental build is
+      * enabled and a new module is added.

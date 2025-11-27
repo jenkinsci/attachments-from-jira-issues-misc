@@ -1,0 +1,103 @@
+#!groovy
+// Variable definitions
+def customImage = "docker-cse.wds.io/dmc-vidiemi:${env.ENVIRONMENT}_latest"
+
+pipeline {
+  triggers{ cron('H 8 * * *') }
+  agent {
+    kubernetes {
+      inheritFrom 'jenkins-dmc-vidiemi-cron'
+      defaultContainer 'jnlp'
+      yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: ${env.ENVIRONMENT}
+spec:
+  nodeSelector:
+    dgn: "true"
+  imagePullSecrets:
+    - name: docker-registry
+  containers:
+    - name: vidiemi
+      image: ${customImage}
+      imagePullPolicy: Always
+
+      command:
+      - cat
+      tty: true
+      env:
+        - name: DB_SERVER
+          valueFrom:
+            secretKeyRef:
+              name: vidiemi-config
+              key: DB_SERVER
+        - name: DB_SID
+          valueFrom:
+            secretKeyRef:
+              name: vidiemi-config
+              key: DB_SID
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: vidiemi-config
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: vidiemi-config
+              key: DB_PASSWORD
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: vidiemi-config
+              key: DB_PORT
+        - name: FTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: vidiemi-config
+              key: FTP_PASSWORD
+        - name: FTP_USER
+          valueFrom:
+            secretKeyRef:
+              name: vidiemi-config
+              key: FTP_USER
+        - name: FTP_HOST
+          valueFrom:
+            secretKeyRef:
+              name: vidiemi-config
+              key: FTP_HOST
+        - name: ZIP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: vidiemi-config
+              key: ZIP_PASSWORD
+    - name: jnlp
+      image: containers.disney.com/jenkins/inbound-agent:4.7-1
+      command:
+        - sh
+      args:
+        - -c
+        - jenkins-slave
+        - \${JENKINS_SECRET}
+        - \${JENKINS_NAME}
+"""
+    }
+  }
+  stages {
+    stage('vidiemi-run') {
+      steps {
+        container('vidiemi') {
+          sh('#!/bin/bash -e\n' + '/usr/local/bin/entrypoint.sh')
+          sh "java -jar AbandonedCart.jar -Djava.awt.headless=true -Xms768m -Xmx1536m -Xcompressedrefs -Xscmaxaot4M -Xscmx90M -nosplash"
+        }
+      }
+    }
+  }
+  post {
+    always {
+      echo "Cleaning up Workspace"
+      cleanWs()
+    }
+  }
+}

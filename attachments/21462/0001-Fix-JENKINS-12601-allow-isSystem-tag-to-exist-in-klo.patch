@@ -1,0 +1,78 @@
+From bdb451fe6dc1d3ad0bf9168222af0242b7681e55 Mon Sep 17 00:00:00 2001
+From: Steven Aerts <steven.aerts@gmail.com>
+Date: Tue, 31 Jan 2012 13:00:58 +0100
+Subject: [PATCH] Fix JENKINS-12601: allow isSystem tag to exist in klocwork
+ result output.
+
+Signed-off-by: Steven Aerts <steven.aerts@gmail.com>
+---
+ .../plugins/klocwork/model/xsd/klocwork-9.2.xsd    |    2 +
+ .../plugins/klocwork/KlocworkParserTest.java       |    1 +
+ .../klocwork/bug-jenkins-12601-parse-isSystem.xml  |   23 ++++++++++++++++++++
+ 3 files changed, 26 insertions(+), 0 deletions(-)
+ create mode 100644 src/test/resources/com/thalesgroup/hudson/plugins/klocwork/bug-jenkins-12601-parse-isSystem.xml
+
+diff --git a/src/main/resources/com/thalesgroup/hudson/plugins/klocwork/model/xsd/klocwork-9.2.xsd b/src/main/resources/com/thalesgroup/hudson/plugins/klocwork/model/xsd/klocwork-9.2.xsd
+index 1946bd5..1be4b6f 100755
+--- a/src/main/resources/com/thalesgroup/hudson/plugins/klocwork/model/xsd/klocwork-9.2.xsd
++++ b/src/main/resources/com/thalesgroup/hudson/plugins/klocwork/model/xsd/klocwork-9.2.xsd
+@@ -72,6 +72,7 @@
+ 
+     <!-- Mandatory tags -->
+     <xs:element name="problemID" type="xs:int"/>
++    <xs:element name="isSystem" type="xs:string"/>
+     <xs:element name="file" type="xs:string"/>
+     <xs:element name="method" type="xs:string"/>
+     <xs:element name="line" type="xs:int"/>
+@@ -168,6 +169,7 @@
+         <xs:complexType>
+             <xs:all>
+                 <xs:element ref="tag:problemID"/>
++                <xs:element ref="tag:isSystem" minOccurs="0"/>
+                 <xs:element ref="tag:file"/>
+                 <xs:element ref="tag:method"/>
+                 <xs:element ref="tag:line"/>
+diff --git a/src/test/java/com/thalesgroup/hudson/plugins/klocwork/KlocworkParserTest.java b/src/test/java/com/thalesgroup/hudson/plugins/klocwork/KlocworkParserTest.java
+index daaaf48..a929335 100755
+--- a/src/test/java/com/thalesgroup/hudson/plugins/klocwork/KlocworkParserTest.java
++++ b/src/test/java/com/thalesgroup/hudson/plugins/klocwork/KlocworkParserTest.java
+@@ -93,6 +93,7 @@ public class KlocworkParserTest {
+     public void testCsvToSQLProject() {
+         analyzeFiles("report-csvtosql.xml", 66, 18);
+         analyzeFiles("bug-jenkins-10735.xml", 1, 0);
++        analyzeFiles("bug-jenkins-12601-parse-isSystem.xml", 1, 0);
+     }
+     //TO BE COMPLETED (with other files to test)...
+ }
+diff --git a/src/test/resources/com/thalesgroup/hudson/plugins/klocwork/bug-jenkins-12601-parse-isSystem.xml b/src/test/resources/com/thalesgroup/hudson/plugins/klocwork/bug-jenkins-12601-parse-isSystem.xml
+new file mode 100644
+index 0000000..784e9aa
+--- /dev/null
++++ b/src/test/resources/com/thalesgroup/hudson/plugins/klocwork/bug-jenkins-12601-parse-isSystem.xml
+@@ -0,0 +1,23 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<errorList xmlns="http://www.klocwork.com/inForce/report/1.0">
++<problem>
++ <problemID>2</problemID>
++ <isSystem>true</isSystem>
++ <file>C:\Jenkins_Home\jobs\NUnit Quick Learning\workspace\NUnit_Quick_Learn_1\AccountTest.cs</file>
++ <method>AccountTest.cs</method>
++ <line>64</line>
++ <column>20</column>
++ <code>CS.FLOAT.EQCHECK</code>
++ <message>Equality check on floating point type</message>
++ <anchor>0</anchor>
++ <prefix>result=0;doublestep=(x2-x1)/700;</prefix>
++ <postfix>{result=result+x*step;x=x+step;b</postfix>
++ <citingStatus>Analyze</citingStatus>
++ <severity>Style</severity>
++ <severitylevel>8</severitylevel>
++ <displayAs>Warning</displayAs>
++ <taxonomies>
++  <taxonomy name="C#" metaInf=""/>
++ </taxonomies>
++</problem>
++</errorList>
+-- 
+1.7.8.4
+

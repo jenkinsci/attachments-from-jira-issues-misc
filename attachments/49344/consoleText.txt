@@ -1,0 +1,62 @@
+Started by user admin
+Replayed #33
+Running in Durability level: MAX_SURVIVABILITY
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on seliius24809-container in /home/jenkins/agent/workspace/felipe-for-testing
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] withDockerRegistry
+[Pipeline] {
+[Pipeline] isUnix
+[Pipeline] sh
++ docker inspect -f . library/docker
+
+Error: No such object: library/docker
+15:45:38.532798 durable_task_monitor.go:63: exit status 1
+[Pipeline] isUnix
+[Pipeline] sh
++ docker inspect -f . mirror.gcr.io/library/docker
+.
+[Pipeline] withDockerContainer
+seliius24809-container seems to be running inside container f00386c474b433f564d7ad5def8358a482fc9e3640c72a3bc1b1f872b0402ac1
+$ docker run -t -d -u 1000:999 -v /var/run/docker.sock:/var/run/docker.sock -w /home/jenkins/agent/workspace/felipe-for-testing --volumes-from f00386c474b433f564d7ad5def8358a482fc9e3640c72a3bc1b1f872b0402ac1 -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** mirror.gcr.io/library/docker cat
+$ docker top 990536328f0dbce58d2fc43a7cc01ad07a08f0c25a4e530ff05f810d552fe608 -eo pid,comm
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Docker on Docker)
+[Pipeline] getContext
+[Pipeline] isUnix
+[Pipeline] sh
++ docker inspect -f . alpine
+
+Error: No such object: alpine
+15:45:40.417159 durable_task_monitor.go:63: exit status 1
+[Pipeline] isUnix
+[Pipeline] sh
++ docker inspect -f . mirror.gcr.io/alpine
+
+Error: No such object: mirror.gcr.io/alpine
+15:45:40.704922 durable_task_monitor.go:63: exit status 1
+[Pipeline] isUnix
+[Pipeline] sh
++ docker pull mirror.gcr.io/alpine
+Using default tag: latest
+Error response from daemon: manifest for mirror.gcr.io/alpine:latest not found: manifest unknown: Failed to fetch "latest" from request "/v2/alpine/manifests/latest".
+15:45:41.467742 durable_task_monitor.go:63: exit status 1
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+$ docker stop --time=1 990536328f0dbce58d2fc43a7cc01ad07a08f0c25a4e530ff05f810d552fe608
+$ docker rm -f 990536328f0dbce58d2fc43a7cc01ad07a08f0c25a4e530ff05f810d552fe608
+[Pipeline] // withDockerContainer
+[Pipeline] }
+[Pipeline] // withDockerRegistry
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+ERROR: script returned exit code 1
+Finished: FAILURE

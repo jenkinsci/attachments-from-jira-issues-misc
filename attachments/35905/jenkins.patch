@@ -1,0 +1,12 @@
+diff --git a/src/main/java/com/cloudbees/jenkins/plugins/bitbucket/BitbucketBuildStatusNotifications.java b/src/main/java/com/cloudbees/jenkins/plugins/bitbucket/BitbucketBuildStatusNotifications.java
+index 320e416..791f06d 100644
+--- a/src/main/java/com/cloudbees/jenkins/plugins/bitbucket/BitbucketBuildStatusNotifications.java
++++ b/src/main/java/com/cloudbees/jenkins/plugins/bitbucket/BitbucketBuildStatusNotifications.java
+@@ -172,7 +172,8 @@ public class BitbucketBuildStatusNotifications {
+ 
+         @Override
+         public void onCheckout(Run<?, ?> build, SCM scm, FilePath workspace, TaskListener listener, File changelogFile, SCMRevisionState pollingBaseline) throws Exception {
+-            sendNotifications(build, listener);
++            listener.getLogger().println("SKIP NOTIFICATIONS CHECKOUT "+scm.getType()+", "+scm.getKey()+", "+scm.getApi()+", "+scm.getDescriptor()+" : "+workspace.getName()+" and changelog "+changelogFile+", polling baseline:"+(pollingBaseline==null?"null":pollingBaseline.getUrlName()));
+         }
+ 

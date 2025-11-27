@@ -1,0 +1,145 @@
+### Eclipse Workspace Patch 1.0
+#P HUDSON_1_343
+Index: core/src/main/resources/hudson/tasks/ArtifactArchiver/config.properties
+===================================================================
+--- core/src/main/resources/hudson/tasks/ArtifactArchiver/config.properties	(revision 6100)
++++ core/src/main/resources/hudson/tasks/ArtifactArchiver/config.properties	(working copy)
+@@ -21,3 +21,4 @@
+ # THE SOFTWARE.
+ 
+ lastBuildOnly=Discard all but the last successful/stable artifact to save disk space
++zipAll=Compress all artifacts into one zip file
+\ No newline at end of file
+Index: core/src/main/java/hudson/tasks/ArtifactArchiver.java
+===================================================================
+--- core/src/main/java/hudson/tasks/ArtifactArchiver.java	(revision 7306)
++++ core/src/main/java/hudson/tasks/ArtifactArchiver.java	(working copy)
+@@ -23,26 +23,29 @@
+  */
+ package hudson.tasks;
+ 
++import hudson.Extension;
+ import hudson.FilePath;
+ import hudson.Launcher;
+ import hudson.Util;
+-import hudson.Extension;
+ import hudson.model.AbstractBuild;
+ import hudson.model.AbstractProject;
+ import hudson.model.BuildListener;
+-import hudson.model.Result;
+ import hudson.model.Hudson;
++import hudson.model.Result;
++import hudson.util.DirScanner;
+ import hudson.util.FormValidation;
+-import org.kohsuke.stapler.StaplerRequest;
+-import org.kohsuke.stapler.DataBoundConstructor;
+-import org.kohsuke.stapler.AncestorInPath;
+-import org.kohsuke.stapler.QueryParameter;
+ 
+ import java.io.File;
++import java.io.FileOutputStream;
+ import java.io.IOException;
+ 
+ import net.sf.json.JSONObject;
+ 
++import org.kohsuke.stapler.AncestorInPath;
++import org.kohsuke.stapler.DataBoundConstructor;
++import org.kohsuke.stapler.QueryParameter;
++import org.kohsuke.stapler.StaplerRequest;
++
+ /**
+  * Copies the artifacts into an archive directory.
+  *
+@@ -65,14 +68,24 @@
+      */
+     private final boolean latestOnly;
+     
++	/**
++	 * Compress all artifacts in archive directory
++	 */
++	private final boolean zip;
++    
+     private static final Boolean allowEmptyArchive = 
+     	Boolean.getBoolean(ArtifactArchiver.class.getName()+".warnOnEmpty");
+ 
+-    @DataBoundConstructor
+     public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly) {
++    	this(artifacts,excludes,latestOnly,false);
++    }
++    
++    @DataBoundConstructor
++    public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly, boolean zip) {
+         this.artifacts = artifacts.trim();
+         this.excludes = Util.fixEmptyAndTrim(excludes);
+         this.latestOnly = latestOnly;
++        this.zip = zip;
+     }
+ 
+     public String getArtifacts() {
+@@ -87,6 +100,10 @@
+         return latestOnly;
+     }
+     
++    public boolean isZip() {
++    	return zip;
++    }
++    
+     private void listenerWarnOrError(BuildListener listener, String message) {
+     	if (allowEmptyArchive) {
+     		listener.getLogger().println(String.format("WARN: %s", message));
+@@ -114,20 +131,26 @@
+             }
+ 
+             String artifacts = build.getEnvironment(listener).expand(this.artifacts);
+-            if(ws.copyRecursiveTo(artifacts,excludes,new FilePath(dir))==0) {
+-                if(build.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
+-                    // If the build failed, don't complain that there was no matching artifact.
+-                    // The build probably didn't even get to the point where it produces artifacts. 
+-                    listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
+-                    String msg = ws.validateAntFileMask(artifacts);
+-                    if(msg!=null)
+-                        listenerWarnOrError(listener, msg);
+-                }
+-                if (!allowEmptyArchive) {
+-                	build.setResult(Result.FAILURE);
+-                }
+-                return true;
+-            }
++            
++        	if (zip) {
++				File zipFile = new File(dir, build.getParent().getDisplayName() + "_N" + build.getNumber() + "_" + build.getTime().toString() + ".zip");
++				ws.zip(new FileOutputStream(zipFile), new DirScanner.Glob(artifacts, excludes));
++			} else {
++				if(ws.copyRecursiveTo(artifacts,excludes,new FilePath(dir))==0) {
++					if(build.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
++						// If the build failed, don't complain that there was no matching artifact.
++						// The build probably didn't even get to the point where it produces artifacts. 
++						listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
++						String msg = ws.validateAntFileMask(artifacts);
++						if(msg!=null)
++							listenerWarnOrError(listener, msg);
++					}
++					if (!allowEmptyArchive) {
++						build.setResult(Result.FAILURE);
++					}
++					return true;
++				}
++			}
+         } catch (IOException e) {
+             Util.displayIOException(e,listener);
+             e.printStackTrace(listener.error(
+Index: core/src/main/resources/hudson/tasks/ArtifactArchiver/config.jelly
+===================================================================
+--- core/src/main/resources/hudson/tasks/ArtifactArchiver/config.jelly	(revision 6100)
++++ core/src/main/resources/hudson/tasks/ArtifactArchiver/config.jelly	(working copy)
+@@ -34,5 +34,9 @@
+       <f:checkbox />
+       <label class="attach-previous">${%lastBuildOnly}</label>
+     </f:entry>
++    <f:entry title="" field="zip" >
++      <f:checkbox />
++      <label>${%zipAll}</label>
++    </f:entry>
+   </f:advanced>
+ </j:jelly>
+\ No newline at end of file

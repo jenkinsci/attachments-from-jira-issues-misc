@@ -1,0 +1,252 @@
+pipeline {
+    agent none
+    environment{ LANG='pl_PL.UTF-8' }
+    stages {
+        stage('Parameters') {
+            agent {label 'master'}
+            steps {
+                script {
+
+                    properties([
+                        parameters([
+                            // ...
+
+                            // the parameter below does not use any reference but uses the class DynamicReferenceParameter
+                            [$class: 'DynamicReferenceParameter', 
+                                choiceType: 'ET_FORMATTED_HTML', 
+                                omitValueField: true,
+                                name: 'InfoField1',
+                                script: [
+                                    $class: 'GroovyScript',
+                                    fallbackScript: [
+                                        classpath: [], 
+                                        sandbox: false, 
+                                        script: 'return ["ERROR"]'
+                                    ],
+                                    script: [
+                                        classpath: [],
+                                        sandbox: false,
+                                        script:
+                                            """
+                                            import groovy.json.*
+                                            import groovy.json.JsonSlurperClassic
+
+                                            def fileContent = new File('some_file.json').text
+
+                                            // Parse the JSON
+                                            def json = new JsonSlurper().parseText(fileContent)
+
+                                            def seconds = json.fileCreationTimestamp
+                                            
+                                            def date = new Date(seconds * 1000L)
+                                            def outputDateFormat = "yyyy-MM-dd HH:mm:ss"
+                                            def outputTZ = TimeZone.getTimeZone('CET')
+                                            def convertedDate = date.format(outputDateFormat, outputTZ)
+                                            
+                                            ''+convertedDate.toString()+'<br>'
+                                            """
+                                    ]
+                                ]
+                            ], 
+
+                            // PROJEKT
+                            [$class: 'ChoiceParameter', name: 'PROJEKT_ORYGINALNY',
+                                choiceType: 'PT_SINGLE_SELECT', 
+                                description: '''
+                                    ...
+                                ''', 
+                                filterLength: 1, 
+                                filterable: true, 
+                                script: [
+                                    $class: 'GroovyScript', 
+                                    fallbackScript: [
+                                        classpath: [], 
+                                        sandbox: false, 
+                                        script: 'return ["ERROR"]'
+                                    ], 
+                                    script: [
+                                        classpath: [], 
+                                        sandbox: false, 
+                                        script:
+                                            """
+                                                import groovy.json.JsonSlurperClassic
+                                                import jenkins.model.Jenkins
+                                                String jsnFile_path = "project_file.json"
+                                                def parseJSON(json) {
+                                                    return new groovy.json.JsonSlurperClassic().parseText(json)
+                                                }
+                                                def getJSONkeys(jsnFile_path) {
+                                                    def jsnFile = new File(jsnFile_path).getText("UTF-8")
+                                                    def jsn = parseJSON(jsnFile)
+                                                    return jsn.keySet().sort()
+                                                }
+                                                    def dropbox_list = getJSONkeys(jsnFile_path)
+                                                    return (['---'] + dropbox_list) 
+                                            """
+                                    ]
+                                ]
+                            ],
+
+                            // SERWER
+                            [$class: 'CascadeChoiceParameter', name: 'NAZWA_SERWERA',
+                                choiceType: 'PT_SINGLE_SELECT',
+                                description: '''
+                                    ...
+                                ''', 
+                                referencedParameters: 'PROJEKT_ORYGINALNY',
+                                filterLength: 1, 
+                                filterable: true, 
+                                script: [
+                                    $class: 'GroovyScript',
+                                    fallbackScript: [
+                                        classpath: [], 
+                                        sandbox: false, 
+                                        script: 'return ["ERROR"]'
+                                    ], 
+                                    script: [
+                                        classpath: [], 
+                                        sandbox: false, 
+                                        script: """
+                                            import groovy.json.*
+                                            import groovy.json.JsonSlurperClassic
+
+                                            def mapParams = [PROJEKT_ORYGINALNY:PROJEKT_ORYGINALNY]
+
+                                            if(PROJEKT_ORYGINALNY == '---'){
+                                                return ['Wybierz najpierw projekt oryginalny.']
+                                            } else{ 
+                                                // Read the file content
+                                                def fileContent = new File('some_file.json').text
+
+                                                // Parse the JSON
+                                                def json = new JsonSlurper().parseText(fileContent)
+
+                                                try {  
+                                                    // Get the instances with projectId
+                                                    def instances = json.find { it.projectId == PROJEKT_ORYGINALNY }.instances
+                                                    
+                                                    // Extract the names
+                                                    def names = instances.collect { it.name }
+                                                    
+                                                    return (['---'] + names)
+
+                                                } catch(Exception ex) {
+                                                    return(['Brak serwerów dla tego projektu'])
+                                                }
+
+
+                                                //return (['---'] + names)
+                                            }
+                                        """
+
+                                    ]
+                                ]
+                            ],
+
+                            // the parameter below uses the class DynamicReferenceParameter and refers to two parameters above
+                            [$class: 'DynamicReferenceParameter', 
+                                choiceType: 'ET_FORMATTED_HTML', 
+                                omitValueField: true,
+                                name: 'InfoField2',
+                                referencedParameters: 'PROJEKT_ORYGINALNY,NAZWA_SERWERA',
+                                script: [
+                                    $class: 'GroovyScript',
+                                    fallbackScript: [
+                                        classpath: [], 
+                                        sandbox: false, 
+                                        script: 'return ["ERROR"]'
+                                    ],
+                                    script: [
+                                        classpath: [],
+                                        sandbox: false,
+                                        script:
+                                        """
+                                        
+                                            import java.nio.file.Files
+                                            import java.nio.file.Paths
+                                            import java.time.Instant
+                                            import java.time.ZoneId
+                                            import java.time.format.DateTimeFormatter
+                                            import groovy.json.*
+                                            import groovy.json.JsonSlurperClassic
+                                            
+                                            // def mapParams = [PROJEKT_ORYGINALNY:PROJEKT_ORYGINALNY, NAZWA_SERWERA:NAZWA_SERWERA]
+
+                                            def OutputString = ""
+                                            
+                                            if (NAZWA_SERWERA == "---" || PROJEKT_ORYGINALNY == "---" || NAZWA_SERWERA == null || PROJEKT_ORYGINALNY == null) {
+                                                return ["Nazwa serwera jest wymagana."]
+                                            }
+                                            if (NAZWA_SERWERA == "Wybierz najpierw projekt oryginalny."){
+                                                return ["Nazwa serwera jest wymagana."]
+                                            }
+                                            
+                                            def fileContent = new File('some_file.json').text
+
+                                            // Parse the JSON
+                                            def json = new JsonSlurper().parseText(fileContent)
+
+
+
+                                            try {  
+                                                // Get the instances with projectId
+                                                
+                                                def instances = json.find { it.projectId == PROJEKT_ORYGINALNY }.instances
+                                                
+                                                def disks = instances.find { it.name == NAZWA_SERWERA }.disks
+                                                
+                                                def i = 1
+                                                for(singleDisk in disks){
+                                                    if (singleDisk.boot == true){
+                                                        OutputString = OutputString + '<span style="font-weight:bold">Aktualna nazwa dysku bootującego:</span>     ' + singleDisk.sourceName + '<br>'
+                                                    }
+                                                    else{
+                                                        OutputString = OutputString + '<span style="font-weight:bold">Aktualna nazwa dysku dodatkowego nr ' + i + ':</span>  ' + singleDisk.sourceName + '<br>'
+                                                        i++
+                                                    }
+                                                }
+                                                
+                                                def vpc = instances.find { it.name == NAZWA_SERWERA }.network
+                                                def subnet = instances.find { it.name == NAZWA_SERWERA }.subnet
+                                                def ipv4 = instances.find { it.name == NAZWA_SERWERA }.ipv4
+                                                def zone = instances.find { it.name == NAZWA_SERWERA }.zone
+                                                def machineType = instances.find { it.name == NAZWA_SERWERA }.machineType
+                                                OutputString = OutputString + '<span style="font-weight:bold">Sieć:  </span>' + vpc + '<br>'
+                                                OutputString = OutputString + '<span style="font-weight:bold">Podsieć:  </span>' + subnet + '<br>'
+                                                OutputString = OutputString + '<span style="font-weight:bold">Adres IP:  </span>' + ipv4 + '<br>' 
+                                                OutputString = OutputString + '<span style="font-weight:bold">Strefa:  </span>' + zone + '<br>' 
+                                                OutputString = OutputString + '<span style="font-weight:bold">Typ maszyny:  </span>' + machineType + '<br>' 
+                                                
+
+                                                def modificationDate = ""
+                                                def file = Paths.get('some_file.json')
+                                                if (Files.exists(file)) {
+                                                    def modificationTime = Files.getLastModifiedTime(file).toInstant()
+                                                    modificationDate = modificationTime.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                                                } else {
+                                                    return ["Plik 'some_file.json' nie istnieje"]
+                                                }
+
+                                                OutputString = OutputString + '<span>Wyświetlane powyżej dane serwera oryginalnego pochodzą z lokalnego pliku danych o infrastrukturze. Ostatnia aktualizacja pliku: '+modificationDate.toString()+'</span><br>'
+                                                
+                                                ''+OutputString
+
+                                            } catch(Exception ex) {
+                                            
+                                                return([ex.toString()])
+                                            }
+                                        
+                                        """
+                                    ]
+                                ]
+                            ],
+
+
+                        ])
+                    ])
+                }
+            }
+        }
+        // ... other stages
+    }
+}

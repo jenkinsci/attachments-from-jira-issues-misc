@@ -1,0 +1,1076 @@
+Index: src/main/java/hudson/plugins/clearcase/AbstractClearCaseScm.java
+===================================================================
+--- src/main/java/hudson/plugins/clearcase/AbstractClearCaseScm.java	(revision 13597)
++++ src/main/java/hudson/plugins/clearcase/AbstractClearCaseScm.java	(working copy)
+@@ -167,7 +167,6 @@
+ 			Launcher launcher) {
+ 		String generatedNormalizedViewName = viewName;
+ 
+-		generatedNormalizedViewName = viewName;
+ 		if (build != null) {
+ 			generatedNormalizedViewName = Util.replaceMacro(viewName,
+ 					new BuildVariableResolver(build, launcher));
+Index: src/main/java/hudson/plugins/clearcase/action/DynamicCheckoutAction.java
+===================================================================
+--- src/main/java/hudson/plugins/clearcase/action/DynamicCheckoutAction.java	(revision 13597)
++++ src/main/java/hudson/plugins/clearcase/action/DynamicCheckoutAction.java	(working copy)
+@@ -16,16 +16,18 @@
+ 
+     private ClearTool cleartool;
+     private String configSpec;
++    private boolean doNotUpdateConfigSpec;
+ 
+-    public DynamicCheckoutAction(ClearTool cleartool, String configSpec) {
++    public DynamicCheckoutAction(ClearTool cleartool, String configSpec, boolean doNotUpdateConfigSpec) {
+         this.cleartool = cleartool;
+         this.configSpec = configSpec;
++        this.doNotUpdateConfigSpec = doNotUpdateConfigSpec;
+     }
+ 
+     public boolean checkout(Launcher launcher, FilePath workspace, String viewName) throws IOException, InterruptedException { 
+         cleartool.startView(viewName);
+         String currentConfigSpec = cleartool.catcs(viewName).trim();
+-        if (!configSpec.trim().replaceAll("\r\n", "\n").equals(currentConfigSpec)) {
++        if (!doNotUpdateConfigSpec && !configSpec.trim().replaceAll("\r\n", "\n").equals(currentConfigSpec)) {
+             String tempConfigSpec = configSpec;
+             if (launcher.isUnix()) {
+                 tempConfigSpec = configSpec.replaceAll("\r\n", "\n");
+Index: src/main/java/hudson/plugins/clearcase/action/UcmDynamicCheckoutAction.java
+===================================================================
+--- src/main/java/hudson/plugins/clearcase/action/UcmDynamicCheckoutAction.java	(revision 0)
++++ src/main/java/hudson/plugins/clearcase/action/UcmDynamicCheckoutAction.java	(revision 0)
+@@ -0,0 +1,32 @@
++package hudson.plugins.clearcase.action;
++
++import hudson.FilePath;
++import hudson.Launcher;
++import hudson.plugins.clearcase.ClearTool;
++
++import java.io.IOException;
++
++/**
++ * Check out action for dynamic views.
++ * This will not update any files from the repository as it is a dynamic view.
++ * It only makes sure the view is started as config specs don't exist in UCM
++ */
++public class UcmDynamicCheckoutAction implements CheckOutAction {
++
++    private ClearTool cleartool;
++    private String stream;
++        
++    public UcmDynamicCheckoutAction(ClearTool cleartool, String stream) {
++        super();
++        this.cleartool = cleartool;
++        this.stream = stream;
++    }
++
++    public boolean checkout(Launcher launcher, FilePath workspace, String viewName) throws IOException, InterruptedException {        
++    	cleartool.startView(viewName);
++    	cleartool.syncronizeViewWithStream(viewName, stream);
++        
++        return true;
++    }
++
++}
+Index: src/main/java/hudson/plugins/clearcase/action/UcmSnapshotCheckoutAction.java
+===================================================================
+--- src/main/java/hudson/plugins/clearcase/action/UcmSnapshotCheckoutAction.java	(revision 13597)
++++ src/main/java/hudson/plugins/clearcase/action/UcmSnapshotCheckoutAction.java	(working copy)
+@@ -2,7 +2,6 @@
+ 
+ import hudson.FilePath;
+ import hudson.Launcher;
+-import hudson.model.Hudson;
+ import hudson.plugins.clearcase.ClearTool;
+ 
+ import java.io.IOException;
+@@ -16,7 +15,7 @@
+ public class UcmSnapshotCheckoutAction implements CheckOutAction {
+ 
+     private ClearTool cleartool;
+-
++    
+     private String stream;
+ 
+     private String loadRules;
+@@ -29,8 +28,8 @@
+         this.loadRules = loadRules;
+     }
+ 
+-    public boolean checkout(Launcher launcher, FilePath workspace,
+-            String viewName) throws IOException, InterruptedException {
++    public boolean checkout(Launcher launcher, FilePath workspace, String viewName) 
++    		throws IOException, InterruptedException {
+         boolean localViewPathExists = new FilePath(workspace, viewName)
+                 .exists();
+ 
+Index: src/main/java/hudson/plugins/clearcase/ClearCaseSCM.java
+===================================================================
+--- src/main/java/hudson/plugins/clearcase/ClearCaseSCM.java	(revision 13597)
++++ src/main/java/hudson/plugins/clearcase/ClearCaseSCM.java	(working copy)
+@@ -56,19 +56,20 @@
+ 	private String viewDrive;
+ 	private final String branch;
+ 	private final String vobPaths;
++    private boolean doNotUpdateConfigSpec;
+ 
+-	@DataBoundConstructor
+-	public ClearCaseSCM(String branch, String configspec, String viewname,
+-			boolean useupdate, String vobpaths, boolean usedynamicview,
+-			String viewdrive, String mkviewoptionalparam,
+-			boolean filterOutDestroySubBranchEvent) {
+-		super(viewname, mkviewoptionalparam, filterOutDestroySubBranchEvent);
+-		this.branch = branch;
+-		this.configSpec = configspec;
+-		this.useUpdate = useupdate;
+-		this.vobPaths = vobpaths;
+-		this.useDynamicView = usedynamicview;
+-		this.viewDrive = viewdrive;
++    @DataBoundConstructor
++    public ClearCaseSCM(String branch, String configspec, String viewname, boolean useupdate, String vobpaths,
++            boolean usedynamicview, String viewdrive, String mkviewoptionalparam, boolean filterOutDestroySubBranchEvent,
++            boolean doNotUpdateConfigSpec) {
++        super(viewname, mkviewoptionalparam, filterOutDestroySubBranchEvent);
++        this.branch = branch;
++        this.configSpec = configspec;
++        this.useUpdate = useupdate;
++        this.vobPaths = vobpaths;
++        this.useDynamicView = usedynamicview;
++        this.viewDrive = viewdrive;
++        this.doNotUpdateConfigSpec = doNotUpdateConfigSpec;
+ 
+ 		if (this.useDynamicView) {
+ 			this.useUpdate = false;
+@@ -94,10 +95,14 @@
+ 	public String getViewDrive() {
+ 		return viewDrive;
+ 	}
++    
++    public String getVobPaths() {
++    	return vobPaths;
++    }
+ 
+-	public Object getVobPaths() {
+-		return vobPaths;
+-	}
++    public boolean isDoNotUpdateConfigSpec() {
++    	return doNotUpdateConfigSpec;
++    }
+ 
+ 	/**
+ 	 * Return the view paths that will be used when getting changes for a view.
+@@ -144,7 +149,6 @@
+ 	@Override
+ 	public void buildEnvVars(AbstractBuild build, Map<String, String> env) {
+ 		super.buildEnvVars(build, env);
+-
+ 		if (useDynamicView) {
+ 			if (viewDrive != null) {
+ 				env.put(CLEARCASE_VIEWPATH_ENVSTR, viewDrive + File.separator
+@@ -160,7 +164,7 @@
+ 		CheckOutAction action;
+ 		if (useDynamicView) {
+ 			action = new DynamicCheckoutAction(createClearTool(variableResolver, launcher),
+-					configSpec);
++					configSpec, doNotUpdateConfigSpec);
+ 		} else {
+ 			action = new SnapshotCheckoutAction(createClearTool(variableResolver, launcher),
+ 					configSpec, useUpdate);
+@@ -299,7 +303,8 @@
+ 					req.getParameter("cc.usedynamicview") != null,
+ 					req.getParameter("cc.viewdrive"),
+ 					req.getParameter("cc.mkviewoptionalparam"),
+-					req.getParameter("cc.filterOutDestroySubBranchEvent") != null);			
++					req.getParameter("cc.filterOutDestroySubBranchEvent") != null,
++					req.getParameter("cc.doNotUpdateConfigSpec") != null);			
+ 			return scm;
+ 		}
+ 
+Index: src/main/java/hudson/plugins/clearcase/ClearCaseUcmSCM.java
+===================================================================
+--- src/main/java/hudson/plugins/clearcase/ClearCaseUcmSCM.java	(revision 13597)
++++ src/main/java/hudson/plugins/clearcase/ClearCaseUcmSCM.java	(working copy)
+@@ -3,12 +3,14 @@
+ import hudson.FilePath;
+ import hudson.Launcher;
+ import hudson.model.AbstractBuild;
++import hudson.model.AbstractBuild;
+ import hudson.model.ModelObject;
+ import hudson.plugins.clearcase.action.ChangeLogAction;
+ import hudson.plugins.clearcase.action.CheckOutAction;
+ import hudson.plugins.clearcase.action.DefaultPollAction;
+ import hudson.plugins.clearcase.action.PollAction;
+ import hudson.plugins.clearcase.action.SaveChangeLogAction;
++import hudson.plugins.clearcase.action.UcmDynamicCheckoutAction;
+ import hudson.plugins.clearcase.action.UcmSnapshotCheckoutAction;
+ import hudson.plugins.clearcase.ucm.UcmChangeLogAction;
+ import hudson.plugins.clearcase.ucm.UcmChangeLogParser;
+@@ -34,13 +36,19 @@
+ 
+     private final String stream;
+     private final String loadRules;
++    private boolean useDynamicView;
++    private String viewDrive;
+ 
+     @DataBoundConstructor
+-    public ClearCaseUcmSCM(String stream, String loadrules, String viewname, String mkviewoptionalparam,
++    public ClearCaseUcmSCM(String stream, String loadrules, String viewname, 
++    		boolean usedynamicview, String viewdrive, String mkviewoptionalparam,
+             boolean filterOutDestroySubBranchEvent) {
+         super(viewname, mkviewoptionalparam, filterOutDestroySubBranchEvent);
+         this.stream = shortenStreamName(stream);
+         this.loadRules = loadrules;
++        this.useDynamicView = usedynamicview;
++        this.viewDrive = viewdrive;
++
+     }
+ 
+     /**
+@@ -58,7 +66,15 @@
+     public String getStream() {
+         return stream;
+     }
++    
++    public boolean isUseDynamicView() {
++        return useDynamicView;
++    }
+ 
++    public String getViewDrive() {
++        return viewDrive;
++    }
++
+     @Override
+     public ClearCaseUcmScmDescriptor getDescriptor() {
+         return PluginImpl.UCM_DESCRIPTOR;
+@@ -83,9 +99,9 @@
+         String[] rules = loadRules.split("\n");
+         for (int i = 0; i < rules.length; i++) {
+             String rule = rules[i];
+-            // Remove "\\", "\" or "/" from the load rule. (bug#1706)
++            // Remove "\\", "\" or "/" from the load rule. (bug#1706) Only if the view is not dynamic
+             // the user normally enters a load rule beginning with those chars
+-            while (rule.startsWith("\\") || rule.startsWith("/")) {
++            while (!useDynamicView && (rule.startsWith("\\") || rule.startsWith("/"))) {
+                 rule = rule.substring(1);               
+             }
+             rules[i] = rule;
+@@ -95,7 +111,13 @@
+ 
+     @Override
+     protected CheckOutAction createCheckOutAction(VariableResolver variableResolver, ClearToolLauncher launcher) {
+-        return new UcmSnapshotCheckoutAction(createClearTool(variableResolver, launcher), getStream(), getLoadRules());
++    	CheckOutAction action;
++    	if (useDynamicView) {
++    		action = new UcmDynamicCheckoutAction(createClearTool(variableResolver, launcher), getStream());
++    	} else {
++    		action = new UcmSnapshotCheckoutAction(createClearTool(variableResolver, launcher), getStream(), getLoadRules());
++    	}
++        return action;
+     }
+ 
+     @Override
+@@ -106,7 +128,21 @@
+     @Override
+     protected ChangeLogAction createChangeLogAction(ClearToolLauncher launcher, AbstractBuild<?, ?> build,Launcher baseLauncher) {
+     	VariableResolver variableResolver = new BuildVariableResolver(build, baseLauncher);
+-    	return new UcmChangeLogAction(createClearTool(null, launcher));
++    	UcmChangeLogAction action = new UcmChangeLogAction(createClearTool(variableResolver, launcher));
++    	if (useDynamicView) {
++            String extendedViewPath = viewDrive;
++            if (! (viewDrive.endsWith("\\") && viewDrive.endsWith("/"))) {
++                // Need to deteremine what kind of char to add in between
++                if (viewDrive.contains("/")) {
++                    extendedViewPath += "/";
++                } else {
++                    extendedViewPath += "\\";
++                }                
++            }
++            extendedViewPath += getViewName();
++            action.setExtendedViewPath(extendedViewPath);
++        }
++        return action;
+     }
+ 
+     @Override
+@@ -115,6 +151,14 @@
+     }
+     
+     
++    protected ClearTool createClearTool(VariableResolver variableResolver, ClearToolLauncher launcher) {
++        if (useDynamicView) {
++            return new ClearToolDynamicUCM(variableResolver, launcher, viewDrive);
++        } else {
++            return super.createClearTool(variableResolver, launcher);
++        }
++    }
++    
+     private String shortenStreamName(String longStream) {
+         if (longStream.startsWith("stream:")) {
+             return longStream.substring("stream:".length());
+@@ -144,10 +188,18 @@
+         public boolean configure(StaplerRequest req) {
+             return true;
+         }
+-
++        
+         @Override
+-        public SCM newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+-            return req.bindJSON(ClearCaseUcmSCM.class, formData);
++        public SCM newInstance(StaplerRequest req) throws FormException {
++        	ClearCaseUcmSCM scm = new ClearCaseUcmSCM(
++        			req.getParameter("ucm.stream"),
++        			req.getParameter("ucm.loadrules"),
++        			req.getParameter("ucm.viewname"),
++        			req.getParameter("ucm.usedynamicview") != null,
++        			req.getParameter("ucm.viewdrive"),
++        			req.getParameter("ucm.mkviewoptionalparam"),
++        			req.getParameter("ucm.filterOutDestroySubBranchEvent") != null);
++            return scm;
+         }
+     }
+ }
+Index: src/main/java/hudson/plugins/clearcase/ClearTool.java
+===================================================================
+--- src/main/java/hudson/plugins/clearcase/ClearTool.java	(revision 13597)
++++ src/main/java/hudson/plugins/clearcase/ClearTool.java	(working copy)
+@@ -100,4 +100,14 @@
+      * @param viewTags One or more currently registered view tags (that is, view tags visible to lsview).
+      */
+     void startView(String viewTags) throws IOException, InterruptedException;
++    
++    /**
++     * Syncronizes the Dynamic UCM view with the streams recomended baseline
++     * 
++     * @param viewName
++     * @param stream
++     * @throws IOException
++     * @throws InterruptedException
++     */
++    void syncronizeViewWithStream(String viewName, String stream) throws IOException, InterruptedException;
+ }
+Index: src/main/java/hudson/plugins/clearcase/ClearToolDynamic.java
+===================================================================
+--- src/main/java/hudson/plugins/clearcase/ClearToolDynamic.java	(revision 13597)
++++ src/main/java/hudson/plugins/clearcase/ClearToolDynamic.java	(working copy)
+@@ -51,6 +51,10 @@
+     public void update(String viewName, String loadRules) throws IOException, InterruptedException {
+         launcher.getListener().fatalError("Dynamic view does not support update");
+     }
++    
++    public void syncronizeViewWithStream(String viewName, String stream) throws IOException, InterruptedException {
++        launcher.getListener().fatalError("Dynamic view does not support syncronize");
++    }
+ 
+     public void startView(String viewTags)  throws IOException, InterruptedException {
+         ArgumentListBuilder cmd = new ArgumentListBuilder();
+Index: src/main/java/hudson/plugins/clearcase/ClearToolDynamicUCM.java
+===================================================================
+--- src/main/java/hudson/plugins/clearcase/ClearToolDynamicUCM.java	(revision 0)
++++ src/main/java/hudson/plugins/clearcase/ClearToolDynamicUCM.java	(revision 0)
+@@ -0,0 +1,91 @@
++package hudson.plugins.clearcase;
++
++import hudson.FilePath;
++import hudson.util.ArgumentListBuilder;
++import hudson.util.VariableResolver;
++
++import java.io.IOException;
++
++public class ClearToolDynamicUCM extends ClearToolExec {
++
++    private transient String viewDrive;
++
++    public ClearToolDynamicUCM(VariableResolver variableResolver, ClearToolLauncher launcher, String viewDrive) {
++        super(variableResolver, launcher);
++        this.viewDrive = viewDrive;
++    }
++
++    @Override
++    protected FilePath getRootViewPath(ClearToolLauncher launcher) {
++        return new FilePath(launcher.getWorkspace().getChannel(), viewDrive);
++    }
++
++    public void setcs(String viewName, String configSpec) throws IOException, InterruptedException {
++        launcher.getListener().fatalError("Dynamic UCM view does not support setcs with a config spec");
++    }
++    
++    /**
++     * Syncronize the dynamic view with the latest recomended baseline for the stream.
++     * 1. Generated a new config spec
++     * 2. Set the config spec on the view
++     */
++    public void syncronizeViewWithStream(String viewName, String stream) throws IOException, InterruptedException {
++        chstream(viewName, stream);
++        setcs(viewName);
++    }
++    
++    /**
++     * The config spec of the Dynamic UCM must be updated if a new baseline is recomended.
++     * Therefore chstream is executed to regenerate the config spec it must then be set on
++     * the view
++     * 
++     * @see http://www.ipnom.com/ClearCase-Commands/chstream.html
++     */
++    private void chstream(String viewName, String stream) throws IOException, InterruptedException {
++        ArgumentListBuilder cmd = new ArgumentListBuilder();
++        cmd.add("chstream");
++        cmd.add("-generate");
++        cmd.add("stream:" + stream);
++        
++        FilePath viewPath = getRootViewPath(launcher).child(viewName);
++        launcher.run(cmd.toCommandArray(), null, null, viewPath);
++    }
++    
++    /**
++     * The view tag does need not be active.
++     * However, it is possible to set the config spec of a dynamic UCM view from within a snapshot view
++     * using "-tag view-tag -stream"
++     * 
++     * This will only have an effect if chstream is executed first
++     * 
++     * @see http://www.ipnom.com/ClearCase-Commands/setcs.html
++     */
++    private void setcs(String viewName) throws IOException, InterruptedException {
++        ArgumentListBuilder cmd = new ArgumentListBuilder();
++        cmd.add("setcs");
++        cmd.add("-tag");
++        cmd.add(viewName);
++        cmd.add("-stream");
++        launcher.run(cmd.toCommandArray(), null, null, null);
++    }
++
++    public void mkview(String viewName, String streamSelector) throws IOException, InterruptedException {
++        launcher.getListener().fatalError("Dynamic UCM view does not support mkview");        
++    }
++
++    public void rmview(String viewName) throws IOException, InterruptedException {
++        launcher.getListener().fatalError("Dynamic UCM view does not support rmview");
++    }
++
++    public void update(String viewName, String loadRules) throws IOException, InterruptedException {
++        launcher.getListener().fatalError("Dynamic UCM view does not support update");
++    }
++
++    public void startView(String viewTags)  throws IOException, InterruptedException {
++        ArgumentListBuilder cmd = new ArgumentListBuilder();
++        cmd.add("startview");
++        cmd.addTokenized(viewTags);
++        launcher.run(cmd.toCommandArray(), null, null, null);
++    }
++
++}
+Index: src/main/java/hudson/plugins/clearcase/ClearToolSnapshot.java
+===================================================================
+--- src/main/java/hudson/plugins/clearcase/ClearToolSnapshot.java	(revision 13597)
++++ src/main/java/hudson/plugins/clearcase/ClearToolSnapshot.java	(working copy)
+@@ -118,4 +118,8 @@
+     public void startView(String viewTag) throws IOException, InterruptedException {
+         launcher.getListener().fatalError("Snapshot view does not support startview");
+     }
++    
++    public void syncronizeViewWithStream(String viewName, String stream) throws IOException, InterruptedException {
++        launcher.getListener().fatalError("Snapshot view does not support syncronize");
++    }
+ }
+Index: src/main/java/hudson/plugins/clearcase/ucm/UcmActivity.java
+===================================================================
+--- src/main/java/hudson/plugins/clearcase/ucm/UcmActivity.java	(revision 13597)
++++ src/main/java/hudson/plugins/clearcase/ucm/UcmActivity.java	(working copy)
+@@ -93,7 +93,7 @@
+ 
+     @Exported
+     public boolean isIntegrationActivity() {
+-        if (name.startsWith("deliver.") || name.startsWith("rebase.")) {
++        if (name.startsWith("deliver.")) {
+             return true;
+         } else {
+             return false;
+Index: src/main/java/hudson/plugins/clearcase/ucm/UcmChangeLogAction.java
+===================================================================
+--- src/main/java/hudson/plugins/clearcase/ucm/UcmChangeLogAction.java	(revision 13597)
++++ src/main/java/hudson/plugins/clearcase/ucm/UcmChangeLogAction.java	(working copy)
+@@ -2,6 +2,7 @@
+ 
+ import static hudson.plugins.clearcase.util.OutputFormat.*;
+ 
++import hudson.plugins.clearcase.ClearCaseChangeLogEntry;
+ import hudson.plugins.clearcase.ClearTool;
+ import hudson.plugins.clearcase.action.ChangeLogAction;
+ import hudson.plugins.clearcase.util.ClearToolFormatHandler;
+@@ -47,6 +48,11 @@
+     private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMdd.HHmmss");
+     private Map<String, UcmActivity> activityNameToEntry = new HashMap<String, UcmActivity>();
+ 
++    /**
++     * Extended view path that should be removed file paths in entries.
++     */
++    private String extendedViewPath;
++    
+     public UcmChangeLogAction(ClearTool cleartool) {
+         this.cleartool = cleartool;
+     }
+@@ -85,7 +91,15 @@
+ 
+                     // read values;
+                     currentFile.setDate(dateFormatter.parse(matcher.group(1)));
+-                    currentFile.setName(matcher.group(2));
++                    
++                    String fileName = matcher.group(2).trim();
++                    if (extendedViewPath != null) {
++                        if (fileName.toLowerCase().startsWith(extendedViewPath)) {
++                            fileName = fileName.substring(extendedViewPath.length());
++                        }
++                    }
++                    
++                    currentFile.setName(fileName);
+                     currentFile.setVersion(matcher.group(3));
+                     currentFile.setEvent(matcher.group(5));
+                     currentFile.setOperation(matcher.group(6));
+@@ -125,7 +139,9 @@
+                 currentFile.setComment(commentBuilder.toString());
+             }
+         } catch (ParseException ex) {
+-            throw new IOException("Could not parse cleartool output", ex);
++        	IOException ioe = new IOException("Could not parse cleartool output");
++        	ioe.setStackTrace(ex.getStackTrace());
++            throw ioe;
+         }
+         return result;
+     }
+@@ -171,5 +187,24 @@
+         }
+         
+         reader.close();
+-    } 
++    }
++    
++    /**
++     * Sets the extended view path.
++     * The extended view path will be removed from file paths in the event.
++     * The extended view path is for example the view root + view name; and this
++     * path shows up in the history and can be conusing for users.
++     * @param path the new extended view path.
++     */
++    public void setExtendedViewPath(String path) {
++        if (path != null) {
++            this.extendedViewPath = path.toLowerCase();
++        } else {
++            this.extendedViewPath = null;
++        }
++    }
++
++    public String getExtendedViewPath() {
++        return extendedViewPath;
++    }
+ }
+Index: src/main/resources/hudson/plugins/clearcase/ClearCaseSCM/config.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/clearcase/ClearCaseSCM/config.jelly	(revision 13597)
++++ src/main/resources/hudson/plugins/clearcase/ClearCaseSCM/config.jelly	(working copy)
+@@ -49,6 +49,12 @@
+             </j:choose>
+           </f:entry>
+           
++          <f:entry title="Do Not Reset Config Spec">
++			<f:checkbox name="cc.doNotUpdateConfigSpec" checked="${scm.doNotUpdateConfigSpec}"/>
++      				If checked, Hudson will not use 'cleartool setcs' even if the specifed config spec is
++      				different to the dynamic view current config spec.
++		  </f:entry>
++          
+         </f:optionalBlock>
+       </table>
+ 	</f:block>
+Index: src/main/resources/hudson/plugins/clearcase/ClearCaseUcmSCM/config.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/clearcase/ClearCaseUcmSCM/config.jelly	(revision 13597)
++++ src/main/resources/hudson/plugins/clearcase/ClearCaseUcmSCM/config.jelly	(working copy)
+@@ -8,28 +8,48 @@
+   			</div>
+     	</f:description>
+   	<f:entry title="View name" help="/plugin/clearcase/localdir.html">
+-  		<f:textbox name="viewname" value="${h.defaulted(scm.viewName, 'hudson_view')}" 
++  		<f:textbox name="ucm.viewname" value="${h.defaulted(scm.viewName, 'hudson_view')}" 
+   			checkUrl="'${rootURL}/scm/ClearCaseSCM/mandatoryCheck?errorText='+escape('View name is mandatory')+'&amp;value='+escape(this.value)" />
+     </f:entry>
+     
+ 	<f:entry title="Stream selector" help="/plugin/clearcase/stream.html">
+-		<f:textbox name="stream" value="${scm.stream}" 
++		<f:textbox name="ucm.stream" value="${scm.stream}" 
+ 			checkUrl="'${rootURL}/scm/ClearCaseSCM/mandatoryCheck?errorText='+escape('Stream selector is mandatory')+'&amp;value='+escape(this.value)" />
+ 	</f:entry>
+     
+ 	<f:entry title="Load rules" help="/plugin/clearcase/loadrules.html">
+-		<f:textarea name="loadrules" value="${scm.loadRules}" 
++		<f:textarea name="ucm.loadrules" value="${scm.loadRules}" 
+ 			checkUrl="'${rootURL}/scm/ClearCaseSCM/mandatoryCheck?errorText='+escape('Load rules are mandatory')+'&amp;value='+escape(this.value)" />
+ 	</f:entry>
+ 
+ 	<f:advanced>
+ 		<f:entry title="Additional mkview arguments" help="/plugin/clearcase/mkviewoptionalparam.html">
+-			<f:expandableTextbox name="mkviewoptionalparam" value="${scm.mkviewOptionalParam}" />
++			<f:expandableTextbox name="ucm.mkviewoptionalparam" value="${scm.mkviewOptionalParam}" />
+ 		</f:entry>
+         <f:entry title="Filter 'Destroy sub branch' event" help="/plugin/clearcase/filteroutdestroysubbranchevent.html">
+-		    <f:checkbox name="cc.filterOutDestroySubBranchEvent" checked="${scm.filteringOutDestroySubBranchEvent}"/>
++		    <f:checkbox name="ucm.filterOutDestroySubBranchEvent" checked="${scm.filteringOutDestroySubBranchEvent}"/>
+       			If checked, Hudson will filter out <i>'Destroy sub-branch "BRANCHNAME" of branch'</i> events when polling
+       			and retrieving change logs from a ClearCase repository.
+ 	    </f:entry>
++	    <f:block>
++        <table>
++
++        <f:optionalBlock name="ucm.usedynamicview" title="Use existing UCM dynamic view"
++            checked="${scm.useDynamicView}" help="/plugin/clearcase/dynamicview.html">
++            
++          <f:entry title="View root" help="/plugin/clearcase/viewdrive.html">
++          	<j:choose>
++          		<j:when test="${h.isWindows()}">
++            		<f:textbox name="ucm.viewdrive" value="${h.defaulted(scm.viewDrive, 'M:\')}"/>
++            	</j:when>
++            	<j:otherwise>
++            		<f:textbox name="ucm.viewdrive" value="${h.defaulted(scm.viewDrive, '/view')}"/>
++            	</j:otherwise>
++            </j:choose>
++          </f:entry>
++          
++        </f:optionalBlock>
++      </table>
++	</f:block>
+ 	</f:advanced>
+ </j:jelly>
+\ No newline at end of file
+Index: src/test/java/hudson/plugins/clearcase/action/DynamicCheckoutActionTest.java
+===================================================================
+--- src/test/java/hudson/plugins/clearcase/action/DynamicCheckoutActionTest.java	(revision 13597)
++++ src/test/java/hudson/plugins/clearcase/action/DynamicCheckoutActionTest.java	(working copy)
+@@ -55,7 +55,7 @@
+             }
+         });
+ 
+-        DynamicCheckoutAction action = new DynamicCheckoutAction(clearTool, "config\nspec");
++        DynamicCheckoutAction action = new DynamicCheckoutAction(clearTool, "config\nspec", false);
+         boolean success = action.checkout(launcher, workspace, "viewname");
+         assertTrue("Checkout method did not return true.", success);
+ 
+@@ -78,14 +78,36 @@
+             }
+         });
+ 
+-        DynamicCheckoutAction action = new DynamicCheckoutAction(clearTool, "config\r\nspec");
++        DynamicCheckoutAction action = new DynamicCheckoutAction(clearTool, "config\r\nspec", false);
+         boolean success = action.checkout(launcher, workspace, "viewname");
+         assertTrue("Checkout method did not return true.", success);
+ 
+         context.assertIsSatisfied();
+         classContext.assertIsSatisfied();
+     }
++    
++    @Test
++    public void testChangeInConfigSpecDoNotResetConfigSpecEnabled() throws Exception {
++        context.checking(new Expectations() {
++            {
++                one(clearTool).startView("viewname");
++                one(clearTool).catcs("viewname"); will(returnValue("other configspec"));
++            }
++        });
++        classContext.checking(new Expectations() {
++            {
++                ignoring(launcher).isUnix(); will(returnValue(false));
++            }
++        });
+ 
++        DynamicCheckoutAction action = new DynamicCheckoutAction(clearTool, "config\r\nspec", true);
++        boolean success = action.checkout(launcher, workspace, "viewname");
++        assertTrue("Checkout method did not return true.", success);
++
++        context.assertIsSatisfied();
++        classContext.assertIsSatisfied();
++    }
++
+     @Test
+     public void testNoChangeInConfigSpec() throws Exception {
+         context.checking(new Expectations() {
+@@ -100,7 +122,7 @@
+             }
+         });
+ 
+-        DynamicCheckoutAction action = new DynamicCheckoutAction(clearTool, "config\nspec");
++        DynamicCheckoutAction action = new DynamicCheckoutAction(clearTool, "config\nspec", false);
+         boolean success = action.checkout(launcher, workspace, "viewname");
+         assertTrue("Checkout method did not return true.", success);
+ 
+Index: src/test/java/hudson/plugins/clearcase/action/UcmSnapshotCheckoutActionTest.java
+===================================================================
+--- src/test/java/hudson/plugins/clearcase/action/UcmSnapshotCheckoutActionTest.java	(revision 13597)
++++ src/test/java/hudson/plugins/clearcase/action/UcmSnapshotCheckoutActionTest.java	(working copy)
+@@ -40,7 +40,7 @@
+         });
+ 
+         CheckOutAction action = new UcmSnapshotCheckoutAction(clearTool,
+-                "stream", "loadrule");
++        		"stream", "loadrule");
+         action.checkout(launcher, workspace, "viewname");
+ 
+         context.assertIsSatisfied();
+@@ -60,7 +60,7 @@
+         });
+ 
+         CheckOutAction action = new UcmSnapshotCheckoutAction(clearTool,
+-                "stream", "loadrule");
++        		"stream", "loadrule");
+         action.checkout(launcher, workspace, "viewname");
+ 
+         context.assertIsSatisfied();
+@@ -81,7 +81,7 @@
+         });
+ 
+         CheckOutAction action = new UcmSnapshotCheckoutAction(clearTool,
+-                "stream", loadRules);
++        		"stream", loadRules);
+         action.checkout(launcher, workspace, viewName);
+ 
+         context.assertIsSatisfied();
+@@ -176,7 +176,7 @@
+         });
+ 
+         CheckOutAction action = new UcmSnapshotCheckoutAction(clearTool,
+-                "stream", "vobs/base");
++        		"stream", "vobs/base");
+         action.checkout(launcher, workspace, viewName);
+ 
+         context.assertIsSatisfied();
+@@ -193,7 +193,7 @@
+         });
+ 
+         CheckOutAction action = new UcmSnapshotCheckoutAction(clearTool,
+-                "stream", "\\ \\Windows\n\\\\C:\\System32");
++        		"stream", "\\ \\Windows\n\\\\C:\\System32");
+         action.checkout(launcher, workspace, "viewname");
+ 
+         context.assertIsSatisfied();
+Index: src/test/java/hudson/plugins/clearcase/ClearCaseSCMTest.java
+===================================================================
+--- src/test/java/hudson/plugins/clearcase/ClearCaseSCMTest.java	(revision 13597)
++++ src/test/java/hudson/plugins/clearcase/ClearCaseSCMTest.java	(working copy)
+@@ -45,7 +45,7 @@
+     
+     @Test
+     public void testCreateChangeLogParser() {
+-        ClearCaseSCM scm = new ClearCaseSCM("branch", "configspec", "viewname", true, "", false, "", null, false);
++        ClearCaseSCM scm = new ClearCaseSCM("branch", "configspec", "viewname", true, "", false, "", null, false, false);
+         assertNotNull("The change log parser is null", scm.createChangeLogParser());
+         assertNotSame("The change log parser is re-used", scm.createChangeLogParser(), scm.createChangeLogParser());
+     }
+@@ -57,7 +57,7 @@
+                 ignoring(build).getParent(); will(returnValue(project));
+             }
+         });
+-        ClearCaseSCM scm = new ClearCaseSCM("branch", "configspec", "viewname", true, "", false, "", null, false);
++        ClearCaseSCM scm = new ClearCaseSCM("branch", "configspec", "viewname", true, "", false, "", null, false, false);
+         Map<String, String> env = new HashMap<String, String>();
+         env.put("WORKSPACE", "/hudson/jobs/job/workspace");
+         scm.generateNormalizedViewName(build, launcher);
+@@ -73,7 +73,7 @@
+                 ignoring(build).getParent(); will(returnValue(project));
+             }
+         });
+-        ClearCaseSCM scm = new ClearCaseSCM("branch", "configspec", "viewname", true, "", true, "/views", null, false);
++        ClearCaseSCM scm = new ClearCaseSCM("branch", "configspec", "viewname", true, "", true, "/views", null, false, false);
+         Map<String, String> env = new HashMap<String, String>();
+         scm.generateNormalizedViewName(build, launcher);
+         scm.buildEnvVars(build, env);
+@@ -88,7 +88,7 @@
+                 ignoring(build).getParent(); will(returnValue(project));
+             }
+         });
+-        ClearCaseSCM scm = new ClearCaseSCM("branch", "configspec", "viewname", true, "", true, null, null, false);
++        ClearCaseSCM scm = new ClearCaseSCM("branch", "configspec", "viewname", true, "", true, null, null, false, false);
+         Map<String, String> env = new HashMap<String, String>();
+         scm.generateNormalizedViewName(build, launcher);
+         scm.buildEnvVars(build, env);
+@@ -98,71 +98,71 @@
+ 
+     @Test
+     public void testGetBranch() {
+-        ClearCaseSCM scm = new ClearCaseSCM("branch", "configspec", "viewname", true, "", false, "", null, false);
++        ClearCaseSCM scm = new ClearCaseSCM("branch", "configspec", "viewname", true, "", false, "", null, false, false);
+         assertEquals("The branch isnt correct", "branch", scm.getBranch());
+     }
+     
+     @Test
+     public void testGetConfigSpec() {
+-        ClearCaseSCM scm = new ClearCaseSCM("branch", "configspec", "viewname", true, "", false, "", null, false);
++        ClearCaseSCM scm = new ClearCaseSCM("branch", "configspec", "viewname", true, "", false, "", null, false, false);
+         assertEquals("The config spec isnt correct", "configspec", scm.getConfigSpec());
+     }
+ 
+     @Test
+     public void testIsUseUpdate() {
+-        ClearCaseSCM scm = new ClearCaseSCM("branch", "configspec", "viewname", true, "", false, "", null, false);
++        ClearCaseSCM scm = new ClearCaseSCM("branch", "configspec", "viewname", true, "", false, "", null, false, false);
+         assertTrue("The isUpdate isnt correct", scm.isUseUpdate());
+         
+-        scm = new ClearCaseSCM("branch", "configspec", "viewname", false, "", false, "", null, false);
++        scm = new ClearCaseSCM("branch", "configspec", "viewname", false, "", false, "", null, false, false);
+         assertFalse("The isUpdate isnt correct", scm.isUseUpdate());
+     }
+ 
+     @Test
+     public void testIsDynamicView() {
+-        ClearCaseSCM scm = new ClearCaseSCM("branch", "configspec", "viewname", true, "", true, "", null, false);
++        ClearCaseSCM scm = new ClearCaseSCM("branch", "configspec", "viewname", true, "", true, "", null, false, false);
+         assertTrue("The dynamic isnt correct", scm.isUseDynamicView());
+         assertFalse("The use update isnt correct", scm.isUseUpdate());
+     }
+ 
+     @Test
+     public void testGetViewDrive() {
+-        ClearCaseSCM scm = new ClearCaseSCM("branch", "configspec", "viewname", true, "", true, "/tmp/c", null, false);
++        ClearCaseSCM scm = new ClearCaseSCM("branch", "configspec", "viewname", true, "", true, "/tmp/c", null, false, false);
+         assertEquals("The view drive isnt correct", "/tmp/c", scm.getViewDrive());
+     }
+ 
+     @Test
+     public void testGetBranchNames() {
+-        ClearCaseSCM scm = new ClearCaseSCM("branchone branchtwo", "configspec", "viewname", true, "", true, "/tmp/c", null, false);
++        ClearCaseSCM scm = new ClearCaseSCM("branchone branchtwo", "configspec", "viewname", true, "", true, "/tmp/c", null, false, false);
+         assertArrayEquals("The branch name array is incorrect", new String[]{"branchone", "branchtwo"}, scm.getBranchNames());
+     }
+ 
+     @Test
+     public void assertEmptyBranchIsReturnedAsABranch() {
+-        ClearCaseSCM scm = new ClearCaseSCM("", "configspec", "viewname", true, "", true, "/tmp/c", null, false);
++        ClearCaseSCM scm = new ClearCaseSCM("", "configspec", "viewname", true, "", true, "/tmp/c", null, false, false);
+         assertArrayEquals("The branch name array is incorrect", new String[]{""}, scm.getBranchNames());
+     }
+ 
+     @Test
+     public void assertBranchWithSpaceWorks() {
+-        ClearCaseSCM scm = new ClearCaseSCM("branch\\ one", "configspec", "viewname", true, "", true, "/tmp/c", null, false);
++        ClearCaseSCM scm = new ClearCaseSCM("branch\\ one", "configspec", "viewname", true, "", true, "/tmp/c", null, false, false);
+         assertArrayEquals("The branch name array is incorrect", new String[]{"branch one"}, scm.getBranchNames());
+     }
+ 
+     @Test
+     public void testGetViewPaths() throws Exception {
+-        ClearCaseSCM scm = new ClearCaseSCM("branchone branchtwo", "configspec", "viewname", true, "tmp", true, "", null, false);
++        ClearCaseSCM scm = new ClearCaseSCM("branchone branchtwo", "configspec", "viewname", true, "tmp", true, "", null, false, false);
+         assertEquals("The view paths string is incorrect", "tmp", scm.getViewPaths(workspace)[0]);
+     }
+ 
+     @Test
+     public void assertGetVobPaths() throws Exception {
+-        ClearCaseSCM scm = new ClearCaseSCM("branchone branchtwo", "configspec", "viewname", true, "tmp", true, "", null, false);
++        ClearCaseSCM scm = new ClearCaseSCM("branchone branchtwo", "configspec", "viewname", true, "tmp", true, "", null, false, false);
+         assertEquals("The vob paths string is incorrect", "tmp", scm.getVobPaths());
+     }
+     
+     @Test
+     public void assertViewPathIsCopiedFromVobPaths() throws Exception {
+-        ClearCaseSCM scm = new ClearCaseSCM("branchone branchtwo", "configspec", "viewname", true, "vob1 vob2 vob\\ 3", true, "", null, false);
++        ClearCaseSCM scm = new ClearCaseSCM("branchone branchtwo", "configspec", "viewname", true, "vob1 vob2 vob\\ 3", true, "", null, false, false);
+         String[] viewPaths = scm.getViewPaths(workspace.child("viewName"));
+         assertEquals("The size of view paths array is incorrect", 3, viewPaths.length);
+         assertObjectInArray(viewPaths, "vob1");
+@@ -177,7 +177,7 @@
+         workspace.child("viewName").child("vob2").child("vob2-1").mkdirs();
+         workspace.child("viewName").child("vob 4").mkdirs();
+         workspace.child("viewName").createTextTempFile("view", ".dat", "text");
+-        ClearCaseSCM scm = new ClearCaseSCM("branchone", "configspec", "viewname", true, " ", true, "", null, false);
++        ClearCaseSCM scm = new ClearCaseSCM("branchone", "configspec", "viewname", true, " ", true, "", null, false, false);
+         String[] viewPaths = scm.getViewPaths(workspace.child("viewName"));
+         assertEquals("The size of view paths array is incorrect", 3, viewPaths.length);
+         assertObjectInArray(viewPaths, "vob1");
+@@ -192,7 +192,7 @@
+                 ignoring(build).getParent(); will(returnValue(project));
+             }
+         });
+-        ClearCaseSCM scm = new ClearCaseSCM("branchone", "configspec", "viewname", true, "vob", true, "/view", null, false);
++        ClearCaseSCM scm = new ClearCaseSCM("branchone", "configspec", "viewname", true, "vob", true, "/view", null, false, false);
+         BaseChangeLogAction action = scm.createChangeLogAction(null, build, 0,null);
+         assertEquals("The extended view path is incorrect", "/view/viewname", action.getExtendedViewPath());
+     }
+@@ -205,7 +205,7 @@
+                 one(project).getName(); will(returnValue("ClearCase"));
+             }
+         });
+-        ClearCaseSCM scm = new ClearCaseSCM("branchone", "configspec", "viewname-${JOB_NAME}", true, "vob", true, "/view", null, false);
++        ClearCaseSCM scm = new ClearCaseSCM("branchone", "configspec", "viewname-${JOB_NAME}", true, "vob", true, "/view", null, false, false);
+         BaseChangeLogAction action = scm.createChangeLogAction(null, build, 0,null);
+         assertEquals("The extended view path is incorrect", "/view/viewname-clearcase", action.getExtendedViewPath());
+         classContext.assertIsSatisfied();
+Index: src/test/java/hudson/plugins/clearcase/ClearCaseUcmSCMTest.java
+===================================================================
+--- src/test/java/hudson/plugins/clearcase/ClearCaseUcmSCMTest.java	(revision 13597)
++++ src/test/java/hudson/plugins/clearcase/ClearCaseUcmSCMTest.java	(working copy)
+@@ -10,26 +10,26 @@
+ 
+     @Test
+     public void testCreateChangeLogParser() {
+-        ClearCaseUcmSCM scm = new ClearCaseUcmSCM("stream", "loadrules", "viewname", "option", false);
++        ClearCaseUcmSCM scm = new ClearCaseUcmSCM("stream", "loadrules", "viewname", false, "viewdrive", "option", false);
+         assertNotNull("The change log parser is null", scm.createChangeLogParser());
+         assertNotSame("The change log parser is re-used", scm.createChangeLogParser(), scm.createChangeLogParser());
+     }
+     
+     @Test
+     public void testGetLoadRules() {
+-        ClearCaseUcmSCM scm = new ClearCaseUcmSCM("stream", "loadrules", "viewname", "option", false);
++        ClearCaseUcmSCM scm = new ClearCaseUcmSCM("stream", "loadrules", "viewname", false, "viewdrive", "option", false);
+         assertEquals("The load rules arent correct", "loadrules", scm.getLoadRules());
+     }
+ 
+     @Test
+     public void testGetStream() {
+-        ClearCaseUcmSCM scm = new ClearCaseUcmSCM("stream", "loadrules", "viewname", "option", false);
++        ClearCaseUcmSCM scm = new ClearCaseUcmSCM("stream", "loadrules", "viewname", false, "viewdrive", "option", false);
+         assertEquals("The stream isnt correct", "stream", scm.getStream());
+     }
+ 
+     @Test
+     public void testGetBranchNames() {
+-        ClearCaseUcmSCM scm = new ClearCaseUcmSCM("stream", "loadrules", "viewname", "option", false);
++        ClearCaseUcmSCM scm = new ClearCaseUcmSCM("stream", "loadrules", "viewname", false, "viewdrive", "option", false);
+         assertArrayEquals("The branch name array is incorrect", new String[]{"stream"}, scm.getBranchNames());
+     }
+ 
+@@ -40,13 +40,13 @@
+      */
+     @Test
+     public void testGetBranchNamesWithVobSelector() {
+-        ClearCaseUcmSCM scm = new ClearCaseUcmSCM("stream@/vob/paths", "loadrules", "viewname", "option", false);
++        ClearCaseUcmSCM scm = new ClearCaseUcmSCM("stream@/vob/paths", "loadrules", "viewname", false, "viewdrive", "option", false);
+         assertArrayEquals("The branch name array is incorrect", new String[]{"stream"}, scm.getBranchNames());
+     }
+ 
+     @Test
+     public void testGetViewPaths() throws Exception {
+-        ClearCaseUcmSCM scm = new ClearCaseUcmSCM("stream", "loadrules", "viewname", "option", false);
++        ClearCaseUcmSCM scm = new ClearCaseUcmSCM("stream", "loadrules", "viewname", false, "viewdrive", "option", false);
+         assertEquals("The view path is not the same as the load rules", "loadrules", scm.getViewPaths(null)[0]);
+     }
+     
+@@ -58,14 +58,27 @@
+      */
+     @Test
+     public void assertLoadRuleIsConvertedToRelativeViewPath() throws Exception {
+-        ClearCaseUcmSCM scm = new ClearCaseUcmSCM("stream", "\\\\loadrule\\one\n/loadrule/two", "viewname", "option", false);
++        ClearCaseUcmSCM scm = new ClearCaseUcmSCM("stream", "\\\\loadrule\\one\n/loadrule/two", "viewname", false, "viewdrive", "option", false);
+         assertEquals("The first view path is not correct", "loadrule\\one", scm.getViewPaths(null)[0]);
+         assertEquals("The second view path is not correct", "loadrule/two", scm.getViewPaths(null)[1]);
+     }
++    
++    /**
++     * Test for (issue 1706) with Dynamic view.
++     * VOBPaths are used by the lshistory command, and should not start with a 
++     * "\\" or "/" as that would make the cleartool command think the view is
++     * located by an absolute path and not an relative path.
++     */
++    @Test
++    public void assertLoadRuleIsConvertedToRelativeViewPathIfNotDynamic() throws Exception {
++        ClearCaseUcmSCM scm = new ClearCaseUcmSCM("stream", "\\\\loadrule\\one\n/loadrule/two", "viewname", true, "viewdrive", "option", false);
++        assertEquals("The first view path is not correct", "\\\\loadrule\\one", scm.getViewPaths(null)[0]);
++        assertEquals("The second view path is not correct", "/loadrule/two", scm.getViewPaths(null)[1]);
++    }
+ 
+     @Test
+     public void testGetVobPathsWithSpaces() throws Exception {
+-        ClearCaseUcmSCM scm = new ClearCaseUcmSCM("stream", "file with space\nanotherfile", "viewname", "option", false);
++        ClearCaseUcmSCM scm = new ClearCaseUcmSCM("stream", "file with space\nanotherfile", "viewname", false, "viewdrive", "option", false);
+         assertEquals("The vob path is not the same as the load rules", "file with space", scm.getViewPaths(null)[0]);
+         assertEquals("The vob path is not the same as the load rules", "anotherfile", scm.getViewPaths(null)[1]);
+     }
+@@ -77,14 +90,14 @@
+      */
+     @Test
+     public void testGetWindowsVobPaths() throws Exception {
+-        ClearCaseUcmSCM scm = new ClearCaseUcmSCM("stream", "\\ \\ Windows\n\\\\C\\System\\\\32", "viewname", "option", false);
++        ClearCaseUcmSCM scm = new ClearCaseUcmSCM("stream", "\\ \\ Windows\n\\\\C\\System\\\\32", "viewname", false, "viewdrive", "option", false);
+         assertEquals("The vob path is not the same as the load rules", " \\ Windows", scm.getViewPaths(null)[0]);
+         assertEquals("The vob path is not the same as the load rules", "C\\System\\\\32", scm.getViewPaths(null)[1]);
+     }  
+ 
+     @Test 
+     public void testShortenStreamName() {
+-        ClearCaseUcmSCM scm = new ClearCaseUcmSCM("stream:mystream", "file with space\nanotherfile", "viewname", "option", false);
++        ClearCaseUcmSCM scm = new ClearCaseUcmSCM("stream:mystream", "file with space\nanotherfile", "viewname", false, "viewdrive", "option", false);
+         assertEquals("stream name not shortenen correctly", "mystream",scm.getStream());
+     }
+ }
+Index: src/test/java/hudson/plugins/clearcase/ClearToolExecTest.java
+===================================================================
+--- src/test/java/hudson/plugins/clearcase/ClearToolExecTest.java	(revision 13597)
++++ src/test/java/hudson/plugins/clearcase/ClearToolExecTest.java	(working copy)
+@@ -204,6 +204,9 @@
+         public void startView(String viewTag) throws IOException, InterruptedException {
+             throw new IllegalStateException("Not implemented");
+         }
++        public void syncronizeViewWithStream(String viewName, String stream) throws IOException, InterruptedException {
++            throw new IllegalStateException("Not implemented");
++        }
+         
+         @Override
+         protected FilePath getRootViewPath(ClearToolLauncher launcher) {
+Index: src/test/java/hudson/plugins/clearcase/ClearToolSnapshotTest.java
+===================================================================
+--- src/test/java/hudson/plugins/clearcase/ClearToolSnapshotTest.java	(revision 13597)
++++ src/test/java/hudson/plugins/clearcase/ClearToolSnapshotTest.java	(working copy)
+@@ -1,27 +1,23 @@
+ package hudson.plugins.clearcase;
+ 
+-import static org.junit.Assert.*;
++import static org.junit.Assert.assertFalse;
++import hudson.FilePath;
++import hudson.model.TaskListener;
++import hudson.util.VariableResolver;
+ 
+ import java.io.ByteArrayOutputStream;
+ import java.io.File;
+ import java.io.InputStream;
+ import java.io.OutputStream;
+ import java.io.PrintStream;
+-import hudson.FilePath;
+-import hudson.model.TaskListener;
+-import hudson.plugins.clearcase.util.BuildVariableResolver;
+-import hudson.util.VariableResolver;
+ 
+ import org.hamcrest.Matchers;
+ import org.jmock.Expectations;
+ import org.jmock.Mockery;
+-import org.jmock.api.Expectation;
+ import org.junit.After;
+ import org.junit.Before;
+ import org.junit.Test;
+ 
+-import com.steadystate.css.parser.selectors.OneOfAttributeConditionImpl;
+-
+ /**
+  * Tests for the cleartool snapshot view
+  */
+Index: src/test/java/hudson/plugins/clearcase/ucm/UcmChangeLogActionTest.java
+===================================================================
+--- src/test/java/hudson/plugins/clearcase/ucm/UcmChangeLogActionTest.java	(revision 13597)
++++ src/test/java/hudson/plugins/clearcase/ucm/UcmChangeLogActionTest.java	(working copy)
+@@ -110,11 +110,11 @@
+                         "\"20080509.140451\" " +
+                         "\"vobs/projects/Server//config-admin-client\" " +
+                         "\"/main/Product/Release_3_3_int/Release_3_3_jdk5/2\" " +
+-                        "\"rebase.Release_3_3_jdk5.20080509.155359\" " +
++                        "\"deliver.Release_3_3_jdk5.20080509.155359\" " +
+                         "\"create directory version\" " +
+                         "\"checkin\" ")));
+                 one(cleartool).lsactivity(
+-                        with(equal("rebase.Release_3_3_jdk5.20080509.155359")), 
++                        with(equal("deliver.Release_3_3_jdk5.20080509.155359")), 
+                         with(aNonNull(String.class)),with(aNonNull(String.class)));
+                 will(returnValue(new StringReader("\"Convert to Java 6\" " +
+                                 "\"Release_3_3_jdk5\" " +
+@@ -141,7 +141,7 @@
+         List<UcmActivity> activities = action.getChanges(filter, null, "IGNORED", new String[]{"Release_2_1_int"}, new String[]{"vobs/projects/Server"});
+         assertEquals("There should be 1 activity", 1, activities.size());
+         UcmActivity activity = activities.get(0);
+-        assertEquals("Activity name is incorrect", "rebase.Release_3_3_jdk5.20080509.155359", activity.getName());
++        assertEquals("Activity name is incorrect", "deliver.Release_3_3_jdk5.20080509.155359", activity.getName());
+         assertEquals("Activity headline is incorrect", "Convert to Java 6", activity.getHeadline());
+         assertEquals("Activity stream is incorrect", "Release_3_3_jdk5", activity.getStream());
+         assertEquals("Activity user is incorrect", "bob", activity.getUser());

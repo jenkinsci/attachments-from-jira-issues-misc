@@ -1,0 +1,34 @@
+Feb 12, 2018 1:50:08 PM INFO org.jenkinsci.plugins.pipeline.maven.dao.PipelineMavenPluginH2Dao
+Open database jdbc:h2:file:/var/jenkins_home/jenkins-jobs/jenkins-jobs;AUTO_SERVER=TRUE;MULTI_THREADED=1;TRACE_LEVEL_SYSTEM_OUT=3
+Feb 12, 2018 1:50:12 PM FINE org.jenkinsci.plugins.pipeline.maven.dao.PipelineMavenPluginH2Dao
+Initialise database. Current schema version: 6
+Feb 12, 2018 1:50:12 PM FINE org.jenkinsci.plugins.pipeline.maven.dao.PipelineMavenPluginH2Dao
+Table MAVEN_ARTIFACT: 0 rows
+Feb 12, 2018 1:50:12 PM FINE org.jenkinsci.plugins.pipeline.maven.dao.PipelineMavenPluginH2Dao
+Table JENKINS_JOB: 0 rows
+Feb 12, 2018 1:50:12 PM FINE org.jenkinsci.plugins.pipeline.maven.dao.PipelineMavenPluginH2Dao
+Table JENKINS_BUILD: 0 rows
+Feb 12, 2018 1:50:12 PM FINE org.jenkinsci.plugins.pipeline.maven.dao.PipelineMavenPluginH2Dao
+Table MAVEN_DEPENDENCY: 0 rows
+Feb 12, 2018 1:50:12 PM FINE org.jenkinsci.plugins.pipeline.maven.dao.PipelineMavenPluginH2Dao
+Table GENERATED_MAVEN_ARTIFACT: 0 rows
+Feb 12, 2018 1:50:12 PM FINE org.jenkinsci.plugins.pipeline.maven.dao.PipelineMavenPluginH2Dao
+Table MAVEN_PARENT_PROJECT: 0 rows
+Feb 12, 2018 1:50:12 PM FINER org.jenkinsci.plugins.pipeline.maven.dao.PipelineMavenPluginH2Dao
+listDownstreamJobs(pipeline-maven-plugin, 2)
+Feb 12, 2018 1:50:12 PM FINER org.jenkinsci.plugins.pipeline.maven.dao.PipelineMavenPluginH2Dao
+sql: SELECT DISTINCT DOWNSTREAM_JOB.FULL_NAME  FROM JENKINS_JOB AS DOWNSTREAM_JOB INNER JOIN JENKINS_BUILD AS DOWNSTREAM_BUILD ON DOWNSTREAM_JOB.ID = DOWNSTREAM_BUILD.JOB_ID  INNER JOIN MAVEN_DEPENDENCY ON DOWNSTREAM_BUILD.ID = MAVEN_DEPENDENCY.BUILD_ID WHERE    MAVEN_DEPENDENCY.ARTIFACT_ID IN (SELECT DISTINCT GENERATED_MAVEN_ARTIFACT.ARTIFACT_ID  FROM GENERATED_MAVEN_ARTIFACT  INNER JOIN JENKINS_BUILD AS UPSTREAM_BUILD ON GENERATED_MAVEN_ARTIFACT.BUILD_ID = UPSTREAM_BUILD.ID  INNER JOIN JENKINS_JOB AS UPSTREAM_JOB ON UPSTREAM_BUILD.JOB_ID = UPSTREAM_JOB.ID  WHERE    UPSTREAM_JOB.FULL_NAME = ? AND   UPSTREAM_BUILD.NUMBER = ? AND    GENERATED_MAVEN_ARTIFACT.SKIP_DOWNSTREAM_TRIGGERS = FALSE) AND    MAVEN_DEPENDENCY.IGNORE_UPSTREAM_TRIGGERS = FALSE AND    DOWNSTREAM_BUILD.NUMBER in (SELECT MAX(JENKINS_BUILD.NUMBER) FROM JENKINS_BUILD WHERE DOWNSTREAM_JOB.ID = JENKINS_BUILD.JOB_ID) ORDER BY DOWNSTREAM_JOB.FULL_NAME, jobFullName:pipeline-maven-plugin, buildNumber: 2
+Feb 12, 2018 1:50:12 PM FINE org.jenkinsci.plugins.pipeline.maven.dao.PipelineMavenPluginH2Dao
+listDownstreamJobs(pipeline-maven-plugin, 2): []
+Feb 12, 2018 1:50:12 PM FINER org.jenkinsci.plugins.pipeline.maven.dao.PipelineMavenPluginH2Dao
+listDownstreamPipelinesBasedOnParentProjectDependencies(pipeline-maven-plugin, 2)
+Feb 12, 2018 1:50:12 PM FINER org.jenkinsci.plugins.pipeline.maven.dao.PipelineMavenPluginH2Dao
+sql: SELECT DISTINCT DOWNSTREAM_JOB.FULL_NAME  FROM JENKINS_JOB AS DOWNSTREAM_JOB INNER JOIN JENKINS_BUILD AS DOWNSTREAM_BUILD ON DOWNSTREAM_JOB.ID = DOWNSTREAM_BUILD.JOB_ID  INNER JOIN MAVEN_PARENT_PROJECT ON DOWNSTREAM_BUILD.ID = MAVEN_PARENT_PROJECT.BUILD_ID WHERE    MAVEN_PARENT_PROJECT.ARTIFACT_ID IN (SELECT DISTINCT GENERATED_MAVEN_ARTIFACT.ARTIFACT_ID  FROM GENERATED_MAVEN_ARTIFACT  INNER JOIN JENKINS_BUILD AS UPSTREAM_BUILD ON GENERATED_MAVEN_ARTIFACT.BUILD_ID = UPSTREAM_BUILD.ID  INNER JOIN JENKINS_JOB AS UPSTREAM_JOB ON UPSTREAM_BUILD.JOB_ID = UPSTREAM_JOB.ID  WHERE    UPSTREAM_JOB.FULL_NAME = ? AND   UPSTREAM_BUILD.NUMBER = ? AND    GENERATED_MAVEN_ARTIFACT.SKIP_DOWNSTREAM_TRIGGERS = FALSE) AND    MAVEN_PARENT_PROJECT.IGNORE_UPSTREAM_TRIGGERS = FALSE AND    DOWNSTREAM_BUILD.NUMBER in (SELECT MAX(JENKINS_BUILD.NUMBER) FROM JENKINS_BUILD WHERE DOWNSTREAM_JOB.ID = JENKINS_BUILD.JOB_ID) ORDER BY DOWNSTREAM_JOB.FULL_NAME, jobFullName:pipeline-maven-plugin, buildNumber: 2
+Feb 12, 2018 1:50:12 PM FINE org.jenkinsci.plugins.pipeline.maven.dao.PipelineMavenPluginH2Dao
+listDownstreamPipelinesBasedOnParentProjectDependencies(pipeline-maven-plugin, 2): []
+Feb 12, 2018 1:54:50 PM FINER org.jenkinsci.plugins.pipeline.maven.dao.PipelineMavenPluginH2Dao
+getGeneratedArtifacts(pipeline-maven-plugin, 2)
+Feb 12, 2018 1:54:50 PM FINE org.jenkinsci.plugins.pipeline.maven.publishers.MavenReport
+Load generated artifacts for build pipeline-maven-plugin#2 and cache them
+Feb 12, 2018 1:55:10 PM FINE org.jenkinsci.plugins.pipeline.maven.publishers.MavenReport
+Use cached generated artifacts for build pipeline-maven-plugin#2

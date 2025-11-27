@@ -1,0 +1,87 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<maven2-moduleset>
+  <actions/>
+  <description>Blah-blah-blah</description>
+  <logRotator>
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>3</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.security.AuthorizationMatrixProperty>
+      <permission>hudson.scm.SCM.Tag:ROLE_SECLOANSRV-OWNERS</permission>
+      <permission>hudson.model.Run.Update:ROLE_SECLOANSRV-OWNERS</permission>
+      <permission>hudson.model.Run.Delete:ROLE_SECLOANSRV-OWNERS</permission>
+      <permission>hudson.model.Item.Release:ROLE_SECLOANSRV-OWNERS</permission>
+      <permission>hudson.model.Item.Read:ROLE_SECLOANSRV-OWNERS</permission>
+      <permission>hudson.model.Item.Read:ROLE_SECLOANSRV-DEVELOPERS</permission>
+      <permission>hudson.model.Item.Workspace:ROLE_SECLOANSRV-OWNERS</permission>
+      <permission>hudson.model.Item.Workspace:ROLE_SECLOANSRV-DEVELOPERS</permission>
+      <permission>hudson.model.Item.Build:ROLE_SECLOANSRV-OWNERS</permission>
+      <permission>hudson.model.Item.Build:ROLE_SECLOANSRV-DEVELOPERS</permission>
+      <permission>hudson.model.Item.Configure:ROLE_SECLOANSRV-OWNERS</permission>
+    </hudson.security.AuthorizationMatrixProperty>
+  </properties>
+  <scm class="hudson.scm.CVSSCM">
+    <cvsroot>:pserver:username@host:/repository</cvsroot>
+    <module>module</module>
+    <canUseUpdate>true</canUseUpdate>
+    <useHeadIfNotFound>true</useHeadIfNotFound>
+    <flatten>true</flatten>
+    <isTag>false</isTag>
+    <excludedRegions></excludedRegions>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <jdk>Java 1.6</jdk>
+  <triggers class="vector"/>
+  <concurrentBuild>false</concurrentBuild>
+  <rootModule>
+    <groupId>com.rencredit</groupId>
+    <artifactId>FrontalCRB</artifactId>
+  </rootModule>
+  <goals>clean install</goals>
+  <aggregatorStyleBuild>true</aggregatorStyleBuild>
+  <incrementalBuild>false</incrementalBuild>
+  <perModuleEmail>true</perModuleEmail>
+  <ignoreUpstremChanges>true</ignoreUpstremChanges>
+  <archivingDisabled>false</archivingDisabled>
+  <resolveDependencies>false</resolveDependencies>
+  <processPlugins>false</processPlugins>
+  <mavenValidationLevel>-1</mavenValidationLevel>
+  <runHeadless>false</runHeadless>
+  <settingConfigId></settingConfigId>
+  <globalSettingConfigId></globalSettingConfigId>
+  <reporters>
+    <hudson.maven.reporters.MavenMailer>
+      <recipients>email@rencredit.ru</recipients>
+      <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>true</sendToIndividuals>
+      <perModuleEmail>true</perModuleEmail>
+    </hudson.maven.reporters.MavenMailer>
+  </reporters>
+  <publishers/>
+  <buildWrappers>
+    <org.jvnet.hudson.plugins.m2release.M2ReleaseBuildWrapper>
+      <scmUserEnvVar></scmUserEnvVar>
+      <scmPasswordEnvVar></scmPasswordEnvVar>
+      <releaseEnvVar>IS_M2RELEASEBUILD</releaseEnvVar>
+      <releaseGoals>-Dresume=false -Dmaven.test.skip=true release:prepare release:perform</releaseGoals>
+      <dryRunGoals>-Dresume=false -Dmaven.test.skip=true -DdryRun=true release:prepare</dryRunGoals>
+      <selectCustomScmCommentPrefix>true</selectCustomScmCommentPrefix>
+      <selectAppendHudsonUsername>true</selectAppendHudsonUsername>
+      <selectScmCredentials>false</selectScmCredentials>
+    </org.jvnet.hudson.plugins.m2release.M2ReleaseBuildWrapper>
+  </buildWrappers>
+  <prebuilders/>
+  <postbuilders/>
+  <runPostStepsIfResult>
+    <name>FAILURE</name>
+    <ordinal>2</ordinal>
+    <color>RED</color>
+  </runPostStepsIfResult>
+</maven2-moduleset>

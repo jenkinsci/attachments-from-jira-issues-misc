@@ -1,0 +1,63 @@
+Index: src/test/java/hudson/plugins/clearcase/ClearToolSnapshotTest.java
+===================================================================
+--- src/test/java/hudson/plugins/clearcase/ClearToolSnapshotTest.java	(revision 30613)
++++ src/test/java/hudson/plugins/clearcase/ClearToolSnapshotTest.java	(working copy)
+@@ -149,7 +149,7 @@
+                     allowing(clearToolLauncher).getWorkspace(); will(returnValue(workspace));
+                     one(clearToolLauncher).run(
+                                                with(equal(new String[] { "setcs", "-current" })),
+-                                               with(aNull(InputStream.class)),
++                                               with(aNonNull(InputStream.class)),
+                                                with(aNonNull(OutputStream.class)),
+                                                with(aNonNull(FilePath.class)));
+                     will(returnValue(Boolean.TRUE));
+@@ -186,7 +186,7 @@
+                     will(returnValue(workspace));
+                     one(clearToolLauncher).run(
+                                                with(equal(new String[] { "setcs", "-current" })),
+-                                               with(aNull(InputStream.class)),
++                                               with(aNonNull(InputStream.class)),
+                                                with(aNonNull(OutputStream.class)),
+                                                with(aNonNull(FilePath.class)));
+                     will(doAll(new StreamCopyAction(2, ClearToolSnapshotTest.class.getResourceAsStream("ct-update-2.log")),
+Index: src/main/java/hudson/plugins/clearcase/ClearToolSnapshot.java
+===================================================================
+--- src/main/java/hudson/plugins/clearcase/ClearToolSnapshot.java	(revision 30613)
++++ src/main/java/hudson/plugins/clearcase/ClearToolSnapshot.java	(working copy)
+@@ -30,8 +30,12 @@
+ import hudson.util.ArgumentListBuilder;
+ import hudson.util.VariableResolver;
+ 
++import java.io.BufferedReader;
++import java.io.ByteArrayInputStream;
++import java.io.ByteArrayOutputStream;
+ import java.io.File;
+ import java.io.IOException;
++import java.io.InputStreamReader;
+ 
+ import org.apache.commons.lang.ArrayUtils;
+ 
+@@ -74,7 +78,22 @@
+         } else {
+             cmd.add("-current");
+         }
+-        String output = runAndProcessOutput(cmd, workspace.child(viewName), false, null);
++        ByteArrayOutputStream baos = new ByteArrayOutputStream();
++        
++        launcher.run(cmd.toCommandArray(), new ByteArrayInputStream("yes".getBytes()), baos, workspace.child(viewName));
++        BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(baos.toByteArray())));
++        baos.close();
++        String line = reader.readLine();
++        StringBuilder builder = new StringBuilder();
++        while (line != null) {
++            if (builder.length() > 0) {
++                builder.append("\n");
++            }
++            builder.append(line);
++            line = reader.readLine();
++        }
++        reader.close();
++        String output = builder.toString();
+         configSpecFile.delete();
+ 
+         if (output.contains("cleartool: Warning: An update is already in progress for view")) {

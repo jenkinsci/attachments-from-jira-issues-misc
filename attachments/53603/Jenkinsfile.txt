@@ -1,0 +1,86 @@
+pipeline {
+    agent {
+        kubernetes {
+            label 'dockerbuild'
+            // Rather than inline YAML, in a multibranch Pipeline you could use: yamlFile 'jenkins-pod.yaml'
+            // Or, to avoid YAML:
+            // containerTemplate {
+            //     name 'shell'
+            //     image 'ubuntu'
+            //     command 'sleep'
+            //     args 'infinity'
+            // }
+            yaml '''
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: jnlp
+    image: 'jenkins/inbound-agent:alpine'
+    args: ['\$(JENKINS_SECRET)', '\$(JENKINS_NAME)']
+    resources:
+      limits:
+        cpu: "0.5"
+        memory: "1Gi"
+      requests:
+        cpu: "0.2"
+        memory: "500Mi"
+  - name: busybox
+    image: busybox
+    command:
+    - cat
+    tty: true
+  - name: maven
+    image: maven:alpine
+    command:
+    - cat
+    tty: true
+  - name: docker
+    image: docker:latest
+    command:
+    - cat
+    tty: true
+    volumeMounts:
+    - mountPath: /var/run/docker.sock
+      name: docker-sock
+  volumes:
+    - name: docker-sock
+      hostPath:
+        path: /var/run/docker.sock
+
+  hostNetwork: true
+'''
+}
+   }
+  stages {
+    stage('docker') {
+      steps {
+        container('docker') {
+           
+          sh """
+              ls -la /tmp
+              sleep 10
+              ls -la /tmp  
+            """
+        }
+      }
+    }
+    stage('busybox') {
+      steps {
+        container('busybox') {
+           
+          sh """
+              echo busybox
+            """
+        }
+      }
+    }
+    stage('maven') {
+      steps {
+        container('maven') {
+        sh 'mvn -version'
+        }
+      }
+    }
+  }
+}

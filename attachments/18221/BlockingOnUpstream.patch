@@ -1,0 +1,70 @@
+Index: core/src/main/java/hudson/model/AbstractProject.java
+===================================================================
+--- core/src/main/java/hudson/model/AbstractProject.java	(revision 10328)
++++ core/src/main/java/hudson/model/AbstractProject.java	(working copy)
+@@ -75,6 +75,11 @@
+      * The quiet period. Null to delegate to the system default.
+      */
+     private volatile Integer quietPeriod = null;
++    
++    /**
++     * This build was blocked because it's waiting for a (transitive) Upstreamproject to complete
++     */
++    private volatile boolean isWaitingForUpstream;
+ 
+     /**
+      * If this project is configured to be only built on a certain label,
+@@ -494,19 +499,33 @@
+      * <p>
+      * A project must be blocked if its own previous build is in progress,
+      * but derived classes can also check other conditions.
++     * Optionally it is also blocked if any transitiv upstream Projects is waiting for a build.
+      */
+     public boolean isBuildBlocked() {
+-        return isBuilding();
++    	isWaitingForUpstream = false;
++		if (isBuilding()) return true;
++		// Block this Build if any of it upstream Projects is in the build queue ore being build.
++		for (AbstractProject upstream : Hudson.getInstance().getDependencyGraph().getTransitiveUpstream(this)) {
++			if (Hudson.getInstance().getQueue().contains(upstream) || upstream.isBuilding()) {
++		    	isWaitingForUpstream = true;
++				return true;			
++			}
++		}
++		return false;
+     }
+ 
+     public String getWhyBlocked() {
+-        AbstractBuild<?, ?> build = getLastBuild();
+-        Executor e = build.getExecutor();
+-        String eta="";
+-        if(e!=null)
+-            eta = Messages.AbstractProject_ETA(e.getEstimatedRemainingTime());
+-        int lbn = build.getNumber();
+-        return Messages.AbstractProject_BuildInProgress(lbn,eta);
++    	if (isWaitingForUpstream) {
++    		return Messages.AbstractProject_WaitingForUpstream();
++    	} else {
++	        AbstractBuild<?, ?> build = getLastBuild();
++	        Executor e = build.getExecutor();
++	        String eta="";
++	        if(e!=null)
++	            eta = Messages.AbstractProject_ETA(e.getEstimatedRemainingTime());
++	        int lbn = build.getNumber();
++	        return Messages.AbstractProject_BuildInProgress(lbn,eta);
++    	}
+     }
+ 
+     public final long getEstimatedDuration() {
+Index: core/src/main/resources/hudson/model/Messages.properties
+===================================================================
+--- core/src/main/resources/hudson/model/Messages.properties	(revision 10328)
++++ core/src/main/resources/hudson/model/Messages.properties	(working copy)
+@@ -7,6 +7,7 @@
+ AbstractProject.BuildInProgress=Build #{0} is already in progress{1}
+ AbstractProject.Disabled=Build disabled
+ AbstractProject.ETA=\ (ETA:{0})
++AbstractProject.WaitingForUpstream=Waiting for Upstream Project(s) to be build
+ AbstractProject.NoSCM=No SCM
+ AbstractProject.NoWorkspace=No workspace is available, so can''t check for updates.
+ AbstractProject.PollingABorted=SCM polling aborted

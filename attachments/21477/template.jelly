@@ -1,0 +1,211 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+<html>
+	<head>
+		<style>
+			body,td {
+				font-family: Verdana,Helvetica,sans serif;
+				font-size: 11px;
+				color: black;
+			}
+			.err {
+				color: red;
+			}
+			.large {
+				font-size: 12px;
+			}
+			.larger {
+				font-size: 18px;
+			}
+			.strong {
+				font-weight: bold;
+			}
+			.padded {
+				padding-left: 10px;
+			}
+			.changeset {
+				border: 1px solid #CCB;
+				background: #EED;
+				padding: 4px;
+			}
+			.block {
+				border: 1px solid #CCB;
+			}
+			.console {
+				border: 1px solid #CCB;
+				padding: 4px;
+			}
+		</style>
+	</head>
+	<body>
+		<!-- HEADER -->
+		<table>
+			<tr>
+				<j:choose>
+					<j:when test="${build.result=='SUCCESS'}">
+						<td><img src="${rooturl}static/a2c9fa60/images/32x32/blue.png"/></td>
+						<td class="larger strong">BUILD SUCCESSFUL</td>
+					</j:when>
+					<j:when test="${build.result=='FAILURE'}">
+						<td><img src="${rooturl}static/a2c9fa60/images/32x32/red.png"/></td>
+						<td class="larger strong">BUILD FAILED</td>
+					</j:when>
+					<j:otherwise>
+						<td><img src="${rooturl}static/a2c9fa60/images/32x32/yellow.png"/></td>
+						<td class="larger strong">BUILD UNSTABLE</td>
+					</j:otherwise>
+				</j:choose>
+			</tr>
+		</table>
+		<br/>
+		
+		<!-- Build Details -->
+		<div class="strong large">Description:</div>
+		<div>(<a href="${rooturl}${build.url}">details</a>)</div>
+		<br/>
+		<div class="padded">
+			<table class="block">
+				<tr>
+					<td class="strong">Build URL:</td>
+					<td><a href="${rooturl}${build.url}">${rooturl}${build.url}</a></td>
+				</tr>
+				<tr>
+					<td class="strong">Project:</td>
+					<td>${project.name}</td>
+				</tr>
+				<tr>
+					<td class="strong">Date of build:</td>
+					<td>${it.timestampString}</td>
+				</tr>
+				<tr>
+					<td class="strong">Build duration:</td>
+					<td>${build.durationString}</td>
+				</tr>
+				<tr>
+					<td class="strong">Trigger:</td>
+					<td><j:forEach var="cause" items="${build.causes}">${cause.shortDescription}. </j:forEach></td>
+				</tr>
+			</table>
+		</div>
+		<br/>
+		
+		<!-- Changes -->
+		<div class="strong large">Changes:</div>
+		<div>(<a href="${rooturl}${build.url}changes">details</a>)</div>
+		<br/>
+		<div class="padded">
+			<j:set var="changeSet" value="${build.changeSet}" />
+			<j:if test="${changeSet!=null}">
+				<j:set var="hadChanges" value="false" />
+				<j:forEach var="cs" items="${changeSet.logs}" varStatus="loop">
+					<j:set var="hadChanges" value="true" />
+					<j:set var="aUser" value="${cs.hudsonUser}" />
+					<div class="changeset">
+						<div class="strong">Revision ${cs.commitId?:cs.revision?:cs.changeNumber} by ${aUser!=null?aUser.displayName:cs.author.displayName}:</div>
+						<div>${cs.msgAnnotated}</div>
+					</div>
+					<div class="changeset-description">
+						<table>
+							<j:forEach var="p" items="${cs.affectedFiles}">
+								<tr>
+									<td class="padded"><img src="${rooturl}static/a2c9fa60/images/16x16/document_${p.editType.name}.png"/></td>
+									<td>${p.path}</td>
+								</tr>
+							</j:forEach>
+						</table>
+					</div>
+				</j:forEach>
+				<j:if test="${!hadChanges}">
+					No Changes.
+				</j:if>
+			</j:if>
+		</div>
+		<br/>
+		
+		<!-- Test Result -->
+		<div class="strong large">Test Results:</div>
+		<div>(<a href="${rooturl}${build.url}testReport/?">details</a>)</div>
+		<br/>
+		<div class="padded">
+			<j:set var="resultList" value="${it.JUnitTestResult}" />
+			<j:choose>
+				<j:when test="${resultList.size() &lt; 1}">
+					No tests ran.
+				</j:when>
+				<j:when test="${resultList.size() &gt; 1}">
+					<j:forEach var="result" items="${resultList}" varStatus="loop">
+						<j:forEach var="packageResult" items="${result.getChildren()}">
+							<j:set var="total" value="${packageResult.getTotalCount()}"/>
+							<j:set var="fail" value="${packageResult.getFailCount()}"/>
+							<j:set var="pass" value="${packageResult.getPassCount()}"/>
+							<j:set var="skip" value="${packageResult.getSkipCount()}"/>
+							<div class="padded">
+								Package: ${packageResult.getName()} Failed: ${fail} test(s), Passed: ${pass} test(s), Skipped: ${skip} test(s), Total: ${total} test(s)
+							</div>
+						</j:forEach>
+					</j:forEach>
+				</j:when>
+				<j:otherwise>
+					<j:set var="result" value="${resultList.get(0)}"/>
+					<j:set var="total" value="${result.getTotalCount()}"/>
+					<j:set var="fail" value="${result.getFailCount()}"/>
+					<j:set var="pass" value="${result.getPassCount()}"/>
+					<j:set var="skip" value="${result.getSkipCount()}"/>
+					<div class="strong">Count:</div>
+					<div class="padded">
+						Failed: ${fail} test(s), Passed: ${pass} test(s), Skipped: ${skip} test(s), Total: ${total} test(s)
+					</div>
+					<j:if test="${fail &gt; 0}">
+						<br/>
+						<div class="strong err">Failed:</div>
+						<div class="padded">
+							<j:forEach var="test" items="${result.getFailedTests()}" varStatus="loop">
+								${test.getFullName()}<br/>
+							</j:forEach>
+						</div>
+					</j:if>
+				</j:otherwise>
+			</j:choose>
+		</div>
+		<br/>
+		
+		<j:set var="regex">.*error\s(?:CS[0-9]+|VB[0-9]+|MSB[0-9]+|proj[0-9]+).*</j:set>
+		
+		<j:if test="${build.result=='FAILURE'}">
+			<div class="strong large">Errors:</div>
+			<div class="padded">
+				<div class="console">
+					<j:set var="currentLine">...</j:set>
+					<j:forEach var="line" items="${build.getLog(100)}">
+						<j:if test="${line.matches(regex)}">
+							<j:if test="${!currentLine.equals(line)}">
+								<j:set var="currentLine">${line}</j:set>
+								<span class="err">${line}</span><br/><br/>
+							</j:if>
+						</j:if>
+					</j:forEach>
+				</div>
+			</div>
+			<br/>
+		</j:if>
+		
+		<!-- Console -->
+		<div class="strong large">Console Log:</div>
+		<div>(<a href="${rooturl}${build.url}console">log</a> / <a href="${rooturl}${build.url}consoleFull">full log</a>)</div>
+		<br/>
+		<div class="padded">
+			<div class="console">
+				<j:forEach var="line" items="${build.getLog(100)}">
+					<j:choose>
+						<j:when test="${line.matches(regex)}">
+							<span class="err">${line}</span><br/>
+						</j:when>
+						<j:otherwise>
+							${line}<br/>
+						</j:otherwise>
+					</j:choose>
+				</j:forEach>
+			</div>
+		</div>
+	</body>
+</html>
+</j:jelly>

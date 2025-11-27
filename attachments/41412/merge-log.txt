@@ -1,0 +1,35 @@
+Branch indexing
+Checking out git https://bitbucket.org/<myteam>/<myrepo>.git https://bitbucket.org/<myteam>/<myrepo>.git into /var/lib/jenkins/workspace/<myrepo>_PR-465-merge-VFFSUNGJAAUMV6XNTZG6736GV75ZBYT3ESPAP5FE6FDDRFE5DBTA@script to read Jenkinsfile
+Cloning the remote Git repository
+Cloning with configured refspecs honoured and without tags
+Cloning repository https://bitbucket.org/<myteam>/<myrepo>.git
+ > git init /var/lib/jenkins/workspace/<myrepo>_PR-465-merge-VFFSUNGJAAUMV6XNTZG6736GV75ZBYT3ESPAP5FE6FDDRFE5DBTA@script # timeout=10
+Fetching upstream changes from https://bitbucket.org/<myteam>/<myrepo>.git
+ > git --version # timeout=10
+using GIT_ASKPASS to set credentials Waitrose Mobile Pipelines
+ > git fetch --no-tags --progress https://bitbucket.org/<myteam>/<myrepo>.git +refs/heads/<PR-branch-name>:refs/remotes/origin/PR-465-merge
+ERROR: Error cloning remote repo 'origin'
+hudson.plugins.git.GitException: Command "git fetch --no-tags --progress https://bitbucket.org/<myteam>/<myrepo>.git +refs/heads/feature/<PR-branch-name>:refs/remotes/origin/PR-465-merge" returned status code 128:
+stdout:
+stderr: error: The requested URL returned error: 401 Unauthorized while accessing https://bitbucket.org/<myteam>/<myrepo>.git/info/refs
+
+fatal: HTTP request failed
+
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandIn(CliGitAPIImpl.java:1996)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandWithCredentials(CliGitAPIImpl.java:1715)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.access$300(CliGitAPIImpl.java:72)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl$1.execute(CliGitAPIImpl.java:405)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl$2.execute(CliGitAPIImpl.java:614)
+	at hudson.plugins.git.GitSCM.retrieveChanges(GitSCM.java:1120)
+	at hudson.plugins.git.GitSCM.checkout(GitSCM.java:1160)
+	at org.jenkinsci.plugins.workflow.steps.scm.SCMStep.checkout(SCMStep.java:113)
+	at org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition.create(CpsScmFlowDefinition.java:143)
+	at org.jenkinsci.plugins.workflow.multibranch.SCMBinder.create(SCMBinder.java:120)
+	at org.jenkinsci.plugins.workflow.job.WorkflowRun.run(WorkflowRun.java:271)
+	at hudson.model.ResourceController.execute(ResourceController.java:97)
+	at hudson.model.Executor.run(Executor.java:421)
+ERROR: Error cloning remote repo 'origin'
+[Bitbucket] Notifying pull request build result
+[Bitbucket] Build result notified
+ERROR: Maximum checkout retry attempts reached, aborting
+Finished: FAILURE

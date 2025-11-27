@@ -1,0 +1,120 @@
+Index: src/main/java/hudson/plugins/build_publisher/BuildPublisher.java
+===================================================================
+--- src/main/java/hudson/plugins/build_publisher/BuildPublisher.java	(revision 31862)
++++ src/main/java/hudson/plugins/build_publisher/BuildPublisher.java	(working copy)
+@@ -9,7 +9,6 @@
+ import hudson.model.AbstractProject;
+ import hudson.model.BuildListener;
+ import hudson.model.Descriptor;
+-import hudson.model.Descriptor.FormException;
+ import hudson.model.Hudson;
+ import hudson.model.Result;
+ import hudson.tasks.BuildStepDescriptor;
+@@ -111,6 +110,7 @@
+             BuildStepDescriptor<Publisher> {
+ 
+         private HudsonInstance[] publicInstances = new HudsonInstance[0];
++        private boolean removeTriggers;
+ 
+         protected BuildPublisherDescriptor() {
+             super(BuildPublisher.class);
+@@ -129,6 +129,14 @@
+             return "Publish build";
+         }
+ 
++        public void setRemoveTriggers(boolean removeTriggers) {
++            this.removeTriggers = removeTriggers;
++        }
++
++        public boolean getRemoveTriggers() {
++            return removeTriggers;
++        }
++
+         @Override
+         public Publisher newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+             //TODO post-actions
+@@ -150,6 +158,7 @@
+             String[] urls = req.getParameterValues("bp.url");
+             String[] logins = req.getParameterValues("bp.login");
+             String[] passwords = req.getParameterValues("bp.password");
++
+             int len;
+             if (names != null && urls != null)
+                 len = Math.min(names.length, urls.length);
+@@ -171,6 +180,8 @@
+             }
+ 
+             this.publicInstances = servers;
++            
++            req.bindParameters(this, "bp.server.");
+ 
+             save();
+ 
+Index: src/main/java/hudson/plugins/build_publisher/ExternalProjectProperty.java
+===================================================================
+--- src/main/java/hudson/plugins/build_publisher/ExternalProjectProperty.java	(revision 31862)
++++ src/main/java/hudson/plugins/build_publisher/ExternalProjectProperty.java	(working copy)
+@@ -35,6 +35,8 @@
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+ 
++import hudson.triggers.TriggerDescriptor;
++
+ /**
+  * Recieves builds submitted remotely via HTTP.
+  *
+@@ -127,6 +129,11 @@
+         untar.setDest(buildsDir);
+         untar.setOverwrite(true);
+ 
++        
++        if (BuildPublisher.DESCRIPTOR.getRemoveTriggers()) {
++        	removeTriggers(project);
++        }
++
+         String publisherTimezoneID = (String)req.getHeader("X-Publisher-Timezone");
+         LOGGER.info("Got remote timezone " + publisherTimezoneID);
+         TimeZone publisherTimezone = null;
+@@ -202,6 +209,14 @@
+         }
+     }
+ 
++	private void removeTriggers(AbstractProject<?,?> project) throws IOException {
++		for(TriggerDescriptor trigger: project.getTriggers().keySet()) {
++			project.removeTrigger(trigger);
++		}
++		
++		project.save();
++	}
++
+     private void tidyUp() throws IOException, InterruptedException {
+         // delete old builds
+ 
+Index: src/main/resources/hudson/plugins/build_publisher/BuildPublisher/global.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/build_publisher/BuildPublisher/global.jelly	(revision 31862)
++++ src/main/resources/hudson/plugins/build_publisher/BuildPublisher/global.jelly	(working copy)
+@@ -31,7 +31,13 @@
+           </f:entry>
+         </table>
+       </f:repeatable>
+-      
+     </f:entry>
++    
++    <f:entry title="Receiving Builds">
++      <f:entry title="">
++        <f:checkbox name="bp.server.removeTriggers" checked="${descriptor.removeTriggers}"  help="/plugin/build-publisher/help/global/remove_triggers.html"/>
++        <label class="attach-previous">${%Remove Triggers when receiving Builds}</label>
++      </f:entry>
++    </f:entry>
+   </f:section>
+ </j:jelly>
+Index: src/main/webapp/help/global/remove_triggers.html
+===================================================================
+--- src/main/webapp/help/global/remove_triggers.html	(revision 0)
++++ src/main/webapp/help/global/remove_triggers.html	(revision 0)
+@@ -0,0 +1,3 @@
++<div>
++    If this Hudson instance is working as a Master, the build triggers will be removed on receive.
++</div>
+\ No newline at end of file

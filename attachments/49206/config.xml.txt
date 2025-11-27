@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers>
+    <stashpullrequestbuilder.stashpullrequestbuilder.StashBuildTrigger plugin="stash-pullrequest-builder@1.14-SNAPSHOT">
+      <spec>*/1 * * * *</spec>
+      <cron>*/1 * * * *</cron>
+      <stashHost>https://pd-bitbucket.deltacontrols.com</stashHost>
+      <credentialsId>88f009aa-d13e-4733-ad67-a5a00d631e6f</credentialsId>
+      <projectCode>EWEB</projectCode>
+      <repositoryName>eweb</repositoryName>
+      <ignoreSsl>true</ignoreSsl>
+      <targetBranchesToBuild>upkar1</targetBranchesToBuild>
+      <checkDestinationCommit>false</checkDestinationCommit>
+      <checkNotConflicted>true</checkNotConflicted>
+      <checkMergeable>false</checkMergeable>
+      <checkProbeMergeStatus>false</checkProbeMergeStatus>
+      <mergeOnSuccess>false</mergeOnSuccess>
+      <deletePreviousBuildFinishComments>false</deletePreviousBuildFinishComments>
+      <cancelOutdatedJobsEnabled>true</cancelOutdatedJobsEnabled>
+      <ciSkipPhrases>#nothing</ciSkipPhrases>
+      <onlyBuildOnComment>false</onlyBuildOnComment>
+      <ciBuildPhrases>#testThis</ciBuildPhrases>
+    </stashpullrequestbuilder.stashpullrequestbuilder.StashBuildTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.BatchFile>
+      <command>ping localhost</command>
+    </hudson.tasks.BatchFile>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

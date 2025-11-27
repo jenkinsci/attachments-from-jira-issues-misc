@@ -1,0 +1,48 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<com.amazon.jenkins.ec2fleet.cloud.FleetNode plugin="ec2-fleet@1.1.7">
+  <name>i-06cdfa944c86e975e</name>
+  <description>Fleet slave fori-06cdfa944c86e975e</description>
+  <remoteFS>c:\Jenkins</remoteFS>
+  <numExecutors>1</numExecutors>
+  <mode>NORMAL</mode>
+  <retentionStrategy class="com.amazon.jenkins.ec2fleet.IdleRetentionStrategy">
+    <maxIdleMinutes>20</maxIdleMinutes>
+    <parent>
+      <name>FleetCloud</name>
+      <credentialsId>9704de4e-6d84-4a03-98b7-8778cb12785d</credentialsId>
+      <region>us-east-1</region>
+      <fleet>sfr-50b4fa15-56a6-4047-a200-954f55d6def8</fleet>
+      <fsRoot>c:\Jenkins</fsRoot>
+      <computerConnector class="hudson.plugins.sshslaves.SSHConnector" plugin="ssh-slaves@1.26">
+        <port>22</port>
+        <credentialsId>jenkins-master-windows</credentialsId>
+        <jvmOptions>-Xmx8192m</jvmOptions>
+        <javaPath></javaPath>
+        <maxNumRetries>0</maxNumRetries>
+        <retryWaitTime>0</retryWaitTime>
+        <sshHostKeyVerificationStrategy class="hudson.plugins.sshslaves.verifiers.ManuallyTrustedKeyVerificationStrategy">
+          <requireInitialManualTrust>false</requireInitialManualTrust>
+        </sshHostKeyVerificationStrategy>
+      </computerConnector>
+      <privateIpUsed>true</privateIpUsed>
+      <labelString>windows-ssh</labelString>
+      <idleMinutes>20</idleMinutes>
+      <minSize>1</minSize>
+      <maxSize>7</maxSize>
+      <numExecutors>1</numExecutors>
+    </parent>
+  </retentionStrategy>
+  <launcher class="hudson.plugins.sshslaves.SSHLauncher" plugin="ssh-slaves@1.26">
+    <host>10.0.2.141</host>
+    <port>22</port>
+    <credentialsId>jenkins-master-windows</credentialsId>
+    <jvmOptions>-Xmx8192m</jvmOptions>
+    <maxNumRetries>0</maxNumRetries>
+    <retryWaitTime>0</retryWaitTime>
+    <sshHostKeyVerificationStrategy class="hudson.plugins.sshslaves.verifiers.ManuallyTrustedKeyVerificationStrategy" reference="../../retentionStrategy/parent/computerConnector/sshHostKeyVerificationStrategy"/>
+  </launcher>
+  <label>windows-ssh</label>
+  <nodeProperties/>
+  <userId>SYSTEM</userId>
+  <cloudName>FleetCloud</cloudName>
+</com.amazon.jenkins.ec2fleet.cloud.FleetNode>

@@ -1,0 +1,102 @@
+arun.kumar
+-------------
+
+Jan 31, 2022 8:52:38 AM FINE hudson.plugins.active_directory.ActiveDirectorySecurityRealm
+Connecting to ldap://XX.XX.XX.XX:3268/
+Jan 31, 2022 8:52:38 AM FINE hudson.plugins.active_directory.ActiveDirectorySecurityRealm
+Binding as ADJOINUSER to ldap://XX.XX.XX.XX:3268/
+Jan 31, 2022 8:52:38 AM FINE hudson.plugins.active_directory.ActiveDirectorySecurityRealm
+Bound to XX.XX.XX.XX:3268
+Jan 31, 2022 8:52:38 AM FINER hudson.plugins.active_directory.LDAPSearchBuilder
+searching (& (userPrincipalName={0})(objectCategory=user))[arun.kumar@<managedaddomainname>] in DC=managedad,DC=lpt,DC=local using {java.naming.referral=follow, com.sun.jndi.ldap.connect.timeout=30000, java.naming.ldap.version=3, java.naming.security.principal=ADJOINUSER, java.naming.ldap.attributes.binary=tokenGroups objectSid, com.sun.jndi.ldap.read.timeout=60000, java.naming.provider.url=ldap://XX.XX.XX.XX:3268/, com.sun.jndi.ldap.domainname=, java.naming.security.credentials=…} with scope 2 returning null
+Jan 31, 2022 8:52:38 AM FINER hudson.plugins.active_directory.LDAPSearchBuilder
+no result
+Jan 31, 2022 8:52:38 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+Failed to find arun.kumar@<managedaddomainname> in userPrincipalName. Trying sAMAccountName
+Jan 31, 2022 8:52:38 AM FINER hudson.plugins.active_directory.LDAPSearchBuilder
+searching (& (sAMAccountName={0})(objectCategory=user))[arun.kumar] in DC=managedad,DC=lpt,DC=local using {java.naming.referral=follow, com.sun.jndi.ldap.connect.timeout=30000, java.naming.ldap.version=3, java.naming.security.principal=ADJOINUSER, java.naming.ldap.attributes.binary=tokenGroups objectSid, com.sun.jndi.ldap.read.timeout=60000, java.naming.provider.url=ldap://XX.XX.XX.XX:3268/, com.sun.jndi.ldap.domainname=, java.naming.security.credentials=…} with scope 2 returning null
+Jan 31, 2022 8:52:38 AM FINER hudson.plugins.active_directory.LDAPSearchBuilder
+no result
+Jan 31, 2022 8:52:38 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+Failed to retrieve user arun.kumar
+org.acegisecurity.userdetails.UsernameNotFoundException: Authentication was successful but cannot locate the user information for arun.kumar
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider$1.call(ActiveDirectoryUnixAuthenticationProvider.java:392)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider$1.call(ActiveDirectoryUnixAuthenticationProvider.java:339)
+	at com.google.common.cache.LocalCache$LocalManualCache$1.load(LocalCache.java:4767)
+	at com.google.common.cache.LocalCache$LoadingValueReference.loadFuture(LocalCache.java:3568)
+	at com.google.common.cache.LocalCache$Segment.loadSync(LocalCache.java:2350)
+	at com.google.common.cache.LocalCache$Segment.lockedGetOrLoad(LocalCache.java:2313)
+	at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2228)
+	at com.google.common.cache.LocalCache.get(LocalCache.java:3965)
+	at com.google.common.cache.LocalCache$LocalManualCache.get(LocalCache.java:4764)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.retrieveUser(ActiveDirectoryUnixAuthenticationProvider.java:453)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.retrieveUser(ActiveDirectoryUnixAuthenticationProvider.java:299)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.retrieveUser(ActiveDirectoryUnixAuthenticationProvider.java:225)
+	at hudson.plugins.active_directory.ActiveDirectorySecurityRealm.authenticate(ActiveDirectorySecurityRealm.java:830)
+	at hudson.security.AbstractPasswordBasedSecurityRealm.authenticate2(AbstractPasswordBasedSecurityRealm.java:74)
+	at hudson.security.AbstractPasswordBasedSecurityRealm.doAuthenticate(AbstractPasswordBasedSecurityRealm.java:97)
+	at hudson.security.AbstractPasswordBasedSecurityRealm.access$000(AbstractPasswordBasedSecurityRealm.java:30)
+	at hudson.security.AbstractPasswordBasedSecurityRealm$Authenticator.retrieveUser(AbstractPasswordBasedSecurityRealm.java:183)
+	at org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider.authenticate(AbstractUserDetailsAuthenticationProvider.java:133)
+	at org.springframework.security.authentication.ProviderManager.authenticate(ProviderManager.java:182)
+	at org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.attemptAuthentication(UsernamePasswordAuthenticationFilter.java:85)
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:222)
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:212)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:97)
+	at jenkins.security.BasicHeaderProcessor.doFilter(BasicHeaderProcessor.java:97)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:97)
+	at org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:110)
+	at org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:80)
+	at hudson.security.HttpSessionContextIntegrationFilter2.doFilter(HttpSessionContextIntegrationFilter2.java:62)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:97)
+	at hudson.security.ChainedServletFilter.doFilter(ChainedServletFilter.java:109)
+	at hudson.security.HudsonFilter.doFilter(HudsonFilter.java:171)
+	at org.eclipse.jetty.servlet.FilterHolder.doFilter(FilterHolder.java:193)
+	at org.eclipse.jetty.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1601)
+	at org.kohsuke.stapler.compression.CompressionFilter.doFilter(CompressionFilter.java:51)
+	at org.eclipse.jetty.servlet.FilterHolder.doFilter(FilterHolder.java:193)
+	at org.eclipse.jetty.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1601)
+	at hudson.util.CharacterEncodingFilter.doFilter(CharacterEncodingFilter.java:85)
+	at org.eclipse.jetty.servlet.FilterHolder.doFilter(FilterHolder.java:193)
+	at org.eclipse.jetty.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1601)
+	at org.kohsuke.stapler.DiagnosticThreadNameFilter.doFilter(DiagnosticThreadNameFilter.java:30)
+	at org.eclipse.jetty.servlet.FilterHolder.doFilter(FilterHolder.java:193)
+	at org.eclipse.jetty.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1601)
+	at jenkins.security.SuspiciousRequestFilter.doFilter(SuspiciousRequestFilter.java:39)
+	at org.eclipse.jetty.servlet.FilterHolder.doFilter(FilterHolder.java:193)
+	at org.eclipse.jetty.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1601)
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:548)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:143)
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:578)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:127)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:235)
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:1624)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:233)
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1434)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:188)
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:501)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:1594)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:186)
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1349)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:141)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:127)
+	at org.eclipse.jetty.server.Server.handle(Server.java:516)
+	at org.eclipse.jetty.server.HttpChannel.lambda$handle$1(HttpChannel.java:388)
+	at org.eclipse.jetty.server.HttpChannel.dispatch(HttpChannel.java:633)
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:380)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:277)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:311)
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:105)
+	at org.eclipse.jetty.io.ssl.SslConnection$DecryptedEndPoint.onFillable(SslConnection.java:555)
+	at org.eclipse.jetty.io.ssl.SslConnection.onFillable(SslConnection.java:410)
+	at org.eclipse.jetty.io.ssl.SslConnection$2.succeeded(SslConnection.java:164)
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:105)
+	at org.eclipse.jetty.io.ChannelEndPoint$1.run(ChannelEndPoint.java:104)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.runTask(EatWhatYouKill.java:338)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.doProduce(EatWhatYouKill.java:315)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.tryProduce(EatWhatYouKill.java:173)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.run(EatWhatYouKill.java:131)
+	at org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:386)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:883)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1034)
+	at java.base/java.lang.Thread.run(Thread.java:829)

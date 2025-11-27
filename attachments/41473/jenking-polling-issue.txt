@@ -1,0 +1,133 @@
+Polling started on 15 Feb, 2018 11:15:00 AM
+Polling for the job email_trigger_test
+Looking nodes where the poll can be run.
+Looking for a candidate node to run the poll.
+Trying to find an eligible node with the assigned project label master.
+
+Polling on master.
+Connecting to the mailbox...
+DEBUG: getProvider() returning javax.mail.Provider[STORE,imaps,com.sun.mail.imap.IMAPSSLStore,Sun Microsystems, Inc]
+
+
+DEBUG: mail.imap.fetchsize: 16384
+
+
+DEBUG: mail.imap.statuscachetimeout: 1000
+
+
+DEBUG: mail.imap.appendbuffersize: -1
+
+
+DEBUG: mail.imap.minidletime: 10
+
+
+DEBUG: trying to connect to host "mail.xyz.com", port 993, isSSL true
+
+
+* OK The Microsoft Exchange IMAP4 service is ready.
+
+A0 CAPABILITY
+
+* CAPABILITY IMAP4 IMAP4rev1 AUTH=NTLM AUTH=GSSAPI AUTH=PLAIN UIDPLUS CHILDREN IDLE NAMESPACE LITERAL+
+A0 OK CAPABILITY completed.
+
+DEBUG IMAP: AUTH: NTLM
+
+
+DEBUG IMAP: AUTH: GSSAPI
+
+
+DEBUG IMAP: AUTH: PLAIN
+
+
+DEBUG: protocolConnect login, host=mail.xyz.com, user=runtest@xyz.com, password=<non-null>
+
+
+A1 AUTHENTICATE PLAIN
+
++
+
+xyzxyzxyzxyz==
+
+A1 OK AUTHENTICATE completed.
+
+A2 CAPABILITY
+
+* CAPABILITY IMAP4 IMAP4rev1 AUTH=NTLM AUTH=GSSAPI AUTH=PLAIN UIDPLUS CHILDREN IDLE NAMESPACE LITERAL+
+A2 OK CAPABILITY completed.
+
+DEBUG IMAP: AUTH: NTLM
+
+
+DEBUG IMAP: AUTH: GSSAPI
+
+
+DEBUG IMAP: AUTH: PLAIN
+
+
+[Poll Mailbox Trigger] - Connected!
+Found properties:
+- [attachments:IGNORE]
+- [folder:INBOX]
+- [host:mail.xyz.com]
+- [mail.debug:true]
+- [mail.debug.auth:true]
+- [mail.imap.ssl.enable:true]
+- [mail.imap.starttls.enable:true]
+- [mail.imaps.host:mail.xyz.com]
+- [mail.imaps.port:993]
+- [password:***]
+- [receivedXMinutesAgo:120]
+- [storeName:imaps]
+- [subjectContains:Trigger TESTMAIL]
+- [username:runplv@xyz.com]
+Connected to mailbox. Searching for messages where:
+- [flag is unread]
+- [subject contains 'Trigger TESTMAIL']
+- [received date is greater than '2018/02/15 09:15:02 AM']
+...
+Searching folder...
+DEBUG: connection available -- size: 1
+
+
+A3 EXAMINE INBOX
+
+* 99 EXISTS
+* 2 RECENT
+* FLAGS (\Seen \Answered \Flagged \Deleted \Draft $MDNSent)
+* OK [PERMANENTFLAGS ()] Permanent flags
+* OK [UNSEEN 99] Is the first unseen message
+* OK [UIDVALIDITY 735929] UIDVALIDITY value
+* OK [UIDNEXT 105] The next unique identifier value
+A3 OK [READ-ONLY] EXAMINE completed.
+
+A4 SEARCH NOT (SEEN) SUBJECT "Trigger TESTMAIL" SINCE 15-Feb-2018 ALL
+
+* SEARCH
+A4 OK SEARCH completed.
+
+Found matching email(s) : 0
+A5 CLOSE
+
+A5 OK CLOSE completed.
+
+DEBUG: added an Authenticated connection -- size: 1
+
+
+A6 LOGOUT
+
+* BYE Microsoft Exchange Server 2010 IMAP4 server signing off.
+A6 OK LOGOUT completed.
+
+DEBUG: IMAPStore connection dead
+
+
+DEBUG: IMAPStore cleanup, force false
+
+
+DEBUG: IMAPStore cleanup done
+
+
+
+Polling complete. Took 3 sec.
+No changes.

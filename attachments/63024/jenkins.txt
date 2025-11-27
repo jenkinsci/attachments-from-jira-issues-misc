@@ -1,0 +1,35 @@
+OLD: 2.426.1
+NEW: 2.452.3
+
+
+Error
+java.lang.IllegalStateException: The eddsa-api plugin is not FIPS compliant and can not be used in a Jenkins configured to run in FIPS-140 mode
+	at io.jenkins.plugins.eddsa_api.FIPSComplianceCheck.preventUsageInFipsMode(FIPSComplianceCheck.java:15)
+Caused: java.lang.reflect.InvocationTargetException
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at hudson.init.TaskMethodFinder.invoke(TaskMethodFinder.java:109)
+Caused: java.lang.Error
+	at hudson.init.TaskMethodFinder.invoke(TaskMethodFinder.java:115)
+	at hudson.init.TaskMethodFinder$TaskImpl.run(TaskMethodFinder.java:185)
+	at org.jvnet.hudson.reactor.Reactor.runTask(Reactor.java:305)
+	at jenkins.model.Jenkins$5.runTask(Jenkins.java:1175)
+	at org.jvnet.hudson.reactor.Reactor$2.run(Reactor.java:221)
+	at org.jvnet.hudson.reactor.Reactor$Node.run(Reactor.java:120)
+	at jenkins.security.ImpersonatingExecutorService$1.run(ImpersonatingExecutorService.java:68)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused: org.jvnet.hudson.reactor.ReactorException
+	at org.jvnet.hudson.reactor.Reactor.execute(Reactor.java:290)
+	at jenkins.InitReactorRunner.run(InitReactorRunner.java:49)
+	at jenkins.model.Jenkins.executeReactor(Jenkins.java:1210)
+	at jenkins.model.Jenkins.<init>(Jenkins.java:997)
+	at hudson.model.Hudson.<init>(Hudson.java:86)
+	at hudson.model.Hudson.<init>(Hudson.java:82)
+	at hudson.WebAppMain$3.run(WebAppMain.java:248)
+Caused: hudson.util.HudsonFailedToLoad
+	at hudson.WebAppMain$3.run(WebAppMain.java:273)
+

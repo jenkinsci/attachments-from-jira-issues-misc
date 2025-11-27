@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <javaposse.jobdsl.plugin.ExecuteDslScripts plugin="job-dsl@1.58">
+      <scriptText>job(&apos;JENKINS-42655-1&apos;) {
+    parameters {
+      activeChoiceParam(&apos;States&apos;) {
+        description(&apos;Name of the State&apos;)
+        filterable() 
+        choiceType(&apos;SINGLE_SELECT&apos;)
+        groovyScript {
+          script(&apos;return [&quot;Sao Paulo&quot;, &quot;Rio de Janeiro&quot;]&apos;)
+          fallbackScript(&apos;return [&quot;Error in script&quot;]&apos;)
+        }
+      }
+      activeChoiceReactiveParam(&apos;Cities&apos;) {
+        description(&apos;Name of the State&apos;)
+        filterable() 
+        choiceType(&apos;SINGLE_SELECT&apos;)
+        referencedParameter(&apos;States&apos;)
+        groovyScript {
+          script(&apos;if (States.equals(&quot;Sao Paulo&quot;)) { return [&quot;Itu&quot;, &quot;Araras&quot;] } else { return [&quot;Angra dos Reis&quot;] }&apos;)
+          fallbackScript(&apos;return [&quot;Error in script&quot;]&apos;)
+        }
+      }
+  }
+}</scriptText>
+      <usingScriptText>true</usingScriptText>
+      <ignoreExisting>false</ignoreExisting>
+      <ignoreMissingFiles>false</ignoreMissingFiles>
+      <failOnMissingPlugin>false</failOnMissingPlugin>
+      <unstableOnDeprecation>false</unstableOnDeprecation>
+      <removedJobAction>IGNORE</removedJobAction>
+      <removedViewAction>IGNORE</removedViewAction>
+      <lookupStrategy>JENKINS_ROOT</lookupStrategy>
+    </javaposse.jobdsl.plugin.ExecuteDslScripts>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

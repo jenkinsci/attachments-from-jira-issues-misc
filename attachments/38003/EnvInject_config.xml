@@ -1,0 +1,29 @@
+      <includeEnvVars>true</includeEnvVars>
+      <envVarsPatterns>
+        <includePatterns></includePatterns>
+        <excludePatterns>*password*,*secret*,*key*</excludePatterns>
+      </envVarsPatterns>
+      <discardOldBuilds>true</discardOldBuilds>
+      <discardBuildArtifacts>true</discardBuildArtifacts>
+      <multiConfProject>false</multiConfProject>
+      <customBuildName></customBuildName>
+      <overrideBuildName>false</overrideBuildName>
+    </org.jfrog.hudson.generic.ArtifactoryGenericConfigurator>
+    <EnvInjectBuildWrapper plugin="envinject@2.0">
+      <info>
+        <propertiesContent>VERSION_MAJOR=${FW_VERSION_MAJOR}
+VERSION_MINOR=${FW_VERSION_MINOR}
+VERSION_PATCH=${FW_VERSION_PATCH}
+VERSION_BUILD=${BUILD_NUMBER}
+
+YOCTO_REV=${SVN_REVISION_1}
+LINUX_REV=${SVN_REVISION_2}
+RTS_REV=${SVN_REVISION_3}
+TOOLS_REV=${SVN_REVISION_4}
+        <secureGroovyScript plugin="script-security@1.27">
+          <script></script>
+          <sandbox>false</sandbox>
+        </secureGroovyScript>
+        <loadFilesFromMaster>false</loadFilesFromMaster>
+      </info>
+    </EnvInjectBuildWrapper>

@@ -1,0 +1,872 @@
+Started by user Jenkins
+Loading library github.com/cdenneen/jenkins-shared@paralleltest
+ > git rev-parse --is-inside-work-tree # timeout=10
+Setting origin to https://github.com/cdenneen/jenkins-shared.git
+ > git config remote.origin.url https://github.com/cdenneen/jenkins-shared.git # timeout=10
+Fetching origin...
+Fetching upstream changes from origin
+ > git --version # timeout=10
+ > git fetch --tags --progress origin +refs/heads/*:refs/remotes/origin/*
+ > git rev-parse paralleltest^{commit} # timeout=10
+Cloning the remote Git repository
+Cloning repository https://github.com/cdenneen/jenkins-shared.git
+ > git init /var/jenkins_home/workspace/paralleltest@libs/github.com/cdenneen/jenkins-shared # timeout=10
+Fetching upstream changes from https://github.com/cdenneen/jenkins-shared.git
+ > git --version # timeout=10
+ > git fetch --tags --progress https://github.com/cdenneen/jenkins-shared.git +refs/heads/*:refs/remotes/origin/*
+ > git config remote.origin.url https://github.com/cdenneen/jenkins-shared.git # timeout=10
+ > git config --add remote.origin.fetch +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git config remote.origin.url https://github.com/cdenneen/jenkins-shared.git # timeout=10
+Fetching upstream changes from https://github.com/cdenneen/jenkins-shared.git
+ > git fetch --tags --progress https://github.com/cdenneen/jenkins-shared.git +refs/heads/*:refs/remotes/origin/*
+Checking out Revision be7a0ecb46be509f5c33bc5e0609223b9d853ff5 (paralleltest)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f be7a0ecb46be509f5c33bc5e0609223b9d853ff5
+First time build. Skipping changelog.
+[Pipeline] node
+Running on default-jenkins-slave-12310313764ac in /home/jenkins/workspace/paralleltest
+[Pipeline] {
+[Pipeline] deleteDir
+[Pipeline] stage (Checkout)
+Using the ‘stage’ step without a block argument is deprecated
+Entering stage Checkout
+Proceeding
+[Pipeline] git
+Cloning the remote Git repository
+Cloning repository https://github.com/cdenneen/control-repo.git
+ > git init /home/jenkins/workspace/paralleltest # timeout=10
+Fetching upstream changes from https://github.com/cdenneen/control-repo.git
+ > git --version # timeout=10
+ > git fetch --tags --progress https://github.com/cdenneen/control-repo.git +refs/heads/*:refs/remotes/origin/*
+ > git config remote.origin.url https://github.com/cdenneen/control-repo.git # timeout=10
+ > git config --add remote.origin.fetch +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git config remote.origin.url https://github.com/cdenneen/control-repo.git # timeout=10
+Fetching upstream changes from https://github.com/cdenneen/control-repo.git
+ > git fetch --tags --progress https://github.com/cdenneen/control-repo.git +refs/heads/*:refs/remotes/origin/*
+ > git rev-parse refs/remotes/origin/production^{commit} # timeout=10
+ > git rev-parse refs/remotes/origin/origin/production^{commit} # timeout=10
+Checking out Revision c3269bd389e2b8e1dbba07bb0a04e6b38b395af1 (refs/remotes/origin/production)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f c3269bd389e2b8e1dbba07bb0a04e6b38b395af1
+ > git branch -a -v --no-abbrev # timeout=10
+ > git checkout -b production c3269bd389e2b8e1dbba07bb0a04e6b38b395af1
+First time build. Skipping changelog.
+[Pipeline] stash
+Stashed 59 file(s)
+[Pipeline] sh
+[paralleltest] Running shell script
++ git rev-parse HEAD
+[Pipeline] sh
+[paralleltest] Running shell script
++ echo c3269b
+c3269b
+[Pipeline] ansiColor
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Puppet Testing)
+[Pipeline] podTemplate
+[Pipeline] {
+[Pipeline] node
+Running on kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d in /home/jenkins/workspace/paralleltest
+[Pipeline] {
+[Pipeline] parallel
+[Pipeline] [ruby21] { (Branch: ruby21)
+[Pipeline] [ruby22] { (Branch: ruby22)
+[Pipeline] [ruby23] { (Branch: ruby23)
+[Pipeline] [ruby21] stage
+[Pipeline] [ruby21] { (ruby21)
+[Pipeline] [ruby22] stage
+[Pipeline] [ruby22] { (ruby22)
+[Pipeline] [ruby23] stage
+[Pipeline] [ruby23] { (ruby23)
+[Pipeline] [ruby21] container
+[Pipeline] [ruby21] {
+[Pipeline] [ruby22] container
+[Pipeline] [ruby22] {
+[Pipeline] [ruby23] container
+[Pipeline] [ruby23] {
+[Pipeline] [ruby21] unstash
+[Pipeline] [ruby22] unstash
+[Pipeline] [ruby23] unstash
+[Pipeline] [ruby22] parallel
+[Pipeline] [4.7.1] { (Branch: 4.7.1)
+[Pipeline] [4.8.1] { (Branch: 4.8.1)
+[Pipeline] [4.9.4] { (Branch: 4.9.4)
+[Pipeline] [ruby21] parallel
+[Pipeline] [4.7.1] { (Branch: 4.7.1)
+[Pipeline] [4.8.1] { (Branch: 4.8.1)
+[Pipeline] [4.9.4] { (Branch: 4.9.4)
+[Pipeline] [4.7.1] stage
+[Pipeline] [4.7.1] { (4.7.1)
+[Pipeline] [4.8.1] stage
+[Pipeline] [4.8.1] { (4.8.1)
+[Pipeline] [4.9.4] stage
+[Pipeline] [4.9.4] { (4.9.4)
+[Pipeline] [4.7.1] stage
+[Pipeline] [4.7.1] { (4.7.1)
+[Pipeline] [4.8.1] stage
+[Pipeline] [4.8.1] { (4.8.1)
+[Pipeline] [4.9.4] stage
+[Pipeline] [4.9.4] { (4.9.4)
+[Pipeline] [4.7.1] sh
+[4.7.1] [paralleltest] Running shell script
+[4.7.1] Executing shell script inside container [ruby22] of pod [kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d]
+[4.7.1] Executing command: sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-86c117f6/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-86c117f6/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-86c117f6/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-86c117f6/jenkins-result.txt' 
+[4.7.1] # cd "/home/jenkins/workspace/paralleltest"
+[4.7.1] sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-86c117f6/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-86c117f6/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-86c117f6/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-86c117f6/jenkins-result.txt' 
+[4.7.1] exit
+[Pipeline] [4.8.1] sh
+[4.8.1] [paralleltest] Running shell script
+[4.8.1] Executing shell script inside container [ruby22] of pod [kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d]
+[4.8.1] Executing command: sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-8df0b6ab/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-8df0b6ab/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-8df0b6ab/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-8df0b6ab/jenkins-result.txt' 
+[4.8.1] # cd "/home/jenkins/workspace/paralleltest"
+[4.8.1] sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-8df0b6ab/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-8df0b6ab/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-8df0b6ab/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-8df0b6ab/jenkins-result.txt' 
+[4.8.1] exit
+[Pipeline] [4.9.4] sh
+[4.7.1] # + gem install bundler --no-document
+[4.7.1] Cannot contact kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d: java.io.IOException: corrupted content in /home/jenkins/workspace/paralleltest@tmp/durable-86c117f6/pid: java.lang.NumberFormatException: For input string: ""
+[4.8.1] # + gem install bundler --no-document
+[4.8.1] Cannot contact kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d: java.io.IOException: corrupted content in /home/jenkins/workspace/paralleltest@tmp/durable-8df0b6ab/pid: java.lang.NumberFormatException: For input string: ""
+[4.9.4] [paralleltest] Running shell script
+[4.9.4] Executing shell script inside container [ruby22] of pod [kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d]
+[4.9.4] # Executing command: sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-1407159f/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-1407159f/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-1407159f/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-1407159f/jenkins-result.txt' 
+[4.9.4] cd "/home/jenkins/workspace/paralleltest"
+[4.9.4] sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-1407159f/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-1407159f/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-1407159f/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-1407159f/jenkins-result.txt' 
+[4.9.4] exit
+[4.9.4] # + gem install bundler --no-document
+[4.9.4] Cannot contact kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d: java.io.IOException: corrupted content in /home/jenkins/workspace/paralleltest@tmp/durable-1407159f/pid: java.lang.NumberFormatException: For input string: ""
+[Pipeline] [4.7.1] sh
+[4.7.1] [paralleltest] Running shell script
+[4.7.1] Executing shell script inside container [ruby21] of pod [kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d]
+[4.7.1] Executing command: sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-b01b918b/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-b01b918b/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-b01b918b/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-b01b918b/jenkins-result.txt' 
+[4.7.1] cd "/home/jenkins/workspace/paralleltest"
+[4.7.1] sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-b01b918b/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-b01b918b/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-b01b918b/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-b01b918b/jenkins-result.txt' 
+[4.7.1] exit
+[4.7.1] # # + gem install bundler --no-document
+[4.7.1] Cannot contact kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d: java.io.IOException: corrupted content in /home/jenkins/workspace/paralleltest@tmp/durable-b01b918b/pid: java.lang.NumberFormatException: For input string: ""
+[Pipeline] [4.8.1] sh
+[4.8.1] [paralleltest] Running shell script
+[4.8.1] Executing shell script inside container [ruby21] of pod [kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d]
+[4.8.1] Executing command: sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-3cbcd5c5/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-3cbcd5c5/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-3cbcd5c5/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-3cbcd5c5/jenkins-result.txt' 
+[4.8.1] # cd "/home/jenkins/workspace/paralleltest"
+[4.8.1] sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-3cbcd5c5/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-3cbcd5c5/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-3cbcd5c5/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-3cbcd5c5/jenkins-result.txt' 
+[4.8.1] exit
+[4.8.1] # + gem install bundler --no-document
+[4.8.1] Cannot contact kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d: java.io.IOException: corrupted content in /home/jenkins/workspace/paralleltest@tmp/durable-3cbcd5c5/pid: java.lang.NumberFormatException: For input string: ""
+[Pipeline] [4.9.4] sh
+[4.9.4] [paralleltest] Running shell script
+[4.9.4] Executing shell script inside container [ruby21] of pod [kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d]
+[4.9.4] Executing command: sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-8aa8941f/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-8aa8941f/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-8aa8941f/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-8aa8941f/jenkins-result.txt' 
+[4.9.4] cd "/home/jenkins/workspace/paralleltest"
+[4.9.4] sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-8aa8941f/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-8aa8941f/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-8aa8941f/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-8aa8941f/jenkins-result.txt' 
+[4.9.4] exit
+[Pipeline] [ruby23] parallel
+[Pipeline] [4.7.1] { (Branch: 4.7.1)
+[Pipeline] [4.8.1] { (Branch: 4.8.1)
+[Pipeline] [4.9.4] { (Branch: 4.9.4)
+[Pipeline] [4.7.1] stage
+[Pipeline] [4.7.1] { (4.7.1)
+[Pipeline] [4.8.1] stage
+[Pipeline] [4.8.1] { (4.8.1)
+[4.7.1] # Successfully installed bundler-1.14.6
+[4.7.1] 1 gem installed
+[Pipeline] [4.9.4] stage
+[Pipeline] [4.9.4] { (4.9.4)
+[4.9.4] # # + gem install bundler --no-document
+[4.9.4] Cannot contact kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d: java.io.IOException: corrupted content in /home/jenkins/workspace/paralleltest@tmp/durable-8aa8941f/pid: java.lang.NumberFormatException: For input string: ""
+[4.9.4] # Successfully installed bundler-1.14.6
+[4.9.4] 1 gem installed
+[Pipeline] [4.7.1] sh
+[4.7.1] [paralleltest] Running shell script
+[4.7.1] Executing shell script inside container [ruby23] of pod [kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d]
+[4.7.1] Executing command: sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-33bf60fb/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-33bf60fb/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-33bf60fb/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-33bf60fb/jenkins-result.txt' 
+[4.7.1] cd "/home/jenkins/workspace/paralleltest"
+[4.7.1] sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-33bf60fb/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-33bf60fb/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-33bf60fb/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-33bf60fb/jenkins-result.txt' 
+[4.7.1] exit
+[4.7.1] # # + gem install bundler --no-document
+[4.7.1] Cannot contact kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d: java.io.IOException: corrupted content in /home/jenkins/workspace/paralleltest@tmp/durable-33bf60fb/pid: java.lang.NumberFormatException: For input string: ""
+[Pipeline] [4.8.1] sh
+[4.8.1] [paralleltest] Running shell script
+[4.8.1] Executing shell script inside container [ruby23] of pod [kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d]
+[4.8.1] Executing command: sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-70898d7f/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-70898d7f/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-70898d7f/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-70898d7f/jenkins-result.txt' 
+[4.8.1] # cd "/home/jenkins/workspace/paralleltest"
+[4.8.1] sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-70898d7f/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-70898d7f/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-70898d7f/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-70898d7f/jenkins-result.txt' 
+[4.8.1] exit
+[Pipeline] [4.9.4] sh
+[4.8.1] # Successfully installed bundler-1.14.6
+[4.8.1] 1 gem installed
+[4.7.1] Successfully installed bundler-1.14.6
+[4.7.1] 1 gem installed
+[4.8.1] # Successfully installed bundler-1.14.6
+[4.8.1] 1 gem installed
+[4.8.1] # + gem install bundler --no-document
+[4.8.1] Cannot contact kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d: java.io.IOException: corrupted content in /home/jenkins/workspace/paralleltest@tmp/durable-70898d7f/pid: java.lang.NumberFormatException: For input string: ""
+[4.9.4] [paralleltest] Running shell script
+[4.9.4] Executing shell script inside container [ruby23] of pod [kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d]
+[4.9.4] Executing command: sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-40f236bf/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-40f236bf/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-40f236bf/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-40f236bf/jenkins-result.txt' 
+[4.9.4] # cd "/home/jenkins/workspace/paralleltest"
+[4.9.4] sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-40f236bf/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-40f236bf/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-40f236bf/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-40f236bf/jenkins-result.txt' 
+[4.9.4] exit
+[4.9.4] # + gem install bundler --no-document
+[4.9.4] Cannot contact kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d: java.io.IOException: corrupted content in /home/jenkins/workspace/paralleltest@tmp/durable-40f236bf/pid: java.lang.NumberFormatException: For input string: ""
+[Pipeline] [4.7.1] sh
+[4.7.1] [paralleltest] Running shell script
+[4.7.1] Executing shell script inside container [ruby22] of pod [kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d]
+[4.7.1] Executing command: sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-6bf01d63/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-6bf01d63/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-6bf01d63/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-6bf01d63/jenkins-result.txt' 
+[4.7.1] # cd "/home/jenkins/workspace/paralleltest"
+[4.7.1] sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-6bf01d63/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-6bf01d63/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-6bf01d63/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-6bf01d63/jenkins-result.txt' 
+[4.7.1] exit
+[4.7.1] # + bundle install --without system_tests
+[4.7.1] Cannot contact kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d: java.io.IOException: corrupted content in /home/jenkins/workspace/paralleltest@tmp/durable-6bf01d63/pid: java.lang.NumberFormatException: For input string: ""
+[Pipeline] [4.9.4] sh
+[4.9.4] # Successfully installed bundler-1.14.6
+[4.9.4] 1 gem installed
+[4.9.4] [paralleltest] Running shell script
+[4.9.4] Executing shell script inside container [ruby22] of pod [kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d]
+[4.9.4] Executing command: sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-6a9089c0/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-6a9089c0/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-6a9089c0/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-6a9089c0/jenkins-result.txt' 
+[4.9.4] # cd "/home/jenkins/workspace/paralleltest"
+[4.9.4] sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-6a9089c0/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-6a9089c0/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-6a9089c0/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-6a9089c0/jenkins-result.txt' 
+[4.9.4] exit
+[4.9.4] # + bundle install --without system_tests
+[4.9.4] Cannot contact kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d: java.io.IOException: corrupted content in /home/jenkins/workspace/paralleltest@tmp/durable-6a9089c0/pid: java.lang.NumberFormatException: For input string: ""
+[4.7.1] # Successfully installed bundler-1.14.6
+[4.7.1] 1 gem installed
+[4.8.1] # Successfully installed bundler-1.14.6
+[4.8.1] 1 gem installed
+[4.9.4] # Successfully installed bundler-1.14.6
+[4.9.4] 1 gem installed
+[Pipeline] [4.8.1] sh
+[4.8.1] [paralleltest] Running shell script
+[4.8.1] Executing shell script inside container [ruby22] of pod [kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d]
+[4.8.1] Executing command: sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-3783c5dd/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-3783c5dd/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-3783c5dd/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-3783c5dd/jenkins-result.txt' 
+[4.8.1] # cd "/home/jenkins/workspace/paralleltest"
+[4.8.1] sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-3783c5dd/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-3783c5dd/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-3783c5dd/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-3783c5dd/jenkins-result.txt' 
+[4.8.1] exit
+[4.8.1] # + bundle install --without system_tests
+[4.8.1] Cannot contact kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d: java.io.IOException: corrupted content in /home/jenkins/workspace/paralleltest@tmp/durable-3783c5dd/pid: java.lang.NumberFormatException: For input string: ""
+[Pipeline] [4.7.1] sh
+[4.7.1] [paralleltest] Running shell script
+[4.7.1] Executing shell script inside container [ruby21] of pod [kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d]
+[4.7.1] Executing command: sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-87a52be6/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-87a52be6/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-87a52be6/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-87a52be6/jenkins-result.txt' 
+[4.7.1] cd "/home/jenkins/workspace/paralleltest"
+[4.7.1] sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-87a52be6/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-87a52be6/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-87a52be6/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-87a52be6/jenkins-result.txt' 
+[4.7.1] exit
+[4.7.1] # # + bundle install --without system_tests
+[4.7.1] Cannot contact kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d: java.io.IOException: corrupted content in /home/jenkins/workspace/paralleltest@tmp/durable-87a52be6/pid: java.lang.NumberFormatException: For input string: ""
+[Pipeline] [4.8.1] sh
+[4.8.1] [paralleltest] Running shell script
+[4.8.1] Executing shell script inside container [ruby21] of pod [kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d]
+[4.8.1] Executing command: sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-ee34d947/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-ee34d947/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-ee34d947/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-ee34d947/jenkins-result.txt' 
+[4.8.1] # cd "/home/jenkins/workspace/paralleltest"
+[4.8.1] sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-ee34d947/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-ee34d947/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-ee34d947/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-ee34d947/jenkins-result.txt' 
+[4.8.1] exit
+[4.8.1] # + bundle install --without system_tests
+[4.8.1] Cannot contact kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d: java.io.IOException: corrupted content in /home/jenkins/workspace/paralleltest@tmp/durable-ee34d947/pid: java.lang.NumberFormatException: For input string: ""
+[4.7.1] Fetching gem metadata from https://rubygems.org/..........
+[4.8.1] Fetching gem metadata from https://rubygems.org/..........
+[4.7.1] Fetching version metadata from https://rubygems.org/...
+[4.8.1] Fetching version metadata from https://rubygems.org/...
+[4.9.4] Fetching gem metadata from https://rubygems.org/.........
+[4.7.1] Fetching dependency metadata from https://rubygems.org/..
+[4.8.1] Fetching dependency metadata from https://rubygems.org/..
+[4.8.1] Installing rake 12.0.0
+[4.7.1] Installing rake 12.0.0
+[4.7.1] Installing ansi 1.5.0
+[4.8.1] Installing ansi 1.5.0
+[4.7.1] Fetching gem metadata from https://rubygems.org/.........
+[4.8.1] Fetching gem metadata from https://rubygems.org/..........
+[4.7.1] Installing ast 2.3.0
+[4.7.1] Installing builder 3.2.3
+[4.7.1] Installing rspec-support 3.5.0
+[4.7.1] Installing diff-lcs 1.3
+[4.7.1] Installing coderay 1.1.1
+[4.8.1] Installing ast 2.3.0
+[4.8.1] Installing builder 3.2.3
+[4.8.1] Installing rspec-support 3.5.0
+[4.8.1] Installing diff-lcs 1.3
+[4.8.1] Installing coderay 1.1.1
+[4.9.4] Fetching version metadata from https://rubygems.org/..
+[4.7.1] Installing colored 1.2
+[4.7.1] Installing docile 1.1.5
+[4.8.1] Installing colored 1.2
+[4.8.1] Installing docile 1.1.5
+[4.8.1] Fetching version metadata from https://rubygems.org/...
+[4.7.1] Installing facter 2.4.6
+[4.8.1] Installing facter 2.4.6
+[4.9.4] Fetching dependency metadata from https://rubygems.org/.
+[4.7.1] Fetching version metadata from https://rubygems.org/..
+[4.9.4] Installing rake 12.0.0
+[4.9.4] Installing ansi 1.5.0
+[4.9.4] Installing ast 2.3.0
+[4.8.1] Fetching dependency metadata from https://rubygems.org/..
+[4.8.1] Installing rake 12.0.0
+[4.7.1] Installing json 1.8.6 with native extensions
+[4.8.1] Installing json 1.8.6 with native extensions
+[4.8.1] Installing multipart-post 2.0.0
+[4.7.1] Fetching dependency metadata from https://rubygems.org/.
+[4.9.4] Installing builder 3.2.3
+[4.9.4] Installing rspec-support 3.5.0
+[4.9.4] Installing diff-lcs 1.3
+[4.8.1] Installing ansi 1.5.0
+[4.8.1] Installing ast 2.3.0
+[4.8.1] Installing builder 3.2.3
+[4.8.1] Installing fast_gettext 1.1.0
+[4.8.1] Installing ffi 1.9.18 with native extensions
+[4.7.1] Installing rake 12.0.0
+[4.7.1] Installing ansi 1.5.0
+[4.9.4] Installing coderay 1.1.1
+[4.8.1] Installing rspec-support 3.5.0
+[4.8.1] Installing diff-lcs 1.3
+[4.8.1] Installing coderay 1.1.1
+[4.8.1] Installing colored 1.2
+[4.7.1] Installing ast 2.3.0
+[4.7.1] Installing builder 3.2.3
+[4.9.4] Installing colored 1.2
+[4.9.4] Installing docile 1.1.5
+[4.7.1] Installing rspec-support 3.5.0
+[4.7.1] Installing diff-lcs 1.3
+[4.7.1] Installing coderay 1.1.1
+[4.7.1] Installing colored 1.2
+[4.7.1] Installing docile 1.1.5
+[4.9.4] Installing facter 2.4.6
+[4.8.1] Installing docile 1.1.5
+[4.8.1] Installing facter 2.4.6
+[4.7.1] Installing facter 2.4.6
+[4.9.4] Installing json 1.8.6 with native extensions
+[4.8.1] Installing json 1.8.6 with native extensions
+[4.7.1] Installing json 1.8.6 with native extensions
+[4.8.1] Installing multipart-post 2.0.0
+[4.8.1] Installing fast_gettext 1.1.0
+[4.7.1] Installing multipart-post 2.0.0
+[4.7.1] Installing fast_gettext 1.1.0
+[4.9.4] Installing multipart-post 2.0.0
+[4.9.4] Installing fast_gettext 1.1.0
+[4.8.1] Installing ffi 1.9.18 with native extensions
+[4.9.4] Installing ffi 1.9.18 with native extensions
+[4.8.1] Installing formatador 0.2.5
+[4.8.1] Installing locale 2.1.2
+[4.7.1] Installing ffi 1.9.18 with native extensions
+[4.8.1] Installing text 1.3.1
+[4.8.1] Installing rb-fsevent 0.9.8
+[4.8.1] Installing lumberjack 1.0.11
+[4.7.1] Installing multipart-post 2.0.0
+[4.7.1] Installing fast_gettext 1.1.0
+[4.7.1] Installing ffi 1.9.18 with native extensions
+[4.8.1] Installing nenv 0.3.0
+[4.8.1] Installing shellany 0.0.1
+[4.8.1] Installing method_source 0.8.2
+[4.8.1] Installing slop 3.6.0
+[4.8.1] Installing thor 0.19.4
+[4.8.1] Installing hiera 3.3.1
+[4.8.1] Installing highline 1.6.21
+[4.8.1] Installing formatador 0.2.5
+[4.8.1] Installing locale 2.1.2
+[4.8.1] Installing trollop 2.1.2
+[4.8.1] Installing hirb 0.7.3
+[4.8.1] Installing json_pure 1.8.6
+[4.8.1] Installing text 1.3.1
+[4.8.1] Installing log4r 1.1.10
+[4.8.1] Installing stomp 1.4.3
+[4.8.1] Installing systemu 2.6.5
+[4.8.1] Installing metaclass 0.0.4
+[4.8.1] Installing minitar 0.5.4
+[4.8.1] Installing multi_json 1.12.1
+[4.8.1] Installing parallel 1.11.1
+[4.8.1] Installing powerpack 0.1.1
+[4.8.1] Installing puppet-lint 2.0.2
+[4.8.1] Installing puppetclassify 0.1.5
+[4.8.1] Installing rainbow 2.1.0
+[4.8.1] Installing rb-fsevent 0.9.8
+[4.8.1] Installing lumberjack 1.0.11
+[4.8.1] Installing nenv 0.3.0
+[4.8.1] Installing shellany 0.0.1
+[4.8.1] Installing method_source 0.8.2
+[4.8.1] Installing slop 3.6.0
+[4.8.1] Installing ruby-progressbar 1.8.1
+[4.8.1] Installing unicode-display_width 1.2.1
+[4.8.1] Installing simplecov-html 0.10.0
+[4.8.1] Using bundler 1.14.6
+[4.8.1] Installing puppet-syntax 2.4.0
+[4.8.1] Installing parser 2.4.0.0
+[4.8.1] Installing thor 0.19.4
+[4.8.1] Installing hiera 3.3.1
+[4.8.1] Installing highline 1.6.21
+[4.8.1] Installing trollop 2.1.2
+[4.8.1] Installing hirb 0.7.3
+[4.8.1] Installing json_pure 1.8.6
+[4.8.1] Installing ci_reporter 2.0.0
+[4.8.1] Installing rspec-core 3.5.4
+[4.8.1] Installing log4r 1.1.10
+[4.8.1] Installing rspec-expectations 3.5.0
+[4.8.1] Installing stomp 1.4.3
+[4.8.1] Installing systemu 2.6.5
+[4.8.1] Installing rspec-mocks 3.5.0
+[4.8.1] Installing cri 2.6.1
+[4.8.1] Installing metaclass 0.0.4
+[4.8.1] Installing minitar 0.5.4
+[4.8.1] Installing multi_json 1.12.1
+[4.8.1] Installing parallel 1.11.1
+[4.8.1] Gem::Ext::BuildError: ERROR: Failed to build gem native extension.
+[4.8.1] 
+[4.8.1]     current directory: /usr/local/bundle/gems/json-1.8.6/ext/json/ext/generator
+[4.8.1] /usr/local/bin/ruby -r ./siteconf20170509-55-10erq4v.rb extconf.rb
+[4.8.1] /usr/local/bin/ruby: No such file or directory -- extconf.rb (LoadError)
+[4.8.1] 
+[4.8.1] extconf failed, exit code 1
+[4.8.1] 
+[4.8.1] Gem files will remain installed in /usr/local/bundle/gems/json-1.8.6 for
+[4.8.1] inspection.
+[4.8.1] Results logged to
+[4.8.1] /usr/local/bundle/extensions/x86_64-linux/2.2.0/json-1.8.6/gem_make.out
+[4.8.1] 
+[4.8.1] An error occurred while installing json (1.8.6), and Bundler cannot continue.
+[4.8.1] Make sure that `gem install json -v '1.8.6'` succeeds before bundling.
+[4.8.1] Installing powerpack 0.1.1
+[Pipeline] [4.9.4] sh
+[4.9.4] [paralleltest] Running shell script
+[4.9.4] Executing shell script inside container [ruby21] of pod [kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d]
+[Pipeline] [4.9.4] }
+[4.8.1] Installing puppet-lint 2.0.2
+[Pipeline] [4.7.1] sh
+[4.7.1] [paralleltest] Running shell script
+[4.7.1] Executing shell script inside container [ruby23] of pod [kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d]
+[Pipeline] [4.7.1] }
+[Pipeline] [4.8.1] sh
+[4.8.1] [paralleltest] Running shell script
+[4.8.1] Executing shell script inside container [ruby23] of pod [kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d]
+[Pipeline] [4.8.1] }
+[Pipeline] [4.9.4] sh
+[4.9.4] [paralleltest] Running shell script
+[4.9.4] Executing shell script inside container [ruby23] of pod [kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d]
+[Pipeline] [4.9.4] }
+[4.8.1] Installing puppetclassify 0.1.5
+[4.8.1] Installing rainbow 2.1.0
+[4.8.1] Installing ruby-progressbar 1.8.1
+[Pipeline] [4.9.4] // stage
+[4.8.1] Installing unicode-display_width 1.2.1
+[4.8.1] Installing simplecov-html 0.10.0
+[Pipeline] [4.7.1] // stage
+[Pipeline] [4.8.1] // stage
+[4.8.1] Using bundler 1.14.6
+[4.8.1] Installing puppet-syntax 2.4.0
+[Pipeline] [4.9.4] // stage
+[Pipeline] [4.9.4] }
+[4.9.4] Failed in branch 4.9.4
+[Pipeline] [4.8.1] }
+[Pipeline] [4.7.1] }
+[4.7.1] Failed in branch 4.7.1
+[Pipeline] [4.8.1] }
+[4.8.1] Failed in branch 4.8.1
+[Pipeline] [4.9.4] }
+[4.9.4] Failed in branch 4.9.4
+[Pipeline] [4.8.1] // stage
+[4.8.1] Installing parser 2.4.0.0
+[Pipeline] [ruby23] // parallel
+[Pipeline] [ruby23] }
+[Pipeline] [4.8.1] }
+[4.8.1] Failed in branch 4.8.1
+[Pipeline] [ruby23] // container
+[Pipeline] [ruby23] }
+[Pipeline] [ruby23] // stage
+[Pipeline] [ruby23] }
+[ruby23] Failed in branch ruby23
+[4.8.1] Installing ci_reporter 2.0.0
+[4.8.1] Installing rspec-core 3.5.4
+[4.8.1] Installing rspec-expectations 3.5.0
+[4.8.1] Installing rspec-mocks 3.5.0
+[4.8.1] Installing cri 2.6.1
+[4.8.1] Errno::ENOENT: No such file or directory @ chmod_internal -
+[4.8.1] /usr/local/bundle/gems/json-1.8.6/tools/diff.sh
+[4.8.1] An error occurred while installing json (1.8.6), and Bundler cannot continue.
+[4.8.1] Make sure that `gem install json -v '1.8.6'` succeeds before bundling.
+[Pipeline] [4.8.1] }
+[Pipeline] [4.8.1] // stage
+[Pipeline] [4.8.1] }
+[4.8.1] Failed in branch 4.8.1
+[4.7.1] Installing formatador 0.2.5
+[4.7.1] Installing locale 2.1.2
+[4.7.1] Installing text 1.3.1
+[4.7.1] Installing rb-fsevent 0.9.8
+[4.7.1] Installing lumberjack 1.0.11
+[4.9.4] Installing formatador 0.2.5
+[4.9.4] Installing locale 2.1.2
+[4.9.4] Installing text 1.3.1
+[4.9.4] Installing rb-fsevent 0.9.8
+[4.9.4] Installing lumberjack 1.0.11
+[4.9.4] Installing nenv 0.3.0
+[4.9.4] Installing shellany 0.0.1
+[4.7.1] Installing formatador 0.2.5
+[4.7.1] Installing locale 2.1.2
+[4.7.1] Installing text 1.3.1
+[4.7.1] Installing rb-fsevent 0.9.8
+[4.7.1] Installing lumberjack 1.0.11
+[4.7.1] Installing nenv 0.3.0
+[4.7.1] Installing shellany 0.0.1
+[4.7.1] Installing method_source 0.8.2
+[4.7.1] Installing slop 3.6.0
+[4.7.1] Installing thor 0.19.4
+[4.7.1] Installing hiera 3.3.1
+[4.7.1] Installing nenv 0.3.0
+[4.7.1] Installing shellany 0.0.1
+[4.7.1] Installing method_source 0.8.2
+[4.7.1] Installing slop 3.6.0
+[4.7.1] Installing thor 0.19.4
+[4.7.1] Installing hiera 3.3.1
+[4.7.1] Installing highline 1.6.21
+[4.9.4] Installing method_source 0.8.2
+[4.9.4] Installing slop 3.6.0
+[4.9.4] Installing thor 0.19.4
+[4.9.4] Installing hiera 3.3.1
+[4.7.1] Installing highline 1.6.21
+[4.7.1] Installing trollop 2.1.2
+[4.7.1] Installing hirb 0.7.3
+[4.7.1] Installing json_pure 1.8.6
+[4.7.1] Installing log4r 1.1.10
+[4.7.1] Installing stomp 1.4.3
+[4.7.1] Installing systemu 2.6.5
+[4.7.1] Installing metaclass 0.0.4
+[4.7.1] Installing minitar 0.5.4
+[4.7.1] Installing trollop 2.1.2
+[4.7.1] Installing hirb 0.7.3
+[4.7.1] Installing json_pure 1.8.6
+[4.9.4] Installing highline 1.6.21
+[4.9.4] Installing trollop 2.1.2
+[4.9.4] Installing hirb 0.7.3
+[4.7.1] Installing multi_json 1.12.1
+[4.7.1] Installing parallel 1.11.1
+[4.7.1] Installing powerpack 0.1.1
+[4.7.1] Installing puppet-lint 2.0.2
+[4.7.1] Installing puppetclassify 0.1.5
+[4.7.1] Installing rainbow 2.1.0
+[4.7.1] Installing ruby-progressbar 1.8.1
+[4.7.1] Installing unicode-display_width 1.2.1
+[4.7.1] Installing log4r 1.1.10
+[4.7.1] Installing stomp 1.4.3
+[4.9.4] Installing json_pure 1.8.6
+[4.9.4] Installing log4r 1.1.10
+[4.9.4] Installing stomp 1.4.3
+[4.7.1] Installing simplecov-html 0.10.0
+[4.7.1] Using bundler 1.14.6
+[4.7.1] Installing puppet-syntax 2.4.0
+[4.7.1] Installing parser 2.4.0.0
+[4.7.1] Installing ci_reporter 2.0.0
+[4.7.1] Installing systemu 2.6.5
+[4.7.1] Installing metaclass 0.0.4
+[4.7.1] Installing minitar 0.5.4
+[4.7.1] Installing multi_json 1.12.1
+[4.7.1] Installing parallel 1.11.1
+[4.9.4] Installing systemu 2.6.5
+[4.9.4] Installing metaclass 0.0.4
+[4.9.4] Installing minitar 0.5.4
+[4.9.4] Installing multi_json 1.12.1
+[4.7.1] Installing rspec-core 3.5.4
+[4.7.1] Installing rspec-expectations 3.5.0
+[4.7.1] Installing rspec-mocks 3.5.0
+[4.7.1] Installing cri 2.6.1
+[4.7.1] Installing jgrep 1.4.1
+[4.7.1] Installing faraday 0.9.2
+[4.7.1] Installing rb-inotify 0.9.8
+[4.7.1] Installing gettext 3.2.2
+[4.7.1] Installing powerpack 0.1.1
+[4.9.4] Installing parallel 1.11.1
+[4.7.1] Installing puppet-lint 2.0.2
+[4.7.1] Installing puppetclassify 0.1.5
+[4.7.1] Installing rainbow 2.1.0
+[4.7.1] Installing ruby-progressbar 1.8.1
+[4.7.1] Installing unicode-display_width 1.2.1
+[4.9.4] Installing powerpack 0.1.1
+[4.9.4] Installing puppet-lint 2.0.2
+[4.9.4] Installing puppetclassify 0.1.5
+[4.9.4] Installing rainbow 2.1.0
+[4.7.1] Installing notiffany 0.1.1
+[4.7.1] Installing pry 0.10.4
+[4.7.1] Installing simplecov-html 0.10.0
+[4.7.1] Using bundler 1.14.6
+[4.7.1] Installing puppet-syntax 2.4.0
+[4.7.1] Installing parser 2.4.0.0
+[4.9.4] Installing ruby-progressbar 1.8.1
+[4.9.4] Installing unicode-display_width 1.2.1
+[4.9.4] Installing simplecov-html 0.10.0
+[4.7.1] Installing hiera-eyaml 2.1.0
+[4.9.4] Using bundler 1.14.6
+[4.9.4] Installing puppet-syntax 2.4.0
+[4.9.4] Installing parser 2.4.0.0
+[4.7.1] Installing puppet 4.7.1
+[4.7.1] Installing ci_reporter 2.0.0
+[4.7.1] Installing rspec-core 3.5.4
+[4.9.4] Installing ci_reporter 2.0.0
+[4.7.1] Installing mcollective-client 2.10.3
+[4.7.1] Installing mocha 1.2.1
+[4.7.1] Installing rspec-expectations 3.5.0
+[4.7.1] Installing rspec-mocks 3.5.0
+[4.7.1] Installing cri 2.6.1
+[4.7.1] Gem::Ext::BuildError: ERROR: Failed to build gem native extension.
+[4.7.1] 
+[4.7.1]     current directory: /usr/local/bundle/gems/json-1.8.6/ext/json/ext/generator
+[4.7.1] /usr/local/bin/ruby -r ./siteconf20170509-37-1t8wfrj.rb extconf.rb
+[4.7.1] creating Makefile
+[4.7.1] 
+[4.7.1] current directory: /usr/local/bundle/gems/json-1.8.6/ext/json/ext/generator
+[4.7.1] make "DESTDIR=" clean
+[4.7.1] Makefile:261: *** missing separator (did you mean TAB instead of 8 spaces?). 
+[4.7.1] Stop.
+[4.7.1] 
+[4.7.1] current directory: /usr/local/bundle/gems/json-1.8.6/ext/json/ext/generator
+[4.7.1] make "DESTDIR="
+[4.7.1] Makefile:261: *** missing separator (did you mean TAB instead of 8 spaces?). 
+[4.7.1] Stop.
+[4.7.1] 
+[4.7.1] make failed, exit code 2
+[4.7.1] 
+[4.7.1] Gem files will remain installed in /usr/local/bundle/gems/json-1.8.6 for
+[4.7.1] inspection.
+[4.7.1] Results logged to
+[4.7.1] /usr/local/bundle/extensions/x86_64-linux/2.2.0/json-1.8.6/gem_make.out
+[4.7.1] 
+[4.7.1] An error occurred while installing json (1.8.6), and Bundler cannot continue.
+[4.7.1] Make sure that `gem install json -v '1.8.6'` succeeds before bundling.
+[4.9.4] Installing rspec-core 3.5.4
+[4.9.4] Installing rspec-expectations 3.5.0
+[4.9.4] Installing rspec-mocks 3.5.0
+[4.9.4] Installing cri 2.6.1
+[4.9.4] Gem::Ext::BuildError: ERROR: Failed to build gem native extension.
+[4.9.4] 
+[4.9.4]     current directory: /usr/local/bundle/gems/json-1.8.6/ext/json/ext/generator
+[4.9.4] /usr/local/bin/ruby -r ./siteconf20170509-46-sv33og.rb extconf.rb
+[4.9.4] creating Makefile
+[4.9.4] 
+[4.9.4] current directory: /usr/local/bundle/gems/json-1.8.6/ext/json/ext/generator
+[4.9.4] make "DESTDIR=" clean
+[4.9.4] Makefile:261: *** missing separator (did you mean TAB instead of 8 spaces?). 
+[4.9.4] Stop.
+[4.9.4] 
+[4.9.4] current directory: /usr/local/bundle/gems/json-1.8.6/ext/json/ext/generator
+[4.9.4] make "DESTDIR="
+[4.9.4] Makefile:261: *** missing separator (did you mean TAB instead of 8 spaces?). 
+[4.9.4] Stop.
+[4.9.4] 
+[4.9.4] make failed, exit code 2
+[4.9.4] 
+[4.9.4] Gem files will remain installed in /usr/local/bundle/gems/json-1.8.6 for
+[4.9.4] inspection.
+[4.9.4] Results logged to
+[4.9.4] /usr/local/bundle/extensions/x86_64-linux/2.2.0/json-1.8.6/gem_make.out
+[4.9.4] 
+[4.9.4] An error occurred while installing json (1.8.6), and Bundler cannot continue.
+[4.9.4] Make sure that `gem install json -v '1.8.6'` succeeds before bundling.
+[4.7.1] Installing parallel_tests 2.14.1
+[4.7.1] Installing puppet-lint-absolute_classname-check 0.2.4
+[4.7.1] Installing puppet-lint-empty_string-check 0.2.2
+[4.7.1] Installing puppet-lint-leading_zero-check 0.1.1
+[4.7.1] Installing puppet-lint-roles_and_profiles-check 0.1.1
+[4.7.1] Installing puppet-lint-undef_in_function-check 0.2.1
+[4.7.1] Installing puppet-lint-unquoted_string-check 0.3.0
+[4.7.1] Installing puppet-lint-variable_contains_upcase 1.2.0
+[4.7.1] Installing simplecov 0.14.1
+[4.7.1] Installing rubocop 0.43.0
+[Pipeline] [4.7.1] }
+[Pipeline] [4.9.4] }
+[Pipeline] [4.7.1] // stage
+[Pipeline] [4.9.4] // stage
+[Pipeline] [4.7.1] }
+[4.7.1] Failed in branch 4.7.1
+[Pipeline] [4.9.4] }
+[4.9.4] Failed in branch 4.9.4
+[Pipeline] [ruby22] // parallel
+[Pipeline] [ruby22] }
+[Pipeline] [ruby22] // container
+[Pipeline] [ruby22] }
+[Pipeline] [ruby22] // stage
+[Pipeline] [ruby22] }
+[ruby22] Failed in branch ruby22
+[4.7.1] Installing rspec 3.5.0
+[4.7.1] Installing facterdb 0.3.10
+[4.7.1] Installing faraday_middleware 0.10.1
+[4.7.1] Installing listen 3.0.8
+[4.7.1] Installing gettext-setup 0.23
+[4.7.1] Installing simplecov-console 0.4.1
+[4.7.1] Installing ci_reporter_rspec 1.0.0
+[4.7.1] Installing rspec-puppet 2.5.0
+[4.7.1] Installing rspec-puppet-facts 1.7.1
+[4.7.1] Installing guard 2.14.1
+[4.7.1] Installing semantic_puppet 0.1.4
+[4.7.1] Installing puppetlabs_spec_helper 2.1.1
+[4.7.1] Installing guard-rake 1.0.0
+[4.7.1] Installing puppet_forge 2.2.3
+[4.7.1] Installing rspec-puppet-utils 3.1.0
+[4.7.1] # Installing r10k 2.5.4
+[4.7.1] Bundle complete! 32 Gemfile dependencies, 87 gems now installed.
+[4.7.1] Gems in the group system_tests were not installed.
+[4.7.1] Bundled gems are installed into /usr/local/bundle.
+[Pipeline] [4.7.1] sh
+[4.7.1] [paralleltest] Running shell script
+[4.7.1] Executing shell script inside container [ruby21] of pod [kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d]
+[4.7.1] Executing command: sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-62dbc237/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-62dbc237/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-62dbc237/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-62dbc237/jenkins-result.txt' 
+[4.7.1] # cd "/home/jenkins/workspace/paralleltest"
+[4.7.1] sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-62dbc237/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-62dbc237/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-62dbc237/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-62dbc237/jenkins-result.txt' 
+[4.7.1] exit
+[4.7.1] # + bundle exec rake lint
+[4.7.1] Cannot contact kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d: java.io.IOException: corrupted content in /home/jenkins/workspace/paralleltest@tmp/durable-62dbc237/pid: java.lang.NumberFormatException: For input string: ""
+[Pipeline] [4.7.1] sh
+[4.7.1] [paralleltest] Running shell script
+[4.7.1] Executing shell script inside container [ruby21] of pod [kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d]
+[4.7.1] Executing command: sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-20853f92/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-20853f92/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-20853f92/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-20853f92/jenkins-result.txt' 
+[4.7.1] cd "/home/jenkins/workspace/paralleltest"
+[4.7.1] sh -c echo $$ > '/home/jenkins/workspace/paralleltest@tmp/durable-20853f92/pid'; jsc=durable-c3dd69df4482f5672363141056f61858; JENKINS_SERVER_COOKIE=$jsc '/home/jenkins/workspace/paralleltest@tmp/durable-20853f92/script.sh' > '/home/jenkins/workspace/paralleltest@tmp/durable-20853f92/jenkins-log.txt' 2>&1; echo $? > '/home/jenkins/workspace/paralleltest@tmp/durable-20853f92/jenkins-result.txt' 
+[4.7.1] exit
+[4.7.1] # # + bundle exec rake spec
+[4.7.1] Cannot contact kubernetes-d6297679b90a493c82143b558fc185a7-12314ddba042d: java.io.IOException: corrupted content in /home/jenkins/workspace/paralleltest@tmp/durable-20853f92/pid: java.lang.NumberFormatException: For input string: ""
+[4.7.1] /usr/local/bin/ruby -I/usr/local/bundle/gems/rspec-core-3.5.4/lib:/usr/local/bundle/gems/rspec-support-3.5.0/lib /usr/local/bundle/gems/rspec-core-3.5.4/exe/rspec --pattern spec/\{aliases,classes,defines,unit,functions,hosts,integration,type_aliases,types\}/\*\*/\*_spec.rb --color
+[4.7.1] 
+[4.7.1] profile::example
+[4.7.1]   on windows-2012 R2-x64
+[4.7.1]     should contain Class[profile::example]
+[4.7.1]     should compile into a catalogue without dependency cycles
+[4.7.1]   on centos-7-x86_64
+[4.7.1]     should contain Class[profile::example]
+[4.7.1]     should compile into a catalogue without dependency cycles
+[4.7.1]   on centos-6-x86_64
+[4.7.1]     should contain Class[profile::example]
+[4.7.1]     should compile into a catalogue without dependency cycles
+[4.7.1] 
+[4.7.1] role::database_server
+[4.7.1]   on centos-7-x86_64
+[4.7.1]     should contain Class[role::database_server]
+[4.7.1]     should contain Class[profile::base]
+[4.7.1]     should compile into a catalogue without dependency cycles
+[4.7.1]   on centos-6-x86_64
+[4.7.1]     should contain Class[role::database_server]
+[4.7.1]     should contain Class[profile::base]
+[4.7.1]     should compile into a catalogue without dependency cycles
+[4.7.1] 
+[4.7.1] role::example
+[4.7.1]   on centos-7-x86_64
+[4.7.1]     should contain Class[role::example]
+[4.7.1]     should compile into a catalogue without dependency cycles
+[4.7.1]   on centos-6-x86_64
+[4.7.1]     should contain Class[role::example]
+[4.7.1]     should compile into a catalogue without dependency cycles
+[4.7.1] 
+[4.7.1] role::webserver
+[4.7.1]   on centos-7-x86_64
+[4.7.1]     should contain Class[role::webserver]
+[4.7.1]     should contain Class[profile::base]
+[4.7.1]     should compile into a catalogue without dependency cycles
+[4.7.1]   on centos-6-x86_64
+[4.7.1]     should contain Class[role::webserver]
+[4.7.1]     should contain Class[profile::base]
+[4.7.1]     should compile into a catalogue without dependency cycles
+[4.7.1] 
+[4.7.1] Finished in 0.79779 seconds (files took 2.24 seconds to load)
+[4.7.1] 22 examples, 0 failures
+[4.7.1] 
+[4.7.1] Coverage report generated for RSpec to /home/jenkins/workspace/paralleltest/coverage. 0.0 / 0.0 LOC (100.0%) covered.
+[4.7.1] 
+[4.7.1] COVERAGE: 100.00% -- 0.0/0.0 lines in 0 files
+[4.7.1] 
+[4.7.1] 
+[4.7.1] Total resources:   4
+[4.7.1] Touched resources: 4
+[4.7.1] Resource coverage: 100.00%
+[Pipeline] [4.7.1] }
+[Pipeline] [4.7.1] // stage
+[Pipeline] [4.7.1] }
+[Pipeline] [ruby21] // parallel
+[Pipeline] [ruby21] }
+[Pipeline] [ruby21] // container
+[Pipeline] [ruby21] }
+[Pipeline] [ruby21] // stage
+[Pipeline] [ruby21] }
+[ruby21] Failed in branch ruby21
+[Pipeline] // parallel
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // podTemplate
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // ansiColor
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+java.io.IOException: Pipe not connected
+	at java.io.PipedOutputStream.write(PipedOutputStream.java:140)
+	at java.io.OutputStream.write(OutputStream.java:75)
+	at org.csanchez.jenkins.plugins.kubernetes.pipeline.ContainerExecDecorator$1.launch(ContainerExecDecorator.java:125)
+	at hudson.Launcher$ProcStarter.start(Launcher.java:384)
+	at org.jenkinsci.plugins.durabletask.BourneShellScript.launchWithCookie(BourneShellScript.java:157)
+	at org.jenkinsci.plugins.durabletask.FileMonitoringTask.launch(FileMonitoringTask.java:63)
+	at org.jenkinsci.plugins.workflow.steps.durable_task.DurableTaskStep$Execution.start(DurableTaskStep.java:167)
+	at org.jenkinsci.plugins.workflow.cps.DSL.invokeStep(DSL.java:184)
+	at org.jenkinsci.plugins.workflow.cps.DSL.invokeMethod(DSL.java:126)
+	at org.jenkinsci.plugins.workflow.cps.CpsScript.invokeMethod(CpsScript.java:108)
+	at groovy.lang.GroovyObject$invokeMethod$0.call(Unknown Source)
+	at org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCall(CallSiteArray.java:48)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:113)
+	at org.kohsuke.groovy.sandbox.impl.Checker$1.call(Checker.java:151)
+	at org.kohsuke.groovy.sandbox.GroovyInterceptor.onMethodCall(GroovyInterceptor.java:21)
+	at org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SandboxInterceptor.onMethodCall(SandboxInterceptor.java:115)
+	at org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SandboxInterceptor.onMethodCall(SandboxInterceptor.java:103)
+	at org.kohsuke.groovy.sandbox.impl.Checker$1.call(Checker.java:149)
+	at org.kohsuke.groovy.sandbox.impl.Checker.checkedCall(Checker.java:146)
+	at com.cloudbees.groovy.cps.sandbox.SandboxInvoker.methodCall(SandboxInvoker.java:16)
+	at puppetPrep.call(/var/jenkins_home/jobs/paralleltest/builds/1/libs/github.com/cdenneen/jenkins-shared/vars/puppetPrep.groovy:5)
+	at puppetTesting.call(/var/jenkins_home/jobs/paralleltest/builds/1/libs/github.com/cdenneen/jenkins-shared/vars/puppetTesting.groovy:9)
+	at ___cps.transform___(Native Method)
+	at com.cloudbees.groovy.cps.impl.ContinuationGroup.methodCall(ContinuationGroup.java:57)
+	at com.cloudbees.groovy.cps.impl.FunctionCallBlock$ContinuationImpl.dispatchOrArg(FunctionCallBlock.java:109)
+	at com.cloudbees.groovy.cps.impl.FunctionCallBlock$ContinuationImpl.fixArg(FunctionCallBlock.java:82)
+	at sun.reflect.GeneratedMethodAccessor194.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at com.cloudbees.groovy.cps.impl.ContinuationPtr$ContinuationImpl.receive(ContinuationPtr.java:72)
+	at com.cloudbees.groovy.cps.impl.ConstantBlock.eval(ConstantBlock.java:21)
+	at com.cloudbees.groovy.cps.Next.step(Next.java:74)
+	at com.cloudbees.groovy.cps.Continuable.run0(Continuable.java:154)
+	at org.jenkinsci.plugins.workflow.cps.SandboxContinuable.access$001(SandboxContinuable.java:18)
+	at org.jenkinsci.plugins.workflow.cps.SandboxContinuable$1.call(SandboxContinuable.java:33)
+	at org.jenkinsci.plugins.workflow.cps.SandboxContinuable$1.call(SandboxContinuable.java:30)
+	at org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.GroovySandbox.runInSandbox(GroovySandbox.java:108)
+	at org.jenkinsci.plugins.workflow.cps.SandboxContinuable.run0(SandboxContinuable.java:30)
+	at org.jenkinsci.plugins.workflow.cps.CpsThread.runNextChunk(CpsThread.java:165)
+	at org.jenkinsci.plugins.workflow.cps.CpsThreadGroup.run(CpsThreadGroup.java:330)
+	at org.jenkinsci.plugins.workflow.cps.CpsThreadGroup.access$100(CpsThreadGroup.java:82)
+	at org.jenkinsci.plugins.workflow.cps.CpsThreadGroup$2.call(CpsThreadGroup.java:242)
+	at org.jenkinsci.plugins.workflow.cps.CpsThreadGroup$2.call(CpsThreadGroup.java:230)
+	at org.jenkinsci.plugins.workflow.cps.CpsVmExecutorService$2.call(CpsVmExecutorService.java:64)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at hudson.remoting.SingleLaneExecutorService$1.run(SingleLaneExecutorService.java:112)
+	at jenkins.util.ContextResettingExecutorService$1.run(ContextResettingExecutorService.java:28)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:745)
+	Suppressed: java.io.IOException: Pipe not connected
+		... 52 more
+	Suppressed: java.io.IOException: Pipe not connected
+		... 52 more
+	Suppressed: hudson.AbortException: script returned exit code 5
+		at org.jenkinsci.plugins.workflow.steps.durable_task.DurableTaskStep$Execution.check(DurableTaskStep.java:323)
+		at org.jenkinsci.plugins.workflow.steps.durable_task.DurableTaskStep$Execution.run(DurableTaskStep.java:279)
+		at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+		at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+		at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$201(ScheduledThreadPoolExecutor.java:180)
+		at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:293)
+		... 3 more
+		Suppressed: hudson.AbortException: script returned exit code 5
+			... 9 more
+		Suppressed: hudson.AbortException: script returned exit code 5
+			... 9 more
+	Suppressed: java.io.IOException: Pipe not connected
+		... 52 more
+		Suppressed: hudson.AbortException: script returned exit code 5
+			at org.jenkinsci.plugins.workflow.steps.durable_task.DurableTaskStep$Execution.check(DurableTaskStep.java:323)
+			at org.jenkinsci.plugins.workflow.steps.durable_task.DurableTaskStep$Execution.run(DurableTaskStep.java:279)
+			at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+			at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+			at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$201(ScheduledThreadPoolExecutor.java:180)
+			at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:293)
+			... 3 more
+Finished: FAILURE

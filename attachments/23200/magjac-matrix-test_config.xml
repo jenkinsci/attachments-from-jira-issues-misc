@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<matrix-project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <de.pellepelster.jenkins.walldisplay.WallDisplayJobProperty plugin="jenkinswalldisplay@0.6.15"/>
+    <EnvInjectJobProperty plugin="envinject@1.83">
+      <info>
+        <scriptContent>PREPARED_ENV_VAR=&quot;yes&quot;</scriptContent>
+        <loadFilesFromMaster>false</loadFilesFromMaster>
+      </info>
+      <on>true</on>
+      <keepJenkinsSystemVariables>true</keepJenkinsSystemVariables>
+      <keepBuildVariables>true</keepBuildVariables>
+      <contributors/>
+    </EnvInjectJobProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>true</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector"/>
+  <concurrentBuild>false</concurrentBuild>
+  <axes>
+    <hudson.matrix.TextAxis>
+      <name>myaxis</name>
+      <values>
+        <string>value1</string>
+        <string>value2</string>
+      </values>
+    </hudson.matrix.TextAxis>
+  </axes>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>echo &quot;Build, Execute shell&quot;
+echo &quot;PREPARED_ENV_VAR = $PREPARED_ENV_VAR&quot;
+echo &quot;GENERATED_ENV_VAR_FROM_SCRIPT = $GENERATED_ENV_VAR_FROM_SCRIPT&quot;
+echo &quot;INJECTED_ENV_VAR = $INJECTED_ENV_VAR&quot;
+</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <org.jenkinsci.plugins.postbuildscript.PostBuildScript plugin="postbuildscript@0.10">
+      <buildSteps>
+        <hudson.tasks.Shell>
+          <command>echo &quot;Post-build action, build step, Execute shell&quot;
+echo &quot;PREPARED_ENV_VAR = $PREPARED_ENV_VAR&quot;
+echo &quot;GENERATED_ENV_VAR_FROM_SCRIPT = $GENERATED_ENV_VAR_FROM_SCRIPT&quot;
+echo &quot;INJECTED_ENV_VAR = $INJECTED_ENV_VAR&quot;
+</command>
+        </hudson.tasks.Shell>
+      </buildSteps>
+      <scriptOnlyIfSuccess>true</scriptOnlyIfSuccess>
+    </org.jenkinsci.plugins.postbuildscript.PostBuildScript>
+  </publishers>
+  <buildWrappers>
+    <com.lookout.jenkins.EnvironmentScript plugin="environment-script@1.1.2">
+      <script>echo GENERATED_ENV_VAR_FROM_SCRIPT=&quot;yes&quot;</script>
+      <onlyRunOnParent>false</onlyRunOnParent>
+    </com.lookout.jenkins.EnvironmentScript>
+    <EnvInjectBuildWrapper plugin="envinject@1.83">
+      <info>
+        <scriptContent>INJECTED_ENV_VAR=&quot;yes&quot;</scriptContent>
+        <loadFilesFromMaster>false</loadFilesFromMaster>
+      </info>
+    </EnvInjectBuildWrapper>
+  </buildWrappers>
+  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+    <runSequentially>false</runSequentially>
+    <sorter class="hudson.matrix.NoopMatrixConfigurationSorter"/>
+  </executionStrategy>
+</matrix-project>

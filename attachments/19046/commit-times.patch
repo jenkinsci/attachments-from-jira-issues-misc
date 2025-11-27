@@ -1,0 +1,205 @@
+Index: src/main/java/hudson/scm/SubversionSCM.java
+===================================================================
+--- src/main/java/hudson/scm/SubversionSCM.java	(Revision 26080)
++++ src/main/java/hudson/scm/SubversionSCM.java	(Arbeitskopie)
+@@ -99,6 +99,7 @@
+ import org.tmatesoft.svn.core.internal.util.SVNPathUtil;
+ import org.tmatesoft.svn.core.internal.wc.SVNExternal;
+ import org.tmatesoft.svn.core.internal.wc.admin.SVNAdminAreaFactory;
++import org.tmatesoft.svn.core.internal.wc.DefaultSVNOptions;
+ import org.tmatesoft.svn.core.io.SVNCapability;
+ import org.tmatesoft.svn.core.io.SVNRepository;
+ import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
+@@ -109,6 +110,7 @@
+ import org.tmatesoft.svn.core.wc.SVNWCClient;
+ import org.tmatesoft.svn.core.wc.SVNWCUtil;
+ import org.tmatesoft.svn.core.wc.SVNLogClient;
++import org.tmatesoft.svn.core.wc.ISVNOptions;
+ 
+ import javax.servlet.ServletException;
+ import javax.xml.transform.stream.StreamResult;
+@@ -181,6 +183,7 @@
+     private ModuleLocation[] locations = new ModuleLocation[0];
+ 
+     private boolean useUpdate;
++    private boolean useCommitTimes;
+     private boolean doRevert;
+     private final SubversionRepositoryBrowser browser;
+     private String excludedRegions;
+@@ -205,7 +208,7 @@
+      */
+     public SubversionSCM(String[] remoteLocations, String[] localLocations,
+                          boolean useUpdate, SubversionRepositoryBrowser browser, String excludedRegions) {
+-        this(ModuleLocation.parse(remoteLocations,localLocations), useUpdate, false, browser, excludedRegions, null, null, null);
++        this(ModuleLocation.parse(remoteLocations,localLocations), useUpdate, false, false, browser, excludedRegions, null, null, null);
+     }
+ 
+     /**
+@@ -213,7 +216,7 @@
+      */
+      public SubversionSCM(String[] remoteLocations, String[] localLocations,
+                          boolean useUpdate, SubversionRepositoryBrowser browser, String excludedRegions, String excludedUsers, String excludedRevprop) {
+-        this(ModuleLocation.parse(remoteLocations,localLocations), useUpdate, false, browser, excludedRegions, excludedUsers, excludedRevprop, null);
++        this(ModuleLocation.parse(remoteLocations,localLocations), useUpdate, false, false, browser, excludedRegions, excludedUsers, excludedRevprop, null);
+     }
+ 
+    /**
+@@ -221,7 +224,7 @@
+      */
+     public SubversionSCM(List<ModuleLocation> locations,
+                          boolean useUpdate, SubversionRepositoryBrowser browser, String excludedRegions) {
+-        this(locations, useUpdate, false, browser, excludedRegions, null, null, null);
++        this(locations, useUpdate, false, false, browser, excludedRegions, null, null, null);
+     }
+     
+     /**
+@@ -229,7 +232,7 @@
+      */
+     public SubversionSCM(List<ModuleLocation> locations,
+             boolean useUpdate, SubversionRepositoryBrowser browser, String excludedRegions, String excludedUsers, String excludedRevprop) {
+-        this(locations, useUpdate, false, browser, excludedRegions, excludedUsers, excludedRevprop, null);
++        this(locations, useUpdate, false, false, browser, excludedRegions, excludedUsers, excludedRevprop, null);
+     }
+ 
+     /**
+@@ -237,14 +240,14 @@
+      */
+     public SubversionSCM(List<ModuleLocation> locations,
+             boolean useUpdate, SubversionRepositoryBrowser browser, String excludedRegions, String excludedUsers, String excludedRevprop, String excludedCommitMessages) {
+-    	this(locations, useUpdate, false, browser, excludedRegions, excludedUsers, excludedRevprop, excludedCommitMessages);
++    	this(locations, useUpdate, false, false, browser, excludedRegions, excludedUsers, excludedRevprop, excludedCommitMessages);
+     }
+ 
+     
+     
+     @DataBoundConstructor
+     public SubversionSCM(List<ModuleLocation> locations,
+-                         boolean useUpdate, boolean doRevert, SubversionRepositoryBrowser browser, String excludedRegions, String excludedUsers, String excludedRevprop, String excludedCommitMessages) {
++                         boolean useUpdate, boolean useCommitTimes, boolean doRevert, SubversionRepositoryBrowser browser, String excludedRegions, String excludedUsers, String excludedRevprop, String excludedCommitMessages) {
+ 
+         for (Iterator<ModuleLocation> itr = locations.iterator(); itr.hasNext();) {
+             ModuleLocation ml = itr.next();
+@@ -253,6 +256,7 @@
+         this.locations = locations.toArray(new ModuleLocation[locations.size()]);
+ 
+         this.useUpdate = useUpdate;
++	this.useCommitTimes = useCommitTimes;
+         this.doRevert = doRevert;
+         this.browser = browser;
+         this.excludedRegions = excludedRegions;
+@@ -334,6 +338,10 @@
+     public boolean isUseUpdate() {
+         return useUpdate;
+     }
++
++    public boolean isUseCommitTimes() {
++	    return useCommitTimes;
++    }
+     
+     public boolean isDoRevert() {
+     	return doRevert;
+@@ -583,7 +591,7 @@
+         }
+ 
+         Boolean isUpdatable = useUpdate && workspace.act(new IsUpdatableTask(build, this, listener));
+-        return workspace.act(new CheckOutTask(build, this, build.getTimestamp().getTime(), isUpdatable, doRevert, listener));
++        return workspace.act(new CheckOutTask(build, this, build.getTimestamp().getTime(), isUpdatable, useCommitTimes, doRevert, listener));
+     }
+ 
+ 
+@@ -596,14 +604,16 @@
+         // true to "svn update", false to "svn checkout".
+         private boolean update;
+         private boolean revert;
++	private boolean useCommitTimes;
+         private final TaskListener listener;
+         private final ModuleLocation[] locations;
+         private final RevisionParameterAction revisions;
+ 
+-        public CheckOutTask(AbstractBuild<?, ?> build, SubversionSCM parent, Date timestamp, boolean update, boolean revert, TaskListener listener) {
++        public CheckOutTask(AbstractBuild<?, ?> build, SubversionSCM parent, Date timestamp, boolean update, boolean useCommitTimes, boolean revert, TaskListener listener) {
+             this.authProvider = parent.getDescriptor().createAuthenticationProvider();
+             this.timestamp = timestamp;
+             this.update = update;
++	    this.useCommitTimes = useCommitTimes;
+             this.revert = revert;
+             this.listener = listener;
+             this.locations = parent.getLocations(build);
+@@ -611,7 +621,7 @@
+         }
+ 
+         public List<External> invoke(File ws, VirtualChannel channel) throws IOException {
+-           final SVNClientManager manager = createSvnClientManager(authProvider);
++           final SVNClientManager manager = createSvnClientManager(authProvider, useCommitTimes);
+            try {
+                 final SVNUpdateClient svnuc = manager.getUpdateClient();
+                 final SVNWCClient svnwc = manager.getWCClient();
+@@ -737,10 +747,30 @@
+     public static SVNClientManager createSvnClientManager(ISVNAuthenticationProvider authProvider) {
+         ISVNAuthenticationManager sam = SVNWCUtil.createDefaultAuthenticationManager();
+         sam.setAuthenticationProvider(authProvider);
+-        return SVNClientManager.newInstance(SVNWCUtil.createDefaultOptions(true),sam);
++	ISVNOptions options = SVNWCUtil.createDefaultOptions(true);
++        return SVNClientManager.newInstance(options,sam);
+     }
+ 
+     /**
++     * Creates {@link SVNClientManager}.
++     *
++     * <p>
++     * This method must be executed on the slave where svn operations are performed.
++     *
++     * @param authProvider
++     *      The value obtained from {@link DescriptorImpl#createAuthenticationProvider()}.
++     *      If the operation runs on slaves,
++     *      (and properly remoted, if the svn operations run on slaves.)
++     */
++    public static SVNClientManager createSvnClientManager(ISVNAuthenticationProvider authProvider, boolean useCommitTimes) {
++        ISVNAuthenticationManager sam = SVNWCUtil.createDefaultAuthenticationManager();
++        sam.setAuthenticationProvider(authProvider);
++	DefaultSVNOptions options = (DefaultSVNOptions)SVNWCUtil.createDefaultOptions(true);
++	options.setUseCommitTimes(useCommitTimes);
++        return SVNClientManager.newInstance(options,sam);
++    }
++
++    /**
+      * Creates {@link SVNClientManager} for code running on the master.
+      * <p>
+      * CAUTION: this code only works when invoked on master. On slaves, use
+Index: src/main/resources/hudson/scm/SubversionSCM/config.jelly
+===================================================================
+--- src/main/resources/hudson/scm/SubversionSCM/config.jelly	(Revision 26080)
++++ src/main/resources/hudson/scm/SubversionSCM/config.jelly	(Arbeitskopie)
+@@ -44,6 +44,9 @@
+   <f:entry title="${%Use update}" description="${%updateDescription}" field="useUpdate">
+     <f:checkbox default="true"/>
+   </f:entry>
++  <f:entry title="${%Use commit times}" description="${%updateDescription}" field="useCommitTimes">
++    <f:checkbox default="false"/>
++  </f:entry>
+   <f:entry title="${%Revert}" description="${%revertDescription}" field="doRevert">
+     <f:checkbox default="false"/>
+   </f:entry>
+@@ -64,4 +67,4 @@
+         <f:textbox checkUrl="'descriptorByName/hudson.scm.SubversionSCM/checkRevisionPropertiesSupported?value='+toValue(document.getElementById('svn.remote.loc'))"/>
+     </f:entry>
+   </f:advanced>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>
+Index: pom.xml
+===================================================================
+--- pom.xml	(Revision 26080)
++++ pom.xml	(Arbeitskopie)
+@@ -30,9 +30,9 @@
+     <relativePath>../pom.xml</relativePath>
+   </parent>
+ 
+-  <artifactId>subversion</artifactId>
++  <artifactId>subversion-itc</artifactId>
+   <packaging>hpi</packaging>
+-  <name>Hudson Subversion Plug-in</name>
++  <name>Hudson Subversion Plug-in (itC)</name>
+   <version>1.10-SNAPSHOT</version>
+   <url>http://wiki.hudson-ci.org/display/HUDSON/Subversion+Plugin</url>
+   <licenses>

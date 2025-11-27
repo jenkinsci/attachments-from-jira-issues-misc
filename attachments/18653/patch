@@ -1,0 +1,383 @@
+Index: plugins/warnings/src/test/java/hudson/plugins/warnings/parser/ParserRegistryTest.java
+===================================================================
+--- plugins/warnings/src/test/java/hudson/plugins/warnings/parser/ParserRegistryTest.java	(revision 19014)
++++ plugins/warnings/src/test/java/hudson/plugins/warnings/parser/ParserRegistryTest.java	(working copy)
+@@ -33,7 +33,7 @@
+      */
+     @Test
+     public void testAllParsersOnOneFile() throws IOException {
+-        ParserRegistry parserRegistry = createRegistryUnderTest("all.txt", StringUtils.EMPTY, new ArrayList<WarningsParser>());
++        ParserRegistry parserRegistry = createRegistryUnderTest("all.txt", StringUtils.EMPTY, StringUtils.EMPTY, new ArrayList<WarningsParser>());
+ 
+         Collection<FileAnnotation> annotations = parserRegistry.parse(new File(""));
+         Assert.assertEquals(WRONG_NUMBER_OF_ANNOTATIONS_PARSED, TOTAL_WARNINGS, annotations.size());
+@@ -55,7 +55,7 @@
+     public void testOracleInvalidsParser() throws IOException {
+         List<WarningsParser> parsers = new ArrayList<WarningsParser>();
+         parsers.add(new InvalidsParser());
+-        ParserRegistry parserRegistry = createRegistryUnderTest("all.txt", StringUtils.EMPTY, parsers);
++        ParserRegistry parserRegistry = createRegistryUnderTest("all.txt", StringUtils.EMPTY, StringUtils.EMPTY, parsers);
+ 
+         Collection<FileAnnotation> annotations = parserRegistry.parse(new File(""));
+         Assert.assertEquals(WRONG_NUMBER_OF_ANNOTATIONS_PARSED, 2, annotations.size());
+@@ -78,7 +78,7 @@
+         List<WarningsParser> parsers = new ArrayList<WarningsParser>();
+         parsers.add(new InvalidsParser());
+         parsers.add(new JavaDocParser());
+-        ParserRegistry parserRegistry = createRegistryUnderTest("all.txt", StringUtils.EMPTY, parsers);
++        ParserRegistry parserRegistry = createRegistryUnderTest("all.txt", StringUtils.EMPTY, StringUtils.EMPTY, parsers);
+ 
+         Collection<FileAnnotation> annotations = parserRegistry.parse(new File(""));
+         Assert.assertEquals(WRONG_NUMBER_OF_ANNOTATIONS_PARSED, 8, annotations.size());
+@@ -102,7 +102,7 @@
+      */
+     @Test
+     public void issue2359() throws IOException {
+-        ParserRegistry parserRegistry = createRegistryUnderTest("all.txt", "/tmp/clover*/**", new ArrayList<WarningsParser>());
++        ParserRegistry parserRegistry = createRegistryUnderTest("all.txt", StringUtils.EMPTY, "/tmp/clover*/**", new ArrayList<WarningsParser>());
+ 
+         Collection<FileAnnotation> annotations = parserRegistry.parse(new File(""));
+         Assert.assertEquals(WRONG_NUMBER_OF_ANNOTATIONS_PARSED, TOTAL_WARNINGS - 8, annotations.size());
+@@ -118,13 +118,62 @@
+      */
+     @Test
+     public void multiplePatternsIssue2359() throws IOException {
+-        ParserRegistry parserRegistry = createRegistryUnderTest("all.txt", "/tmp/clover*/**, **/renderers/*", new ArrayList<WarningsParser>());
++        ParserRegistry parserRegistry = createRegistryUnderTest("all.txt", StringUtils.EMPTY, "/tmp/clover*/**, **/renderers/*", new ArrayList<WarningsParser>());
+ 
+         Collection<FileAnnotation> annotations = parserRegistry.parse(new File(""));
+         Assert.assertEquals(WRONG_NUMBER_OF_ANNOTATIONS_PARSED, TOTAL_WARNINGS - 18 + 3, annotations.size());
+     }
+ 
+     /**
++     * Checks whether we correctly find all warnings in the log file. The file
++     * contains 18 additional ANT warnings, 8 of them should be included by the single
++     * pattern.
++     *
++     * @throws IOException
++     *             if the file could not be read
++     * @see <a href="https://hudson.dev.java.net/issues/show_bug.cgi?id=3866">Issue 3866</a>
++     */
++    @Test
++    public void issue3866() throws IOException {
++        ParserRegistry parserRegistry = createRegistryUnderTest("all.txt", "/tmp/clover*/**", StringUtils.EMPTY, new ArrayList<WarningsParser>());
++
++        Collection<FileAnnotation> annotations = parserRegistry.parse(new File(""));
++        Assert.assertEquals(WRONG_NUMBER_OF_ANNOTATIONS_PARSED, 8, annotations.size());
++    }
++
++    /**
++     * The file contains 18 additional ANT warnings, 15 of them should be included by the
++     * two patterns.
++     *
++     * @throws IOException
++     *             if the file could not be read
++     * @see <a href="https://hudson.dev.java.net/issues/show_bug.cgi?id=3866">Issue 3866</a>
++     */
++    @Test
++    public void multiplePatternsIssue3866() throws IOException {
++        ParserRegistry parserRegistry = createRegistryUnderTest("all.txt", "/tmp/clover*/**, **/renderers/*", StringUtils.EMPTY, new ArrayList<WarningsParser>());
++
++        Collection<FileAnnotation> annotations = parserRegistry.parse(new File(""));
++        Assert.assertEquals(WRONG_NUMBER_OF_ANNOTATIONS_PARSED, 15, annotations.size());
++    }
++
++    /**
++     * The file contains 18 additional ANT warnings, 8 of them should be included by
++     * one pattern, 7 of them should be excluded by one pattern.
++     *
++     * @throws IOException
++     *             if the file could not be read
++     * @see <a href="https://hudson.dev.java.net/issues/show_bug.cgi?id=3866">Issue 3866</a>
++     */
++    @Test
++    public void complexFilterIssue3866() throws IOException {
++        ParserRegistry parserRegistry = createRegistryUnderTest("all.txt", "/tmp/clover*/**", "**/renderers/*", new ArrayList<WarningsParser>());
++
++        Collection<FileAnnotation> annotations = parserRegistry.parse(new File(""));
++        Assert.assertEquals(WRONG_NUMBER_OF_ANNOTATIONS_PARSED, 1, annotations.size());
++    }
++
++    /**
+      * Creates the registry under test.
+      *
+      * @param fileName
+@@ -137,8 +186,8 @@
+      * @return the registry
+      */
+     @edu.umd.cs.findbugs.annotations.SuppressWarnings("SIC")
+-    private ParserRegistry createRegistryUnderTest(final String fileName, final String excludePattern, final List<WarningsParser> parsers) {
+-        ParserRegistry parserRegistry = new ParserRegistry(parsers, "", excludePattern) {
++    private ParserRegistry createRegistryUnderTest(final String fileName, final String includePattern, final String excludePattern, final List<WarningsParser> parsers) {
++        ParserRegistry parserRegistry = new ParserRegistry(parsers, "", includePattern, excludePattern) {
+             /** {@inheritDoc} */
+             @Override
+             protected Reader createReader(final File file) throws FileNotFoundException {
+Index: plugins/warnings/src/main/java/hudson/plugins/warnings/WarningsPublisher.java
+===================================================================
+--- plugins/warnings/src/main/java/hudson/plugins/warnings/WarningsPublisher.java	(revision 19014)
++++ plugins/warnings/src/main/java/hudson/plugins/warnings/WarningsPublisher.java	(working copy)
+@@ -35,6 +35,8 @@
+     public static final WarningsDescriptor WARNINGS_DESCRIPTOR = new WarningsDescriptor();
+     /** Ant file-set pattern of files to work with. */
+     private final String pattern;
++    /** Ant file-set pattern of files to include to report. */
++    private final String includePattern;
+     /** Ant file-set pattern of files to exclude from report. */
+     private final String excludePattern;
+     /** Name of parsers to use for scanning the logs. */
+@@ -72,6 +74,8 @@
+      *            evaluating the build stability and health
+      * @param pattern
+      *            Ant file-set pattern that defines the files to scan for
++     * @param includePattern
++     *            Ant file-set pattern of files to include in report
+      * @param excludePattern
+      *            Ant file-set pattern of files to exclude from report
+      * @param defaultEncoding
+@@ -87,13 +91,15 @@
+     public WarningsPublisher(final String threshold, final String newThreshold,
+             final String failureThreshold, final String newFailureThreshold,
+             final String healthy, final String unHealthy, final String thresholdLimit,
+-            final String pattern, final String excludePattern, final String defaultEncoding,
+-            final boolean canRunOnFailed, final boolean canScanConsole) {
++            final String pattern, final String includePattern, final String excludePattern,
++            final String defaultEncoding, final boolean canRunOnFailed,
++            final boolean canScanConsole) {
+         super(threshold, newThreshold, failureThreshold, newFailureThreshold,
+                 healthy, unHealthy, thresholdLimit, defaultEncoding, "WARNINGS");
+         this.pattern = pattern;
+         this.canRunOnFailed = canRunOnFailed;
+         ignoreConsole = !canScanConsole;
++        this.includePattern = StringUtils.stripToNull(includePattern);
+         this.excludePattern = StringUtils.stripToNull(excludePattern);
+     }
+     // CHECKSTYLE:ON
+@@ -159,6 +165,15 @@
+     }
+ 
+     /**
++     * Returns the Ant file-set pattern of files to include in report.
++     *
++     * @return Ant file-set pattern of files to include in report
++     */
++    public String getIncludePattern() {
++        return includePattern;
++    }
++
++    /**
+      * Returns the Ant file-set pattern of files to exclude from report.
+      *
+      * @return Ant file-set pattern of files to exclude from report
+@@ -181,7 +196,7 @@
+         ParserResult project;
+         if (StringUtils.isNotBlank(getPattern())) {
+             logger.log("Parsing warnings in files: " + getPattern());
+-            FilesParser parser = new FilesParser(logger, getPattern(), new FileWarningsParser(parserNames, getDefaultEncoding(), getExcludePattern()), isMavenBuild(build), isAntBuild(build));
++            FilesParser parser = new FilesParser(logger, getPattern(), new FileWarningsParser(parserNames, getDefaultEncoding(), getIncludePattern(), getExcludePattern()), isMavenBuild(build), isAntBuild(build));
+             project = build.getProject().getWorkspace().act(parser);
+         }
+         else {
+@@ -191,7 +206,7 @@
+         if (!ignoreConsole || StringUtils.isBlank(getPattern())) {
+             logger.log("Parsing warnings in console log...");
+             project.addAnnotations(new ParserRegistry(ParserRegistry.getParsers(parserNames),
+-                    getDefaultEncoding(), getExcludePattern()).parse(logFile));
++                    getDefaultEncoding(), getIncludePattern(), getExcludePattern()).parse(logFile));
+         }
+         project = build.getProject().getWorkspace().act(new AnnotationsClassifier(project, getDefaultEncoding()));
+ 
+Index: plugins/warnings/src/main/java/hudson/plugins/warnings/parser/FileWarningsParser.java
+===================================================================
+--- plugins/warnings/src/main/java/hudson/plugins/warnings/parser/FileWarningsParser.java	(revision 19014)
++++ plugins/warnings/src/main/java/hudson/plugins/warnings/parser/FileWarningsParser.java	(working copy)
+@@ -17,6 +17,8 @@
+ public class FileWarningsParser implements AnnotationParser {
+     /** Unique ID of this parser. */
+     private static final long serialVersionUID = -262047528431480332L;
++    /** Ant file-set pattern of files to include in report. */
++    private final String includePattern;
+     /** Ant file-set pattern of files to exclude from report. */
+     private final String excludePattern;
+     /** The parsers to scan the files with. */
+@@ -35,8 +37,9 @@
+      * @param defaultEncoding
+      *            the default encoding to be used when reading and parsing files
+      */
+-    public FileWarningsParser(final Set<String> parserNames, final String excludePattern, final String defaultEncoding) {
++    public FileWarningsParser(final Set<String> parserNames, final String includePattern, final String excludePattern, final String defaultEncoding) {
+         this.parserNames = parserNames;
++        this.includePattern = includePattern;
+         this.excludePattern = excludePattern;
+         this.defaultEncoding = defaultEncoding;
+     }
+@@ -44,7 +47,7 @@
+     /** {@inheritDoc} */
+     public Collection<FileAnnotation> parse(final File file, final String moduleName) throws InvocationTargetException {
+         try {
+-            Collection<FileAnnotation> annotations = new ParserRegistry(ParserRegistry.getParsers(parserNames), defaultEncoding, excludePattern).parse(file);
++            Collection<FileAnnotation> annotations = new ParserRegistry(ParserRegistry.getParsers(parserNames), defaultEncoding, includePattern, excludePattern).parse(file);
+             for (FileAnnotation annotation : annotations) {
+                 annotation.setModuleName(moduleName);
+             }
+Index: plugins/warnings/src/main/java/hudson/plugins/warnings/parser/ParserRegistry.java
+===================================================================
+--- plugins/warnings/src/main/java/hudson/plugins/warnings/parser/ParserRegistry.java	(revision 19014)
++++ plugins/warnings/src/main/java/hudson/plugins/warnings/parser/ParserRegistry.java	(working copy)
+@@ -39,8 +39,8 @@
+ 
+     /** The actual parsers to use when scanning a file. */
+     private final List<WarningsParser> parsers;
+-    /** Filter for ant file-set pattern of files to exclude from report. */
+-    private ExcludeFilter excludeFilter;
++    /** Compond include/exclude filter for files that should get into report. */
++    private final FileFilter fileFilter;
+     /** The default charset to be used when reading and parsing files. */
+     private final Charset defaultCharset;
+ 
+@@ -54,7 +54,7 @@
+      *            the default encoding to be used when reading and parsing files
+      */
+     public ParserRegistry(final List<WarningsParser> parsers, final String defaultEncoding) {
+-        this(parsers, defaultEncoding, StringUtils.EMPTY);
++        this(parsers, defaultEncoding, StringUtils.EMPTY, StringUtils.EMPTY);
+     }
+ 
+     /**
+@@ -62,21 +62,26 @@
+      *
+      * @param parsers
+      *            the parsers to use when scanning a file
++     * @param includePattern
++     *            Ant file-set pattern of files to include in report,
++     *            <code>null</code> or an empty string do not filter the output
+      * @param excludePattern
+      *            Ant file-set pattern of files to exclude from report,
+      *            <code>null</code> or an empty string do not filter the output
+      * @param defaultEncoding
+      *            the default encoding to be used when reading and parsing files
+      */
+-    public ParserRegistry(final List<WarningsParser> parsers, final String defaultEncoding, final String excludePattern) {
++    public ParserRegistry(final List<WarningsParser> parsers, final String defaultEncoding, final String includePattern, final String excludePattern) {
+         defaultCharset = EncodingValidator.defaultCharset(defaultEncoding);
+         this.parsers = new ArrayList<WarningsParser>(parsers);
+         if (this.parsers.isEmpty()) {
+             this.parsers.addAll(ALL_PARSERS);
+         }
+ 
+-        if (!StringUtils.isEmpty(excludePattern)) {
+-            excludeFilter = new ExcludeFilter(excludePattern);
++        if (!StringUtils.isEmpty(includePattern) || !StringUtils.isEmpty(excludePattern)) {
++            fileFilter = new FileFilter(includePattern, excludePattern);
++        } else {
++            fileFilter = null;
+         }
+     }
+ 
+@@ -133,7 +138,7 @@
+      * @return the filtered annotations if there is a filter defined
+      */
+     private Collection<FileAnnotation> applyExcludeFilter(final List<FileAnnotation> allAnnotations) {
+-        if (excludeFilter == null) {
++        if (fileFilter == null) {
+             return allAnnotations;
+         }
+         else {
+@@ -151,7 +156,7 @@
+     private Collection<FileAnnotation> filterAnnotations(final List<FileAnnotation> annotations) {
+         List<FileAnnotation> filteredAnnotations = new ArrayList<FileAnnotation>();
+         for (FileAnnotation annotation : annotations) {
+-            if (!excludeFilter.matches(annotation.getFileName())) {
++            if (fileFilter.matches(annotation.getFileName())) {
+                 filteredAnnotations.add(annotation);
+             }
+         }
+@@ -184,34 +189,49 @@
+     /**
+      * Filters file names based on Ant file-set patterns.
+      */
+-    private static final class ExcludeFilter extends DirectoryScanner {
++    private static final class FileFilter extends DirectoryScanner {
+         /**
+-         * Creates a new instance of {@link ExcludeFilter}.
++         * Creates a new instance of {@link FileFilter}.
+          *
++         * @param includePattern
++         *            Ant file-set pattern of files to include in report
+          * @param excludePattern
+          *            Ant file-set pattern of files to exclude from report
+          */
+-        public ExcludeFilter(final String excludePattern) {
++        public FileFilter(final String includePattern, final String excludePattern) {
+             super();
+ 
+-            setExcludes(excludePattern.split(",\\s*"));
+-            setIncludes(new String[] {"**/*"});
++            if (StringUtils.isEmpty(includePattern)) {
++                setIncludes(new String[] {"**/*"});
++            } else {
++                setIncludes(includePattern.split(",\\s*"));
++            }
++            if (StringUtils.isEmpty(excludePattern)) {
++                setExcludes(new String[] {});
++            } else {
++                setExcludes(excludePattern.split(",\\s*"));
++            }
+         }
+ 
+         /**
+-         * Returns whether the name matches one of the exclusion patterns.
++         * Returns whether the name
++         * matches the one of the inclusion patterns
++         * and does not match one of the exclusion patterns.
+          *
+          * @param name
+          *            the file name to test
+-         * @return <code>true</code> if the name matches one of the exclusion patterns.
++         * @return <code>true</code> if the name
++         * matches one of the inclusion patterns
++         * and does not match any of the exclusion patterns.
+          */
+         public boolean matches(final String name) {
++            final String canonicalName;
+             if (File.separatorChar == '\\') {
+-                return isExcluded(StringUtils.replaceChars(name, '/', '\\'));
++                canonicalName = StringUtils.replaceChars(name, '/', '\\');
++            } else {
++                canonicalName = name;
+             }
+-            else {
+-                return isExcluded(name);
+-            }
++            return isIncluded(canonicalName) && !isExcluded(canonicalName);
+         }
+     }
+ 
+Index: plugins/warnings/src/main/resources/hudson/plugins/warnings/WarningsPublisher/config.properties
+===================================================================
+--- plugins/warnings/src/main/resources/hudson/plugins/warnings/WarningsPublisher/config.properties	(revision 19014)
++++ plugins/warnings/src/main/resources/hudson/plugins/warnings/WarningsPublisher/config.properties	(working copy)
+@@ -1,6 +1,8 @@
+ description.pattern=<a href=''http://ant.apache.org/manual/CoreTypes/fileset.html''>Fileset ''includes''</a> \
+              		setting that specifies the files to scan for warnings. If no pattern is specified then only the build log will \
+ 				    be scanned.
++description.includePattern=<a href=''http://ant.apache.org/manual/CoreTypes/fileset.html''>Fileset ''includes''</a> \
++             		setting that specifies the warnings to include in the report (based on their filename).
+ description.excludePattern=<a href=''http://ant.apache.org/manual/CoreTypes/fileset.html''>Fileset ''excludes''</a> \
+              		setting that specifies the warnings to exclude from the report (based on their filename).
+ description.parsers=The parsers to use when scanning the build log or the specified files. If no parser is selected then all parsers are used (requires more memory and runtime).
+Index: plugins/warnings/src/main/resources/hudson/plugins/warnings/WarningsPublisher/config.jelly
+===================================================================
+--- plugins/warnings/src/main/resources/hudson/plugins/warnings/WarningsPublisher/config.jelly	(revision 19014)
++++ plugins/warnings/src/main/resources/hudson/plugins/warnings/WarningsPublisher/config.jelly	(working copy)
+@@ -34,6 +34,10 @@
+     <f:entry title="${%Run always}" description="${%description.canRunOnFailed}">
+ 	    <f:checkbox name="canRunOnFailed" checked="${instance.canRunOnFailed}"/>
+     </f:entry>
++    <f:entry title="${%Warnings to include}" description="${%description.includePattern}">
++      <f:textbox name="includePattern" value="${instance.includePattern}"
++        checkUrl="'${rootURL}/publisher/WarningsPublisher/checkPattern?job=${it.fullName}&amp;value='+escape(this.value)" />
++    </f:entry>
+     <f:entry title="${%Warnings to ignore}" description="${%description.excludePattern}">
+       <f:textbox name="excludePattern" value="${instance.excludePattern}"
+         checkUrl="'${rootURL}/publisher/WarningsPublisher/checkPattern?job=${it.fullName}&amp;value='+escape(this.value)" />

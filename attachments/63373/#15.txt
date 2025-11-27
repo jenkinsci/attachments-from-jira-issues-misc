@@ -1,0 +1,193 @@
+Started by user admin
+Checking out git https://github.com/TijoT/FlaskCI.git into /var/jenkins_home/workspace/TestPipeline@script/5a0087930e7bd8e26ea09a49b24943971f82d5f53dccc3098b077b610992148c to read Jenkinsfile
+Selected Git installation does not exist. Using Default
+The recommended git tool is: NONE
+using credential Jenkins-GitUsername-Pat
+ > git rev-parse --resolve-git-dir /var/jenkins_home/workspace/TestPipeline@script/5a0087930e7bd8e26ea09a49b24943971f82d5f53dccc3098b077b610992148c/.git # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://github.com/TijoT/FlaskCI.git # timeout=10
+Using shallow fetch with depth 1
+Fetching upstream changes from https://github.com/TijoT/FlaskCI.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.39.5'
+using GIT_ASKPASS to set credentials blablas
+ > git fetch --no-tags --force --progress --depth=1 -- https://github.com/TijoT/FlaskCI.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+Checking out Revision 84687cc8022d3b2b6dd19c02d68d7e9d64ad7e7b (refs/remotes/origin/main)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 84687cc8022d3b2b6dd19c02d68d7e9d64ad7e7b # timeout=10
+Commit message: "Skip default checkout of jenkinsfile"
+ > git rev-list --no-walk a217c76309fbadbcf48157e5a73c60e216b4f53e # timeout=10
+23:22:11.884782 git.c:460               trace: built-in: git whatchanged --no-abbrev -M '--format=commit %H%ntree %T%nparent %P%nauthor %aN <%aE> %ai%ncommitter %cN <%cE> %ci%n%n%w(0,4,4)%B' -n 1024 84687cc8022d3b2b6dd19c02d68d7e9d64ad7e7b ^a217c76309fbadbcf48157e5a73c60e216b4f53e
+23:22:11.886208 trace.c:411             performance: 0.001657765 s: git command: git whatchanged --no-abbrev -M '--format=commit %H%ntree %T%nparent %P%nauthor %aN <%aE> %ai%ncommitter %cN <%cE> %ci%n%n%w(0,4,4)%B' -n 1024 84687cc8022d3b2b6dd19c02d68d7e9d64ad7e7b ^a217c76309fbadbcf48157e5a73c60e216b4f53e
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/jenkins_home/workspace/TestPipeline
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Checkout)
+[Pipeline] git
+Selected Git installation does not exist. Using Default
+The recommended git tool is: NONE
+No credentials specified
+ > git rev-parse --resolve-git-dir /var/jenkins_home/workspace/TestPipeline/.git # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://github.com/TijoT/FlaskCI # timeout=10
+Fetching upstream changes from https://github.com/TijoT/FlaskCI
+ > git --version # timeout=10
+ > git --version # 'git version 2.39.5'
+ > git fetch --tags --force --progress -- https://github.com/TijoT/FlaskCI +refs/heads/*:refs/remotes/origin/* # timeout=10
+ERROR: Error fetching remote repo 'origin'
+hudson.plugins.git.GitException: Failed to fetch from https://github.com/TijoT/FlaskCI
+	at PluginClassLoader for git//hudson.plugins.git.GitSCM.fetchFrom(GitSCM.java:997)
+	at PluginClassLoader for git//hudson.plugins.git.GitSCM.retrieveChanges(GitSCM.java:1239)
+	at PluginClassLoader for git//hudson.plugins.git.GitSCM._checkout(GitSCM.java:1310)
+	at PluginClassLoader for git//hudson.plugins.git.GitSCM.checkout(GitSCM.java:1277)
+	at PluginClassLoader for workflow-scm-step//org.jenkinsci.plugins.workflow.steps.scm.SCMStep.checkout(SCMStep.java:136)
+	at PluginClassLoader for workflow-scm-step//org.jenkinsci.plugins.workflow.steps.scm.SCMStep$StepExecutionImpl.run(SCMStep.java:101)
+	at PluginClassLoader for workflow-scm-step//org.jenkinsci.plugins.workflow.steps.scm.SCMStep$StepExecutionImpl.run(SCMStep.java:88)
+	at PluginClassLoader for workflow-step-api//org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution.lambda$start$0(SynchronousNonBlockingStepExecution.java:47)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at java.base/java.util.concurrent.FutureTask.run(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.base/java.lang.Thread.run(Unknown Source)
+Caused by: hudson.plugins.git.GitException: Command "git fetch --tags --force --progress -- https://github.com/TijoT/FlaskCI +refs/heads/*:refs/remotes/origin/*" returned status code 128:
+stdout: 
+stderr: 23:22:15.392582 git.c:460               trace: built-in: git fetch --tags --force --progress -- https://github.com/TijoT/FlaskCI '+refs/heads/*:refs/remotes/origin/*'
+23:22:15.393212 read-cache.c:2447       performance: 0.000205536 s:  read cache .git/index
+23:22:15.395519 run-command.c:655       trace: run_command: GIT_DIR=.git git remote-https https://github.com/TijoT/FlaskCI https://github.com/TijoT/FlaskCI
+23:22:15.400786 git.c:750               trace: exec: git-remote-https https://github.com/TijoT/FlaskCI https://github.com/TijoT/FlaskCI
+23:22:15.400952 run-command.c:655       trace: run_command: git-remote-https https://github.com/TijoT/FlaskCI https://github.com/TijoT/FlaskCI
+23:22:15.426343 http.c:725              == Info: Couldn't find host github.com in the (nil) file; using defaults
+23:22:15.456197 http.c:725              == Info:   Trying 140.82.121.3:443...
+23:22:15.476352 http.c:725              == Info: Connected to github.com (140.82.121.3) port 443 (#0)
+23:22:15.624340 http.c:725              == Info: found 420 certificates in /etc/ssl/certs
+23:22:15.624836 http.c:725              == Info: GnuTLS ciphers: NORMAL:-ARCFOUR-128:-CTYPE-ALL:+CTYPE-X509:-VERS-SSL3.0
+23:22:15.625279 http.c:725              == Info: ALPN: offers h2,http/1.1
+23:22:15.654196 http.c:725              == Info: SSL connection using TLS1.3 / ECDHE_RSA_AES_128_GCM_SHA256
+23:22:15.664716 http.c:725              == Info:   server certificate verification OK
+23:22:15.665060 http.c:725              == Info:   server certificate status verification SKIPPED
+23:22:15.665571 http.c:725              == Info:   common name: github.com (matched)
+23:22:15.665646 http.c:725              == Info:   server certificate expiration date OK
+23:22:15.665661 http.c:725              == Info:   server certificate activation date OK
+23:22:15.665799 http.c:725              == Info:   certificate public key: EC/ECDSA
+23:22:15.665864 http.c:725              == Info:   certificate version: #3
+23:22:15.665944 http.c:725              == Info:   subject: CN=github.com
+23:22:15.665979 http.c:725              == Info:   start date: Thu, 07 Mar 2024 00:00:00 GMT
+23:22:15.665993 http.c:725              == Info:   expire date: Fri, 07 Mar 2025 23:59:59 GMT
+23:22:15.666082 http.c:725              == Info:   issuer: C=GB,ST=Greater Manchester,L=Salford,O=Sectigo Limited,CN=Sectigo ECC Domain Validation Secure Server CA
+23:22:15.666174 http.c:725              == Info: ALPN: server accepted h2
+23:22:15.666754 http.c:725              == Info: using HTTP/2
+23:22:15.666933 http.c:725              == Info: h2h3 [:method: GET]
+23:22:15.666967 http.c:725              == Info: h2h3 [:path: /TijoT/FlaskCI/info/refs?service=git-upload-pack]
+23:22:15.666984 http.c:725              == Info: h2h3 [:scheme: https]
+23:22:15.666989 http.c:725              == Info: h2h3 [:authority: github.com]
+23:22:15.666994 http.c:725              == Info: h2h3 [user-agent: git/2.39.5]
+23:22:15.666999 http.c:725              == Info: h2h3 [accept: */*]
+23:22:15.667004 http.c:725              == Info: h2h3 [accept-encoding: deflate, gzip, br, zstd]
+23:22:15.667010 http.c:725              == Info: h2h3 [accept-language: C, *;q=0.9]
+23:22:15.667015 http.c:725              == Info: h2h3 [pragma: no-cache]
+23:22:15.667020 http.c:725              == Info: h2h3 [git-protocol: version=2]
+23:22:15.667099 http.c:725              == Info: Using Stream ID: 1 (easy handle 0x55aac5fb30)
+23:22:15.667582 http.c:672              => Send header, 0000000232 bytes (0x000000e8)
+23:22:15.667655 http.c:684              => Send header: GET /TijoT/FlaskCI/info/refs?service=git-upload-pack HTTP/2
+23:22:15.667665 http.c:684              => Send header: Host: github.com
+23:22:15.667671 http.c:684              => Send header: user-agent: git/2.39.5
+23:22:15.667675 http.c:684              => Send header: accept: */*
+23:22:15.667682 http.c:684              => Send header: accept-encoding: deflate, gzip, br, zstd
+23:22:15.667687 http.c:684              => Send header: accept-language: C, *;q=0.9
+23:22:15.667691 http.c:684              => Send header: pragma: no-cache
+23:22:15.667695 http.c:684              => Send header: git-protocol: version=2
+23:22:15.667698 http.c:684              => Send header:
+23:22:15.796084 http.c:672              <= Recv header, 0000000013 bytes (0x0000000d)
+23:22:15.796135 http.c:684              <= Recv header: HTTP/2 401
+23:22:15.796147 http.c:672              <= Recv header, 0000000026 bytes (0x0000001a)
+23:22:15.796155 http.c:684              <= Recv header: server: GitHub-Babel/3.0
+23:22:15.796167 http.c:672              <= Recv header, 0000000054 bytes (0x00000036)
+23:22:15.796172 http.c:684              <= Recv header: content-security-policy: default-src 'none'; sandbox
+23:22:15.796180 http.c:672              <= Recv header, 0000000041 bytes (0x00000029)
+23:22:15.796184 http.c:684              <= Recv header: content-type: text/plain; charset=UTF-8
+23:22:15.796193 http.c:672              <= Recv header, 0000000040 bytes (0x00000028)
+23:22:15.796197 http.c:684              <= Recv header: www-authenticate: Basic realm="GitHub"
+23:22:15.796205 http.c:672              <= Recv header, 0000000020 bytes (0x00000014)
+23:22:15.796210 http.c:684              <= Recv header: content-length: 21
+23:22:15.796215 http.c:672              <= Recv header, 0000000037 bytes (0x00000025)
+23:22:15.796220 http.c:684              <= Recv header: date: Fri, 04 Oct 2024 23:22:15 GMT
+23:22:15.796226 http.c:672              <= Recv header, 0000000023 bytes (0x00000017)
+23:22:15.796231 http.c:684              <= Recv header: x-frame-options: DENY
+23:22:15.796237 http.c:672              <= Recv header, 0000000059 bytes (0x0000003b)
+23:22:15.796241 http.c:684              <= Recv header: x-github-request-id: 6F0C:14E1BC:49E1F30:4B597B0:670078A7
+23:22:15.796250 http.c:672              <= Recv header, 0000000002 bytes (0x00000002)
+23:22:15.796268 http.c:684              <= Recv header:
+23:22:15.796308 http.c:725              == Info: Connection #0 to host github.com left intact
+23:22:15.796421 run-command.c:655       trace: run_command: echo 'Username for '\''https://github.com'\'': '
+23:22:15.801452 run-command.c:655       trace: run_command: echo 'Password for '\''https://Username for '\''https://github.com'\'': @github.com'\'': '
+23:22:15.807088 http.c:725              == Info: Found bundle for host: 0x55aac66340 [can multiplex]
+23:22:15.807175 http.c:725              == Info: Re-using existing connection #0 with host github.com
+23:22:15.807235 http.c:725              == Info: Server auth using Basic with user 'Username for 'https://github.com': '
+23:22:15.807287 http.c:725              == Info: h2h3 [:method: GET]
+23:22:15.807298 http.c:725              == Info: h2h3 [:path: /TijoT/FlaskCI/info/refs?service=git-upload-pack]
+23:22:15.807304 http.c:725              == Info: h2h3 [:scheme: https]
+23:22:15.807310 http.c:725              == Info: h2h3 [:authority: github.com]
+23:22:15.807316 http.c:725              == Info: h2h3 [authorization: Basic <redacted>]
+23:22:15.807321 http.c:725              == Info: h2h3 [user-agent: git/2.39.5]
+23:22:15.807326 http.c:725              == Info: h2h3 [accept: */*]
+23:22:15.807332 http.c:725              == Info: h2h3 [accept-encoding: deflate, gzip, br, zstd]
+23:22:15.807338 http.c:725              == Info: h2h3 [accept-language: C, *;q=0.9]
+23:22:15.807344 http.c:725              == Info: h2h3 [pragma: no-cache]
+23:22:15.807349 http.c:725              == Info: h2h3 [git-protocol: version=2]
+23:22:15.807371 http.c:725              == Info: Using Stream ID: 3 (easy handle 0x55aac5fb30)
+23:22:15.807700 http.c:672              => Send header, 0000000399 bytes (0x0000018f)
+23:22:15.807758 http.c:684              => Send header: GET /TijoT/FlaskCI/info/refs?service=git-upload-pack HTTP/2
+23:22:15.807766 http.c:684              => Send header: Host: github.com
+23:22:15.807773 http.c:684              => Send header: authorization: Basic <redacted>
+23:22:15.807778 http.c:684              => Send header: user-agent: git/2.39.5
+23:22:15.807784 http.c:684              => Send header: accept: */*
+23:22:15.807793 http.c:684              => Send header: accept-encoding: deflate, gzip, br, zstd
+23:22:15.807801 http.c:684              => Send header: accept-language: C, *;q=0.9
+23:22:15.807810 http.c:684              => Send header: pragma: no-cache
+23:22:15.807817 http.c:684              => Send header: git-protocol: version=2
+23:22:15.807824 http.c:684              => Send header:
+23:22:15.940834 http.c:672              <= Recv header, 0000000013 bytes (0x0000000d)
+23:22:15.940876 http.c:684              <= Recv header: HTTP/2 401
+23:22:15.940886 http.c:672              <= Recv header, 0000000026 bytes (0x0000001a)
+23:22:15.940902 http.c:684              <= Recv header: server: GitHub-Babel/3.0
+23:22:15.940925 http.c:672              <= Recv header, 0000000054 bytes (0x00000036)
+23:22:15.940933 http.c:684              <= Recv header: content-security-policy: default-src 'none'; sandbox
+23:22:15.940946 http.c:672              <= Recv header, 0000000041 bytes (0x00000029)
+23:22:15.940952 http.c:684              <= Recv header: content-type: text/plain; charset=UTF-8
+23:22:15.940962 http.c:725              == Info: Authentication problem. Ignoring this.
+23:22:15.940972 http.c:672              <= Recv header, 0000000040 bytes (0x00000028)
+23:22:15.940980 http.c:684              <= Recv header: www-authenticate: Basic realm="GitHub"
+23:22:15.940989 http.c:672              <= Recv header, 0000000021 bytes (0x00000015)
+23:22:15.940994 http.c:684              <= Recv header: content-length: 256
+23:22:15.941001 http.c:672              <= Recv header, 0000000037 bytes (0x00000025)
+23:22:15.941009 http.c:684              <= Recv header: date: Fri, 04 Oct 2024 23:22:15 GMT
+23:22:15.941016 http.c:672              <= Recv header, 0000000023 bytes (0x00000017)
+23:22:15.941020 http.c:684              <= Recv header: x-frame-options: DENY
+23:22:15.941027 http.c:672              <= Recv header, 0000000059 bytes (0x0000003b)
+23:22:15.941032 http.c:684              <= Recv header: x-github-request-id: 6F0C:14E1BC:49E1F87:4B59805:670078A7
+23:22:15.941041 http.c:672              <= Recv header, 0000000002 bytes (0x00000002)
+23:22:15.941045 http.c:684              <= Recv header:
+23:22:15.941084 http.c:725              == Info: Connection #0 to host github.com left intact
+remote: Support for password authentication was removed on August 13, 2021.
+remote: Please see https://docs.github.com/get-started/getting-started-with-git/about-remote-repositories#cloning-with-https-urls for information on currently recommended modes of authentication.
+fatal: Authentication failed for 'https://github.com/TijoT/FlaskCI/'
+23:22:15.944214 trace.c:411             performance: 0.543623770 s: git command: /usr/lib/git-core/git remote-https https://github.com/TijoT/FlaskCI https://github.com/TijoT/FlaskCI
+23:22:15.944799 trace.c:411             performance: 0.552564867 s: git command: git fetch --tags --force --progress -- https://github.com/TijoT/FlaskCI '+refs/heads/*:refs/remotes/origin/*'
+
+	at PluginClassLoader for git-client//org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandIn(CliGitAPIImpl.java:2846)
+	at PluginClassLoader for git-client//org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandWithCredentials(CliGitAPIImpl.java:2185)
+	at PluginClassLoader for git-client//org.jenkinsci.plugins.gitclient.CliGitAPIImpl$1.execute(CliGitAPIImpl.java:635)
+	at PluginClassLoader for git//hudson.plugins.git.GitSCM.fetchFrom(GitSCM.java:995)
+	... 12 more
+ERROR: Error fetching remote repo 'origin'
+ERROR: Maximum checkout retry attempts reached, aborting
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+ERROR: Error fetching remote repo 'origin'
+Finished: FAILURE

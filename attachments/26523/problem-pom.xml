@@ -1,0 +1,681 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.na.p</groupId>
+    <artifactId>cu</artifactId>
+    <packaging>war</packaging>
+    <version>1.16-SNAPSHOT</version>
+    <scm>
+        <connection>scm:git:ssh://git@ls.na.com:7999/lake/?p=bc.git</connection>
+        <developerConnection>scm:git:ssh://git@ls.na.com:7999/lake/bc.git</developerConnection>
+        <url>https://lb.na.com/stash/projects/LAKE/repos/bc/browse</url>
+    </scm>
+    <issueManagement>
+        <system>JIRA</system>
+        <url>https://gsd.na.com/jira/browse/AUR</url>
+    </issueManagement>
+    <ciManagement>
+        <system>Dev-CI</system>
+        <url>http://teamcity.na.com:8111/viewType.html?buildTypeId=bt20</url>
+    </ciManagement>
+
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>mvn-nexus-all</id>
+            <url>https://lb.na.com/nexus/content/groups/public/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <repositories>
+        <repository>
+            <id>mvn-nexus</id>
+            <url>https://lb.na.com/nexus/content/groups/public/</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>nexus</id>
+            <name>Luna Common Release</name>
+            <url>https://lb.na.com/nexus/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>nexus</id>
+            <name>Luna Common Snapshots</name>
+            <url>https://lb.na.com/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <parent>
+        <groupId>com.na.p</groupId>
+        <artifactId>pm</artifactId>
+        <version>1.0.5</version>
+    </parent>
+
+    <!--
+        This project supports 3 profiles which differ mainly in the way to retrieve the header/footer:
+        * bart - the header/footer files are copied from a well-known location during the bart build.
+        * local - the header/footer files are taken from the p-ui-template maven component which probably
+                  holds a snapshot of the header/footer files. Good for development/qa.
+        * mock - the header/footer files are taken from the mock directories, which hold a static version of the files.
+                 Also configures the jetty server plugin, adds mocked spring context and java mocks.
+
+        Only one of the profiles can be activated at a time.
+    -->
+
+    <properties>
+
+        <!-- na -->
+        <accounts-api.version>2.8-RELEASE</accounts-api.version>
+        <p-util.version>2.8-RELEASE</p-util.version>
+        <p-common-code.version>4.5.0-RELEASE</p-common-code.version>
+        <!-- newest is 4.6-SNAPSHOT -->
+        <p-common-reporting.version>9.6.0-SNAPSHOT</p-common-reporting.version>
+        <!-- no snapshot -->
+        <p-ui-template.version>4.16.0-SNAPSHOT</p-ui-template.version>
+        <!-- newest is 4.6-SNAPSHOT -->
+        <p-ui-tld.version>8.1-SNAPSHOT</p-ui-tld.version>
+        <!-- newest is 8.2-SNAPSHOT -->
+        <branding-client.version>1.3-SNAPSHOT</branding-client.version>
+
+        <!-- core -->
+        <spring.version>3.2.6.RELEASE</spring.version>
+        <aspectj.version>1.7.3</aspectj.version>
+        <jackson.version>1.9.13</jackson.version>
+        <jstl.version>1.2</jstl.version>
+        <servlet-api.version>2.5</servlet-api.version>
+        <jsp-api.version>2.0</jsp-api.version>
+        <hibernate.version>4.1.9.Final</hibernate.version>
+
+        <!-- utils -->
+        <java-mail.version>1.4.5</java-mail.version>
+        <joda-time.version>2.1</joda-time.version>
+        <slf4j.version>1.7.2</slf4j.version>
+        <logback.version>1.0.7</logback.version>
+        <commons-lang.version>3.1</commons-lang.version>
+        <guava.version>13.0.1</guava.version>
+        <lombok.version>1.12.2</lombok.version>
+        <commons-io.version>1.3.2</commons-io.version>
+        <commons-codec.version>1.6</commons-codec.version>
+        <httpclient.version>4.2.2</httpclient.version>
+        <mustache.version>0.8.9</mustache.version>
+        <lambdaj.version>2.3.3</lambdaj.version>
+        <hibernate-validator.version>4.3.0.Final</hibernate-validator.version>
+        <rhino.version>1.7R2</rhino.version>
+
+        <!-- testing -->
+        <testng.version>6.8</testng.version>
+        <mockito.version>1.9.5-rc1</mockito.version>
+        <fest-assert.version>1.4</fest-assert.version>
+        <springockito.version>1.0.5</springockito.version>
+        <spock.version>0.7-groovy-2.0</spock.version>
+        <h2.version>1.3.175</h2.version>
+
+        <!-- plugin settings -->
+        <resources.nocompress>false</resources.nocompress>
+        <javac.debug>true</javac.debug>
+        <jsConfig.dir>${basedir}/src/main/config/js</jsConfig.dir>
+        <srcResources.dir>${basedir}/src/main/webapp/resources/js</srcResources.dir>
+        <target.js.dir>${project.build.directory}/${project.build.finalName}/resources/js</target.js.dir>
+        <target.css.dir>${project.build.directory}/${project.build.finalName}/resources/css</target.css.dir>
+
+        <!-- REST docs -->
+        <restdocs-output.version>0.5-BETA</restdocs-output.version>
+        <restdocs-config.file>${basedir}/src/main/config/restdocs/annotations.properties</restdocs-config.file>
+        <restdocs-output.urlprefix>/cu/ws</restdocs-output.urlprefix>
+        <restdocs-doclet.version>1.2-SNAPSHOT</restdocs-doclet.version>
+        <restdocs-page-title>Billing Center REST API</restdocs-page-title>
+        <restdocs-index-page-header>${basedir}/src/main/config/restdocs/indexPageHeader.html
+        </restdocs-index-page-header>
+        <restdocs-index-page-footer>${basedir}/src/main/config/restdocs/indexPageFooter.html
+        </restdocs-index-page-footer>
+        <javadoc.version>2.8.1</javadoc.version>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>com.na.branding</groupId>
+            <artifactId>client-java</artifactId>
+            <version>${branding-client.version}</version>
+        </dependency>
+
+
+        <!-- Needed for common-reporting -->
+        <dependency>
+            <groupId>org.htmlparser</groupId>
+            <artifactId>htmlparser</artifactId>
+            <version>2.1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>${hibernate-validator.version}</version>
+        </dependency>
+
+        <!-- utils -->
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>${commons-codec.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
+            <version>${java-mail.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>${joda-time.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>${httpclient.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.spullara.mustache.java</groupId>
+            <artifactId>compiler</artifactId>
+            <version>${mustache.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.lambdaj</groupId>
+            <artifactId>lambdaj</artifactId>
+            <version>${lambdaj.version}</version>
+        </dependency>
+
+        <!-- Jodatime hibernate support -->
+        <dependency>
+            <groupId>org.jadira.usertype</groupId>
+            <artifactId>usertype.core</artifactId>
+            <version>3.0.0.GA</version>
+        </dependency>
+
+        <!-- testing -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kubek2k</groupId>
+            <artifactId>springockito</artifactId>
+            <version>${springockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.spockframework</groupId>
+            <artifactId>spock-core</artifactId>
+            <version>${spock.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.spockframework</groupId>
+            <artifactId>spock-spring</artifactId>
+            <version>${spock.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.gag</groupId>
+            <artifactId>gag</artifactId>
+            <version>1.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>rhino</groupId>
+            <artifactId>js</artifactId>
+            <version>${rhino.version}</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <finalName>cu</finalName>
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <catalina.home>.</catalina.home>
+                        <spring.profiles.active>dev,mock</spring.profiles.active>
+                        <h2.javaSystemCompiler>false</h2.javaSystemCompiler>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+
+            <!-- less css -->
+            <plugin>
+                <groupId>org.lesscss</groupId>
+                <artifactId>lesscss-maven-plugin</artifactId>
+                <version>1.3.3</version>
+                <configuration>
+                    <sourceDirectory>${project.basedir}/src/main/webapp/resources/less</sourceDirectory>
+                    <outputDirectory>${target.css.dir}</outputDirectory>
+                    <compress>true</compress>
+                    <includes>
+                        <include>*.less</include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- plugin generates configuration for off-line jasmine -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.1.1</version>
+                <configuration>
+                    <includeProjectDependencies>true</includeProjectDependencies>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>com.na.p.util.test.JasmineMavenRunnerConfigGenerator</mainClass>
+                            <arguments>
+                                <argument>${project.basedir}/src/main/webapp/resources/js/contract-init.js</argument>
+                                <!-- source -->
+                                <argument>${project.basedir}/target/requirejsConfig.txt</argument>
+                                <!-- destination -->
+                                <argument>baseUrl:resources</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- JS tests: http://searls.github.com/jasmine-maven-plugin/ -->
+            <plugin>
+                <groupId>com.github.searls</groupId>
+                <artifactId>jasmine-maven-plugin</artifactId>
+                <version>1.2.0.0</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <specRunnerTemplate>REQUIRE_JS</specRunnerTemplate>
+                    <jsSrcDir>${project.basedir}/src/main/webapp/resources/js</jsSrcDir>
+                    <jsTestSrcDir>${project.basedir}/src/test/javascript</jsTestSrcDir>
+                    <srcDirectoryName>resources</srcDirectoryName>
+                    <scriptLoaderPath>lib/require.js</scriptLoaderPath>
+                    <customRunnerConfiguration>${project.basedir}/target/requirejsConfig.txt</customRunnerConfiguration>
+                    <junitXmlReportFileName>../surefire-reports/TEST-jasmine.xml</junitXmlReportFileName>
+                </configuration>
+            </plugin>
+            <!-- JS & CSS minification -->
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>yuicompressor-maven-plugin</artifactId>
+                <version>1.3.0</version>
+                <!-- version 1.3.2 requires Maven 3.0.4 -->
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>compress</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- see http://davidb.github.com/yuicompressor-maven-plugin/compress-mojo.html -->
+                    <nosuffix>true</nosuffix>
+                    <nocompress>${resources.nocompress}</nocompress>
+                    <force>true</force>
+                    <jswarn>false</jswarn>
+                    <excludes>
+                        <exclude>**/*.mst.js</exclude>
+                        <exclude>**/r.js</exclude>
+                        <exclude>**/config.js</exclude>
+                    </excludes>
+                    <aggregations>
+                        <aggregation>
+                            <insertNewLine>true</insertNewLine>
+                            <output>${target.css.dir}/contractMerged.css</output>
+                            <includes>
+                                <!-- REMEMBER !!! - if you have added something here you need to reflect the change in contract-header.jsp -->
+                                <include>${target.css.dir}/jquery-ui.css</include>
+                                <include>${target.css.dir}/gritter.css</include>
+                                <include>${target.css.dir}/fluid_grid.css</include>
+                                <include>${target.css.dir}/select2.css</include>
+                                <include>${target.css.dir}/multi-select.css</include>
+                                <include>${target.css.dir}/datatable.css</include>
+                                <include>${target.css.dir}/luna-icons.css</include>
+                                <include>${target.css.dir}/contract.css</include>
+                                <include>${target.css.dir}/recurring-reports.css</include>
+                            </includes>
+                        </aggregation>
+                    </aggregations>
+                </configuration>
+
+            </plugin>
+            <!-- require.js -->
+            <plugin>
+                <groupId>com.github.mcheely</groupId>
+                <artifactId>requirejs-maven-plugin</artifactId>
+                <version>1.1.0</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>optimize</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <configFile>${jsConfig.dir}/config.js</configFile>
+                    <optimizerFile>${jsConfig.dir}/r.js</optimizerFile>
+                    <filterConfig>true</filterConfig>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <id>moveCss</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <echo message="Moving ${target.css.dir}/contract.css to ${target.css.dir}/contract-${project.version}.css"/>
+                                <move file="${target.css.dir}/contractMerged.css" tofile="${target.css.dir}/contract-${project.version}.css"/>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Spock integration -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <testNGArtifactName>none:none</testNGArtifactName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>test-testng</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <junitArtifactName>none:none</junitArtifactName>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.gmaven</groupId>
+                <artifactId>gmaven-plugin</artifactId>
+                <version>1.4</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.codehaus.gmaven.runtime</groupId>
+                        <artifactId>gmaven-runtime-2.0</artifactId>
+                        <version>1.5</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>org.codehaus.groovy</groupId>
+                                <artifactId>groovy-all</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.codehaus.groovy</groupId>
+                        <artifactId>groovy-all</artifactId>
+                        <version>2.1.5</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+            <!-- REST API Docs -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <reportPlugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-project-info-reports-plugin</artifactId>
+                            <version>2.4</version>
+                            <configuration>
+                                <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+                            </configuration>
+                            <reports>
+                                <report>index</report>
+                                <report>dependencies</report>
+                                <report>cim</report>
+                                <report>issue-tracking</report>
+                            </reports>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-javadoc-plugin</artifactId>
+                            <version>2.9</version>
+                            <reportSets>
+                                <reportSet>
+                                    <id>javadoc</id>
+                                    <reports>
+                                        <report>javadoc</report>
+                                        <report>test-javadoc</report>
+                                    </reports>
+                                </reportSet>
+                                <reportSet>
+                                    <id>restapi</id>
+                                    <reports>
+                                        <report>javadoc</report>
+                                    </reports>
+                                    <configuration>
+                                        <useStandardDocletOptions>false</useStandardDocletOptions>
+                                        <doclet>com.na.restdoc.RestDoclet</doclet>
+                                        <docletArtifact>
+                                            <groupId>com.na</groupId>
+                                            <artifactId>restdoc</artifactId>
+                                            <version>${restdocs-doclet.version}</version>
+                                        </docletArtifact>
+                                        <destDir>restdocs</destDir>
+                                        <additionalparam>
+                                            -urlprefix ${restdocs-output.urlprefix}
+                                            -outputdir ${project.build.directory}/site/restdocs
+                                            -version "version 1.0"
+                                            -config "${restdocs-config.file}"
+                                            -pagetitle "${restdocs-page-title}"
+                                            -indexcontent "${restdocs-index-page-header}"
+                                            -indexfooter "${restdocs-index-page-footer}"
+                                        </additionalparam>
+                                        <name>REST Docs</name>
+                                        <description>REST documentation</description>
+                                    </configuration>
+                                </reportSet>
+                            </reportSets>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-surefire-report-plugin</artifactId>
+                            <version>2.12</version>
+                            <reportSets>
+                                <reportSet>
+                                    <reports>
+                                        <report>report-only</report>
+                                    </reports>
+                                </reportSet>
+                            </reportSets>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.codehaus.mojo</groupId>
+                            <artifactId>findbugs-maven-plugin</artifactId>
+                            <version>2.4.0</version>
+                        </plugin>
+                        <plugin>
+                            <groupId>nl.windgazer</groupId>
+                            <artifactId>jsdoctk-plugin</artifactId>
+                            <version>2.3.2</version>
+                            <configuration>
+                                <recurse>6</recurse>
+                                <!-- This is the *level of recursion*, not a boolean -->
+                                <exclude><!-- Since jsdoctk 2.3.2 -->
+                                    <param>min.js|require.js|lib/((?!.*\mixins.js$).+)</param>
+                                </exclude>
+                                <srcDir>${basedir}/src/main/webapp/resources/js</srcDir>
+                            </configuration>
+                        </plugin>
+                    </reportPlugins>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+    <!-- Link for future reference: http://maven.apache.org/guides/introduction/introduction-to-profiles.html -->
+    <profiles>
+        <profile>
+            <id>checkjs</id>
+            <!--
+             Run JSHint and Optimize JS code as a part of the compile phase.
+             -->
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>1.7</version>
+                        <executions>
+                            <execution>
+                                <id>jslint</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <target name="JavaScript linter">
+                                <apply dir="${srcResources.dir}" executable="java" parallel="false" failonerror="true">
+                                    <fileset dir="${srcResources.dir}">
+                                        <exclude name="lib/**"/>
+                                        <exclude name="**/*.min.js"/>
+                                        <include name="**/*.js"/>
+                                    </fileset>
+                                    <arg value="-jar"/>
+                                    <arg path="${settings.localRepository}/rhino/js/${rhino.version}/js-${rhino.version}.jar"/>
+                                    <arg path="${jsConfig.dir}/fulljshint.js"/>
+                                    <srcfile/>
+                                    <arg value="maxerr=25,evil=true,browser=true,eqeqeq=true,immed=true,newcap=true,nomen=false,rhino=true,undef=false,white=false,devel=true,plusplus=false"/>
+                                </apply>
+                                <echo>JSHint Successful</echo>
+                            </target>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>aspect</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.aspectj</groupId>
+                    <artifactId>aspectjrt</artifactId>
+                    <version>${aspectj.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.aspectj</groupId>
+                    <artifactId>aspectjweaver</artifactId>
+                    <version>${aspectj.version}</version>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>aspectj-maven-plugin</artifactId>
+                        <configuration>
+                            <forceAjcCompile>true</forceAjcCompile>
+                            <complianceLevel>1.7</complianceLevel>
+                            <showWeaveInfo>false</showWeaveInfo>
+                            <weaveDirectories>
+                                <weaveDirectory>${project.build.directory}/classes</weaveDirectory>
+                            </weaveDirectories>
+                            <sources/>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>process-classes</phase>
+                                <goals>
+                                    <goal>compile</goal>
+                                    <!-- use this goal to weave all your main classes -->
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>

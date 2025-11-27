@@ -1,0 +1,136 @@
+Index: src/main/java/hudson/plugins/bazaar/BazaarSCM.java
+===================================================================
+--- src/main/java/hudson/plugins/bazaar/BazaarSCM.java	(revision 31052)
++++ src/main/java/hudson/plugins/bazaar/BazaarSCM.java	(working copy)
+@@ -21,14 +21,18 @@
+ import hudson.scm.SCMRevisionState;
+ import hudson.util.ArgumentListBuilder;
+ import hudson.util.FormValidation;
++
++import java.io.BufferedReader;
+ import java.io.ByteArrayOutputStream;
+ import java.io.File;
+ import java.io.FileOutputStream;
++import java.io.FileReader;
+ import java.io.IOException;
+ import java.io.PrintStream;
+ import java.io.PrintWriter;
+ import java.io.Serializable;
+ import java.io.StringWriter;
++import java.util.HashMap;
+ import java.util.Map;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+@@ -118,6 +122,49 @@
+ 
+         return rev;
+     }
++    
++    private String getRevno(Launcher launcher, TaskListener listener, String root)
++    		throws InterruptedException {
++		String rev = null;
++		try {
++		    if (launcher == null) {
++		        /* Running for a VM or whathaveyou: make a launcher on master
++		         * todo grab a launcher on 'any slave'
++		         */
++		        launcher = new LocalLauncher(listener);
++		    }
++		    PrintStream output = listener.getLogger();
++		    ByteArrayOutputStream stdout = new ByteArrayOutputStream();
++		    ByteArrayOutputStream stderr = new ByteArrayOutputStream();
++		    final String bzr_cmd = getDescriptor().getBzrExe();
++		    ProcStarter starter = launcher.launch();
++		    starter = starter.cmds(bzr_cmd, "revision-info", "-d", root);
++		    // The launcher should already have the right vars!
++		    // starter = starter.envs(EnvVars.masterEnvVars);
++		    starter = starter.stdout(stdout);
++		    starter = starter.stderr(stderr);
++		    // not needed without workspaces : -d starter = starter.pwd(workspace);
++		    final int ret = starter.join();
++		    final String info_output = "bzr revision-info -d " + root + " returned " + ret + ". Command output: \"" + stdout.toString() + "\" stderr: \"" + stderr.toString() + "\"";
++		    if (ret != 0) {
++		        logger.warning(info_output);
++		    } else {
++		      String[] infos = stdout.toString().split("\\s");
++		      rev = infos[0];
++		    }
++		    // output.printf("info result: %s\n", info_output);
++		} catch (IOException e) {
++		    StringWriter w = new StringWriter();
++		    e.printStackTrace(new PrintWriter(w));
++		    logger.log(Level.WARNING, "Failed to poll repository: ", e);
++		}
++		
++		if (rev == null) {
++		    logger.log(Level.WARNING, "Failed to get revision number for: {0}", root);
++		}
++		
++		return rev;
++	}
+ 
+     private void getLog(Launcher launcher, FilePath workspace, String oldver, String newver, File changeLog) throws InterruptedException {
+         try {
+@@ -138,7 +185,32 @@
+             logger.log(Level.WARNING, "Failed to poll repository: ", e);
+         }
+     }
++    
++    /**
++     * Gets the file that stores the revision.
++     */
++    public static File getRevisionFile(AbstractBuild build) {
++        return new File(build.getRootDir(),"revision.txt");
++    }
++    
++    static Long parseRevisionFile(AbstractBuild<?,?> build) throws IOException {
++		Long revision = 0L;
++		
++        File file = getRevisionFile(build);
++        if(!file.exists())
++            return 0L;
+ 
++        BufferedReader br = new BufferedReader(new FileReader(file));
++        try {
++            String line=br.readLine();
++            revision = Long.parseLong(line);
++        } finally {
++            br.close();
++        }
++
++        return revision;
++    }
++
+     @Override
+     protected PollingResult compareRemoteRevisionWith(
+             AbstractProject<?, ?> project, Launcher launcher, FilePath workspace,
+@@ -199,7 +271,15 @@
+ 
+     @Override
+     public boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException {
+-        boolean canUpdate = workspace.act(new FileCallable<Boolean>() {
++        
++    	PrintWriter w = new PrintWriter(new FileOutputStream(getRevisionFile(build)));
++    	try {
++    		w.println(getRevno(launcher, listener, workspace.getRemote()));
++    	}
++    	finally {
++    		w.close();
++    	}
++    	boolean canUpdate = workspace.act(new FileCallable<Boolean>() {
+ 
+             private static final long serialVersionUID = 1L;
+ 
+@@ -271,6 +351,12 @@
+ 
+     @Override
+     public void buildEnvVars(AbstractBuild build, Map<String, String> env) {
++    	try {
++            Long revision = parseRevisionFile(build);
++            env.put("BZR_REVISION",revision.toString());
++        } catch (IOException e) {
++            // ignore this error
++        }
+     }
+ 
+     @Override

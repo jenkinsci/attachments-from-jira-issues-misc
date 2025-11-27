@@ -1,0 +1,67 @@
+pipeline {
+  agent any
+  stages {
+    stage('Initialize') {
+      steps {
+        sh 'echo "PATH = ${PATH}"'
+        sh 'echo "MAVEN_HOME = ${MAVEN_HOME}"'
+        sh 'echo "JAVA_HOME = ${JAVA_HOME}"'
+      }
+    }
+    stage('Build And Sonar Analysis') {
+      steps {
+		echo 'Packaging maven build'
+        withSonarQubeEnv('AzureSonarServer') {
+		sh 'mvn clean test package sonar:sonar -Dsonar.host.url=http://sonarsrv.abc.com:9000/sonar -Dsonar.login=31b8fe1ce4d179e11af2154a7b594dbaf21aa46d'
+				}
+			}
+		}
+		stage('HP Fortify Scan') {
+		    steps {
+		       build job:'HP_Fortify_Scan'
+		       
+		    }
+		}
+        stage('Quality Gate') {
+            steps {
+                echo 'Checking quality gate...'
+                script {
+                    timeout(time: 10, unit: 'MINUTES') {
+                        def qg = waitForQualityGate()
+                        if (qg.status != 'OK') {
+                            error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                        }
+                    }
+                }
+            }
+        }
+    stage('Deliver') {
+      steps {
+        echo 'deploying jar'
+        emailext(subject: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'", body: """<p>STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
+                                              <p>Check console output at &QUOT;<a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>&QUOT;</p>""", recipientProviders: [[$class: 'DevelopersRecipientProvider']])
+      }
+    }
+  }
+  tools {
+    maven 'Maven_3.0.5'
+    jdk 'jdk1.8'
+  }
+  post {
+	always {
+				junit '*/target/surefire-reports/*.xml'
+				archive "target/**/*"
+			}
+    success {
+      emailext(subject: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'", body: "<p>SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p><p>Check console output at &QUOT;<a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>&QUOT;</p>", recipientProviders: [[$class: 'DevelopersRecipientProvider']])
+      
+    }
+    
+    failure {
+      emailext(subject: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'", body: """<p>FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
+                                    <p>Check console output at &QUOT;<a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>&QUOT;</p>""", to: 'pino.alu@graybar.com')
+      
+    }
+    
+  }
+}

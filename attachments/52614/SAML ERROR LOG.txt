@@ -1,0 +1,557 @@
+Signature algorithm: http://www.w3.org/2001/04/xmldsig-more#rsa-sha256
+Signature canonicalization algorithm: http://www.w3.org/2001/10/xml-exc-c14n#
+Signature reference digest methods: http://www.w3.org/2001/04/xmlenc#sha512
+2020-09-16 13:28:26.491+0000 [id=48]	INFO	o.o.c.c.InitializationService#initialize: Initializing OpenSAML using the Java Services API
+2020-09-16 13:28:26.649+0000 [id=48]	INFO	o.p.s.m.SAML2ServiceProviderMetadataResolver#<init>: Using SP entity ID https://jenkins.cdl.af.mil/securityRealm/finishLogin
+2020-09-16 13:28:26.654+0000 [id=48]	INFO	o.p.s.m.SAML2ServiceProviderMetadataResolver#resolve: Writing sp metadata to D:\Jenkins\saml-sp-metadata.xml
+2020-09-16 13:28:26.654+0000 [id=48]	INFO	o.p.s.m.SAML2ServiceProviderMetadataResolver#resolve: Attempting to create directory structure for D:\Jenkins
+2020-09-16 13:28:26.654+0000 [id=48]	WARNING	o.p.s.m.SAML2ServiceProviderMetadataResolver#resolve: Could not construct the directory structure for SP metadata D:\Jenkins\saml-sp-metadata.xml
+2020-09-16 13:28:26.658+0000 [id=48]	WARNING	o.j.p.saml.SamlSecurityRealm#doFinishLogin: Unable to validate the SAML Response: Authentication response is not success ; actual urn:oasis:names:tc:SAML:2.0:status:Requester / Invalid message signature; nested exception is org.pac4j.saml.exceptions.SAMLException: Authentication response is not success ; actual urn:oasis:names:tc:SAML:2.0:status:Requester / Invalid message signature
+For more info check 'Maximum Authentication Lifetime' at https://github.com/jenkinsci/saml-plugin/blob/master/doc/CONFIGURE.md#configuring-plugin-settings
+If you have issues check the troubleshoting guide at https://github.com/jenkinsci/saml-plugin/blob/master/doc/TROUBLESHOOTING.md
+org.pac4j.saml.exceptions.SAMLException: Authentication response is not success ; actual urn:oasis:names:tc:SAML:2.0:status:Requester / Invalid message signature
+	at org.pac4j.saml.sso.impl.SAML2DefaultResponseValidator.validateSamlProtocolResponse(SAML2DefaultResponseValidator.java:208)
+	at org.pac4j.saml.sso.impl.SAML2DefaultResponseValidator.validate(SAML2DefaultResponseValidator.java:132)
+	at org.pac4j.saml.sso.impl.SAML2WebSSOMessageReceiver.receiveMessage(SAML2WebSSOMessageReceiver.java:77)
+	at org.pac4j.saml.sso.impl.SAML2WebSSOProfileHandler.receive(SAML2WebSSOProfileHandler.java:35)
+	at org.pac4j.saml.client.SAML2Client.retrieveCredentials(SAML2Client.java:225)
+	at org.pac4j.saml.client.SAML2Client.retrieveCredentials(SAML2Client.java:60)
+	at org.pac4j.core.client.IndirectClient.getCredentials(IndirectClient.java:106)
+	at org.jenkinsci.plugins.saml.SamlProfileWrapper.process(SamlProfileWrapper.java:55)
+Caused: org.acegisecurity.BadCredentialsException: Authentication response is not success ; actual urn:oasis:names:tc:SAML:2.0:status:Requester / Invalid message signature; nested exception is org.pac4j.saml.exceptions.SAMLException: Authentication response is not success ; actual urn:oasis:names:tc:SAML:2.0:status:Requester / Invalid message signature
+	at org.jenkinsci.plugins.saml.SamlProfileWrapper.process(SamlProfileWrapper.java:59)
+	at org.jenkinsci.plugins.saml.SamlProfileWrapper.process(SamlProfileWrapper.java:35)
+	at org.jenkinsci.plugins.saml.OpenSAMLWrapper.get(OpenSAMLWrapper.java:64)
+	at org.jenkinsci.plugins.saml.SamlSecurityRealm.doFinishLogin(SamlSecurityRealm.java:311)
+	at java.lang.invoke.MethodHandle.invokeWithArguments(MethodHandle.java:627)
+	at org.kohsuke.stapler.Function$MethodFunction.invoke(Function.java:396)
+	at org.kohsuke.stapler.Function$InstanceFunction.invoke(Function.java:408)
+	at org.kohsuke.stapler.interceptor.RequirePOST$Processor.invoke(RequirePOST.java:77)
+	at org.kohsuke.stapler.PreInvokeInterceptedFunction.invoke(PreInvokeInterceptedFunction.java:26)
+	at org.kohsuke.stapler.Function.bindAndInvoke(Function.java:212)
+	at org.kohsuke.stapler.Function.bindAndInvokeAndServeResponse(Function.java:145)
+	at org.kohsuke.stapler.MetaClass$11.doDispatch(MetaClass.java:536)
+	at org.kohsuke.stapler.NameBasedDispatcher.dispatch(NameBasedDispatcher.java:58)
+	at org.kohsuke.stapler.Stapler.tryInvoke(Stapler.java:766)
+	at org.kohsuke.stapler.Stapler.invoke(Stapler.java:898)
+	at org.kohsuke.stapler.MetaClass$2.doDispatch(MetaClass.java:220)
+	at org.kohsuke.stapler.NameBasedDispatcher.dispatch(NameBasedDispatcher.java:58)
+	at org.kohsuke.stapler.Stapler.tryInvoke(Stapler.java:766)
+	at org.kohsuke.stapler.Stapler.invoke(Stapler.java:898)
+	at org.kohsuke.stapler.Stapler.invoke(Stapler.java:694)
+	at org.kohsuke.stapler.Stapler.service(Stapler.java:240)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:790)
+	at org.eclipse.jetty.servlet.ServletHolder.handle(ServletHolder.java:763)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1631)
+	at hudson.util.PluginServletFilter$1.doFilter(PluginServletFilter.java:154)
+	at jenkins.telemetry.impl.UserLanguages$AcceptLanguageFilter.doFilter(UserLanguages.java:129)
+	at hudson.util.PluginServletFilter$1.doFilter(PluginServletFilter.java:151)
+	at jenkins.security.ResourceDomainFilter.doFilter(ResourceDomainFilter.java:76)
+	at hudson.util.PluginServletFilter$1.doFilter(PluginServletFilter.java:151)
+	at hudson.plugins.audit_trail.AuditTrailFilter.doFilter(AuditTrailFilter.java:113)
+	at hudson.util.PluginServletFilter$1.doFilter(PluginServletFilter.java:151)
+	at org.jenkinsci.plugins.ssegateway.Endpoint$SSEListenChannelFilter.doFilter(Endpoint.java:248)
+	at hudson.util.PluginServletFilter$1.doFilter(PluginServletFilter.java:151)
+	at io.jenkins.blueocean.ResourceCacheControl.doFilter(ResourceCacheControl.java:134)
+	at hudson.util.PluginServletFilter$1.doFilter(PluginServletFilter.java:151)
+	at io.jenkins.blueocean.auth.jwt.impl.JwtAuthenticationFilter.doFilter(JwtAuthenticationFilter.java:61)
+	at hudson.util.PluginServletFilter$1.doFilter(PluginServletFilter.java:151)
+	at com.smartcodeltd.jenkinsci.plugin.assetbundler.filters.LessCSS.doFilter(LessCSS.java:47)
+	at hudson.util.PluginServletFilter$1.doFilter(PluginServletFilter.java:151)
+	at net.bull.javamelody.MonitoringFilter.doFilter(MonitoringFilter.java:239)
+	at net.bull.javamelody.MonitoringFilter.doFilter(MonitoringFilter.java:215)
+	at net.bull.javamelody.PluginMonitoringFilter.doFilter(PluginMonitoringFilter.java:88)
+	at org.jvnet.hudson.plugins.monitoring.HudsonMonitoringFilter.doFilter(HudsonMonitoringFilter.java:114)
+	at hudson.util.PluginServletFilter$1.doFilter(PluginServletFilter.java:151)
+	at javax.servlet.FilterChain$doFilter.call(Unknown Source)
+	at org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCall(CallSiteArray.java:48)
+	at javax.servlet.FilterChain$doFilter.call(Unknown Source)
+	at com.ceilfors.jenkins.plugins.jiratrigger.ExceptionLoggingFilter.doFilter(ExceptionLoggingFilter.groovy:29)
+	at hudson.util.PluginServletFilter$1.doFilter(PluginServletFilter.java:151)
+	at hudson.util.PluginServletFilter.doFilter(PluginServletFilter.java:157)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1618)
+	at org.jenkinsci.plugins.saml.SamlCrumbExclusion.process(SamlCrumbExclusion.java:26)
+	at hudson.security.csrf.CrumbFilter.doFilter(CrumbFilter.java:127)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1618)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:84)
+	at hudson.security.UnwrapSecurityExceptionFilter.doFilter(UnwrapSecurityExceptionFilter.java:51)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at jenkins.security.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:119)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at org.acegisecurity.providers.anonymous.AnonymousProcessingFilter.doFilter(AnonymousProcessingFilter.java:125)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at org.acegisecurity.ui.rememberme.RememberMeProcessingFilter.doFilter(RememberMeProcessingFilter.java:135)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at org.acegisecurity.ui.AbstractProcessingFilter.doFilter(AbstractProcessingFilter.java:271)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at jenkins.security.BasicHeaderProcessor.doFilter(BasicHeaderProcessor.java:93)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at org.acegisecurity.context.HttpSessionContextIntegrationFilter.doFilter(HttpSessionContextIntegrationFilter.java:249)
+	at hudson.security.HttpSessionContextIntegrationFilter2.doFilter(HttpSessionContextIntegrationFilter2.java:67)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at hudson.security.ChainedServletFilter.doFilter(ChainedServletFilter.java:90)
+	at hudson.security.HudsonFilter.doFilter(HudsonFilter.java:171)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1618)
+	at org.kohsuke.stapler.compression.CompressionFilter.doFilter(CompressionFilter.java:51)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1618)
+	at hudson.util.CharacterEncodingFilter.doFilter(CharacterEncodingFilter.java:82)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1618)
+	at org.kohsuke.stapler.DiagnosticThreadNameFilter.doFilter(DiagnosticThreadNameFilter.java:30)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1618)
+	at jenkins.security.SuspiciousRequestFilter.doFilter(SuspiciousRequestFilter.java:36)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1618)
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:549)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:143)
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:578)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:127)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:235)
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:1610)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:233)
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1369)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:188)
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:489)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:1580)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:186)
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1284)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:141)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:127)
+	at org.eclipse.jetty.server.Server.handle(Server.java:501)
+	at org.eclipse.jetty.server.HttpChannel.lambda$handle$1(HttpChannel.java:383)
+	at org.eclipse.jetty.server.HttpChannel.dispatch(HttpChannel.java:556)
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:375)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:272)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:311)
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:103)
+	at org.eclipse.jetty.io.ChannelEndPoint$1.run(ChannelEndPoint.java:104)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.runTask(EatWhatYouKill.java:336)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.doProduce(EatWhatYouKill.java:313)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.tryProduce(EatWhatYouKill.java:171)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.run(EatWhatYouKill.java:129)
+	at org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:375)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:806)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:938)
+	at java.lang.Thread.run(Thread.java:745)
+2020-09-16 13:29:05.349+0000 [id=597]	INFO	j.b.MultiBranchProject$BranchIndexing#run: DCAPES Folder/DCAPES-Multibranch-Test #20200916.082900 branch indexing action completed: SUCCESS in 5 sec
+2020-09-16 13:29:12.540+0000 [id=598]	INFO	j.b.MultiBranchProject$BranchIndexing#run: DCAPES Folder/MEFPAK-Multibranch-Pipeline #20200916.082900 branch indexing action completed: FAILURE in 12 sec
+2020-09-16 13:30:00.247+0000 [id=651]	INFO	hudson.model.AsyncPeriodicWork#lambda$doRun$0: Started DockerContainerWatchdog Asynchronous Periodic Work
+2020-09-16 13:30:00.247+0000 [id=651]	INFO	c.n.j.p.d.DockerContainerWatchdog#execute: Docker Container Watchdog has been triggered
+2020-09-16 13:30:00.251+0000 [id=651]	INFO	c.n.j.p.d.DockerContainerWatchdog$Statistics#writeStatisticsToLog: Watchdog Statistics: Number of overall executions: 1, Executions with processing timeout: 0, Containers removed gracefully: 0, Containers removed with force: 0, Containers removal failed: 0, Nodes removed successfully: 0, Nodes removal failed: 0, Container removal average duration (gracefully): 0 ms, Container removal average duration (force): 0 ms, Average overall runtime of watchdog: 2 ms, Average runtime of container retrieval: 0 ms
+2020-09-16 13:30:00.251+0000 [id=651]	INFO	c.n.j.p.d.DockerContainerWatchdog#loadNodeMap: We currently have 8 nodes assigned to this Jenkins instance, which we will check
+2020-09-16 13:30:00.251+0000 [id=651]	INFO	c.n.j.p.d.DockerContainerWatchdog#execute: Docker Container Watchdog check has been completed
+2020-09-16 13:30:00.251+0000 [id=651]	INFO	hudson.model.AsyncPeriodicWork#lambda$doRun$0: Finished DockerContainerWatchdog Asynchronous Periodic Work. 4 ms
+2020-09-16 13:30:06.652+0000 [id=649]	INFO	j.b.MultiBranchProject$BranchIndexing#run: DCAPES Folder/DCAPES-Multibranch-Test #20200916.083000 branch indexing action completed: SUCCESS in 6.4 sec
+2020-09-16 13:30:12.443+0000 [id=650]	INFO	j.b.MultiBranchProject$BranchIndexing#run: DCAPES Folder/MEFPAK-Multibranch-Pipeline #20200916.083000 branch indexing action completed: FAILURE in 12 sec
+2020-09-16 13:31:07.343+0000 [id=694]	INFO	j.b.MultiBranchProject$BranchIndexing#run: DCAPES Folder/DCAPES-Multibranch-Test #20200916.083100 branch indexing action completed: SUCCESS in 7.1 sec
+2020-09-16 13:31:11.667+0000 [id=39]	INFO	hudson.slaves.SlaveComputer#tryReconnect: Attempting to reconnect JenkinsAnsibleWorker2
+2020-09-16 13:31:12.455+0000 [id=695]	INFO	j.b.MultiBranchProject$BranchIndexing#run: DCAPES Folder/MEFPAK-Multibranch-Pipeline #20200916.083100 branch indexing action completed: FAILURE in 12 sec
+2020-09-16 13:32:05.633+0000 [id=753]	INFO	j.b.MultiBranchProject$BranchIndexing#run: DCAPES Folder/DCAPES-Multibranch-Test #20200916.083200 branch indexing action completed: SUCCESS in 5.3 sec
+2020-09-16 13:32:12.401+0000 [id=755]	INFO	j.b.MultiBranchProject$BranchIndexing#run: DCAPES Folder/MEFPAK-Multibranch-Pipeline #20200916.083200 branch indexing action completed: FAILURE in 12 sec
+2020-09-16 13:33:07.851+0000 [id=812]	INFO	j.b.MultiBranchProject$BranchIndexing#run: DCAPES Folder/DCAPES-Multibranch-Test #20200916.083300 branch indexing action completed: SUCCESS in 7.6 sec
+2020-09-16 13:33:12.549+0000 [id=813]	INFO	j.b.MultiBranchProject$BranchIndexing#run: DCAPES Folder/MEFPAK-Multibranch-Pipeline #20200916.083300 branch indexing action completed: FAILURE in 12 sec
+2020-09-16 13:34:08.377+0000 [id=870]	INFO	j.b.MultiBranchProject$BranchIndexing#run: DCAPES Folder/DCAPES-Multibranch-Test #20200916.083400 branch indexing action completed: SUCCESS in 8.1 sec
+2020-09-16 13:34:12.421+0000 [id=871]	INFO	j.b.MultiBranchProject$BranchIndexing#run: DCAPES Folder/MEFPAK-Multibranch-Pipeline #20200916.083400 branch indexing action completed: FAILURE in 12 sec
+2020-09-16 13:34:21.270+0000 [id=909]	INFO	hudson.model.AsyncAperiodicWork#lambda$doAperiodicRun$0: Started Update IdP Metadata from URL PeriodicWork
+2020-09-16 13:34:21.272+0000 [id=909]	INFO	hudson.model.AsyncAperiodicWork#lambda$doAperiodicRun$0: Finished Update IdP Metadata from URL PeriodicWork. 2 ms
+2020-09-16 13:35:00.266+0000 [id=912]	INFO	hudson.model.AsyncPeriodicWork#lambda$doRun$0: Started DockerContainerWatchdog Asynchronous Periodic Work
+2020-09-16 13:35:00.267+0000 [id=912]	INFO	c.n.j.p.d.DockerContainerWatchdog#execute: Docker Container Watchdog has been triggered
+2020-09-16 13:35:00.267+0000 [id=912]	INFO	c.n.j.p.d.DockerContainerWatchdog$Statistics#writeStatisticsToLog: Watchdog Statistics: Number of overall executions: 2, Executions with processing timeout: 0, Containers removed gracefully: 0, Containers removed with force: 0, Containers removal failed: 0, Nodes removed successfully: 0, Nodes removal failed: 0, Container removal average duration (gracefully): 0 ms, Container removal average duration (force): 0 ms, Average overall runtime of watchdog: 1 ms, Average runtime of container retrieval: 0 ms
+2020-09-16 13:35:00.267+0000 [id=912]	INFO	c.n.j.p.d.DockerContainerWatchdog#loadNodeMap: We currently have 8 nodes assigned to this Jenkins instance, which we will check
+2020-09-16 13:35:00.267+0000 [id=912]	INFO	c.n.j.p.d.DockerContainerWatchdog#execute: Docker Container Watchdog check has been completed
+2020-09-16 13:35:00.267+0000 [id=912]	INFO	hudson.model.AsyncPeriodicWork#lambda$doRun$0: Finished DockerContainerWatchdog Asynchronous Periodic Work. 0 ms
+2020-09-16 13:35:01.104+0000 [id=916]	INFO	j.b.MultiBranchProject$BranchIndexing#run: DCAPES Folder/MEFPAK-Multibranch-Pipeline #20200916.083500 branch indexing action completed: FAILURE in 0.81 sec
+2020-09-16 13:35:04.958+0000 [id=1]	INFO	org.eclipse.jetty.util.log.Log#initialized: Logging initialized @452ms to org.eclipse.jetty.util.log.JavaUtilLog
+2020-09-16 13:35:05.080+0000 [id=1]	INFO	winstone.Logger#logInternal: Beginning extraction from war file
+2020-09-16 13:35:05.111+0000 [id=1]	WARNING	o.e.j.s.handler.ContextHandler#setContextPath: Empty contextPath
+2020-09-16 13:35:05.158+0000 [id=1]	INFO	org.eclipse.jetty.server.Server#doStart: jetty-9.4.30.v20200611; built: 2020-06-11T12:34:51.929Z; git: 271836e4c1f4612f12b7bb13ef5a92a927634b0d; jvm 1.8.0_101-b13
+2020-09-16 13:35:05.518+0000 [id=1]	INFO	o.e.j.w.StandardDescriptorProcessor#visitServlet: NO JSP Support for /, did not find org.eclipse.jetty.jsp.JettyJspServlet
+2020-09-16 13:35:05.561+0000 [id=1]	INFO	o.e.j.s.s.DefaultSessionIdManager#doStart: DefaultSessionIdManager workerName=node0
+2020-09-16 13:35:05.561+0000 [id=1]	INFO	o.e.j.s.s.DefaultSessionIdManager#doStart: No SessionScavenger set, using defaults
+2020-09-16 13:35:05.564+0000 [id=1]	INFO	o.e.j.server.session.HouseKeeper#startScavenging: node0 Scavenging every 660000ms
+2020-09-16 13:35:06.035+0000 [id=1]	INFO	hudson.WebAppMain#contextInitialized: Jenkins home directory: D:\Jenkins found at: EnvVars.masterEnvVars.get("JENKINS_HOME")
+2020-09-16 13:35:06.144+0000 [id=1]	INFO	o.e.j.s.handler.ContextHandler#doStart: Started w.@4149c063{Jenkins v2.249.1,/,file:///D:/Jenkins/war/,AVAILABLE}{D:\Jenkins\war}
+2020-09-16 13:35:06.176+0000 [id=1]	INFO	o.e.j.server.AbstractConnector#doStart: Started ServerConnector@2c6a3f77{HTTP/1.1, (http/1.1)}{0.0.0.0:8090}
+2020-09-16 13:35:06.176+0000 [id=1]	INFO	org.eclipse.jetty.server.Server#doStart: Started @1681ms
+2020-09-16 13:35:06.191+0000 [id=21]	INFO	winstone.Logger#logInternal: Winstone Servlet Engine running: controlPort=disabled
+2020-09-16 13:35:07.566+0000 [id=28]	INFO	jenkins.InitReactorRunner$1#onAttained: Started initialization
+2020-09-16 13:35:08.994+0000 [id=31]	INFO	jenkins.InitReactorRunner$1#onAttained: Listed all plugins
+2020-09-16 13:35:10.788+0000 [id=33]	INFO	c.s.j.p.teamview.PluginImpl#start: Starting
+2020-09-16 13:35:11.038+0000 [id=33]	INFO	c.s.j.p.teamview.PluginImpl#start: Started
+2020-09-16 13:35:27.172+0000 [id=33]	INFO	jenkins.InitReactorRunner$1#onAttained: Prepared all plugins
+2020-09-16 13:35:27.188+0000 [id=32]	INFO	jenkins.InitReactorRunner$1#onAttained: Started all plugins
+2020-09-16 13:35:30.590+0000 [id=11]	WARNING	o.j.r.u.AnonymousClassWarnings#warn: Attempt to (de-)serialize anonymous class com.dabsquared.gitlabjenkins.gitlab.api.impl.V3GitLabClientBuilder$1 in file:/D:/Jenkins/plugins/gitlab-plugin/WEB-INF/lib/gitlab-plugin-1.5.13.jar; see: https://jenkins.io/redirect/serialization-of-anonymous-classes/
+2020-09-16 13:35:31.809+0000 [id=11]	WARNING	hudson.model.Descriptor#load: Failed to load D:\Jenkins\org.jenkinsci.plugins.JiraTestResultReporter.JiraTestDataPublisher.xml
+java.lang.IllegalArgumentException: Host name may not be null
+	at org.apache.http.util.Args.containsNoBlanks(Args.java:81)
+	at org.apache.http.HttpHost.<init>(HttpHost.java:80)
+	at org.apache.http.impl.client.cache.CachingHttpAsyncClient.execute(CachingHttpAsyncClient.java:279)
+	at com.atlassian.httpclient.apache.httpcomponents.SettableFuturePromiseHttpPromiseAsyncClient.execute(SettableFuturePromiseHttpPromiseAsyncClient.java:36)
+	at com.atlassian.httpclient.apache.httpcomponents.ApacheAsyncHttpClient.doExecute(ApacheAsyncHttpClient.java:394)
+	at com.atlassian.httpclient.apache.httpcomponents.ApacheAsyncHttpClient.execute(ApacheAsyncHttpClient.java:341)
+	at com.atlassian.httpclient.apache.httpcomponents.DefaultRequest$DefaultRequestBuilder.execute(DefaultRequest.java:297)
+	at com.atlassian.httpclient.apache.httpcomponents.DefaultRequest$DefaultRequestBuilder.get(DefaultRequest.java:253)
+	at com.atlassian.jira.rest.client.internal.async.AbstractAsynchronousRestClient.getAndParse(AbstractAsynchronousRestClient.java:69)
+	at org.jenkinsci.plugins.JiraTestResultReporter.restclientextensions.JiraRestClientExtension.getStatuses(JiraRestClientExtension.java:42)
+	at org.jenkinsci.plugins.JiraTestResultReporter.JiraTestDataPublisher$JiraTestDataPublisherDescriptor.tryCreatingStatusToCategoryMap(JiraTestDataPublisher.java:440)
+	at org.jenkinsci.plugins.JiraTestResultReporter.JiraTestDataPublisher$JiraTestDataPublisherDescriptor.readResolve(JiraTestDataPublisher.java:380)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at com.thoughtworks.xstream.converters.reflection.SerializationMethodInvoker.callReadResolve(SerializationMethodInvoker.java:66)
+Caused: com.thoughtworks.xstream.converters.reflection.ObjectAccessException: Could not call org.jenkinsci.plugins.JiraTestResultReporter.JiraTestDataPublisher$JiraTestDataPublisherDescriptor.readResolve() : Host name may not be null
+	at com.thoughtworks.xstream.converters.reflection.SerializationMethodInvoker.callReadResolve(SerializationMethodInvoker.java:72)
+	at hudson.util.RobustReflectionConverter.unmarshal(RobustReflectionConverter.java:270)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:72)
+Caused: com.thoughtworks.xstream.converters.ConversionException: Could not call org.jenkinsci.plugins.JiraTestResultReporter.JiraTestDataPublisher$JiraTestDataPublisherDescriptor.readResolve() : Host name may not be null : Could not call org.jenkinsci.plugins.JiraTestResultReporter.JiraTestDataPublisher$JiraTestDataPublisherDescriptor.readResolve() : Host name may not be null
+---- Debugging information ----
+message             : Could not call org.jenkinsci.plugins.JiraTestResultReporter.JiraTestDataPublisher$JiraTestDataPublisherDescriptor.readResolve() : Host name may not be null
+cause-exception     : com.thoughtworks.xstream.converters.reflection.ObjectAccessException
+cause-message       : Could not call org.jenkinsci.plugins.JiraTestResultReporter.JiraTestDataPublisher$JiraTestDataPublisherDescriptor.readResolve() : Host name may not be null
+class               : org.jenkinsci.plugins.JiraTestResultReporter.JiraTestDataPublisher$JiraTestDataPublisherDescriptor
+required-type       : org.jenkinsci.plugins.JiraTestResultReporter.JiraTestDataPublisher$JiraTestDataPublisherDescriptor
+converter-type      : hudson.util.RobustReflectionConverter
+path                : /org.jenkinsci.plugins.JiraTestResultReporter.JiraTestDataPublisher$JiraTestDataPublisherDescriptor
+line number         : 8
+version             : not available
+-------------------------------
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:79)
+	at com.thoughtworks.xstream.core.AbstractReferenceUnmarshaller.convert(AbstractReferenceUnmarshaller.java:65)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:66)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:50)
+	at com.thoughtworks.xstream.core.TreeUnmarshaller.start(TreeUnmarshaller.java:134)
+	at com.thoughtworks.xstream.core.AbstractTreeMarshallingStrategy.unmarshal(AbstractTreeMarshallingStrategy.java:32)
+	at com.thoughtworks.xstream.XStream.unmarshal(XStream.java:1189)
+	at hudson.util.XStream2.unmarshal(XStream2.java:161)
+	at hudson.util.XStream2.unmarshal(XStream2.java:132)
+	at com.thoughtworks.xstream.XStream.unmarshal(XStream.java:1173)
+	at hudson.XmlFile.unmarshal(XmlFile.java:180)
+Caused: java.io.IOException: Unable to read D:\Jenkins\org.jenkinsci.plugins.JiraTestResultReporter.JiraTestDataPublisher.xml
+	at hudson.XmlFile.unmarshal(XmlFile.java:183)
+	at hudson.XmlFile.unmarshal(XmlFile.java:163)
+	at hudson.model.Descriptor.load(Descriptor.java:913)
+	at org.jenkinsci.plugins.JiraTestResultReporter.JiraTestDataPublisher$JiraTestDataPublisherDescriptor.<init>(JiraTestDataPublisher.java:299)
+	at org.jenkinsci.plugins.JiraTestResultReporter.JiraTestDataPublisher$JiraTestDataPublisherDescriptor$$FastClassByGuice$$aa5842c9.newInstance(<generated>)
+	at com.google.inject.internal.cglib.reflect.$FastConstructor.newInstance(FastConstructor.java:40)
+	at com.google.inject.internal.DefaultConstructionProxyFactory$1.newInstance(DefaultConstructionProxyFactory.java:61)
+	at com.google.inject.internal.ConstructorInjector.provision(ConstructorInjector.java:105)
+	at com.google.inject.internal.ConstructorInjector.access$000(ConstructorInjector.java:32)
+	at com.google.inject.internal.ConstructorInjector$1.call(ConstructorInjector.java:89)
+	at com.google.inject.internal.ProvisionListenerStackCallback$Provision.provision(ProvisionListenerStackCallback.java:115)
+	at hudson.ExtensionFinder$GuiceFinder$SezpozModule.onProvision(ExtensionFinder.java:572)
+	at com.google.inject.internal.ProvisionListenerStackCallback$Provision.provision(ProvisionListenerStackCallback.java:126)
+	at com.google.inject.internal.ProvisionListenerStackCallback.provision(ProvisionListenerStackCallback.java:68)
+	at com.google.inject.internal.ConstructorInjector.construct(ConstructorInjector.java:87)
+	at com.google.inject.internal.ConstructorBindingImpl$Factory.get(ConstructorBindingImpl.java:267)
+	at com.google.inject.internal.ProviderToInternalFactoryAdapter$1.call(ProviderToInternalFactoryAdapter.java:46)
+	at com.google.inject.internal.InjectorImpl.callInContext(InjectorImpl.java:1103)
+	at com.google.inject.internal.ProviderToInternalFactoryAdapter.get(ProviderToInternalFactoryAdapter.java:40)
+	at com.google.inject.internal.SingletonScope$1.get(SingletonScope.java:145)
+	at hudson.ExtensionFinder$GuiceFinder$FaultTolerantScope$1.get(ExtensionFinder.java:440)
+	at com.google.inject.internal.InternalFactoryToProviderAdapter.get(InternalFactoryToProviderAdapter.java:41)
+	at com.google.inject.internal.InjectorImpl$2$1.call(InjectorImpl.java:1016)
+	at com.google.inject.internal.InjectorImpl.callInContext(InjectorImpl.java:1092)
+	at com.google.inject.internal.InjectorImpl$2.get(InjectorImpl.java:1012)
+	at hudson.ExtensionFinder$GuiceFinder._find(ExtensionFinder.java:402)
+	at hudson.ExtensionFinder$GuiceFinder.find(ExtensionFinder.java:393)
+	at hudson.ClassicPluginStrategy.findComponents(ClassicPluginStrategy.java:346)
+	at hudson.ExtensionList.load(ExtensionList.java:381)
+	at hudson.ExtensionList.ensureLoaded(ExtensionList.java:317)
+	at hudson.ExtensionList.iterator(ExtensionList.java:172)
+	at jenkins.model.Jenkins.getDescriptor(Jenkins.java:1583)
+	at jenkins.model.Jenkins.getDescriptorOrDie(Jenkins.java:1598)
+	at hudson.security.csrf.CrumbIssuer.getDescriptor(CrumbIssuer.java:152)
+	at hudson.security.csrf.CrumbFilter.doFilter(CrumbFilter.java:131)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1618)
+	at hudson.security.HudsonFilter.doFilter(HudsonFilter.java:169)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1618)
+	at org.kohsuke.stapler.compression.CompressionFilter.doFilter(CompressionFilter.java:51)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1618)
+	at hudson.util.CharacterEncodingFilter.doFilter(CharacterEncodingFilter.java:82)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1618)
+	at org.kohsuke.stapler.DiagnosticThreadNameFilter.doFilter(DiagnosticThreadNameFilter.java:30)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1618)
+	at jenkins.security.SuspiciousRequestFilter.doFilter(SuspiciousRequestFilter.java:36)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1618)
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:549)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:143)
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:578)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:127)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:235)
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:1610)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:233)
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1369)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:188)
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:489)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:1580)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:186)
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1284)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:141)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:127)
+	at org.eclipse.jetty.server.Server.handle(Server.java:501)
+	at org.eclipse.jetty.server.HttpChannel.lambda$handle$1(HttpChannel.java:383)
+	at org.eclipse.jetty.server.HttpChannel.dispatch(HttpChannel.java:556)
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:375)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:272)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:311)
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:103)
+	at org.eclipse.jetty.io.ChannelEndPoint$1.run(ChannelEndPoint.java:104)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.runTask(EatWhatYouKill.java:336)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.doProduce(EatWhatYouKill.java:313)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.tryProduce(EatWhatYouKill.java:171)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.run(EatWhatYouKill.java:129)
+	at org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:375)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:806)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:938)
+	at java.lang.Thread.run(Thread.java:745)
+2020-09-16 13:35:32.701+0000 [id=29]	INFO	jenkins.InitReactorRunner$1#onAttained: Augmented all extensions
+2020-09-16 13:35:32.890+0000 [id=31]	INFO	hudson.slaves.SlaveComputer#tryReconnect: Attempting to reconnect JenkinsAnsibleWorker
+2020-09-16 13:35:32.890+0000 [id=31]	INFO	hudson.slaves.SlaveComputer#tryReconnect: Attempting to reconnect JenkinsAnsibleWorker2
+2020-09-16 13:35:32.906+0000 [id=31]	INFO	jenkins.InitReactorRunner$1#onAttained: System config loaded
+2020-09-16 13:35:33.312+0000 [id=34]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.343+0000 [id=33]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.390+0000 [id=31]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.437+0000 [id=34]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.437+0000 [id=31]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.437+0000 [id=33]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.453+0000 [id=33]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.453+0000 [id=33]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.468+0000 [id=34]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.468+0000 [id=34]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.484+0000 [id=27]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.484+0000 [id=27]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.484+0000 [id=27]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.484+0000 [id=27]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.484+0000 [id=29]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.484+0000 [id=29]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.484+0000 [id=32]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.484+0000 [id=32]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.531+0000 [id=29]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.531+0000 [id=29]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.531+0000 [id=32]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.546+0000 [id=32]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.625+0000 [id=33]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.625+0000 [id=33]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.656+0000 [id=28]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.656+0000 [id=28]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.656+0000 [id=28]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.656+0000 [id=28]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.734+0000 [id=33]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.734+0000 [id=33]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"/deployment_scripts/**","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.781+0000 [id=34]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.781+0000 [id=34]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.890+0000 [id=27]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.890+0000 [id=27]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.890+0000 [id=27]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.890+0000 [id=27]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.890+0000 [id=32]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.890+0000 [id=32]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.921+0000 [id=34]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.921+0000 [id=34]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.937+0000 [id=32]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.937+0000 [id=32]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.953+0000 [id=32]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.953+0000 [id=32]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.999+0000 [id=30]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:33.999+0000 [id=30]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:33.999+0000 [id=34]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:34.015+0000 [id=34]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:34.031+0000 [id=34]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:34.031+0000 [id=34]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:34.031+0000 [id=34]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:34.031+0000 [id=34]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:34.031+0000 [id=34]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:34.031+0000 [id=34]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:34.093+0000 [id=34]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:34.093+0000 [id=34]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:34.093+0000 [id=34]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:34.093+0000 [id=34]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:34.140+0000 [id=32]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:34.140+0000 [id=32]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:34.140+0000 [id=32]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:34.140+0000 [id=32]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:34.171+0000 [id=32]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:34.171+0000 [id=32]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:34.187+0000 [id=30]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:34.187+0000 [id=30]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:34.187+0000 [id=32]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:34.187+0000 [id=32]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:34.187+0000 [id=32]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:34.187+0000 [id=32]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:34.187+0000 [id=32]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:34.187+0000 [id=32]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:34.281+0000 [id=28]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:34.281+0000 [id=28]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:34.328+0000 [id=28]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:34.328+0000 [id=28]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:34.328+0000 [id=28]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:34.328+0000 [id=28]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:34.328+0000 [id=28]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:34.328+0000 [id=28]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:34.343+0000 [id=28]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:34.343+0000 [id=28]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:34.343+0000 [id=28]	INFO	jenkins.InitReactorRunner$1#onAttained: System config adapted
+2020-09-16 13:35:34.473+0000 [id=33]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:34.473+0000 [id=33]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:34.473+0000 [id=33]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:34.489+0000 [id=33]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:34.489+0000 [id=33]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:34.489+0000 [id=33]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:34.489+0000 [id=33]	INFO	c.c.jenkins.JenkinsServerLogger#debug: com.checkmarx.jenkins.PluginDataMigration: migrating plugin data to the new format.
+2020-09-16 13:35:34.489+0000 [id=33]	INFO	c.c.jenkins.JenkinsServerLogger#debug: Dependency scan config after migration: {"overrideGlobalConfig":true,"dependencyScanPatterns":"","dependencyScanExcludeFolders":"","dependencyScannerType":"OSA","osaArchiveIncludePatterns":"*.zip, *.war, *.ear, *.tgz","osaInstallBeforeScan":false,"scaServerUrl":null,"scaAccessControlUrl":null,"scaWebAppUrl":null,"scaCredentialsId":null,"scaTenant":null}
+2020-09-16 13:35:34.583+0000 [id=29]	WARNING	c.c.h.p.folder.AbstractFolder#loadChildren: could not find file D:\Jenkins\jobs\NEXGEN IT Folder\jobs\sandbox-repository\config.xml
+2020-09-16 13:35:34.723+0000 [id=34]	INFO	jenkins.InitReactorRunner$1#onAttained: Loaded all jobs
+2020-09-16 13:35:34.723+0000 [id=30]	INFO	jenkins.InitReactorRunner$1#onAttained: Configuration for all jobs updated
+2020-09-16 13:35:34.770+0000 [id=125]	INFO	hudson.model.AsyncPeriodicWork#lambda$doRun$0: Started Download metadata
+2020-09-16 13:35:34.770+0000 [id=125]	INFO	hudson.model.AsyncPeriodicWork#lambda$doRun$0: Finished Download metadata. 0 ms
+2020-09-16 13:35:35.346+0000 [id=34]	INFO	o.s.c.s.AbstractApplicationContext#prepareRefresh: Refreshing org.springframework.web.context.support.StaticWebApplicationContext@ed39b8f: display name [Root WebApplicationContext]; startup date [Wed Sep 16 08:35:35 CDT 2020]; root of context hierarchy
+2020-09-16 13:35:35.346+0000 [id=34]	INFO	o.s.c.s.AbstractApplicationContext#obtainFreshBeanFactory: Bean factory for application context [org.springframework.web.context.support.StaticWebApplicationContext@ed39b8f]: org.springframework.beans.factory.support.DefaultListableBeanFactory@2969eecb
+2020-09-16 13:35:35.362+0000 [id=34]	INFO	o.s.b.f.s.DefaultListableBeanFactory#preInstantiateSingletons: Pre-instantiating singletons in org.springframework.beans.factory.support.DefaultListableBeanFactory@2969eecb: defining beans [filter,legacy]; root of factory hierarchy
+2020-09-16 13:35:35.456+0000 [id=34]	INFO	jenkins.InitReactorRunner$1#onAttained: Completed initialization
+2020-09-16 13:35:35.784+0000 [id=20]	INFO	o.j.p.skipcert.ItemListenerImpl#onLoaded: Bypassing certificate check
+2020-09-16 13:35:35.799+0000 [id=20]	INFO	hudson.WebAppMain$3#run: Jenkins is fully up and running
+2020-09-16 13:35:38.365+0000 [id=16]	INFO	o.o.c.c.InitializationService#initialize: Initializing OpenSAML using the Java Services API
+2020-09-16 13:35:40.261+0000 [id=16]	INFO	o.pac4j.saml.util.Configuration#<clinit>: Bootstrapping OpenSAML configuration via Pac4j...
+2020-09-16 13:35:40.265+0000 [id=16]	INFO	o.o.c.c.InitializationService#initialize: Initializing OpenSAML using the Java Services API
+2020-09-16 13:35:40.472+0000 [id=16]	INFO	o.p.s.m.SAML2ServiceProviderMetadataResolver#<init>: Using SP entity ID https://jenkins.cdl.af.mil/securityRealm/finishLogin
+2020-09-16 13:35:40.621+0000 [id=16]	INFO	o.p.s.m.SAML2ServiceProviderMetadataResolver#resolve: Writing sp metadata to D:\Jenkins\saml-sp-metadata.xml
+2020-09-16 13:35:40.621+0000 [id=16]	INFO	o.p.s.m.SAML2ServiceProviderMetadataResolver#resolve: Attempting to create directory structure for D:\Jenkins
+2020-09-16 13:35:40.621+0000 [id=16]	WARNING	o.p.s.m.SAML2ServiceProviderMetadataResolver#resolve: Could not construct the directory structure for SP metadata D:\Jenkins\saml-sp-metadata.xml
+2020-09-16 13:35:40.750+0000 [id=16]	INFO	o.p.s.c.DefaultSignatureSigningParametersProvider#build: Created signature signing parameters.
+Signature algorithm: http://www.w3.org/2001/04/xmldsig-more#rsa-sha256
+Signature canonicalization algorithm: http://www.w3.org/2001/10/xml-exc-c14n#
+Signature reference digest methods: http://www.w3.org/2001/04/xmlenc#sha512
+2020-09-16 13:35:41.306+0000 [id=16]	INFO	o.o.c.c.InitializationService#initialize: Initializing OpenSAML using the Java Services API
+2020-09-16 13:35:41.394+0000 [id=16]	INFO	o.p.s.m.SAML2ServiceProviderMetadataResolver#<init>: Using SP entity ID https://jenkins.cdl.af.mil/securityRealm/finishLogin
+2020-09-16 13:35:41.416+0000 [id=16]	INFO	o.p.s.m.SAML2ServiceProviderMetadataResolver#resolve: Writing sp metadata to D:\Jenkins\saml-sp-metadata.xml
+2020-09-16 13:35:41.417+0000 [id=16]	INFO	o.p.s.m.SAML2ServiceProviderMetadataResolver#resolve: Attempting to create directory structure for D:\Jenkins
+2020-09-16 13:35:41.417+0000 [id=16]	WARNING	o.p.s.m.SAML2ServiceProviderMetadataResolver#resolve: Could not construct the directory structure for SP metadata D:\Jenkins\saml-sp-metadata.xml
+2020-09-16 13:35:41.479+0000 [id=16]	WARNING	o.j.p.saml.SamlSecurityRealm#doFinishLogin: Unable to validate the SAML Response: Authentication response is not success ; actual urn:oasis:names:tc:SAML:2.0:status:Requester / Invalid message signature; nested exception is org.pac4j.saml.exceptions.SAMLException: Authentication response is not success ; actual urn:oasis:names:tc:SAML:2.0:status:Requester / Invalid message signature
+For more info check 'Maximum Authentication Lifetime' at https://github.com/jenkinsci/saml-plugin/blob/master/doc/CONFIGURE.md#configuring-plugin-settings
+If you have issues check the troubleshoting guide at https://github.com/jenkinsci/saml-plugin/blob/master/doc/TROUBLESHOOTING.md
+org.pac4j.saml.exceptions.SAMLException: Authentication response is not success ; actual urn:oasis:names:tc:SAML:2.0:status:Requester / Invalid message signature
+	at org.pac4j.saml.sso.impl.SAML2DefaultResponseValidator.validateSamlProtocolResponse(SAML2DefaultResponseValidator.java:208)
+	at org.pac4j.saml.sso.impl.SAML2DefaultResponseValidator.validate(SAML2DefaultResponseValidator.java:132)
+	at org.pac4j.saml.sso.impl.SAML2WebSSOMessageReceiver.receiveMessage(SAML2WebSSOMessageReceiver.java:77)
+	at org.pac4j.saml.sso.impl.SAML2WebSSOProfileHandler.receive(SAML2WebSSOProfileHandler.java:35)
+	at org.pac4j.saml.client.SAML2Client.retrieveCredentials(SAML2Client.java:225)
+	at org.pac4j.saml.client.SAML2Client.retrieveCredentials(SAML2Client.java:60)
+	at org.pac4j.core.client.IndirectClient.getCredentials(IndirectClient.java:106)
+	at org.jenkinsci.plugins.saml.SamlProfileWrapper.process(SamlProfileWrapper.java:55)
+Caused: org.acegisecurity.BadCredentialsException: Authentication response is not success ; actual urn:oasis:names:tc:SAML:2.0:status:Requester / Invalid message signature; nested exception is org.pac4j.saml.exceptions.SAMLException: Authentication response is not success ; actual urn:oasis:names:tc:SAML:2.0:status:Requester / Invalid message signature
+	at org.jenkinsci.plugins.saml.SamlProfileWrapper.process(SamlProfileWrapper.java:59)
+	at org.jenkinsci.plugins.saml.SamlProfileWrapper.process(SamlProfileWrapper.java:35)
+	at org.jenkinsci.plugins.saml.OpenSAMLWrapper.get(OpenSAMLWrapper.java:64)
+	at org.jenkinsci.plugins.saml.SamlSecurityRealm.doFinishLogin(SamlSecurityRealm.java:311)
+	at java.lang.invoke.MethodHandle.invokeWithArguments(MethodHandle.java:627)
+	at org.kohsuke.stapler.Function$MethodFunction.invoke(Function.java:396)
+	at org.kohsuke.stapler.Function$InstanceFunction.invoke(Function.java:408)
+	at org.kohsuke.stapler.interceptor.RequirePOST$Processor.invoke(RequirePOST.java:77)
+	at org.kohsuke.stapler.PreInvokeInterceptedFunction.invoke(PreInvokeInterceptedFunction.java:26)
+	at org.kohsuke.stapler.Function.bindAndInvoke(Function.java:212)
+	at org.kohsuke.stapler.Function.bindAndInvokeAndServeResponse(Function.java:145)
+	at org.kohsuke.stapler.MetaClass$11.doDispatch(MetaClass.java:536)
+	at org.kohsuke.stapler.NameBasedDispatcher.dispatch(NameBasedDispatcher.java:58)
+	at org.kohsuke.stapler.Stapler.tryInvoke(Stapler.java:766)
+	at org.kohsuke.stapler.Stapler.invoke(Stapler.java:898)
+	at org.kohsuke.stapler.MetaClass$2.doDispatch(MetaClass.java:220)
+	at org.kohsuke.stapler.NameBasedDispatcher.dispatch(NameBasedDispatcher.java:58)
+	at org.kohsuke.stapler.Stapler.tryInvoke(Stapler.java:766)
+	at org.kohsuke.stapler.Stapler.invoke(Stapler.java:898)
+	at org.kohsuke.stapler.Stapler.invoke(Stapler.java:694)
+	at org.kohsuke.stapler.Stapler.service(Stapler.java:240)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:790)
+	at org.eclipse.jetty.servlet.ServletHolder.handle(ServletHolder.java:763)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1631)
+	at hudson.util.PluginServletFilter$1.doFilter(PluginServletFilter.java:154)
+	at jenkins.telemetry.impl.UserLanguages$AcceptLanguageFilter.doFilter(UserLanguages.java:129)
+	at hudson.util.PluginServletFilter$1.doFilter(PluginServletFilter.java:151)
+	at hudson.plugins.audit_trail.AuditTrailFilter.doFilter(AuditTrailFilter.java:113)
+	at hudson.util.PluginServletFilter$1.doFilter(PluginServletFilter.java:151)
+	at jenkins.security.ResourceDomainFilter.doFilter(ResourceDomainFilter.java:76)
+	at hudson.util.PluginServletFilter$1.doFilter(PluginServletFilter.java:151)
+	at org.jenkinsci.plugins.ssegateway.Endpoint$SSEListenChannelFilter.doFilter(Endpoint.java:248)
+	at hudson.util.PluginServletFilter$1.doFilter(PluginServletFilter.java:151)
+	at io.jenkins.blueocean.ResourceCacheControl.doFilter(ResourceCacheControl.java:134)
+	at hudson.util.PluginServletFilter$1.doFilter(PluginServletFilter.java:151)
+	at io.jenkins.blueocean.auth.jwt.impl.JwtAuthenticationFilter.doFilter(JwtAuthenticationFilter.java:61)
+	at hudson.util.PluginServletFilter$1.doFilter(PluginServletFilter.java:151)
+	at com.smartcodeltd.jenkinsci.plugin.assetbundler.filters.LessCSS.doFilter(LessCSS.java:47)
+	at hudson.util.PluginServletFilter$1.doFilter(PluginServletFilter.java:151)
+	at net.bull.javamelody.MonitoringFilter.doFilter(MonitoringFilter.java:239)
+	at net.bull.javamelody.MonitoringFilter.doFilter(MonitoringFilter.java:215)
+	at net.bull.javamelody.PluginMonitoringFilter.doFilter(PluginMonitoringFilter.java:88)
+	at org.jvnet.hudson.plugins.monitoring.HudsonMonitoringFilter.doFilter(HudsonMonitoringFilter.java:114)
+	at hudson.util.PluginServletFilter$1.doFilter(PluginServletFilter.java:151)
+	at javax.servlet.FilterChain$doFilter.call(Unknown Source)
+	at org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCall(CallSiteArray.java:48)
+	at javax.servlet.FilterChain$doFilter.call(Unknown Source)
+	at com.ceilfors.jenkins.plugins.jiratrigger.ExceptionLoggingFilter.doFilter(ExceptionLoggingFilter.groovy:29)
+	at hudson.util.PluginServletFilter$1.doFilter(PluginServletFilter.java:151)
+	at hudson.util.PluginServletFilter.doFilter(PluginServletFilter.java:157)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1618)
+	at org.jenkinsci.plugins.saml.SamlCrumbExclusion.process(SamlCrumbExclusion.java:26)
+	at hudson.security.csrf.CrumbFilter.doFilter(CrumbFilter.java:127)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1618)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:84)
+	at hudson.security.UnwrapSecurityExceptionFilter.doFilter(UnwrapSecurityExceptionFilter.java:51)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at jenkins.security.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:119)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at org.acegisecurity.providers.anonymous.AnonymousProcessingFilter.doFilter(AnonymousProcessingFilter.java:125)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at org.acegisecurity.ui.rememberme.RememberMeProcessingFilter.doFilter(RememberMeProcessingFilter.java:135)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at org.acegisecurity.ui.AbstractProcessingFilter.doFilter(AbstractProcessingFilter.java:271)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at jenkins.security.BasicHeaderProcessor.doFilter(BasicHeaderProcessor.java:93)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at org.acegisecurity.context.HttpSessionContextIntegrationFilter.doFilter(HttpSessionContextIntegrationFilter.java:249)
+	at hudson.security.HttpSessionContextIntegrationFilter2.doFilter(HttpSessionContextIntegrationFilter2.java:67)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at hudson.security.ChainedServletFilter.doFilter(ChainedServletFilter.java:90)
+	at hudson.security.HudsonFilter.doFilter(HudsonFilter.java:171)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1618)
+	at org.kohsuke.stapler.compression.CompressionFilter.doFilter(CompressionFilter.java:51)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1618)
+	at hudson.util.CharacterEncodingFilter.doFilter(CharacterEncodingFilter.java:82)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1618)
+	at org.kohsuke.stapler.DiagnosticThreadNameFilter.doFilter(DiagnosticThreadNameFilter.java:30)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1618)
+	at jenkins.security.SuspiciousRequestFilter.doFilter(SuspiciousRequestFilter.java:36)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1618)
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:549)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:143)
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:578)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:127)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:235)
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:1610)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:233)
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1369)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:188)
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:489)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:1580)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:186)
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1284)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:141)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:127)
+	at org.eclipse.jetty.server.Server.handle(Server.java:501)
+	at org.eclipse.jetty.server.HttpChannel.lambda$handle$1(HttpChannel.java:383)
+	at org.eclipse.jetty.server.HttpChannel.dispatch(HttpChannel.java:556)
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:375)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:272)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:311)
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:103)
+	at org.eclipse.jetty.io.ChannelEndPoint$1.run(ChannelEndPoint.java:104)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.runTask(EatWhatYouKill.java:336)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.doProduce(EatWhatYouKill.java:313)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.tryProduce(EatWhatYouKill.java:171)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.run(EatWhatYouKill.java:129)
+	at org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:375)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:806)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:938)
+	at java.lang.Thread.run(Thread.java:745)
+2020-09-16 13:35:44.503+0000 [id=171]	INFO	h.TcpSlaveAgentListener$ConnectionHandler#run: Accepted JNLP4-connect connection #1 from /10.101.0.215:30464
+2020-09-16 13:35:44.577+0000 [id=172]	INFO	h.TcpSlaveAgentListener$ConnectionHandler#run: Accepted JNLP4-connect connection #2 from /10.101.0.210:60920
+2020-09-16 13:35:44.669+0000 [id=173]	INFO	h.TcpSlaveAgentListener$ConnectionHandler#run: Accepted JNLP4-connect connection #3 from /10.101.0.216:64997
+2020-09-16 13:35:44.781+0000 [id=174]	INFO	hudson.model.AsyncAperiodicWork#lambda$doAperiodicRun$0: Started Update IdP Metadata from URL PeriodicWork
+2020-09-16 13:35:44.783+0000 [id=174]	INFO	hudson.model.AsyncAperiodicWork#lambda$doAperiodicRun$0: Finished Update IdP Metadata from URL PeriodicWork. 2 ms

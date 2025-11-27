@@ -1,0 +1,2174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reports>
+<report kind="binary" version="1.2">
+
+<test_info>
+  <library>libsample_c</library>
+  <version1>
+    <number>1.0</number>
+    <arch>x86_64</arch>
+    <gcc>9.2.0</gcc>
+  </version1>
+  <version2>
+    <number>2.0</number>
+    <arch>x86_64</arch>
+    <gcc>9.2.0</gcc>
+  </version2>
+</test_info>
+
+<test_results>
+  <headers>
+    <name>libsample.h</name>
+  </headers>
+  <libs>
+    <name>libsample.so</name>
+  </libs>
+  <symbols>102</symbols>
+  <types>60</types>
+  <verdict>incompatible</verdict>
+  <affected>43.6</affected>
+</test_results>
+
+<problem_summary>
+  <added_symbols>12</added_symbols>
+  <removed_symbols>2</removed_symbols>
+  <problems_with_types>
+    <high>8</high>
+    <medium>21</medium>
+    <low>27</low>
+    <safe>1</safe>
+  </problems_with_types>
+  <problems_with_symbols>
+    <high>14</high>
+    <medium>34</medium>
+    <low>28</low>
+    <safe>0</safe>
+  </problems_with_symbols>
+  <problems_with_constants>
+    <low>4</low>
+  </problems_with_constants>
+</problem_summary>
+
+
+<added_symbols>
+  <header name="libsample.h">
+    <library name="libsample.so">
+      <name>badVersioning@VERSION_2.0</name>
+      <name>changedVersion@VERSION_3.0</name>
+      <name>addedFunc2</name>
+      <name>delete</name>
+      <name>testCppKeywords2</name>
+      <name>goodVersioning@VERSION_2.0</name>
+      <name>addedFunc</name>
+      <name>testCppKeywords4</name>
+      <name>addedFunc3</name>
+      <name>testCppKeywords3</name>
+      <name>addedFunc4</name>
+      <name>operator</name>
+    </library>
+  </header>
+</added_symbols>
+
+<removed_symbols>
+  <header name="libsample.h">
+    <library name="libsample.so">
+      <name>changedVersion@VERSION_2.0</name>
+      <name>removedFunc</name>
+    </library>
+  </header>
+</removed_symbols>
+
+<problems_with_types severity="High">
+  <header name="libsample.h">
+    <type name="struct AddedFieldAndSize">
+      <problem id="DataType_Size_And_Stack">
+        <change old_size="256" new_size="320">Size of this type has been changed from @old_size to @new_size.</change>
+        <effect>Layout of parameter's stack of several functions has been changed and therefore parameters at higher positions in the stack may be incorrectly initialized by applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="addedFieldAndSize" param="param">
+          <comment>1st parameter @param is of type struct AddedFieldAndSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct RemovedFieldAndSize">
+      <problem id="DataType_Size_And_Stack">
+        <change old_size="320" new_size="256">Size of this type has been changed from @old_size to @new_size.</change>
+        <effect>Layout of parameter's stack of several functions has been changed and therefore parameters at higher positions in the stack may be incorrectly initialized by applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="removedFieldAndSize" param="param">
+          <comment>1st parameter @param is of type struct RemovedFieldAndSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="union UnionTypeAddedField">
+      <problem id="DataType_Size_And_Stack">
+        <change old_size="64" new_size="256">Size of this type has been changed from @old_size to @new_size.</change>
+        <effect>Layout of parameter's stack of several functions has been changed and therefore parameters at higher positions in the stack may be incorrectly initialized by applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="unionTypeAddedField" param="param">
+          <comment>1st parameter @param is of type union UnionTypeAddedField.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct ArrayFieldSize">
+      <problem id="DataType_Size_And_Stack">
+        <change old_size="160" new_size="224">Size of this type has been changed from @old_size to @new_size.</change>
+        <effect>Layout of parameter's stack of several functions has been changed and therefore parameters at higher positions in the stack may be incorrectly initialized by applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="arrayFieldSize" param="param">
+          <comment>1st parameter @param is of type struct ArrayFieldSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct UnnamedTypeSize">
+      <problem id="DataType_Size_And_Stack">
+        <change old_size="96" new_size="384">Size of this type has been changed from @old_size to @new_size.</change>
+        <effect>Layout of parameter's stack of several functions has been changed and therefore parameters at higher positions in the stack may be incorrectly initialized by applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="unnamedTypeSize" param="param">
+          <comment>1st parameter @param is of type struct UnnamedTypeSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct AnonTypedef">
+      <problem id="DataType_Size_And_Stack">
+        <change old_size="192" new_size="8384">Size of this type has been changed from @old_size to @new_size.</change>
+        <effect>Layout of parameter's stack of several functions has been changed and therefore parameters at higher positions in the stack may be incorrectly initialized by applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="anonTypedef" param="param">
+          <comment>1st parameter @param is of type struct AnonTypedef.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct ArrayFieldType">
+      <problem id="DataType_Size_And_Stack">
+        <change old_size="64" new_size="32">Size of this type has been changed from @old_size to @new_size.</change>
+        <effect>Layout of parameter's stack of several functions has been changed and therefore parameters at higher positions in the stack may be incorrectly initialized by applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="arrayFieldType" param="param">
+          <comment>1st parameter @param is of type struct ArrayFieldType.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct TypeSize">
+      <problem id="DataType_Size_And_Stack">
+        <change old_size="512" new_size="1152">Size of this type has been changed from @old_size to @new_size.</change>
+        <effect>Layout of parameter's stack of several functions has been changed and therefore parameters at higher positions in the stack may be incorrectly initialized by applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="testSize" param="param">
+          <comment>1st parameter @param is of type struct TypeSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+  </header>
+</problems_with_types>
+
+<problems_with_symbols severity="High">
+  <header name="libsample.h">
+    <library name="libsample.so">
+      <symbol name="callConv">
+        <problem id="Parameter_Type_From_Stack_To_Register">
+          <change target="k" param_pos="11th" old_value="int" old_size="32" new_value="double" new_size="64">Type of @param_pos parameter @target has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+          <effect>The parameter became passed in the register instead of the stack. This may result in crash or incorrect behavior of applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="changedDefaultVersion">
+        <problem id="Parameter_Type_And_Size">
+          <change target="param" param_pos="1st" old_value="int" old_size="32" new_value="long" new_size="64">Type of @param_pos parameter @target has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+          <effect>Layout of parameter's stack has been changed and therefore parameters at higher positions in the stack may be incorrectly initialized by applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="changedVersionToDefault">
+        <problem id="Parameter_Type_And_Size">
+          <change target="param" param_pos="1st" old_value="int" old_size="32" new_value="long" new_size="64">Type of @param_pos parameter @target has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+          <effect>Layout of parameter's stack has been changed and therefore parameters at higher positions in the stack may be incorrectly initialized by applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="changedVersionToNonDefault">
+        <problem id="Parameter_Type_And_Size">
+          <change target="param" param_pos="1st" old_value="int" old_size="32" new_value="long" new_size="64">Type of @param_pos parameter @target has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+          <effect>Layout of parameter's stack has been changed and therefore parameters at higher positions in the stack may be incorrectly initialized by applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterCallingConvention">
+        <problem id="Parameter_Type_And_Size">
+          <change target="p1" param_pos="1st" old_value="int" old_size="32" new_value="char" new_size="8">Type of @param_pos parameter @target has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+          <effect>Layout of parameter's stack has been changed and therefore parameters at higher positions in the stack may be incorrectly initialized by applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterPointerLevel">
+        <problem id="Parameter_PointerLevel_Increased">
+          <change target="param" param_pos="1st" old_value="1" new_value="2">The pointer level of @param_pos parameter @target has been increased from @old_value to @new_value.</change>
+          <effect>The library function may try to access unallocated memory by the dereferencing of old parameter value and therefore cause a crash of applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterPointerLevelAndSize">
+        <problem id="Parameter_PointerLevel_Increased">
+          <change target="param" param_pos="1st" old_value="0" new_value="1">The pointer level of @param_pos parameter @target has been increased from @old_value to @new_value.</change>
+          <effect>The library function may try to access unallocated memory by the dereferencing of old parameter value and therefore cause a crash of applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterTypeAndSize">
+        <problem id="Parameter_Type_And_Size">
+          <change target="param" param_pos="1st" old_value="int" old_size="32" new_value="long long" new_size="64">Type of @param_pos parameter @target has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+          <effect>Layout of parameter's stack has been changed and therefore parameters at higher positions in the stack may be incorrectly initialized by applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterTypeAndSizeBecameNonConst">
+        <problem id="Parameter_Type_And_Size">
+          <change target="param" param_pos="1st" old_value="int*const" old_size="64" new_value="long double" new_size="128">Type of @param_pos parameter @target has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+          <effect>Layout of parameter's stack has been changed and therefore parameters at higher positions in the stack may be incorrectly initialized by applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeChangeFromIntToStruct">
+        <problem id="Return_Type_And_Register_Became_Hidden_Parameter">
+          <change old_value="int" old_size="32" new_value="struct SomeStruct" new_size="256">Type of return value has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+          <effect>1) The return value became passed in different register as the hidden first argument (address of the space on the stack provided by the caller) and therefore distribution of parameters on the available registers and stack will be changed. All the parameters will be incorrectly initialized by applications.2) Applications will read the wrong memory block instead of the return value.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeChangeFromStructToInt">
+        <problem id="Return_Type_And_Register_Was_Hidden_Parameter">
+          <change old_value="struct SomeStruct" old_size="256" new_value="int" new_size="32">Type of return value has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+          <effect>1) The return value became passed in register instead of the hidden first argument, that is passed in different register, and therefore distribution of parameters on the available registers and stack will be changed. All the parameters will be incorrectly initialized by applications.2) Applications will read the wrong memory block instead of the return value.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeChangeFromStructToIntWithNoParams">
+        <problem id="Return_Type_And_Register_Was_Hidden_Parameter">
+          <change old_value="struct SomeStruct" old_size="256" new_value="int" new_size="32">Type of return value has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+          <effect>1) The return value became passed in register instead of the hidden first argument, that is passed in different register, and therefore distribution of parameters on the available registers and stack will be changed. All the parameters will be incorrectly initialized by applications.2) Applications will read the wrong memory block instead of the return value.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeChangeFromStructToVoid">
+        <problem id="Return_Type_Became_Void_And_Register">
+          <change old_value="struct SomeStruct" old_size="256">Type of return value has been changed from @old_value (@old_size) to void.</change>
+          <effect>1) Applications will read the wrong memory block instead of the return value.2) Distribution of parameters on the available registers and stack has been changed because the hidden first argument, that is used to pass the return value, has been removed. All the parameters will be incorrectly initialized by applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeChangeFromVoidToStruct">
+        <problem id="Return_Type_From_Void_And_Register">
+          <change new_value="struct SomeStruct" new_size="256">Type of return value has been changed from void to @new_value (@new_size).</change>
+          <effect>Distribution of parameters on the available registers and stack has been changed because the return value became passed in memory as the hidden first argument, that is used to pass the return value. All the parameters will be incorrectly initialized by applications.</effect>
+        </problem>
+      </symbol>
+    </library>
+  </header>
+</problems_with_symbols>
+
+<problems_with_types severity="Medium">
+  <header name="libsample.h">
+    <type name="struct SomeStruct3">
+      <problem id="Field_Type_And_Size_And_Type_Size">
+        <change target="b" old_value="int" old_size="32" new_value="long double" new_size="128">Type of field @target has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+        <effect>1) This field may be incorrectly initialized or accessed by applications.2) Size of the inclusive type has been changed.</effect>
+      </problem>
+      <affected>
+        <symbol name="returnType3" param="retval">
+          <comment>Return value is of type struct SomeStruct3.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="TYPEDEF_TYPE">
+      <problem id="Typedef_BaseType_Format">
+        <change old_value="float" new_value="int">Base type has been changed from @old_value to @new_value of different format.</change>
+        <effect>The fields or parameters of such data type may be incorrectly initialized or accessed by old client applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="parameterTypedefChange" param="param">
+          <comment>1st parameter @param is of type TYPEDEF_TYPE.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct FieldPointerLevelAndSize">
+      <problem id="Field_PointerLevel_Increased">
+        <change target="j" old_value="0" new_value="1">The pointer level of field @target has been increased from @old_value to @new_value.</change>
+        <effect>The library functions may try to access unallocated memory by the dereferencing of old field value and therefore cause a crash of applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="fieldPointerLevelAndSize" param="param">
+          <comment>1st parameter @param is of type struct FieldPointerLevelAndSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct DType">
+      <problem id="DataType_Type">
+        <change old_value="struct" new_value="union">Type of this type has been changed from @old_value to @new_value.</change>
+        <effect>The fields or parameters of such data type may be incorrectly initialized or accessed by old client applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="parameterTypeFormat2" param="param">
+          <comment>1st parameter @param is of type struct DType.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct UnnamedTypeSize">
+      <problem id="Private_Field_Size_And_Layout_And_Type_Size">
+        <change target="unnamed0" old_size="32" new_size="128">Size of field @target has been changed from @old_size to @new_size.</change>
+        <effect>1) Size of the inclusive type has been changed.2) Previous accesses of applications and library functions to the fields at higher positions of the structure definition may be broken.</effect>
+      </problem>
+      <affected>
+        <symbol name="unnamedTypeSize" param="param">
+          <comment>1st parameter @param is of type struct UnnamedTypeSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct SomeStruct2">
+      <problem id="Removed_Field_And_Size">
+        <change target="b">Field @target has been removed from this type.</change>
+        <effect>1) Applications will access incorrect memory when attempting to access this field.2) Size of the inclusive type has been changed.</effect>
+      </problem>
+      <affected>
+        <symbol name="returnType2" param="retval">
+          <comment>Return value is of type struct SomeStruct2.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="TYPEDEF_TYPE_2">
+      <problem id="Typedef_BaseType_Format">
+        <change old_value="float" new_value="int">Base type has been changed from @old_value to @new_value of different format.</change>
+        <effect>The fields or parameters of such data type may be incorrectly initialized or accessed by old client applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="fieldBaseTypedefChange" param="param" field="param.m">
+          <comment>Field @field in 1st parameter @param is of type TYPEDEF_TYPE_2.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="union UnionTypeAddedField">
+      <problem id="Added_Union_Field_And_Size">
+        <change target="new_field">Field @target has been added to this type.</change>
+        <effect>Size of the union has been changed.NOTE: this field should be accessed only from the new library functions, otherwise it may result in crash or incorrect behavior of applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="unionTypeAddedField" param="param">
+          <comment>1st parameter @param is of type union UnionTypeAddedField.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct StructToUnion">
+      <problem id="DataType_Type">
+        <change old_value="struct" new_value="union">Type of this type has been changed from @old_value to @new_value.</change>
+        <effect>The fields or parameters of such data type may be incorrectly initialized or accessed by old client applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="structToUnion" param="p">
+          <comment>1st parameter @param (pointer) has base type struct StructToUnion.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="enum EnumMiddleMemberRemoved">
+      <problem id="Enum_Member_Value">
+        <change target="MEM1" old_value="1" new_value="0">Value of member @target has been changed from @old_value to @new_value.</change>
+        <effect>Applications may execute a wrong branch of code in the library and therefore change the behavior.</effect>
+      </problem>
+      <problem id="Enum_Member_Value">
+        <change target="MEM2" old_value="2" new_value="1">Value of member @target has been changed from @old_value to @new_value.</change>
+        <effect>Applications may execute a wrong branch of code in the library and therefore change the behavior.</effect>
+      </problem>
+      <affected>
+        <symbol name="enumMiddleMemberRemoved" param="param">
+          <comment>1st parameter @param is of type enum EnumMiddleMemberRemoved.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct FieldTypeFormat">
+      <problem id="Field_Type_Format">
+        <change target="j" old_value="struct DType1" new_value="struct DType2">Type of field @target has been changed from @old_value to @new_value of different format.</change>
+        <effect>This field may be incorrectly initialized or accessed by applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="fieldTypeFormat" param="param">
+          <comment>1st parameter @param is of type struct FieldTypeFormat.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct FieldType">
+      <problem id="Field_Type_Format">
+        <change target="i" old_value="int" new_value="float">Type of field @target has been changed from @old_value to @new_value of different format.</change>
+        <effect>This field may be incorrectly initialized or accessed by applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="fieldType" param="param">
+          <comment>1st parameter @param is of type struct FieldType.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="UnnamedTypeSize::anon-union-libsample.h-320">
+      <problem id="Field_Type_And_Size_And_Type_Size">
+        <change target="b" old_value="int" old_size="32" new_value="long double" new_size="128">Type of field @target has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+        <effect>1) This field may be incorrectly initialized or accessed by applications.2) Size of the inclusive type has been changed.</effect>
+      </problem>
+      <affected>
+        <symbol name="unnamedTypeSize" param="param" field="param.unnamed0">
+          <comment>Field @field in 1st parameter @param is of type UnnamedTypeSize::anon-union-libsample.h-320.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct RemovedMiddleField">
+      <problem id="Removed_Field">
+        <change target="removed_middle_member">Field @target has been removed from this type.</change>
+        <effect>Applications will access incorrect memory when attempting to access this field.</effect>
+      </problem>
+      <affected>
+        <symbol name="removedMiddleField" param="param">
+          <comment>1st parameter @param is of type struct RemovedMiddleField.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct FieldPointerLevel">
+      <problem id="Field_PointerLevel_Increased">
+        <change target="j" old_value="1" new_value="2">The pointer level of field @target has been increased from @old_value to @new_value.</change>
+        <effect>The library functions may try to access unallocated memory by the dereferencing of old field value and therefore cause a crash of applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="fieldPointerLevel" param="param">
+          <comment>1st parameter @param is of type struct FieldPointerLevel.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct FieldSizePadded">
+      <problem id="Field_Type_And_Size">
+        <change target="changed_field" old_value="char" old_size="8" new_value="int" new_size="32">Type of field @target has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+        <effect>This field may be incorrectly initialized or accessed by applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="fieldSizePadded" param="param">
+          <comment>1st parameter @param is of type struct FieldSizePadded.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="enum EnumMemberValue">
+      <problem id="Enum_Member_Value">
+        <change target="MEMBER1" old_value="1" new_value="2">Value of member @target has been changed from @old_value to @new_value.</change>
+        <effect>Applications may execute a wrong branch of code in the library and therefore change the behavior.</effect>
+      </problem>
+      <problem id="Enum_Member_Value">
+        <change target="MEMBER2" old_value="2" new_value="1">Value of member @target has been changed from @old_value to @new_value.</change>
+        <effect>Applications may execute a wrong branch of code in the library and therefore change the behavior.</effect>
+      </problem>
+      <affected>
+        <symbol name="enumMemberValue" param="param">
+          <comment>1st parameter @param is of type enum EnumMemberValue.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct RemovedFieldAndSize">
+      <problem id="Removed_Field_And_Size">
+        <change target="removed_member1">Field @target has been removed from this type.</change>
+        <effect>1) Applications will access incorrect memory when attempting to access this field.2) Size of the inclusive type has been changed.</effect>
+      </problem>
+      <problem id="Removed_Field">
+        <change target="removed_member2">Field @target has been removed from this type.</change>
+        <effect>Applications will access incorrect memory when attempting to access this field.</effect>
+      </problem>
+      <affected>
+        <symbol name="removedFieldAndSize" param="param">
+          <comment>1st parameter @param is of type struct RemovedFieldAndSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+  </header>
+</problems_with_types>
+
+<problems_with_symbols severity="Medium">
+  <header name="libsample.h">
+    <library name="libsample.so">
+      <symbol name="addedParameter">
+        <problem id="Added_Parameter">
+          <change target="added_param" param_type="int">Parameter @target of type @param_type has been added to the calling stack.</change>
+          <effect>This parameter will not be initialized by old clients.</effect>
+        </problem>
+        <problem id="Added_Parameter">
+          <change target="added_param2" param_type="int">Parameter @target of type @param_type has been added to the calling stack.</change>
+          <effect>This parameter will not be initialized by old clients.</effect>
+        </problem>
+      </symbol>
+      <symbol name="badVersioning@VERSION_1.0">
+        <problem id="Return_Type_And_Register">
+          <change old_value="int" new_value="float">Type of return value has been changed from @old_value to @new_value.</change>
+          <effect>The return value became passed in different register. Applications will read the wrong memory block instead of the return value. Also, distribution of parameters on the available registers and stack may be changed.</effect>
+        </problem>
+      </symbol>
+      <symbol name="callConv2">
+        <problem id="Parameter_Type_And_Register">
+          <change target="j" param_pos="2nd" old_value="int" old_size="32" new_value="double" new_size="64">Type of @param_pos parameter @target has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+          <effect>The parameter became passed in different register. Applications will read the wrong memory block instead of the parameter value. Also, distribution of other parameters on the available registers and stack may be changed.</effect>
+        </problem>
+      </symbol>
+      <symbol name="callConv3">
+        <problem id="Parameter_Type_And_Register">
+          <change target="j" param_pos="2nd" old_value="int" old_size="32" new_value="double" new_size="64">Type of @param_pos parameter @target has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+          <effect>The parameter became passed in different register. Applications will read the wrong memory block instead of the parameter value. Also, distribution of other parameters on the available registers and stack may be changed.</effect>
+        </problem>
+      </symbol>
+      <symbol name="callConv4">
+        <problem id="Parameter_Type_And_Register">
+          <change target="j" param_pos="2nd" old_value="int" old_size="32" new_value="double" new_size="64">Type of @param_pos parameter @target has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+          <effect>The parameter became passed in different register. Applications will read the wrong memory block instead of the parameter value. Also, distribution of other parameters on the available registers and stack may be changed.</effect>
+        </problem>
+      </symbol>
+      <symbol name="callConv5">
+        <problem id="Parameter_Type_And_Register">
+          <change target="j" param_pos="2nd" old_value="int" old_size="32" new_value="double" new_size="64">Type of @param_pos parameter @target has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+          <effect>The parameter became passed in different register. Applications will read the wrong memory block instead of the parameter value. Also, distribution of other parameters on the available registers and stack may be changed.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalDataBecameConst">
+        <problem id="Global_Data_Became_Const">
+          <change>This global data became const.</change>
+          <effect>Any attempts of old applications to change this global data may result in crash.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalDataBecameNonConst">
+        <problem id="Global_Data_Became_Non_Const">
+          <change>This global data became non-const.</change>
+          <effect>This data will be copied to applications at compile time. Any attempts to change this global data by library functions may result in crash of applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalDataBecameNonConst_Typedef">
+        <problem id="Global_Data_Became_Non_Const">
+          <change>This global data became non-const.</change>
+          <effect>This data will be copied to applications at compile time. Any attempts to change this global data by library functions may result in crash of applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalDataSize">
+        <problem id="Global_Data_Size">
+          <change old_size="32" new_size="64">Size of this global data has been changed from @old_size to @new_size.</change>
+          <effect>Applications will obtain a different value and execution may change.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalDataType">
+        <problem id="Global_Data_Type_Format">
+          <change old_value="int" new_value="float">Type of this global data has been changed from @old_value to @new_value of different format.</change>
+          <effect>This global data may be incorrectly accessed by applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalDataTypeAndSize">
+        <problem id="Global_Data_Size">
+          <change old_size="32" new_size="16">Size of this global data has been changed from @old_size to @new_size.</change>
+          <effect>Applications will obtain a different value and execution may change.</effect>
+        </problem>
+        <problem id="Global_Data_Type_And_Size">
+          <change old_value="int" old_size="32" new_value="short" new_size="16">Type of this global data has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+          <effect>Applications will obtain a different value and execution may change.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalStructDataBecameNonConst">
+        <problem id="Global_Data_Became_Non_Const">
+          <change>This global data became non-const.</change>
+          <effect>This data will be copied to applications at compile time. Any attempts to change this global data by library functions may result in crash of applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterBaseTypeChange">
+        <problem id="Parameter_BaseType_And_Size">
+          <change target="param" param_pos="1st" old_value="int" old_size="32" new_value="long long" new_size="64">Base type of @param_pos parameter @target has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+          <effect>This parameter may be incorrectly initialized by applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterBecameNonConst">
+        <problem id="Parameter_Became_Non_Const">
+          <change target="param" param_pos="1st" old_value="int const*" new_value="int*">Type of @param_pos parameter @target has been changed from @old_value to @new_value (became non-const).</change>
+          <effect target="param">This function may change parameter @target, but it will be treated as const by old client applications. This may result in crash or incorrect behavior of applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterBecameNonConstNonVolatile">
+        <problem id="Parameter_Became_Non_Const">
+          <change target="param" param_pos="1st" old_value="int const volatile*" new_value="int*">Type of @param_pos parameter @target has been changed from @old_value to @new_value (became non-const).</change>
+          <effect target="param">This function may change parameter @target, but it will be treated as const by old client applications. This may result in crash or incorrect behavior of applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterBecameRegister">
+        <problem id="Parameter_Became_Register">
+          <change target="arg">Added register modifier to the parameter @target.</change>
+          <effect>The parameter may be passed in a register instead of the calling stack.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterCallingConvention">
+        <problem id="Return_Type_And_Register">
+          <change old_value="int" new_value="float">Type of return value has been changed from @old_value to @new_value.</change>
+          <effect>The return value became passed in different register. Applications will read the wrong memory block instead of the return value. Also, distribution of parameters on the available registers and stack may be changed.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterType">
+        <problem id="Parameter_Type_And_Register">
+          <change target="param" param_pos="1st" old_value="int" old_size="32" new_value="float" new_size="32">Type of @param_pos parameter @target has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+          <effect>The parameter became passed in different register. Applications will read the wrong memory block instead of the parameter value. Also, distribution of other parameters on the available registers and stack may be changed.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterTypeAndSizeBecameNonConst">
+        <problem id="Parameter_Became_Non_Const">
+          <change target="param" param_pos="1st" old_value="int*const" new_value="long double">Type of @param_pos parameter @target has been changed from @old_value to @new_value (became non-const).</change>
+          <effect target="param">This function may change parameter @target, but it will be treated as const by old client applications. This may result in crash or incorrect behavior of applications.</effect>
+        </problem>
+        <problem id="Parameter_PointerLevel_Decreased">
+          <change target="param" param_pos="1st" old_value="1" new_value="0">The pointer level of @param_pos parameter @target has been decreased from @old_value to @new_value.</change>
+          <effect>The library function will treat the parameter as the lower-dimension array and will not read all elements. This may change the behavior of applications.NOTE: if this is out-parameter then this change may cause a crash of applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterTypeFormat">
+        <problem id="Parameter_Type_Format">
+          <change target="param" old_value="struct DType1" new_value="struct DType2">Type of parameter @target has been changed from @old_value to @new_value of different format.</change>
+          <effect>This parameter may be incorrectly initialized by applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterTypeFormat2">
+        <problem id="Parameter_Type_And_Register">
+          <change target="param" param_pos="1st" old_value="struct DType" old_size="128" new_value="union DType" new_size="128">Type of @param_pos parameter @target has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+          <effect>The parameter became passed in different register. Applications will read the wrong memory block instead of the parameter value. Also, distribution of other parameters on the available registers and stack may be changed.</effect>
+        </problem>
+      </symbol>
+      <symbol name="removedParameter">
+        <problem id="Removed_Parameter">
+          <change target="removed_param" param_pos="2nd">@param_pos parameter @target has been removed from the calling stack.</change>
+          <effect>This parameter will be ignored by the function.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnBaseTypeChange">
+        <problem id="Return_BaseType_And_Size">
+          <change old_value="int" old_size="32" new_value="long long" new_size="64">Base type of return value has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+          <effect>Applications will obtain a different return value and execution may change.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnType">
+        <problem id="Return_Type_And_Register">
+          <change old_value="int" new_value="float">Type of return value has been changed from @old_value to @new_value.</change>
+          <effect>The return value became passed in different register. Applications will read the wrong memory block instead of the return value. Also, distribution of parameters on the available registers and stack may be changed.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeAndSize">
+        <problem id="Return_Type_And_Size">
+          <change old_value="int" old_size="32" new_value="long long" new_size="64">Type of return value has been changed from @old_value (@old_size) to @new_value (@new_size).</change>
+          <effect>Applications will obtain a different return value and execution may change.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeBecameConst">
+        <problem id="Return_Type_Became_Const">
+          <change old_value="char*" new_value="char const*">Type of return value became const (has been changed from @old_value to @new_value).</change>
+          <effect>The return value will be treated as non-const by old client applications. This may result in crash or incorrect behavior of applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeBecameConst2">
+        <problem id="Return_Type_Became_Const">
+          <change old_value="char*" new_value="char*const">Type of return value became const (has been changed from @old_value to @new_value).</change>
+          <effect>The return value will be treated as non-const by old client applications. This may result in crash or incorrect behavior of applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeBecameConst3">
+        <problem id="Return_Type_Became_Const">
+          <change old_value="char*" new_value="char const*const">Type of return value became const (has been changed from @old_value to @new_value).</change>
+          <effect>The return value will be treated as non-const by old client applications. This may result in crash or incorrect behavior of applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeChangeToVoid">
+        <problem id="Return_Type_Became_Void">
+          <change old_value="int" old_size="32">Type of return value has been changed from @old_value (@old_size) to void.</change>
+          <effect>Applications will not obtain a return value and execution may change.</effect>
+        </problem>
+      </symbol>
+      <symbol name="testCppKeywords1">
+        <problem id="Removed_Parameter">
+          <change target="new" param_pos="3rd">@param_pos parameter @target has been removed from the calling stack.</change>
+          <effect>This parameter will be ignored by the function.</effect>
+        </problem>
+      </symbol>
+    </library>
+  </header>
+</problems_with_symbols>
+
+<problems_with_types severity="Low">
+  <header name="libsample.h">
+    <type name="struct AddedFieldAndSize">
+      <problem id="Added_Field_And_Size">
+        <change target="added_member1">Field @target has been added to this type.</change>
+        <effect>1) This field will not be initialized by old clients.2) Size of the inclusive type has been changed.
+        NOTE: this field should be accessed only from the new library functions, otherwise it may result in crash or incorrect behavior of applications.</effect>
+      </problem>
+      <problem id="Added_Field">
+        <change target="added_member2">Field @target has been added to this type.</change>
+        <effect>This field will not be initialized by old clients.NOTE: this field should be accessed only from the new library functions, otherwise it may result in crash or incorrect behavior of applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="addedFieldAndSize" param="param">
+          <comment>1st parameter @param is of type struct AddedFieldAndSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct SomeStruct2">
+      <problem id="DataType_Size">
+        <change old_size="64" new_size="32">Size of this type has been changed from @old_size to @new_size.</change>
+        <effect>The fields or parameters of such data type may be incorrectly initialized or accessed by old client applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="returnType2" param="retval">
+          <comment>Return value is of type struct SomeStruct2.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct AddedMiddleFieldAndSize">
+      <problem id="Added_Field">
+        <change target="added_middle_member">Field @target has been added to this type.</change>
+        <effect>This field will not be initialized by old clients.NOTE: this field should be accessed only from the new library functions, otherwise it may result in crash or incorrect behavior of applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="addedMiddleFieldAndSize" param="param">
+          <comment>1st parameter @param is of type struct AddedMiddleFieldAndSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct GlobalDataSize">
+      <problem id="Added_Field_And_Size">
+        <change target="b">Field @target has been added to this type.</change>
+        <effect>1) This field will not be initialized by old clients.2) Size of the inclusive type has been changed.
+        NOTE: this field should be accessed only from the new library functions, otherwise it may result in crash or incorrect behavior of applications.</effect>
+      </problem>
+      <problem id="DataType_Size">
+        <change old_size="32" new_size="64">Size of this type has been changed from @old_size to @new_size.</change>
+        <effect>The fields or parameters of such data type may be incorrectly initialized or accessed by old client applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="globalDataSize" param="retval">
+          <comment>Return value is of type struct GlobalDataSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct FieldPointerLevelAndSize">
+      <problem id="Field_Type">
+        <change target="j" old_value="long long" new_value="long long*">Type of field @target has been changed from @old_value to @new_value.</change>
+        <effect>Replacement of the field data type may indicate a change in the semantic meaning of the field.</effect>
+      </problem>
+      <affected>
+        <symbol name="fieldPointerLevelAndSize" param="param">
+          <comment>1st parameter @param is of type struct FieldPointerLevelAndSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct AnonTypedef">
+      <problem id="Added_Private_Field_And_Size">
+        <change target="unnamed0">Field @target has been added to this type.</change>
+        <effect>Size of the inclusive type has been changed.NOTE: this field should be accessed only from the new library functions, otherwise it may result in crash or incorrect behavior of applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="anonTypedef" param="param">
+          <comment>1st parameter @param is of type struct AnonTypedef.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct RenamedField">
+      <problem id="Renamed_Field">
+        <change target="i" new_value="renamed_member">Field @target has been renamed to @new_value.</change>
+        <effect>Renaming of a field in data type may indicate a change in the semantic meaning of the field.</effect>
+      </problem>
+      <affected>
+        <symbol name="renamedField" param="param">
+          <comment>1st parameter @param is of type struct RenamedField.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct TypeSize">
+      <problem id="Field_Type">
+        <change target="i" old_value="long long[5]" new_value="long long[15]">Type of field @target has been changed from @old_value to @new_value.</change>
+        <effect>Replacement of the field data type may indicate a change in the semantic meaning of the field.</effect>
+      </problem>
+      <problem id="Field_Type">
+        <change target="j" old_value="long" new_value="long long">Type of field @target has been changed from @old_value to @new_value.</change>
+        <effect>Replacement of the field data type may indicate a change in the semantic meaning of the field.</effect>
+      </problem>
+      <affected>
+        <symbol name="testSize" param="param">
+          <comment>1st parameter @param is of type struct TypeSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct SomeStruct3">
+      <problem id="DataType_Size">
+        <change old_size="64" new_size="256">Size of this type has been changed from @old_size to @new_size.</change>
+        <effect>The fields or parameters of such data type may be incorrectly initialized or accessed by old client applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="returnType3" param="retval">
+          <comment>Return value is of type struct SomeStruct3.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="enum EnumMemberRemoved">
+      <problem id="Enum_Member_Removed">
+        <change target="MEMBER_REMOVED">The member @target has been removed.</change>
+        <effect>This may result in crash or incorrect behavior of applications because the library may not handle removed member anymore.</effect>
+      </problem>
+      <affected>
+        <symbol name="enumMemberRemoved" param="param">
+          <comment>1st parameter @param is of type enum EnumMemberRemoved.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct FieldTypeAndSize">
+      <problem id="Field_Type">
+        <change target="j" old_value="long" new_value="long long">Type of field @target has been changed from @old_value to @new_value.</change>
+        <effect>Replacement of the field data type may indicate a change in the semantic meaning of the field.</effect>
+      </problem>
+      <affected>
+        <symbol name="fieldTypeAndSize" param="param">
+          <comment>1st parameter @param is of type struct FieldTypeAndSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct FieldPointerLevel">
+      <problem id="Field_Type">
+        <change target="j" old_value="long*" new_value="long**">Type of field @target has been changed from @old_value to @new_value.</change>
+        <effect>Replacement of the field data type may indicate a change in the semantic meaning of the field.</effect>
+      </problem>
+      <affected>
+        <symbol name="fieldPointerLevel" param="param">
+          <comment>1st parameter @param is of type struct FieldPointerLevel.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="union RenamedUnionField">
+      <problem id="Renamed_Field">
+        <change target="renamed_from" new_value="renamed_to">Field @target has been renamed to @new_value.</change>
+        <effect>Renaming of a field in data type may indicate a change in the semantic meaning of the field.</effect>
+      </problem>
+      <affected>
+        <symbol name="renamedUnionField" param="param">
+          <comment>1st parameter @param is of type union RenamedUnionField.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="enum EnumMemberName">
+      <problem id="Enum_Member_Name">
+        <change target="1" old_value="BRANCH1" new_value="BRANCH_FIRST">Name of member with value @target has been changed from @old_value to @new_value.</change>
+        <effect>Applications may execute a wrong branch of code in the library and therefore change the behavior.</effect>
+      </problem>
+      <problem id="Enum_Member_Name">
+        <change target="2" old_value="BRANCH2" new_value="BRANCH_SECOND">Name of member with value @target has been changed from @old_value to @new_value.</change>
+        <effect>Applications may execute a wrong branch of code in the library and therefore change the behavior.</effect>
+      </problem>
+      <affected>
+        <symbol name="enumMemberName" param="param">
+          <comment>1st parameter @param is of type enum EnumMemberName.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="UnnamedTypeSize::anon-union-libsample.h-320">
+      <problem id="DataType_Size">
+        <change old_size="32" new_size="128">Size of this type has been changed from @old_size to @new_size.</change>
+        <effect>The fields or parameters of such data type may be incorrectly initialized or accessed by old client applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="unnamedTypeSize" param="param" field="param.unnamed0">
+          <comment>Field @field in 1st parameter @param is of type UnnamedTypeSize::anon-union-libsample.h-320.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct ArrayFieldSize">
+      <problem id="Field_Type">
+        <change target="i" old_value="int[5]" new_value="int[7]">Type of field @target has been changed from @old_value to @new_value.</change>
+        <effect>Replacement of the field data type may indicate a change in the semantic meaning of the field.</effect>
+      </problem>
+      <affected>
+        <symbol name="arrayFieldSize" param="param">
+          <comment>1st parameter @param is of type struct ArrayFieldSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct AddedMiddleField">
+      <problem id="Added_Field">
+        <change target="added_field">Field @target has been added to this type.</change>
+        <effect>This field will not be initialized by old clients.NOTE: this field should be accessed only from the new library functions, otherwise it may result in crash or incorrect behavior of applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="addedMiddleField" param="param">
+          <comment>1st parameter @param is of type struct AddedMiddleField.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="enum EnumMiddleMemberRemoved">
+      <problem id="Enum_Member_Removed">
+        <change target="MEM_REMOVED">The member @target has been removed.</change>
+        <effect>This may result in crash or incorrect behavior of applications because the library may not handle removed member anymore.</effect>
+      </problem>
+      <affected>
+        <symbol name="enumMiddleMemberRemoved" param="param">
+          <comment>1st parameter @param is of type enum EnumMiddleMemberRemoved.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct ArrayFieldType">
+      <problem id="Field_Type">
+        <change target="i" old_value="int[1]" new_value="int[]">Type of field @target has been changed from @old_value to @new_value.</change>
+        <effect>Replacement of the field data type may indicate a change in the semantic meaning of the field.</effect>
+      </problem>
+      <affected>
+        <symbol name="arrayFieldType" param="param">
+          <comment>1st parameter @param is of type struct ArrayFieldType.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct FieldBaseType">
+      <problem id="Field_BaseType">
+        <change target="j" old_value="long" new_value="long long">Base type of field @target has been changed from @old_value to @new_value.</change>
+        <effect>Replacement of field base type may indicate a change in the semantic meaning of the field.</effect>
+      </problem>
+      <affected>
+        <symbol name="fieldBaseType" param="param">
+          <comment>1st parameter @param is of type struct FieldBaseType.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="PARAM_TYPEDEF">
+      <problem id="Typedef_BaseType">
+        <change old_value="int*" new_value="int const*">Base type has been changed from @old_value to @new_value.</change>
+        <effect>Replacement of the base data type may indicate a change in its semantic meaning.</effect>
+      </problem>
+      <affected>
+        <symbol name="parameterBaseTypedefChange" param="param">
+          <comment>1st parameter @param (pointer) is of type PARAM_TYPEDEF.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct UsedReserved">
+      <problem id="Used_Reserved_Field">
+        <change target="reserved0" new_value="f0">Reserved field @target has been replaced by @new_value.</change>
+        <effect>This field will not be initialized by old clients.</effect>
+      </problem>
+      <problem id="Used_Reserved_Field">
+        <change target="reserved1" new_value="f1">Reserved field @target has been replaced by @new_value.</change>
+        <effect>This field will not be initialized by old clients.</effect>
+      </problem>
+      <affected>
+        <symbol name="usedReserved" param="p">
+          <comment>1st parameter @param is of type struct UsedReserved.</comment>
+        </symbol>
+      </affected>
+    </type>
+  </header>
+</problems_with_types>
+
+<problems_with_symbols severity="Low">
+  <header name="libsample.h">
+    <library name="libsample.so">
+      <symbol name="globalDataBecameConst">
+        <problem id="Global_Data_Type">
+          <change old_value="int" new_value="int const">Type of this global data has been changed from @old_value to @new_value.</change>
+          <effect>Replacement of data type may indicate a change in semantic meaning.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalDataBecameNonConst">
+        <problem id="Global_Data_Type">
+          <change old_value="int const" new_value="int">Type of this global data has been changed from @old_value to @new_value.</change>
+          <effect>Replacement of data type may indicate a change in semantic meaning.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalDataBecameNonConst_Typedef">
+        <problem id="Global_Data_Type">
+          <change old_value="CONST_INT" new_value="int">Type of this global data has been changed from @old_value to @new_value.</change>
+          <effect>Replacement of data type may indicate a change in semantic meaning.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalDataValue_Char">
+        <problem id="Global_Data_Value_Changed">
+          <change old_value="&#39;o&#39;" new_value="&#39;N&#39;">The initial value of this global data has been changed from @old_value to @new_value.</change>
+          <effect>Applications will use an old value of this data instead of the new one. This may cause incorrect behavior of applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalDataValue_Integer">
+        <problem id="Global_Data_Value_Changed">
+          <change old_value="10" new_value="15">The initial value of this global data has been changed from @old_value to @new_value.</change>
+          <effect>Applications will use an old value of this data instead of the new one. This may cause incorrect behavior of applications.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalStructDataBecameNonConst">
+        <problem id="Global_Data_Type">
+          <change old_value="struct GlobalDataType const" new_value="struct GlobalDataType">Type of this global data has been changed from @old_value to @new_value.</change>
+          <effect>Replacement of data type may indicate a change in semantic meaning.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterBecameNonConst">
+        <problem id="Parameter_Type">
+          <change target="param" param_pos="1st" old_value="int const*" new_value="int*">Type of @param_pos parameter @target has been changed from @old_value to @new_value.</change>
+          <effect>Replacement of parameter data type may indicate a change in its semantic meaning.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterBecameNonConstNonVolatile">
+        <problem id="Parameter_Became_Non_Volatile">
+          <change target="param">Parameter @target became non-volatile.</change>
+          <effect>Old client applications will pass volatile object to the function that may be optimized by the compiler and cannot handle volatile objects.</effect>
+        </problem>
+        <problem id="Parameter_Type">
+          <change target="param" param_pos="1st" old_value="int const volatile*" new_value="int*">Type of @param_pos parameter @target has been changed from @old_value to @new_value.</change>
+          <effect>Replacement of parameter data type may indicate a change in its semantic meaning.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterNonVaList">
+        <problem id="Parameter_Became_Non_VaList">
+          <change param_pos="2nd" new_value="int">Type of @param_pos parameter has been changed from ... (va_list) to @new_value.</change>
+          <effect>This parameter may not be initialized by old clients.</effect>
+        </problem>
+        <problem id="Renamed_Parameter">
+          <change target="param" param_pos="1st" new_value="param1">@param_pos parameter @target has been renamed to @new_value.</change>
+          <effect>Renaming of a parameter may indicate a change in its semantic meaning.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterPointerLevel">
+        <problem id="Parameter_Type">
+          <change target="param" param_pos="1st" old_value="int*" new_value="int**">Type of @param_pos parameter @target has been changed from @old_value to @new_value.</change>
+          <effect>Replacement of parameter data type may indicate a change in its semantic meaning.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterPointerLevelAndSize">
+        <problem id="Parameter_Type">
+          <change target="param" param_pos="1st" old_value="long long" new_value="long long*">Type of @param_pos parameter @target has been changed from @old_value to @new_value.</change>
+          <effect>Replacement of parameter data type may indicate a change in its semantic meaning.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterVaList">
+        <problem id="Parameter_Became_VaList">
+          <change target="param2" param_pos="2nd" old_value="int">Type of @param_pos parameter @target has been changed from @old_value to ... (va_list).</change>
+          <effect>The semantic meaning of the parameter may change.</effect>
+        </problem>
+        <problem id="Renamed_Parameter">
+          <change target="param1" param_pos="1st" new_value="param">@param_pos parameter @target has been renamed to @new_value.</change>
+          <effect>Renaming of a parameter may indicate a change in its semantic meaning.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnPointerLevel">
+        <problem id="Return_PointerLevel_Increased">
+          <change old_value="1" new_value="2">The pointer level of return value has been increased from @old_value to @new_value.</change>
+          <effect>Applications will treat the return value as the lower-dimension array and will not read all elements. This may change the behavior of applications.</effect>
+        </problem>
+        <problem id="Return_Type">
+          <change old_value="long long*" new_value="long long**">Type of return value has been changed from @old_value to @new_value.</change>
+          <effect>Replacement of return type may indicate a change in its semantic meaning.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnPointerLevelAndSize">
+        <problem id="Return_PointerLevel_Increased">
+          <change old_value="0" new_value="1">The pointer level of return value has been increased from @old_value to @new_value.</change>
+          <effect>Applications will treat the return value as the lower-dimension array and will not read all elements. This may change the behavior of applications.</effect>
+        </problem>
+        <problem id="Return_Type">
+          <change old_value="long long" new_value="long long*">Type of return value has been changed from @old_value to @new_value.</change>
+          <effect>Replacement of return type may indicate a change in its semantic meaning.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeBecameConst">
+        <problem id="Return_Type">
+          <change old_value="char*" new_value="char const*">Type of return value has been changed from @old_value to @new_value.</change>
+          <effect>Replacement of return type may indicate a change in its semantic meaning.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeBecameConst2">
+        <problem id="Return_Type">
+          <change old_value="char*" new_value="char*const">Type of return value has been changed from @old_value to @new_value.</change>
+          <effect>Replacement of return type may indicate a change in its semantic meaning.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeBecameConst3">
+        <problem id="Return_Type">
+          <change old_value="char*" new_value="char const*const">Type of return value has been changed from @old_value to @new_value.</change>
+          <effect>Replacement of return type may indicate a change in its semantic meaning.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeBecameVolatile">
+        <problem id="Return_Type">
+          <change old_value="char*" new_value="char volatile*">Type of return value has been changed from @old_value to @new_value.</change>
+          <effect>Replacement of return type may indicate a change in its semantic meaning.</effect>
+        </problem>
+        <problem id="Return_Value_Became_Volatile">
+          <change>Return value became volatile.</change>
+          <effect>Old client applications will get volatile object instead of non-volatile, but may be optimized by the compiler and cannot handle volatile objects.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeChangeFromVoidToLong">
+        <problem id="Return_Type_From_Void">
+          <change new_value="long" new_size="64">Type of return value has been changed from void to @new_value (@new_size).</change>
+          <effect>Replacement of return type may indicate a change in its semantic meaning.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeChangeFromVoidToVoidPtr">
+        <problem id="Return_Type_From_Void">
+          <change new_value="void*" new_size="64">Type of return value has been changed from void to @new_value (@new_size).</change>
+          <effect>Replacement of return type may indicate a change in its semantic meaning.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeChangeToVoidPtr">
+        <problem id="Return_Type">
+          <change old_value="struct SomeStruct*" new_value="void*">Type of return value has been changed from @old_value to @new_value.</change>
+          <effect>Replacement of return type may indicate a change in its semantic meaning.</effect>
+        </problem>
+      </symbol>
+      <symbol name="typedefToFunction">
+        <problem id="Parameter_BaseType">
+          <change target="p" param_pos="1st" old_value="int(*)(int)" new_value="int(*)(int, int)">Base type of @param_pos parameter @target has been changed from @old_value to @new_value.</change>
+          <effect>Replacement of parameter base type may indicate a change in its semantic meaning.</effect>
+        </problem>
+      </symbol>
+    </library>
+  </header>
+</problems_with_symbols>
+
+<problems_with_constants severity="Low">
+  <header name="libsample.h">
+    <constant name="PUBLIC_CONSTANT">
+      <problem id="Changed_Constant">
+        <change target="PUBLIC_CONSTANT" old_value="&quot;old_value&quot;" new_value="&quot;new_value&quot;">The value of constant @target has been changed from @old_value to @new_value.</change>
+        <effect>Applications will pass an old value of this constant as the parameter to the new-version library functions, that expect a new one. This may result in crash of incorrect behavior of applications.</effect>
+      </problem>
+    </constant>
+    <constant name="REMOVED_CNST">
+      <problem id="Removed_Constant">
+        <change target="REMOVED_CNST" old_value="&quot;value&quot;">The constant @target with value @old_value has been removed.</change>
+        <effect>The value of this constant may no longer be properly handled by new-version library functions.</effect>
+      </problem>
+    </constant>
+    <constant name="REMOVED_CONSTANT">
+      <problem id="Removed_Constant">
+        <change target="REMOVED_CONSTANT" old_value="1">The constant @target with value @old_value has been removed.</change>
+        <effect>The value of this constant may no longer be properly handled by new-version library functions.</effect>
+      </problem>
+    </constant>
+    <constant name="SOME_CONSTANT">
+      <problem id="Changed_Constant">
+        <change target="SOME_CONSTANT" old_value="1" new_value="2">The value of constant @target has been changed from @old_value to @new_value.</change>
+        <effect>Applications will pass an old value of this constant as the parameter to the new-version library functions, that expect a new one. This may result in crash of incorrect behavior of applications.</effect>
+      </problem>
+    </constant>
+    </header>
+</problems_with_constants>
+
+<problems_with_types severity="Safe">
+  <header name="libsample.h">
+    <type name="enum AddedEnumMember">
+      <problem id="Added_Enum_Member">
+        <change target="NewMember" new_value="1">The member @target with value @new_value has been added.</change>
+        <effect>No effect.</effect>
+      </problem>
+      <affected>
+        <symbol name="addedEnumMember" param="param">
+          <comment>1st parameter @param is of type enum AddedEnumMember.</comment>
+        </symbol>
+      </affected>
+    </type>
+  </header>
+</problems_with_types>
+
+<problems_with_symbols severity="Safe">
+</problems_with_symbols>
+
+<problems_with_constants severity="Low">
+  <header name="libsample.h">
+    <constant name="ADDED_CNST">
+      <problem id="Added_Constant">
+        <change target="ADDED_CNST" new_value="&quot;value&quot;">The constant @target with value @new_value has been added.</change>
+        <effect>No effect.</effect>
+      </problem>
+    </constant>
+    <constant name="ADDED_CONSTANT">
+      <problem id="Added_Constant">
+        <change target="ADDED_CONSTANT" new_value="1">The constant @target with value @new_value has been added.</change>
+        <effect>No effect.</effect>
+      </problem>
+    </constant>
+    </header>
+</problems_with_constants>
+
+</report>
+<report kind="source" version="1.2">
+
+<test_info>
+  <library>libsample_c</library>
+  <version1>
+    <number>1.0</number>
+    <arch>x86_64</arch>
+    <gcc>9.2.0</gcc>
+  </version1>
+  <version2>
+    <number>2.0</number>
+    <arch>x86_64</arch>
+    <gcc>9.2.0</gcc>
+  </version2>
+</test_info>
+
+<test_results>
+  <headers>
+    <name>libsample.h</name>
+  </headers>
+  <libs>
+    <name>libsample.so</name>
+  </libs>
+  <symbols>102</symbols>
+  <types>60</types>
+  <verdict>incompatible</verdict>
+  <affected>20.6</affected>
+</test_results>
+
+<problem_summary>
+  <added_symbols>11</added_symbols>
+  <removed_symbols>1</removed_symbols>
+  <problems_with_types>
+    <high>10</high>
+    <medium>4</medium>
+    <low>21</low>
+    <safe>8</safe>
+  </problems_with_types>
+  <problems_with_symbols>
+    <high>0</high>
+    <medium>23</medium>
+    <low>32</low>
+    <safe>13</safe>
+  </problems_with_symbols>
+  <problems_with_constants>
+    <low>4</low>
+  </problems_with_constants>
+</problem_summary>
+
+
+<added_symbols>
+  <header name="libsample.h">
+    <library name="libsample.so">
+      <name>testCppKeywords4</name>
+      <name>addedFunc3</name>
+      <name>testCppKeywords3</name>
+      <name>addedFunc2</name>
+      <name>goodVersioningOld</name>
+      <name>badVersioningOld</name>
+      <name>addedFunc4</name>
+      <name>delete</name>
+      <name>operator</name>
+      <name>testCppKeywords2</name>
+      <name>addedFunc</name>
+    </library>
+  </header>
+</added_symbols>
+
+<removed_symbols>
+  <header name="libsample.h">
+    <library name="libsample.so">
+      <name>removedFunc</name>
+    </library>
+  </header>
+</removed_symbols>
+
+<problems_with_types severity="High">
+  <header name="libsample.h">
+    <type name="struct RenamedField">
+      <problem id="Renamed_Field">
+        <change target="i" new_value="renamed_member">Field @target has been renamed to @new_value.</change>
+        <effect type_name="struct RenamedField" target="i">Recompilation of a client program may be broken with the error message: @type_name has no member named @target.</effect>
+      </problem>
+      <affected>
+        <symbol name="renamedField" param="param">
+          <comment>1st parameter @param is of type struct RenamedField.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="enum EnumMiddleMemberRemoved">
+      <problem id="Enum_Member_Removed">
+        <change target="MEM_REMOVED">The member @target has been removed.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+      <affected>
+        <symbol name="enumMiddleMemberRemoved" param="param">
+          <comment>1st parameter @param is of type enum EnumMiddleMemberRemoved.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="enum EnumMemberRemoved">
+      <problem id="Enum_Member_Removed">
+        <change target="MEMBER_REMOVED">The member @target has been removed.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+      <affected>
+        <symbol name="enumMemberRemoved" param="param">
+          <comment>1st parameter @param is of type enum EnumMemberRemoved.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="union RenamedUnionField">
+      <problem id="Renamed_Field">
+        <change target="renamed_from" new_value="renamed_to">Field @target has been renamed to @new_value.</change>
+        <effect type_name="union RenamedUnionField" target="renamed_from">Recompilation of a client program may be broken with the error message: @type_name has no member named @target.</effect>
+      </problem>
+      <affected>
+        <symbol name="renamedUnionField" param="param">
+          <comment>1st parameter @param is of type union RenamedUnionField.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct RemovedFieldAndSize">
+      <problem id="Removed_Field">
+        <change target="removed_member1">Field @target has been removed from this type.</change>
+        <effect type_name="struct RemovedFieldAndSize" target="removed_member1">Recompilation of a client program may be broken with the error message: '@type_name' has no member named '@target'.</effect>
+      </problem>
+      <problem id="Removed_Field">
+        <change target="removed_member2">Field @target has been removed from this type.</change>
+        <effect type_name="struct RemovedFieldAndSize" target="removed_member2">Recompilation of a client program may be broken with the error message: '@type_name' has no member named '@target'.</effect>
+      </problem>
+      <affected>
+        <symbol name="removedFieldAndSize" param="param">
+          <comment>1st parameter @param is of type struct RemovedFieldAndSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct SomeStruct2">
+      <problem id="Removed_Field">
+        <change target="b">Field @target has been removed from this type.</change>
+        <effect type_name="struct SomeStruct2" target="b">Recompilation of a client program may be broken with the error message: '@type_name' has no member named '@target'.</effect>
+      </problem>
+      <affected>
+        <symbol name="returnType2" param="retval">
+          <comment>Return value is of type struct SomeStruct2.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="enum EnumMemberName">
+      <problem id="Enum_Member_Name">
+        <change target="1" old_value="BRANCH1" new_value="BRANCH_FIRST">Name of member with value @target has been changed from @old_value to @new_value.</change>
+        <effect old_value="BRANCH1">Recompilation of a client program may be broken with the error message: '@old_value' was not declared in this scope.</effect>
+      </problem>
+      <problem id="Enum_Member_Name">
+        <change target="2" old_value="BRANCH2" new_value="BRANCH_SECOND">Name of member with value @target has been changed from @old_value to @new_value.</change>
+        <effect old_value="BRANCH2">Recompilation of a client program may be broken with the error message: '@old_value' was not declared in this scope.</effect>
+      </problem>
+      <affected>
+        <symbol name="enumMemberName" param="param">
+          <comment>1st parameter @param is of type enum EnumMemberName.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct RemovedMiddleField">
+      <problem id="Removed_Field">
+        <change target="removed_middle_member">Field @target has been removed from this type.</change>
+        <effect type_name="struct RemovedMiddleField" target="removed_middle_member">Recompilation of a client program may be broken with the error message: '@type_name' has no member named '@target'.</effect>
+      </problem>
+      <affected>
+        <symbol name="removedMiddleField" param="param">
+          <comment>1st parameter @param is of type struct RemovedMiddleField.</comment>
+        </symbol>
+      </affected>
+    </type>
+  </header>
+</problems_with_types>
+
+<problems_with_symbols severity="High">
+</problems_with_symbols>
+
+<problems_with_types severity="Medium">
+  <header name="libsample.h">
+    <type name="struct FieldPointerLevel">
+      <problem id="Field_PointerLevel">
+        <change target="j" old_value="1" new_value="2">The pointer level of field @target has been increased from @old_value to @new_value.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+      <affected>
+        <symbol name="fieldPointerLevel" param="param">
+          <comment>1st parameter @param is of type struct FieldPointerLevel.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct FieldPointerLevelAndSize">
+      <problem id="Field_PointerLevel">
+        <change target="j" old_value="0" new_value="1">The pointer level of field @target has been increased from @old_value to @new_value.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+      <affected>
+        <symbol name="fieldPointerLevelAndSize" param="param">
+          <comment>1st parameter @param is of type struct FieldPointerLevelAndSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct StructToUnion">
+      <problem id="DataType_Type">
+        <change old_value="struct" new_value="union">Type of this type has been changed from @old_value to @new_value.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+      <affected>
+        <symbol name="structToUnion" param="p">
+          <comment>1st parameter @param (pointer) has base type struct StructToUnion.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct DType">
+      <problem id="DataType_Type">
+        <change old_value="struct" new_value="union">Type of this type has been changed from @old_value to @new_value.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+      <affected>
+        <symbol name="parameterTypeFormat2" param="param">
+          <comment>1st parameter @param is of type struct DType.</comment>
+        </symbol>
+      </affected>
+    </type>
+  </header>
+</problems_with_types>
+
+<problems_with_symbols severity="Medium">
+  <header name="libsample.h">
+    <library name="libsample.so">
+      <symbol name="addedParameter">
+        <problem id="Added_Parameter">
+          <change target="added_param" param_type="int">Parameter @target of type @param_type has been added to the calling stack.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+        <problem id="Added_Parameter">
+          <change target="added_param2" param_type="int">Parameter @target of type @param_type has been added to the calling stack.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalDataBecameConst">
+        <problem id="Global_Data_Became_Const">
+          <change>This global data became const.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterBecameNonConst">
+        <problem id="Parameter_Became_Non_Const">
+          <change target="param" param_pos="1st" old_value="int const*" new_value="int*">Type of @param_pos parameter @target has been changed from @old_value to @new_value (became non-const).</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterBecameNonConstNonVolatile">
+        <problem id="Parameter_Became_Non_Const">
+          <change target="param" param_pos="1st" old_value="int const volatile*" new_value="int*">Type of @param_pos parameter @target has been changed from @old_value to @new_value (became non-const).</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterNonVaList">
+        <problem id="Parameter_Became_Non_VaList">
+          <change param_pos="2nd" new_value="int">Type of @param_pos parameter has been changed from ... (va_list) to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterPointerLevel">
+        <problem id="Parameter_PointerLevel">
+          <change target="param" param_pos="1st" old_value="1" new_value="2">The pointer level of @param_pos parameter @target has been increased from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterPointerLevelAndSize">
+        <problem id="Parameter_PointerLevel">
+          <change target="param" param_pos="1st" old_value="0" new_value="1">The pointer level of @param_pos parameter @target has been increased from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterTypeAndSizeBecameNonConst">
+        <problem id="Parameter_Became_Non_Const">
+          <change target="param" param_pos="1st" old_value="int*const" new_value="long double">Type of @param_pos parameter @target has been changed from @old_value to @new_value (became non-const).</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+        <problem id="Parameter_PointerLevel">
+          <change target="param" param_pos="1st" old_value="1" new_value="0">The pointer level of @param_pos parameter @target has been increased from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterTypeFormat2">
+        <problem id="Parameter_Type_Format">
+          <change target="param" old_value="struct DType" new_value="union DType">Type of parameter @target has been changed from @old_value to @new_value of different format.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="removedParameter">
+        <problem id="Removed_Parameter">
+          <change target="removed_param" param_pos="2nd">@param_pos parameter @target has been removed from the calling stack.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnPointerLevel">
+        <problem id="Return_PointerLevel">
+          <change old_value="1" new_value="2">The pointer level of return value has been increased from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnPointerLevelAndSize">
+        <problem id="Return_PointerLevel">
+          <change old_value="0" new_value="1">The pointer level of return value has been increased from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeBecameConst">
+        <problem id="Return_Type_Became_Const">
+          <change old_value="char*" new_value="char const*">Type of return value became const (has been changed from @old_value to @new_value).</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeBecameConst2">
+        <problem id="Return_Type_Became_Const">
+          <change old_value="char*" new_value="char*const">Type of return value became const (has been changed from @old_value to @new_value).</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeBecameConst3">
+        <problem id="Return_Type_Became_Const">
+          <change old_value="char*" new_value="char const*const">Type of return value became const (has been changed from @old_value to @new_value).</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeChangeFromIntToStruct">
+        <problem id="Return_Type_Format">
+          <change old_value="int" new_value="struct SomeStruct">Type of return value has been changed from @old_value to @new_value of different format.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeChangeFromStructToInt">
+        <problem id="Return_Type_Format">
+          <change old_value="struct SomeStruct" new_value="int">Type of return value has been changed from @old_value to @new_value of different format.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeChangeFromStructToIntWithNoParams">
+        <problem id="Return_Type_Format">
+          <change old_value="struct SomeStruct" new_value="int">Type of return value has been changed from @old_value to @new_value of different format.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeChangeFromStructToVoid">
+        <problem id="Return_Type_Became_Void">
+          <change old_value="struct SomeStruct" old_size="256">Type of return value has been changed from @old_value (@old_size) to void.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeChangeToVoid">
+        <problem id="Return_Type_Became_Void">
+          <change old_value="int" old_size="32">Type of return value has been changed from @old_value (@old_size) to void.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="testCppKeywords1">
+        <problem id="Removed_Parameter">
+          <change target="new" param_pos="3rd">@param_pos parameter @target has been removed from the calling stack.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+    </library>
+  </header>
+</problems_with_symbols>
+
+<problems_with_types severity="Low">
+  <header name="libsample.h">
+    <type name="struct FieldPointerLevel">
+      <problem id="Field_Type">
+        <change target="j" old_value="long*" new_value="long**">Type of field @target has been changed from @old_value to @new_value.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+      <affected>
+        <symbol name="fieldPointerLevel" param="param">
+          <comment>1st parameter @param is of type struct FieldPointerLevel.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct FieldSizePadded">
+      <problem id="Field_Type">
+        <change target="changed_field" old_value="char" new_value="int">Type of field @target has been changed from @old_value to @new_value.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+      <affected>
+        <symbol name="fieldSizePadded" param="param">
+          <comment>1st parameter @param is of type struct FieldSizePadded.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct AddedMiddleField">
+      <problem id="Added_Field">
+        <change target="added_field">Field @target has been added to this type.</change>
+        <effect>This field will not be initialized or used by old client applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="addedMiddleField" param="param">
+          <comment>1st parameter @param is of type struct AddedMiddleField.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="UnnamedTypeSize::anon-union-libsample.h-320">
+      <problem id="Field_Type">
+        <change target="b" old_value="int" new_value="long double">Type of field @target has been changed from @old_value to @new_value.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+      <affected>
+        <symbol name="unnamedTypeSize" param="param" field="param.unnamed0">
+          <comment>Field @field in 1st parameter @param is of type UnnamedTypeSize::anon-union-libsample.h-320.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct ArrayFieldSize">
+      <problem id="Field_Type">
+        <change target="i" old_value="int[5]" new_value="int[7]">Type of field @target has been changed from @old_value to @new_value.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+      <affected>
+        <symbol name="arrayFieldSize" param="param">
+          <comment>1st parameter @param is of type struct ArrayFieldSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct FieldType">
+      <problem id="Field_Type">
+        <change target="i" old_value="int" new_value="float">Type of field @target has been changed from @old_value to @new_value.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+      <affected>
+        <symbol name="fieldType" param="param">
+          <comment>1st parameter @param is of type struct FieldType.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct FieldBaseType">
+      <problem id="Field_BaseType">
+        <change target="j" old_value="long" new_value="long long">Base type of field @target has been changed from @old_value to @new_value.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+      <affected>
+        <symbol name="fieldBaseType" param="param">
+          <comment>1st parameter @param is of type struct FieldBaseType.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct ArrayFieldType">
+      <problem id="Field_Type">
+        <change target="i" old_value="int[1]" new_value="int[]">Type of field @target has been changed from @old_value to @new_value.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+      <affected>
+        <symbol name="arrayFieldType" param="param">
+          <comment>1st parameter @param is of type struct ArrayFieldType.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct FieldTypeFormat">
+      <problem id="Field_Type">
+        <change target="j" old_value="struct DType1" new_value="struct DType2">Type of field @target has been changed from @old_value to @new_value.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+      <affected>
+        <symbol name="fieldTypeFormat" param="param">
+          <comment>1st parameter @param is of type struct FieldTypeFormat.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="PARAM_TYPEDEF">
+      <problem id="Typedef_BaseType">
+        <change old_value="int*" new_value="int const*">Base type has been changed from @old_value to @new_value.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+      <affected>
+        <symbol name="parameterBaseTypedefChange" param="param">
+          <comment>1st parameter @param (pointer) is of type PARAM_TYPEDEF.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct AddedFieldAndSize">
+      <problem id="Added_Field">
+        <change target="added_member1">Field @target has been added to this type.</change>
+        <effect>This field will not be initialized or used by old client applications.</effect>
+      </problem>
+      <problem id="Added_Field">
+        <change target="added_member2">Field @target has been added to this type.</change>
+        <effect>This field will not be initialized or used by old client applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="addedFieldAndSize" param="param">
+          <comment>1st parameter @param is of type struct AddedFieldAndSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="TYPEDEF_TYPE_2">
+      <problem id="Typedef_BaseType">
+        <change old_value="float" new_value="int">Base type has been changed from @old_value to @new_value.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+      <affected>
+        <symbol name="fieldBaseTypedefChange" param="param" field="param.m">
+          <comment>Field @field in 1st parameter @param is of type TYPEDEF_TYPE_2.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct GlobalDataSize">
+      <problem id="Added_Field">
+        <change target="b">Field @target has been added to this type.</change>
+        <effect>This field will not be initialized or used by old client applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="globalDataSize" param="retval">
+          <comment>Return value is of type struct GlobalDataSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct AddedMiddleFieldAndSize">
+      <problem id="Added_Field">
+        <change target="added_middle_member">Field @target has been added to this type.</change>
+        <effect>This field will not be initialized or used by old client applications.</effect>
+      </problem>
+      <affected>
+        <symbol name="addedMiddleFieldAndSize" param="param">
+          <comment>1st parameter @param is of type struct AddedMiddleFieldAndSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct FieldPointerLevelAndSize">
+      <problem id="Field_Type">
+        <change target="j" old_value="long long" new_value="long long*">Type of field @target has been changed from @old_value to @new_value.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+      <affected>
+        <symbol name="fieldPointerLevelAndSize" param="param">
+          <comment>1st parameter @param is of type struct FieldPointerLevelAndSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct FieldTypeAndSize">
+      <problem id="Field_Type">
+        <change target="j" old_value="long" new_value="long long">Type of field @target has been changed from @old_value to @new_value.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+      <affected>
+        <symbol name="fieldTypeAndSize" param="param">
+          <comment>1st parameter @param is of type struct FieldTypeAndSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="TYPEDEF_TYPE">
+      <problem id="Typedef_BaseType">
+        <change old_value="float" new_value="int">Base type has been changed from @old_value to @new_value.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+      <affected>
+        <symbol name="parameterTypedefChange" param="param">
+          <comment>1st parameter @param is of type TYPEDEF_TYPE.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct TypeSize">
+      <problem id="Field_Type">
+        <change target="i" old_value="long long[5]" new_value="long long[15]">Type of field @target has been changed from @old_value to @new_value.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+      <problem id="Field_Type">
+        <change target="j" old_value="long" new_value="long long">Type of field @target has been changed from @old_value to @new_value.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+      <affected>
+        <symbol name="testSize" param="param">
+          <comment>1st parameter @param is of type struct TypeSize.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct SomeStruct3">
+      <problem id="Field_Type">
+        <change target="b" old_value="int" new_value="long double">Type of field @target has been changed from @old_value to @new_value.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+      <affected>
+        <symbol name="returnType3" param="retval">
+          <comment>Return value is of type struct SomeStruct3.</comment>
+        </symbol>
+      </affected>
+    </type>
+  </header>
+</problems_with_types>
+
+<problems_with_symbols severity="Low">
+  <header name="libsample.h">
+    <library name="libsample.so">
+      <symbol name="badVersioning">
+        <problem id="Return_Type">
+          <change old_value="int" new_value="float">Type of return value has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="callConv">
+        <problem id="Parameter_Type">
+          <change target="k" param_pos="11th" old_value="int" new_value="double">Type of @param_pos parameter @target has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="callConv2">
+        <problem id="Parameter_Type">
+          <change target="j" param_pos="2nd" old_value="int" new_value="double">Type of @param_pos parameter @target has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="callConv3">
+        <problem id="Parameter_Type">
+          <change target="j" param_pos="2nd" old_value="int" new_value="double">Type of @param_pos parameter @target has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="callConv4">
+        <problem id="Parameter_Type">
+          <change target="j" param_pos="2nd" old_value="int" new_value="double">Type of @param_pos parameter @target has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="callConv5">
+        <problem id="Parameter_Type">
+          <change target="j" param_pos="2nd" old_value="int" new_value="double">Type of @param_pos parameter @target has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="changedDefaultVersion">
+        <problem id="Parameter_Type">
+          <change target="param" param_pos="1st" old_value="int" new_value="long">Type of @param_pos parameter @target has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="changedVersionToDefault">
+        <problem id="Parameter_Type">
+          <change target="param" param_pos="1st" old_value="int" new_value="long">Type of @param_pos parameter @target has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="changedVersionToNonDefault">
+        <problem id="Parameter_Type">
+          <change target="param" param_pos="1st" old_value="int" new_value="long">Type of @param_pos parameter @target has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalDataBecameConst">
+        <problem id="Global_Data_Type">
+          <change old_value="int" new_value="int const">Type of this global data has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalDataBecameNonConst">
+        <problem id="Global_Data_Type">
+          <change old_value="int const" new_value="int">Type of this global data has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalDataBecameNonConst_Typedef">
+        <problem id="Global_Data_Type">
+          <change old_value="CONST_INT" new_value="int">Type of this global data has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalDataType">
+        <problem id="Global_Data_Type">
+          <change old_value="int" new_value="float">Type of this global data has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalDataTypeAndSize">
+        <problem id="Global_Data_Type">
+          <change old_value="int" new_value="short">Type of this global data has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalStructDataBecameNonConst">
+        <problem id="Global_Data_Type">
+          <change old_value="struct GlobalDataType const" new_value="struct GlobalDataType">Type of this global data has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="goodVersioning">
+        <problem id="Return_Type">
+          <change old_value="int" new_value="float">Type of return value has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterBaseTypeChange">
+        <problem id="Parameter_BaseType">
+          <change target="param" param_pos="1st" old_value="int" new_value="long long">Base type of @param_pos parameter @target has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterCallingConvention">
+        <problem id="Parameter_Type">
+          <change target="p1" param_pos="1st" old_value="int" new_value="char">Type of @param_pos parameter @target has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+        <problem id="Return_Type">
+          <change old_value="int" new_value="float">Type of return value has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterPointerLevel">
+        <problem id="Parameter_Type">
+          <change target="param" param_pos="1st" old_value="int*" new_value="int**">Type of @param_pos parameter @target has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterPointerLevelAndSize">
+        <problem id="Parameter_Type">
+          <change target="param" param_pos="1st" old_value="long long" new_value="long long*">Type of @param_pos parameter @target has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterType">
+        <problem id="Parameter_Type">
+          <change target="param" param_pos="1st" old_value="int" new_value="float">Type of @param_pos parameter @target has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterTypeAndSize">
+        <problem id="Parameter_Type">
+          <change target="param" param_pos="1st" old_value="int" new_value="long long">Type of @param_pos parameter @target has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterTypeAndSizeBecameNonConst">
+        <problem id="Parameter_Type">
+          <change target="param" param_pos="1st" old_value="int*const" new_value="long double">Type of @param_pos parameter @target has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterTypeFormat">
+        <problem id="Parameter_Type">
+          <change target="param" param_pos="1st" old_value="struct DType1" new_value="struct DType2">Type of @param_pos parameter @target has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnBaseTypeChange">
+        <problem id="Return_BaseType">
+          <change old_value="int" new_value="long long">Base type of return value has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnPointerLevel">
+        <problem id="Return_Type">
+          <change old_value="long long*" new_value="long long**">Type of return value has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnPointerLevelAndSize">
+        <problem id="Return_Type">
+          <change old_value="long long" new_value="long long*">Type of return value has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnType">
+        <problem id="Return_Type">
+          <change old_value="int" new_value="float">Type of return value has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeAndSize">
+        <problem id="Return_Type">
+          <change old_value="int" new_value="long long">Type of return value has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeChangeToVoidPtr">
+        <problem id="Return_Type">
+          <change old_value="struct SomeStruct*" new_value="void*">Type of return value has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+      <symbol name="typedefToFunction">
+        <problem id="Parameter_BaseType">
+          <change target="p" param_pos="1st" old_value="int(*)(int)" new_value="int(*)(int, int)">Base type of @param_pos parameter @target has been changed from @old_value to @new_value.</change>
+          <effect>Recompilation of a client program may be broken.</effect>
+        </problem>
+      </symbol>
+    </library>
+  </header>
+</problems_with_symbols>
+
+<problems_with_constants severity="Low">
+  <header name="libsample.h">
+    <constant name="PUBLIC_CONSTANT">
+      <problem id="Changed_Constant">
+        <change target="PUBLIC_CONSTANT" old_value="&quot;old_value&quot;" new_value="&quot;new_value&quot;">The value of constant @target has been changed from @old_value to @new_value.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+    </constant>
+    <constant name="REMOVED_CNST">
+      <problem id="Removed_Constant">
+        <change target="REMOVED_CNST" old_value="&quot;value&quot;">The constant @target with value @old_value has been removed.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+    </constant>
+    <constant name="REMOVED_CONSTANT">
+      <problem id="Removed_Constant">
+        <change target="REMOVED_CONSTANT" old_value="1">The constant @target with value @old_value has been removed.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+    </constant>
+    <constant name="SOME_CONSTANT">
+      <problem id="Changed_Constant">
+        <change target="SOME_CONSTANT" old_value="1" new_value="2">The value of constant @target has been changed from @old_value to @new_value.</change>
+        <effect>Recompilation of a client program may be broken.</effect>
+      </problem>
+    </constant>
+    </header>
+</problems_with_constants>
+
+<problems_with_types severity="Safe">
+  <header name="libsample.h">
+    <type name="enum EnumMiddleMemberRemoved">
+      <problem id="Enum_Member_Value">
+        <change target="MEM1" old_value="1" new_value="0">Value of member @target has been changed from @old_value to @new_value.</change>
+        <effect>No effect.</effect>
+      </problem>
+      <problem id="Enum_Member_Value">
+        <change target="MEM2" old_value="2" new_value="1">Value of member @target has been changed from @old_value to @new_value.</change>
+        <effect>No effect.</effect>
+      </problem>
+      <affected>
+        <symbol name="enumMiddleMemberRemoved" param="param">
+          <comment>1st parameter @param is of type enum EnumMiddleMemberRemoved.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="enum EnumMemberValue">
+      <problem id="Enum_Member_Value">
+        <change target="MEMBER1" old_value="1" new_value="2">Value of member @target has been changed from @old_value to @new_value.</change>
+        <effect>No effect.</effect>
+      </problem>
+      <problem id="Enum_Member_Value">
+        <change target="MEMBER2" old_value="2" new_value="1">Value of member @target has been changed from @old_value to @new_value.</change>
+        <effect>No effect.</effect>
+      </problem>
+      <affected>
+        <symbol name="enumMemberValue" param="param">
+          <comment>1st parameter @param is of type enum EnumMemberValue.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="enum AddedEnumMember">
+      <problem id="Added_Enum_Member">
+        <change target="NewMember" new_value="1">The member @target with value @new_value has been added.</change>
+        <effect>No effect.</effect>
+      </problem>
+      <affected>
+        <symbol name="addedEnumMember" param="param">
+          <comment>1st parameter @param is of type enum AddedEnumMember.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="struct UsedReserved">
+      <problem id="Used_Reserved_Field">
+        <change target="reserved0" new_value="f0">Reserved field @target has been replaced by @new_value.</change>
+        <effect>No effect.</effect>
+      </problem>
+      <problem id="Used_Reserved_Field">
+        <change target="reserved1" new_value="f1">Reserved field @target has been replaced by @new_value.</change>
+        <effect>No effect.</effect>
+      </problem>
+      <affected>
+        <symbol name="usedReserved" param="p">
+          <comment>1st parameter @param is of type struct UsedReserved.</comment>
+        </symbol>
+      </affected>
+    </type>
+    <type name="union UnionTypeAddedField">
+      <problem id="Added_Union_Field">
+        <change target="new_field">Field @target has been added to this type.</change>
+        <effect>No effect.</effect>
+      </problem>
+      <affected>
+        <symbol name="unionTypeAddedField" param="param">
+          <comment>1st parameter @param is of type union UnionTypeAddedField.</comment>
+        </symbol>
+      </affected>
+    </type>
+  </header>
+</problems_with_types>
+
+<problems_with_symbols severity="Safe">
+  <header name="libsample.h">
+    <library name="libsample.so">
+      <symbol name="globalDataBecameNonConst">
+        <problem id="Global_Data_Became_Non_Const">
+          <change>This global data became non-const.</change>
+          <effect>No effect.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalDataBecameNonConst_Typedef">
+        <problem id="Global_Data_Became_Non_Const">
+          <change>This global data became non-const.</change>
+          <effect>No effect.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalDataValue_Char">
+        <problem id="Global_Data_Value_Changed">
+          <change old_value="&#39;o&#39;" new_value="&#39;N&#39;">The initial value of this global data has been changed from @old_value to @new_value.</change>
+          <effect>No effect.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalDataValue_Integer">
+        <problem id="Global_Data_Value_Changed">
+          <change old_value="10" new_value="15">The initial value of this global data has been changed from @old_value to @new_value.</change>
+          <effect>No effect.</effect>
+        </problem>
+      </symbol>
+      <symbol name="globalStructDataBecameNonConst">
+        <problem id="Global_Data_Became_Non_Const">
+          <change>This global data became non-const.</change>
+          <effect>No effect.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterBecameNonConstNonVolatile">
+        <problem id="Parameter_Became_Non_Volatile">
+          <change target="param">Parameter @target became non-volatile.</change>
+          <effect>No effect.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterNonVaList">
+        <problem id="Renamed_Parameter">
+          <change target="param" param_pos="1st" new_value="param1">@param_pos parameter @target has been renamed to @new_value.</change>
+          <effect>No effect.</effect>
+        </problem>
+      </symbol>
+      <symbol name="parameterVaList">
+        <problem id="Parameter_Became_VaList">
+          <change target="param2" param_pos="2nd" old_value="int">Type of @param_pos parameter @target has been changed from @old_value to ... (va_list).</change>
+          <effect>No effect.</effect>
+        </problem>
+        <problem id="Renamed_Parameter">
+          <change target="param1" param_pos="1st" new_value="param">@param_pos parameter @target has been renamed to @new_value.</change>
+          <effect>No effect.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeBecameVolatile">
+        <problem id="Return_Value_Became_Volatile">
+          <change>Return value became volatile.</change>
+          <effect>No effect.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeChangeFromVoidToLong">
+        <problem id="Return_Type_From_Void">
+          <change new_value="long">Type of return value has been changed from void to @new_value.</change>
+          <effect>No effect.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeChangeFromVoidToStruct">
+        <problem id="Return_Type_From_Void">
+          <change new_value="struct SomeStruct">Type of return value has been changed from void to @new_value.</change>
+          <effect>No effect.</effect>
+        </problem>
+      </symbol>
+      <symbol name="returnTypeChangeFromVoidToVoidPtr">
+        <problem id="Return_Type_From_Void">
+          <change new_value="void*">Type of return value has been changed from void to @new_value.</change>
+          <effect>No effect.</effect>
+        </problem>
+      </symbol>
+    </library>
+  </header>
+</problems_with_symbols>
+
+<problems_with_constants severity="Low">
+  <header name="libsample.h">
+    <constant name="ADDED_CNST">
+      <problem id="Added_Constant">
+        <change target="ADDED_CNST" new_value="&quot;value&quot;">The constant @target with value @new_value has been added.</change>
+        <effect>No effect.</effect>
+      </problem>
+    </constant>
+    <constant name="ADDED_CONSTANT">
+      <problem id="Added_Constant">
+        <change target="ADDED_CONSTANT" new_value="1">The constant @target with value @new_value has been added.</change>
+        <effect>No effect.</effect>
+      </problem>
+    </constant>
+    </header>
+</problems_with_constants>
+
+</report>
+</reports>

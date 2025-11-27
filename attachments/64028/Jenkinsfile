@@ -1,0 +1,46 @@
+pipeline {
+	agent any
+	parameters {
+		activeChoice(
+			name: 'param1',
+			choiceType: 'PT_SINGLE_SELECT',
+			script: [
+				$class: 'ScriptlerScript',
+				scriptlerScriptId:'Scriptler1.groovy'
+			]
+		)
+		reactiveChoice(
+			name: 'param2',
+			choiceType: 'PT_SINGLE_SELECT',
+			referencedParameters: 'param1',
+			filterable: true,
+			script: [
+				$class: 'ScriptlerScript',
+				scriptlerScriptId: "Scriptler2.groovy",
+				parameters: [
+					[name:'param1', value: '${param1}']
+				]
+			]
+		)
+		reactiveChoice(
+			name: 'param3',
+			choiceType: 'PT_SINGLE_SELECT',
+			referencedParameters: 'param1,param2',
+			script: [
+				$class: 'ScriptlerScript',
+				scriptlerScriptId: "Scriptler3.groovy",
+				parameters: [
+					[name:'param1', value: '${param1}'],
+					[name:'param2', value: '${param2}']
+				]
+			]
+		)
+	}
+	stages {
+		stage('Hello world') {
+			steps {
+				echo "Hello World"
+			}
+		}
+	}
+}

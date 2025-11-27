@@ -1,0 +1,86 @@
+2022-12-07 15:27:08.352+0000 [id=126864]	INFO	hudson.slaves.NodeProvisioner#update: redacted-p67d1 provisioning successfully completed. We have now 14 computer(s)
+2022-12-07 15:27:08.459+0000 [id=127240]	INFO	o.c.j.p.k.KubernetesLauncher#launch: Created Pod: redacted default/redacted-p67d1
+2022-12-07 15:27:10.160+0000 [id=127240]	INFO	o.c.j.p.k.KubernetesLauncher#launch: Pod is running: redacted default/redacted-p67d1
+2022-12-07 15:27:10.227+0000 [id=127363]	INFO	h.TcpSlaveAgentListener$ConnectionHandler#run: Connection #321 from /redacted.redacted.redacted.redacted:40850 failed: null
+2022-12-07 15:27:10.284+0000 [id=127364]	INFO	h.TcpSlaveAgentListener$ConnectionHandler#run: Accepted JNLP4-connect connection #322 from /redacted.redacted.redacted.redacted:40938
+2022-12-07 15:27:10.332+0000 [id=127364]	SEVERE	h.TcpSlaveAgentListener$ConnectionHandler#lambda$new$0: Uncaught exception in TcpSlaveAgentListener ConnectionHandler Thread[TCP agent connection handler #322 with /redacted.redacted.redacted.redacted:40938,5,main]
+java.lang.UnsupportedOperationException: Network layer is not supposed to call isSendOpen
+	at org.jenkinsci.remoting.protocol.ProtocolStack$Ptr.isSendOpen(ProtocolStack.java:739)
+	at org.jenkinsci.remoting.protocol.FilterLayer.isSendOpen(FilterLayer.java:343)
+	at org.jenkinsci.remoting.protocol.ProtocolStack$Ptr.isSendOpen(ProtocolStack.java:747)
+	at org.jenkinsci.remoting.protocol.FilterLayer.isSendOpen(FilterLayer.java:343)
+	at org.jenkinsci.remoting.protocol.impl.SSLEngineFilterLayer.isSendOpen(SSLEngineFilterLayer.java:233)
+	at org.jenkinsci.remoting.protocol.ProtocolStack$Ptr.doSend(ProtocolStack.java:699)
+	at org.jenkinsci.remoting.protocol.impl.ConnectionHeadersFilterLayer.doSend(ConnectionHeadersFilterLayer.java:474)
+	at org.jenkinsci.remoting.protocol.impl.ConnectionHeadersFilterLayer.start(ConnectionHeadersFilterLayer.java:138)
+	at org.jenkinsci.remoting.protocol.ProtocolStack.init(ProtocolStack.java:209)
+	at org.jenkinsci.remoting.protocol.ProtocolStack$Builder.build(ProtocolStack.java:563)
+	at org.jenkinsci.remoting.engine.JnlpProtocol4Handler.handle(JnlpProtocol4Handler.java:156)
+	at jenkins.slaves.JnlpSlaveAgentProtocol4.handle(JnlpSlaveAgentProtocol4.java:196)
+	at hudson.TcpSlaveAgentListener$ConnectionHandler.run(TcpSlaveAgentListener.java:282)
+2022-12-07 15:27:10.332+0000 [id=127364]	WARNING	hudson.TcpSlaveAgentListener$1#run: Connection handler failed, restarting listener
+java.lang.UnsupportedOperationException: Network layer is not supposed to call isSendOpen
+	at org.jenkinsci.remoting.protocol.ProtocolStack$Ptr.isSendOpen(ProtocolStack.java:739)
+	at org.jenkinsci.remoting.protocol.FilterLayer.isSendOpen(FilterLayer.java:343)
+	at org.jenkinsci.remoting.protocol.ProtocolStack$Ptr.isSendOpen(ProtocolStack.java:747)
+	at org.jenkinsci.remoting.protocol.FilterLayer.isSendOpen(FilterLayer.java:343)
+	at org.jenkinsci.remoting.protocol.impl.SSLEngineFilterLayer.isSendOpen(SSLEngineFilterLayer.java:233)
+	at org.jenkinsci.remoting.protocol.ProtocolStack$Ptr.doSend(ProtocolStack.java:699)
+	at org.jenkinsci.remoting.protocol.impl.ConnectionHeadersFilterLayer.doSend(ConnectionHeadersFilterLayer.java:474)
+	at org.jenkinsci.remoting.protocol.impl.ConnectionHeadersFilterLayer.start(ConnectionHeadersFilterLayer.java:138)
+	at org.jenkinsci.remoting.protocol.ProtocolStack.init(ProtocolStack.java:209)
+	at org.jenkinsci.remoting.protocol.ProtocolStack$Builder.build(ProtocolStack.java:563)
+	at org.jenkinsci.remoting.engine.JnlpProtocol4Handler.handle(JnlpProtocol4Handler.java:156)
+	at jenkins.slaves.JnlpSlaveAgentProtocol4.handle(JnlpSlaveAgentProtocol4.java:196)
+	at hudson.TcpSlaveAgentListener$ConnectionHandler.run(TcpSlaveAgentListener.java:282)
+2022-12-07 15:27:21.188+0000 [id=112288]	INFO	o.c.j.p.k.p.r.Reaper$TerminateAgentOnContainerTerminated#lambda$onEvent$1: default/redacted-p67d1 Container jnlp was just terminated, so removing the corresponding Jenkins agent
+2022-12-07 15:27:21.288+0000 [id=127240]	INFO	o.c.j.p.k.KubernetesLauncher#launch: Container is terminated redacted-p67d1 [jnlp]: ContainerStateTerminated(containerID=containerd://3badea143883274717426c3eb6e3aea93556b2a727547dbb5b371d75bc246682, exitCode=255, finishedAt=2022-12-07T15:27:20Z, message=null, reason=Error, signal=null, startedAt=2022-12-07T15:27:09Z, additionalProperties={})
+2022-12-07 15:27:21.335+0000 [id=112288]	INFO	o.c.j.p.k.KubernetesSlave#_terminate: Terminating Kubernetes instance for agent redacted-p67d1
+2022-12-07 15:27:21.342+0000 [id=127240]	SEVERE	o.c.j.p.k.KubernetesLauncher#logLastLines: Error in provisioning; agent=KubernetesSlave name: redacted-p67d1, template=PodTemplate{id='8ffbcf0d-32d0-4b72-9728-7ddefe352748', name='redacted', slaveConnectTimeout=100, idleMinutes=30, label='k8s-redacted', containers=[ContainerTemplate{name='jnlp', image='redacted:1.59', workingDir='/home/jenkins/agent', command='', args='', ttyEnabled=true, resourceRequestCpu='', resourceRequestMemory='8Gi', resourceRequestEphemeralStorage='', resourceLimitCpu='', resourceLimitMemory='', resourceLimitEphemeralStorage='', envVars=[KeyValueEnvVar [getValue()=redacted@domain.corp, getKey()=GIT_EMAIL], KeyValueEnvVar [getValue()=redacted, getKey()=GIT_USER]], livenessProbe=ContainerLivenessProbe{execArgs='', timeoutSeconds=0, initialDelaySeconds=0, failureThreshold=0, periodSeconds=0, successThreshold=0}}], imagePullSecrets=[PodImagePullSecret{name='redacted-user'}]}. Container jnlp exited with error 255. Logs: 	at hudson.remoting.Engine.run(Engine.java:543)
+Caused by: java.nio.channels.ClosedChannelException
+	at org.jenkinsci.remoting.protocol.NetworkLayer.onRecvClosed(NetworkLayer.java:155)
+	at org.jenkinsci.remoting.protocol.impl.BIONetworkLayer.access$700(BIONetworkLayer.java:51)
+	at org.jenkinsci.remoting.protocol.impl.BIONetworkLayer$Reader.run(BIONetworkLayer.java:257)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at hudson.remoting.Engine$1.lambda$newThread$0(Engine.java:125)
+	at java.base/java.lang.Thread.run(Unknown Source)
+
+Dec 07, 2022 3:27:10 PM hudson.remoting.jnlp.Main$CuiListener status
+INFO: reconnect rejected, sleeping 10s: 
+java.lang.Exception: The server rejected the connection: None of the protocols were accepted
+	at hudson.remoting.Engine.onConnectionRejected(Engine.java:877)
+	at hudson.remoting.Engine.innerRun(Engine.java:824)
+	at hudson.remoting.Engine.run(Engine.java:543)
+
+Dec 07, 2022 3:27:20 PM hudson.remoting.jnlp.Main$CuiListener status
+INFO: Locating server among [https://redacted.domain.corp/]
+Dec 07, 2022 3:27:20 PM org.jenkinsci.remoting.engine.JnlpAgentEndpointResolver resolve
+INFO: Remoting server accepts the following protocols: [JNLP4-connect, Ping]
+Dec 07, 2022 3:27:20 PM org.jenkinsci.remoting.engine.JnlpAgentEndpointResolver isPortVisible
+WARNING: Connection refused (Connection refused): redacted.domain.corp:50000
+Dec 07, 2022 3:27:20 PM hudson.remoting.jnlp.Main$CuiListener error
+SEVERE: https://redacted.domain.corp/ provided port:50000 is not reachable
+java.io.IOException: https://redacted.domain.corp/ provided port:50000 is not reachable
+	at org.jenkinsci.remoting.engine.JnlpAgentEndpointResolver.resolve(JnlpAgentEndpointResolver.java:311)
+	at hudson.remoting.Engine.innerRun(Engine.java:744)
+	at hudson.remoting.Engine.run(Engine.java:543)
+
+
+2022-12-07 15:27:21.342+0000 [id=127240]	WARNING	o.c.j.p.k.KubernetesLauncher#launch: Error in provisioning; agent=KubernetesSlave name: redacted-p67d1, template=PodTemplate{id='8ffbcf0d-32d0-4b72-9728-7ddefe352748', name='redacted', slaveConnectTimeout=100, idleMinutes=30, label='k8s-redacted', containers=[ContainerTemplate{name='jnlp', image='redacted:1.59', workingDir='/home/jenkins/agent', command='', args='', ttyEnabled=true, resourceRequestCpu='', resourceRequestMemory='8Gi', resourceRequestEphemeralStorage='', resourceLimitCpu='', resourceLimitMemory='', resourceLimitEphemeralStorage='', envVars=[KeyValueEnvVar [getValue()=redacted@domain.corp, getKey()=GIT_EMAIL], KeyValueEnvVar [getValue()=redacted, getKey()=GIT_USER]], livenessProbe=ContainerLivenessProbe{execArgs='', timeoutSeconds=0, initialDelaySeconds=0, failureThreshold=0, periodSeconds=0, successThreshold=0}}], imagePullSecrets=[PodImagePullSecret{name='redacted-user'}]}
+java.lang.IllegalStateException: Containers are terminated with exit codes: {jnlp=255}
+	at org.csanchez.jenkins.plugins.kubernetes.KubernetesLauncher.checkTerminatedContainers(KubernetesLauncher.java:277)
+	at org.csanchez.jenkins.plugins.kubernetes.KubernetesLauncher.launch(KubernetesLauncher.java:227)
+	at hudson.slaves.SlaveComputer.lambda$_connect$0(SlaveComputer.java:298)
+	at jenkins.util.ContextResettingExecutorService$2.call(ContextResettingExecutorService.java:48)
+	at jenkins.security.ImpersonatingExecutorService$2.call(ImpersonatingExecutorService.java:82)
+	at java.base/java.util.concurrent.FutureTask.run(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.base/java.lang.Thread.run(Unknown Source)
+2022-12-07 15:27:21.346+0000 [id=127240]	INFO	o.c.j.p.k.KubernetesSlave#_terminate: Terminating Kubernetes instance for agent redacted-p67d1
+2022-12-07 15:27:21.360+0000 [id=112288]	INFO	o.c.j.p.k.KubernetesSlave#deleteSlavePod: Terminated Kubernetes instance for agent default/redacted-p67d1
+2022-12-07 15:27:21.360+0000 [id=127240]	INFO	o.c.j.p.k.KubernetesSlave#deleteSlavePod: Terminated Kubernetes instance for agent default/redacted-p67d1
+2022-12-07 15:27:21.366+0000 [id=112288]	INFO	o.c.j.p.k.KubernetesSlave#_terminate: Disconnected computer redacted-p67d1
+2022-12-07 15:27:21.367+0000 [id=127240]	INFO	o.c.j.p.k.KubernetesSlave#_terminate: Disconnected computer redacted-p67d1
+2022-12-07 15:27:21.382+0000 [id=112288]	WARNING	o.c.j.p.k.KubernetesProvisioningLimits#unregister: Pod template count for redacted went below zero. There is likely a bug in kubernetes-plugin

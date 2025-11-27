@@ -1,0 +1,65 @@
+host# docker service inspect 2krru
+[
+    {
+        "ID": "2krru2vshcx9se26jqfwxaho0",
+        "Version": {
+            "Index": 17017595
+        },
+        "CreatedAt": "2018-06-29T11:53:12.063833238Z",
+        "UpdatedAt": "2018-06-29T11:53:12.063833238Z",
+        "Spec": {
+            "Name": "agent-2138346609393499",
+            "Labels": {
+                "ROLE": "jenkins-agent"
+            },
+            "TaskTemplate": {
+                "ContainerSpec": {
+                    "Image": "redacted/redacted@sha256:04989cfb0882309d2f8dcef03e56a7875e8242ab5eaed01b695cbf9427e88038",
+                    "Command": [
+                        "sh",
+                        "-cx",
+                        "curl --connect-timeout 20  --max-time 60 -o slave.jar http://1.2.3.4:8080/jenkins/jnlpJars/slave.jar \u0026\u0026 java -jar slave.jar -jnlpUrl http://1.2.3.4:8080/jenkins/computer/agent-2138346609393499/slave-agent.jnlp -secret aa9efbcee7525660c9eb1c1f5fdf4cb990a7b16f75fd9ea85c766c1af55cf2f5 -noReconnect -workDir /tmp "
+                    ],
+                    "Mounts": [
+                        {
+                            "Type": "bind",
+                            "Source": "/etc/hostname",
+                            "Target": "/etc/node"
+                        },
+                        {
+                            "Type": "bind",
+                            "Source": "/cache",
+                            "Target": "/cache"
+                        }
+                    ]
+                },
+                "Resources": {
+                    "Limits": {},
+                    "Reservations": {
+                        "NanoCPUs": 16000000000,
+                        "MemoryBytes": 8000000000
+                    }
+                },
+                "RestartPolicy": {
+                    "Condition": "on-failure",
+                    "MaxAttempts": 500
+                },
+                "Placement": {
+                    "Constraints": [
+                        "node.labels.ssd == true"
+                    ]
+                },
+                "ForceUpdate": 0
+            },
+            "Mode": {
+                "Replicated": {
+                    "Replicas": 1
+                }
+            }
+        },
+        "Endpoint": {
+            "Spec": {}
+        }
+    }
+]
+

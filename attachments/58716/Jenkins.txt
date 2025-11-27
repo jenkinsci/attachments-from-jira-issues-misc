@@ -1,0 +1,89 @@
+pipeline {
+  agent {
+    kubernetes {
+      yaml '''
+        apiVersion: v1
+        kind: Pod
+
+        spec:
+#          securityContext:
+#            runAsUser: 1000
+          containers:
+          - name: dotnet
+            image: mcr.microsoft.com/dotnet/sdk:5.0
+            command:
+            - cat
+            tty: true
+#            securityContext:
+#              privileged: true
+          - name: kubectl
+            image: bitnami/kubectl:latest
+            command:
+            - cat
+            tty: true
+#            securityContext:
+#              privileged: true
+          - name: docker
+            image: docker:dind
+            tty: true
+            securityContext:
+              privileged: true
+
+        '''
+    }
+  }
+  environment {
+    REGISTRY = "harbor.vc-prod.k.home.net"
+    HARBOR_CREDENTIAL = credentials('robot-jenkins')
+  }
+  stages {
+    stage('Git clone') {
+      steps {
+        git branch: 'main', credentialsId: 'github-asdf',
+          url: 'https://github.com/asdf/p-lido-asdf.git'
+      }
+    }
+    stage('Run dotnet') {
+      steps {
+        container('dotnet') {
+          sh 'dotnet --info'
+          sh 'dotnet publish --configuration Debug --runtime linux-x64 --self-contained true'
+          sh 'find'
+        }
+      }
+    }
+    stage('Build container') {
+      steps {
+        container('docker') {
+          sh 'docker version'
+          withCredentials([file(credentialsId: 'ca-bundle-pem-format', variable: 'CABUNDLE')]) {
+            sh "cp \$CABUNDLE /etc/ssl/certs/ca-bundle.crt"
+          }
+          sh '#docker logout harbor.vc-prod.k.home.net'
+          sh '''echo $HARBOR_CREDENTIAL_PSW | docker login $REGISTRY -u $HARBOR_CREDENTIAL_USR --password-stdin'''
+          sh "#cat \$HOME/.docker/config.json"
+          sh "docker build -t 'harbor.vc-prod.k.home.net/lido/asdf:0.0.${BUILD_NUMBER}' ."
+          sh "docker image push 'harbor.vc-prod.k.home.net/lido/asdf:0.0.${BUILD_NUMBER}'"
+          sh 'docker build -t "harbor.vc-prod.k.home.net/lido/adsf:latest" .'
+          sh 'docker image push "harbor.vc-prod.k.home.net/lido/asdf:latest"'
+        }
+      }
+    }
+    stage('Deploy new image') {
+      steps {
+        container('kubectl') {
+          sh 'kubectl version -o yaml'
+          sh 'find'
+          sh '#ls / -a'
+          withCredentials([file(credentialsId: 'kubeconfig-vc-non-admin', variable: 'TMPKUBECONFIG')]) {
+            sh "cp \$TMPKUBECONFIG /.kube/config"
+          }
+          sh '#ls /.kube/config'
+          sh '#kubectl version'
+          sh '#kubectl get nodes'
+          sh '#kubectl -n lido delete pod -l app=asdf'
+        }
+      }
+    }
+  }
+}

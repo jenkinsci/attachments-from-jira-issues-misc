@@ -1,0 +1,49 @@
+#!groovy
+@Library('q-loc-lib-dev') _
+
+pipeline {
+    agent {
+        node {
+            label 'IDK300-1'
+            customWorkspace 'd:\\workspace_p4\\robot.obibok_idk300_sandbox_streams'
+        }
+    }
+    triggers {
+        p4Trigger()
+    }
+    options {
+        buildDiscarder logRotator(numToKeepStr: '31')
+        disableResume()
+        disableConcurrentBuilds()
+        timestamps()
+        skipDefaultCheckout()
+    }
+    stages {
+        stage('Setup Pipeline'){
+            steps {
+                checkout perforce(
+                    credential: 'robot.obibok_1777',
+                    populate: previewOnly(
+                        quiet: true
+                    ),
+                    workspace: staticSpec(
+                        charset: 'utf8',
+                        name: 'robot.obibok_idk300_sandbox_streams',
+                        pinHost: false
+                    )
+                )
+                setupPipeline()
+            }
+        }
+        stage('Test'){
+            steps {
+                echo 'Test'
+            }
+        }
+    }
+    post {
+        always {
+            sendNotification 'plawniczuk@q-loc.com'
+        }
+    }
+}

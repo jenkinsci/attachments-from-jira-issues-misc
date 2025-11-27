@@ -1,0 +1,59 @@
+diff --git a/src/main/java/hudson/plugins/slave_squatter/LoadPredictorImpl.java b/src/main/java/hudson/plugins/slave_squatter/LoadPredictorImpl.java
+index 68c9c7a..81c6acc 100644
+--- a/src/main/java/hudson/plugins/slave_squatter/LoadPredictorImpl.java
++++ b/src/main/java/hudson/plugins/slave_squatter/LoadPredictorImpl.java
+@@ -48,8 +48,17 @@ public class LoadPredictorImpl extends LoadPredictor {
+         NodePropertyImpl p = n.getNodeProperties().get(NodePropertyImpl.class);
+         if (p==null)    return Collections.emptyList();
+ 
++        // Do not count currently-running reservations (they are already
++        // consuming executors, counting them here will result in
++        // them being double-counted)
++        List<FutureLoad> r;
++        long now = System.currentTimeMillis();
++        if (start > now)
++            r = new ArrayList<FutureLoad>();
++        else
++            r = p.activeReservations(computer, start);
++
+         int cnt=0; // a safety bent to avoid taking too much time
+-        List<FutureLoad> r = new ArrayList<FutureLoad>();
+         for (long t=start; t<end && cnt<256; cnt++) {
+             int sz = p.sizeOfReservation(computer,t);
+             long t2 = p.timeOfNextChange(computer,t+1);
+diff --git a/src/main/java/hudson/plugins/slave_squatter/NodePropertyImpl.java b/src/main/java/hudson/plugins/slave_squatter/NodePropertyImpl.java
+index b7c6d97..b2e3214 100644
+--- a/src/main/java/hudson/plugins/slave_squatter/NodePropertyImpl.java
++++ b/src/main/java/hudson/plugins/slave_squatter/NodePropertyImpl.java
+@@ -27,12 +27,14 @@ import hudson.Extension;
+ import hudson.model.Computer;
+ import hudson.model.Node;
+ import hudson.model.Saveable;
++import hudson.model.queue.FutureLoad;
+ import hudson.slaves.NodeProperty;
+ import hudson.slaves.NodePropertyDescriptor;
+ import hudson.util.DescribableList;
+ import org.kohsuke.stapler.DataBoundConstructor;
+ 
+ import java.io.IOException;
++import java.util.ArrayList;
+ import java.util.List;
+ 
+ import static hudson.Util.*;
+@@ -69,6 +71,16 @@ public class NodePropertyImpl extends NodeProperty<Node> {
+         return t;
+     }
+ 
++    public List<FutureLoad> activeReservations(Computer c, long now) {
++        List<FutureLoad> l = new ArrayList<FutureLoad>();
++        for (SlaveSquatter s : squatters) {
++            int r = s.sizeOfReservation(c, now);
++            if ( r > 0 )
++                l.add(new FutureLoad(now, timeOfNextChange(c, now)-now, -1*r));
++        }
++        return l;
++    }
++
+     @Extension
+     public static class DescriptorImpl extends NodePropertyDescriptor {
+         @Override

@@ -1,0 +1,23 @@
+node() {
+	stage('SerialStartStage') {
+		println 'SerialStartStage'
+	}
+
+	Map<String, Closure> parallelStages = [:]
+
+	for (int i = 1; i <= 3; i++) {
+		String stageName = 'ParallelStage' + i
+		parallelStages[stageName] = {
+			stage(stageName) {
+				sleep (new Random().nextInt(15))
+				println stageName
+			}
+		}
+	}
+
+	parallel parallelStages
+	
+	stage('SerialEndStage') {
+		println 'SerialEndStage'
+	}
+}

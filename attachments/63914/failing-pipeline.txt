@@ -1,0 +1,74 @@
+Started by user ************
+08:07:29 Connecting to https://api.github.com using 124328/****** (The GitHub app password for working with Git repositories in the SOME organization)
+Obtained Jenkinsfile from 4ee81042e9ab79e1c46b24243a7ee0fce84e3ae6
+Loading library devopsJenkinsPlugins@main
+Attempting to resolve main from remote references...
+ > git --version # timeout=10
+ > git --version # timeout=10
+using GIT_ASKPASS to set credentials 
+ERROR: Checkout failed
+java.io.IOException: error=0, Failed to exec spawn helper: pid: 1771702, exit value: 1
+	at java.base/java.lang.ProcessImpl.forkAndExec(Native Method)
+	at java.base/java.lang.ProcessImpl.<init>(ProcessImpl.java:295)
+	at java.base/java.lang.ProcessImpl.start(ProcessImpl.java:225)
+	at java.base/java.lang.ProcessBuilder.start(ProcessBuilder.java:1126)
+Caused: java.io.IOException: Cannot run program "cp": error=0, Failed to exec spawn helper: pid: 1771702, exit value: 1
+	at java.base/java.lang.ProcessBuilder.start(ProcessBuilder.java:1170)
+	at java.base/java.lang.ProcessBuilder.start(ProcessBuilder.java:1089)
+	at PluginClassLoader for git-client//org.jenkinsci.plugins.gitclient.CliGitAPIImpl.createNonBusyExecutable(CliGitAPIImpl.java:2745)
+	at PluginClassLoader for git-client//org.jenkinsci.plugins.gitclient.CliGitAPIImpl.createUnixStandardAskpass(CliGitAPIImpl.java:2522)
+	at PluginClassLoader for git-client//org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandWithCredentials(CliGitAPIImpl.java:2144)
+Caused: hudson.plugins.git.GitException: Failed to setup credentials
+	at PluginClassLoader for git-client//org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandWithCredentials(CliGitAPIImpl.java:2186)
+	at PluginClassLoader for git-client//org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandWithCredentials(CliGitAPIImpl.java:2080)
+	at PluginClassLoader for git-client//org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandWithCredentials(CliGitAPIImpl.java:2071)
+	at PluginClassLoader for git-client//org.jenkinsci.plugins.gitclient.CliGitAPIImpl.getRemoteReferences(CliGitAPIImpl.java:3806)
+	at PluginClassLoader for git//jenkins.plugins.git.AbstractGitSCMSource.retrieve(AbstractGitSCMSource.java:885)
+Caused: java.io.IOException
+	at PluginClassLoader for git//jenkins.plugins.git.AbstractGitSCMSource.retrieve(AbstractGitSCMSource.java:887)
+	at PluginClassLoader for scm-api//jenkins.scm.api.SCMSource.fetch(SCMSource.java:635)
+	at PluginClassLoader for pipeline-groovy-lib//org.jenkinsci.plugins.workflow.libs.SCMSourceRetriever.lambda$retrieve$0(SCMSourceRetriever.java:75)
+	at PluginClassLoader for pipeline-groovy-lib//org.jenkinsci.plugins.workflow.libs.SCMBasedRetriever.retrySCMOperation(SCMBasedRetriever.java:222)
+	at PluginClassLoader for pipeline-groovy-lib//org.jenkinsci.plugins.workflow.libs.SCMSourceRetriever.retrieve(SCMSourceRetriever.java:75)
+	at PluginClassLoader for pipeline-groovy-lib//org.jenkinsci.plugins.workflow.libs.LibraryAdder.retrieve(LibraryAdder.java:298)
+	at PluginClassLoader for pipeline-groovy-lib//org.jenkinsci.plugins.workflow.libs.LibraryAdder.add(LibraryAdder.java:157)
+	at PluginClassLoader for pipeline-groovy-lib//org.jenkinsci.plugins.workflow.libs.LibraryDecorator$1.call(LibraryDecorator.java:125)
+	at org.codehaus.groovy.control.CompilationUnit.applyToPrimaryClassNodes(CompilationUnit.java:1087)
+	at org.codehaus.groovy.control.CompilationUnit.doPhaseOperation(CompilationUnit.java:624)
+	at org.codehaus.groovy.control.CompilationUnit.processPhaseOperations(CompilationUnit.java:602)
+	at org.codehaus.groovy.control.CompilationUnit.compile(CompilationUnit.java:579)
+	at groovy.lang.GroovyClassLoader.doParseClass(GroovyClassLoader.java:323)
+	at groovy.lang.GroovyClassLoader.parseClass(GroovyClassLoader.java:293)
+	at PluginClassLoader for script-security//org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.GroovySandbox$Scope.parse(GroovySandbox.java:163)
+	at PluginClassLoader for workflow-cps//org.jenkinsci.plugins.workflow.cps.CpsGroovyShell.doParse(CpsGroovyShell.java:190)
+	at PluginClassLoader for workflow-cps//org.jenkinsci.plugins.workflow.cps.CpsGroovyShell.reparse(CpsGroovyShell.java:175)
+	at PluginClassLoader for workflow-cps//org.jenkinsci.plugins.workflow.cps.CpsFlowExecution.parseScript(CpsFlowExecution.java:652)
+	at PluginClassLoader for workflow-cps//org.jenkinsci.plugins.workflow.cps.CpsFlowExecution.start(CpsFlowExecution.java:598)
+	at PluginClassLoader for workflow-job//org.jenkinsci.plugins.workflow.job.WorkflowRun.run(WorkflowRun.java:335)
+	at hudson.model.ResourceController.execute(ResourceController.java:101)
+	at hudson.model.Executor.run(Executor.java:446)
+ERROR: Maximum checkout retry attempts reached, aborting
+org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+WorkflowScript: Loading libraries failed
+
+1 error
+
+	at org.codehaus.groovy.control.ErrorCollector.failIfErrors(ErrorCollector.java:309)
+	at org.codehaus.groovy.control.CompilationUnit.applyToPrimaryClassNodes(CompilationUnit.java:1107)
+	at org.codehaus.groovy.control.CompilationUnit.doPhaseOperation(CompilationUnit.java:624)
+	at org.codehaus.groovy.control.CompilationUnit.processPhaseOperations(CompilationUnit.java:602)
+	at org.codehaus.groovy.control.CompilationUnit.compile(CompilationUnit.java:579)
+	at groovy.lang.GroovyClassLoader.doParseClass(GroovyClassLoader.java:323)
+	at groovy.lang.GroovyClassLoader.parseClass(GroovyClassLoader.java:293)
+	at PluginClassLoader for script-security//org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.GroovySandbox$Scope.parse(GroovySandbox.java:163)
+	at PluginClassLoader for workflow-cps//org.jenkinsci.plugins.workflow.cps.CpsGroovyShell.doParse(CpsGroovyShell.java:190)
+	at PluginClassLoader for workflow-cps//org.jenkinsci.plugins.workflow.cps.CpsGroovyShell.reparse(CpsGroovyShell.java:175)
+	at PluginClassLoader for workflow-cps//org.jenkinsci.plugins.workflow.cps.CpsFlowExecution.parseScript(CpsFlowExecution.java:652)
+	at PluginClassLoader for workflow-cps//org.jenkinsci.plugins.workflow.cps.CpsFlowExecution.start(CpsFlowExecution.java:598)
+	at PluginClassLoader for workflow-job//org.jenkinsci.plugins.workflow.job.WorkflowRun.run(WorkflowRun.java:335)
+	at hudson.model.ResourceController.execute(ResourceController.java:101)
+	at hudson.model.Executor.run(Executor.java:446)
+
+GitHub has been notified of this commit’s build result
+
+Finished: FAILURE

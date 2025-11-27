@@ -1,0 +1,24 @@
+Subject: [PATCH] Downstream job list as bullet points
+---
+Index: pipeline-maven/src/main/resources/org/jenkinsci/plugins/pipeline/maven/publishers/MavenReport/index.jelly
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/pipeline-maven/src/main/resources/org/jenkinsci/plugins/pipeline/maven/publishers/MavenReport/index.jelly b/pipeline-maven/src/main/resources/org/jenkinsci/plugins/pipeline/maven/publishers/MavenReport/index.jelly
+--- a/pipeline-maven/src/main/resources/org/jenkinsci/plugins/pipeline/maven/publishers/MavenReport/index.jelly	(revision 610fabe2d60e38c66d26f462856cdb44f06ea0ed)
++++ b/pipeline-maven/src/main/resources/org/jenkinsci/plugins/pipeline/maven/publishers/MavenReport/index.jelly	(date 1723540883627)
+@@ -44,10 +44,11 @@
+                     <j:forEach var="jobsByArtifact" items="${it.downstreamJobsByArtifact.entrySet()}">
+                         <li>
+                             ${jobsByArtifact.key.id}:
++                            <ul>
+                             <j:forEach var="job" varStatus="varStatus" items="${jobsByArtifact.value}">
+-                                <a href="${rootURL}/${job.url}">${job.fullDisplayName}</a>
+-                                <j:if test="${!varStatus.last}">, </j:if>
++                                <li><a href="${rootURL}/${job.url}">${job.fullDisplayName}</a></li>
+                             </j:forEach>
++                            </ul>
+                         </li>
+                     </j:forEach>
+                 </ul>

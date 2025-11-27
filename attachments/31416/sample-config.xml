@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@1.11">
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@1.11">
+    <script>node {
+    checkout([
+        $class: &apos;GitSCM&apos;,
+        branches: [[name: &apos;*/master&apos;]],
+        doGenerateSubmoduleConfigurations: false,
+        extensions: [
+            [$class: &apos;DisableRemotePoll&apos;],
+            [$class: &apos;PathRestriction&apos;, excludedRegions: &apos;&apos;, includedRegions: &apos;resources/.*&apos;]
+        ],
+        submoduleCfg: [],
+        userRemoteConfigs: [
+            [url: &apos;ssh://me@someserver.com:somerepo.git&apos;]
+        ]
+    ])
+    echo &apos;hello&apos;
+}</script>
+    <sandbox>false</sandbox>
+  </definition>
+  <triggers>
+    <hudson.triggers.SCMTrigger>
+      <spec>H/5 * * * *</spec>
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+</flow-definition>

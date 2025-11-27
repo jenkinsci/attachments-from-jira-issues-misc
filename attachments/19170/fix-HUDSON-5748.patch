@@ -1,0 +1,37 @@
+Index: disk-usage/src/main/java/hudson/plugins/disk_usage/DiskUsageThread.java
+===================================================================
+--- disk-usage/src/main/java/hudson/plugins/disk_usage/DiskUsageThread.java	(revision 22052)
++++ disk-usage/src/main/java/hudson/plugins/disk_usage/DiskUsageThread.java	Tue Feb 23 16:49:21 HST 2010
+@@ -24,16 +24,13 @@
+  */
+ @Extension
+ public class DiskUsageThread extends AsyncPeriodicWork {
+-    //trigger disk usage thread each 60 minutes
+-    public static final int COUNT_INTERVAL_MINUTES = 60;
+ 
+-
+     public DiskUsageThread() {
+         super("Project disk usage");
+     }
+ 
+     public long getRecurrencePeriod() {
+-        return 1000*60*COUNT_INTERVAL_MINUTES;
++        return 1000*60*DiskUsagePlugin.COUNT_INTERVAL_MINUTES;
+     }
+ 
+     @Override
+Index: disk-usage/src/main/java/hudson/plugins/disk_usage/DiskUsagePlugin.java
+===================================================================
+--- disk-usage/src/main/java/hudson/plugins/disk_usage/DiskUsagePlugin.java	(revision 22052)
++++ disk-usage/src/main/java/hudson/plugins/disk_usage/DiskUsagePlugin.java	Tue Feb 23 16:49:20 HST 2010
+@@ -22,7 +22,9 @@
+  * @plugin
+  */
+ public class DiskUsagePlugin extends Plugin {
+-    
++
++    //trigger disk usage thread each 60 minutes (here for index.jelly)
++    public static final int COUNT_INTERVAL_MINUTES = 60;
+ 
+     private transient final DiskUsageThread duThread = new DiskUsageThread();
+     

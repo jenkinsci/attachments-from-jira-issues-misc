@@ -1,0 +1,68 @@
+{
+	"name": "test",
+	"description": "",
+	"": ["", "0"],
+	"logrotate": false,
+	"buildDiscarder": {
+		"stapler-class": "hudson.tasks.LogRotator",
+		"daysToKeepStr": "",
+		"numToKeepStr": "",
+		"artifactDaysToKeepStr": "",
+		"artifactNumToKeepStr": ""
+	},
+	"properties": {
+		"stapler-class-bag": "true",
+		"hudson-model-ParametersDefinitionProperty": {}
+	},
+	"displayNameOrNull": "",
+	"scm": {
+		"value": "2"
+	},
+	"publisher": {
+		"publishers": {
+			"": ["0", "0", "5"],
+			"condition": {
+				"stapler-class": "org.jenkins_ci.plugins.run_condition.core.AlwaysRun"
+			},
+			"runner": {
+				"stapler-class": "org.jenkins_ci.plugins.run_condition.BuildStepRunner$Fail"
+			},
+			"publisher": {
+				"stapler-class": [
+					"hudson.tasks.test.AggregatedTestResultPublisher",
+					"hudson.tasks.ArtifactArchiver",
+					"hudson.tasks.BuildTrigger",
+					"hudson.tasks.junit.JUnitResultArchiver",
+					"hudson.tasks.JavadocArchiver",
+					"org.jenkinsci.plugins.xunit.XUnitPublisher",
+					"hudson.plugins.jacoco.JacocoPublisher",
+					"hudson.tasks.Fingerprinter",
+					"hudson.tasks.Mailer"
+				],
+				"thresholds": [
+					{
+						"unstableThreshold": "",
+						"unstableNewThreshold": "",
+						"failureThreshold": "",
+						"failureNewThreshold": "",
+						"stapler-class": "org.jenkinsci.plugins.xunit.threshold.FailedThreshold",
+						"kind": "org.jenkinsci.plugins.xunit.threshold.FailedThresholdDescriptor"
+					},
+					{
+						"unstableThreshold": "",
+						"unstableNewThreshold": "",
+						"failureThreshold": "",
+						"failureNewThreshold": "",
+						"stapler-class": "org.jenkinsci.plugins.xunit.threshold.SkippedThreshold",
+						"kind": "org.jenkinsci.plugins.xunit.threshold.SkippedThresholdDescriptor"
+					}
+				],
+				"thresholdMode": "1",
+				"testTimeMargin": "3000"
+			}
+		},
+		"stapler-class": "org.jenkins_ci.plugins.flexible_publish.FlexiblePublisher",
+		"kind": "org.jenkins_ci.plugins.flexible_publish.FlexiblePublisher"
+	},
+	"core:apply": ""
+}

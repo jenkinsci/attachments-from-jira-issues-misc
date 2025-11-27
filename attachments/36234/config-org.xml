@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<jenkins.branch.OrganizationFolder plugin="branch-api@1.11.1">
+  <actions/>
+  <description></description>
+  <displayName>yooture</displayName>
+  <properties>
+    <com.cloudbees.hudson.plugins.folder.properties.EnvVarsFolderProperty plugin="cloudbees-folders-plus@3.0">
+      <properties></properties>
+    </com.cloudbees.hudson.plugins.folder.properties.EnvVarsFolderProperty>
+    <org.jenkinsci.plugins.workflow.libs.FolderLibraries plugin="workflow-cps-global-lib@2.5">
+      <libraries>
+        <org.jenkinsci.plugins.workflow.libs.LibraryConfiguration>
+          <name>yooture</name>
+          <retriever class="org.jenkinsci.plugins.workflow.libs.SCMSourceRetriever">
+            <scm class="jenkins.plugins.git.GitSCMSource" plugin="git@3.0.1">
+              <id>432a01d5-dedc-4657-bf9e-64619ba70959</id>
+              <remote>git@bitbucket.org:yooture/yooture-jenkins-pipeline-libraries.git</remote>
+              <credentialsId></credentialsId>
+              <includes>*</includes>
+              <excludes></excludes>
+              <ignoreOnPushNotifications>false</ignoreOnPushNotifications>
+            </scm>
+          </retriever>
+          <defaultVersion>master</defaultVersion>
+          <implicit>true</implicit>
+          <allowVersionOverride>true</allowVersionOverride>
+        </org.jenkinsci.plugins.workflow.libs.LibraryConfiguration>
+      </libraries>
+    </org.jenkinsci.plugins.workflow.libs.FolderLibraries>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.config.FolderConfig plugin="pipeline-model-definition@1.0.1">
+      <dockerLabel></dockerLabel>
+      <registry plugin="docker-commons@1.5"/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.config.FolderConfig>
+    <jenkins.branch.NoTriggerOrganizationFolderProperty>
+      <branches>feature\/.*|develop</branches>
+    </jenkins.branch.NoTriggerOrganizationFolderProperty>
+  </properties>
+  <views>
+    <hudson.model.ListView>
+      <owner class="jenkins.branch.OrganizationFolder" reference="../../.."/>
+      <name>Repositories</name>
+      <filterExecutors>false</filterExecutors>
+      <filterQueue>false</filterQueue>
+      <properties class="hudson.model.View$PropertyList"/>
+      <jobNames>
+        <comparator class="hudson.util.CaseInsensitiveComparator"/>
+      </jobNames>
+      <jobFilters/>
+      <columns>
+        <hudson.views.StatusColumn/>
+        <hudson.views.WeatherColumn/>
+        <com.cloudbees.jenkins.plugins.bitbucket.CustomNameJobColumn plugin="cloudbees-bitbucket-branch-source@1.9">
+          <bundle>com.cloudbees.jenkins.plugins.bitbucket.Messages</bundle>
+          <key>ListViewColumn.Repository</key>
+        </com.cloudbees.jenkins.plugins.bitbucket.CustomNameJobColumn>
+        <jenkins.plugins.extracolumns.LastBuildConsoleColumn plugin="extra-columns@1.17"/>
+      </columns>
+      <includeRegex>.*</includeRegex>
+      <recurse>false</recurse>
+    </hudson.model.ListView>
+  </views>
+  <viewsTabBar class="hudson.views.DefaultViewsTabBar"/>
+  <primaryView>Repositories</primaryView>
+  <healthMetrics>
+    <com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric plugin="cloudbees-folder@5.13"/>
+    <com.cloudbees.hudson.plugins.folder.health.AverageChildHealthMetric plugin="cloudbees-folders-plus@3.0"/>
+    <com.cloudbees.hudson.plugins.folder.health.JobStatusHealthMetric plugin="cloudbees-folders-plus@3.0">
+      <success>true</success>
+      <failure>true</failure>
+      <unstable>true</unstable>
+      <unbuilt>true</unbuilt>
+      <countVirginJobs>false</countVirginJobs>
+    </com.cloudbees.hudson.plugins.folder.health.JobStatusHealthMetric>
+    <com.cloudbees.hudson.plugins.folder.health.ProjectEnabledHealthMetric plugin="cloudbees-folders-plus@3.0"/>
+  </healthMetrics>
+  <icon class="com.cloudbees.hudson.plugins.folder.icons.StockFolderIcon" plugin="cloudbees-folder@5.13"/>
+  <orphanedItemStrategy class="com.cloudbees.hudson.plugins.folder.computed.DefaultOrphanedItemStrategy" plugin="cloudbees-folder@5.13">
+    <pruneDeadBranches>true</pruneDeadBranches>
+    <daysToKeep>0</daysToKeep>
+    <numToKeep>0</numToKeep>
+  </orphanedItemStrategy>
+  <triggers>
+    <com.cloudbees.hudson.plugins.folder.computed.PeriodicFolderTrigger plugin="cloudbees-folder@5.13">
+      <spec>H H * * *</spec>
+      <interval>86400000</interval>
+    </com.cloudbees.hudson.plugins.folder.computed.PeriodicFolderTrigger>
+  </triggers>
+  <navigators>
+    <com.cloudbees.jenkins.plugins.bitbucket.BitbucketSCMNavigator plugin="cloudbees-bitbucket-branch-source@1.9">
+      <repoOwner>yooture</repoOwner>
+      <credentialsId>YOOBOT_BITBUCKET</credentialsId>
+      <checkoutCredentialsId>EMPTY_PK</checkoutCredentialsId>
+      <pattern>(?s)^((?!ios|yooture_old).)*$</pattern>
+      <autoRegisterHooks>true</autoRegisterHooks>
+      <sshPort>-1</sshPort>
+    </com.cloudbees.jenkins.plugins.bitbucket.BitbucketSCMNavigator>
+  </navigators>
+  <projectFactories>
+    <org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProjectFactory plugin="workflow-multibranch@2.9.2"/>
+  </projectFactories>
+</jenkins.branch.OrganizationFolder>

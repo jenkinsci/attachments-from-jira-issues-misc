@@ -1,0 +1,55 @@
+
+pipeline {
+    agent {
+        node { 
+            label '!setupmode'
+        } 
+    }
+  options {
+    buildDiscarder(logRotator(artifactDaysToKeepStr: '2', daysToKeepStr: '2', numToKeepStr: '4', artifactNumToKeepStr: '4'))
+  }
+
+  tools {
+      msbuild 'MSBuildx64_BuildTools'
+      
+  }
+  triggers {
+    pollSCM('''TZ=Europe/Berlin
+* * * * *''')
+  }
+  
+  stages {
+    stage('Checkout') {
+      steps {
+checkout([$class: 'GitSCM', branches: [[name: 'origin/master']], extensions: [[$class: 'CloneOption', honorRefspec: true, noTags: true, reference: '', shallow: false], [$class: 'RelativeTargetDirectory', relativeTargetDir: 'global'], [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '_CommonBuild'], [path: 'afx_mfc100_ressources']]], [$class: 'PathRestriction', excludedRegions: '', includedRegions: '''_CommonBuild/.*
+afx_mfc100_ressources/.*''']], userRemoteConfigs: [[credentialsId: '7e651ef9-bae5-4994-90c4-7fb26488b3fb', refspec: '+refs/heads/master:refs/remotes/origin/master', url: 'https://git.estos.de/scm/wgl/global.git']]])      }
+    }
+
+    stage('Get CommonBuild') {
+      steps {
+        bat 'powershell global/_CommonBuild/GetCommonBuild.ps1'
+      }
+    }
+
+    stage('MSBuild') {
+      steps {
+       bat "\"${tool 'MSBuildx64_BuildTools'}/msbuild\" global/afx_mfc100_ressources/_Build/Build.proj /P:ConfigurationMode=Release /bl"
+      }
+    }
+
+    stage('Set Buildname') {
+      steps {
+        script {
+            currentBuild.displayName = readFile 'global/version.txt'
+        }
+      }
+    }
+
+  }
+  post {
+    always {
+      step(followSymlinks: false, artifacts: '**/msbuild.binlog', $class: 'ArtifactArchiver')
+    }
+  }
+
+}

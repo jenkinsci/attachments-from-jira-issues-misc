@@ -1,0 +1,19 @@
+@Library('sharedlibrary@amiapi') _
+
+def test = new DescribeImages()
+
+pipeline {
+    agent any
+    stages {
+        stage ('test') {
+            steps {
+                echo test.getLatestRets()
+            }
+        }
+    }
+    post {
+        always {
+            deleteDir()
+        }
+    }
+}

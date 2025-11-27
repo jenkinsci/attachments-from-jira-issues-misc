@@ -1,0 +1,51 @@
+From: Ivan Žužak <support@github.com>
+To: David Sanftenberg <*********@cardano.com>
+Subject: Re: Constantly hitting rate limit
+----------------
+
+Thanks for reaching out, David. Please find answers and notes inline below.
+
+> Our Jenkins user account (************) is constantly hitting its API rate limit. We're using webhooks already to trigger builds, so this seems to be something else.
+> 
+> 1) Is there some way to increase the rate limit?
+
+Normally we'd consider discussing such an option only after doing step 2) and making sure you're not making any wasteful requests.
+
+> 2) If not, is there a way to debug the rate limit API calls being made?
+
+There's no such way for you, but there is for us -- we have some internal logs for API request for the past week or so which we can check and share some aggregate statistics with you.
+
+I just did that for your account and noticed this:
+
+https://api.github.com/user						96,944  26.995% 
+https://api.github.com/user/orgs 					83,800  23.335% 
+https://api.github.com/user/teams   					83,290  23.193% 
+https://api.github.com/rate_limit   					39,357  10.959% 
+https://api.github.com/							2,732   0.761%  
+https://api.github.com/repos/cardano/******    				612 0.17%   
+https://api.github.com/orgs/cardano					508 0.141%  
+https://api.github.com/repos/cardano/*******************	        469 0.13%   
+https://api.github.com/users/cardano					268 0.075%  
+https://api.github.com/repos/cardano/*******				239 0.066%
+
+There's an unusually high number of requests made to the /user endpoint (over 25% of all your requests), which seems wasteful. That endpoint returns information about the authenticated user, which will always be ************* and will change very rarely. Reducing that should allow you to get back 25% of your quota.
+
+Also, the number of requests to https://api.github.com/user/orgs and https://api.github.com/user/teams seems too high as well. For example, https://api.github.com/user/orgs was fetched over 20000 times in a single day, over 1850 times in a single hour, and over 400 times in a single minute. I can't think of a reason why you'd need to poll that resource so often -- you should be able to reduce that and get back at least 30-40% of your quota.
+
+You mentioned that you're using Jenkins, so it's likely that this is some Jenkins plugin doing these requests? I've seen such problems before with folks using Jenkins plugins, and many of those were resolved by updating to the latest versions of those plugins. Give that a try and see if that helps.
+
+On our end, we wouldn't be able to offer you a rate limit increase given the traffic patterns described above. If you can optimize your usage and determine you still need an increase -- let us know and we'd be happy to take another look.
+
+> 3) Is it possible that the cost of some API calls is being inflated erroneously?
+
+No. One API call decreases the 5000 reqs/hour quota by 1. Unless you're using conditional requests and the response was a 304: https://developer.github.com/v3/#conditional-requests or the endpoint is one of the few endpoints which don't count against the quota (e.g. /rate_limit).
+
+> 
+> Any insight would be great, as we're at our wits end debugging this.
+> 
+> Thanks.
+
+Hope this helps. Let me know if there's any other information you'd find helpful.
+
+Best,
+Ivan

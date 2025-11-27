@@ -1,0 +1,65 @@
+Index: src/main/java/hudson/plugins/clearcase/ucm/UcmMakeBaseline.java
+===================================================================
+--- src/main/java/hudson/plugins/clearcase/ucm/UcmMakeBaseline.java	(revision 16455)
++++ src/main/java/hudson/plugins/clearcase/ucm/UcmMakeBaseline.java	(working copy)
+@@ -36,7 +36,7 @@
+  * @author Gregory Boissinot 
+  * 2008-10-11 Add the rebase dynamic view feature
+  * 2008-11-21 Restric the baseline creation on read/write components
+- * 
++ * 2009-03-22 'The createdBaselines' follow now the same model of the 'latestBaselines' and 'readWriteComponents' fields.
+  */
+ public class UcmMakeBaseline extends Publisher {
+ 
+@@ -46,7 +46,7 @@
+     
+     private transient List<String> latestBaselines = null;
+ 
+-    private transient List<String> createdBaselines = new ArrayList<String>();
++    private transient List<String> createdBaselines = null;
+ 
+     public final static Descriptor<Publisher> DESCRIPTOR = new UcmMakeBaselineDescriptor();
+     
+@@ -188,7 +188,7 @@
+         	this.readWriteComponents = getReadWriteComponent(clearToolLauncher,filePath);
+         	   
+         	if (readWriteComponents.size()!=0){
+-        		makeBaseline(build, clearToolLauncher, filePath);            
++        		this.createdBaselines = makeBaseline(build, clearToolLauncher, filePath);            
+         		this.latestBaselines = getLatestBaselineNames(clearToolLauncher,filePath);
+             
+         		addBuildParameter(build);
+@@ -351,10 +351,12 @@
+     }
+ 
+     @SuppressWarnings("unchecked")
+-    private void makeBaseline(AbstractBuild build,
++    private List<String> makeBaseline(AbstractBuild build,
+             HudsonClearToolLauncher clearToolLauncher, FilePath filePath)
+             throws Exception {
+ 
++    	List<String> createdBaselinesList = new ArrayList<String>();
++    	
+         ArgumentListBuilder cmd = new ArgumentListBuilder();
+ 
+         String baselineName = Util
+@@ -399,15 +401,14 @@
+ 
+         Pattern pattern = Pattern.compile("Created baseline \".+?\"");
+         Matcher matcher = pattern.matcher(cleartoolResult);
+-        if (createdBaselines == null) {
+-            createdBaselines = new ArrayList<String>();
+-        }
+-	while (matcher.find()) {
++        while (matcher.find()) {
+             String match = matcher.group();
+             String newBaseline = match.substring(match.indexOf("\"") + 1, match
+                     .length() - 1);
+-            this.createdBaselines.add(newBaseline);
++            createdBaselinesList.add(newBaseline);
+         }
++	
++		return createdBaselinesList;
+ 
+     }
+ 

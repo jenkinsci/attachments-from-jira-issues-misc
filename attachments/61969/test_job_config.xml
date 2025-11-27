@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><matrix-project>
+    <description/>
+    <keepDependencies>false</keepDependencies>
+    <properties>
+        <EnvInjectJobProperty>
+            <info>
+                <groovyScriptContent>
+String propFileURL= 'https://someserver.content/dynamic-test-list.prop'
+String key = 'suites'
+
+def propFile = ""
+def tries = 3
+def successful = false
+def timeout = 30000
+while(tries &gt; 0 &amp;&amp; !successful) {
+    try {
+        propFile = new URL(propFileURL).getText([connectTimeout: timeout, readTimeout: timeout])
+        successful = true
+    } catch(e) {
+        println("Download failed for ${propFileURL}")
+        if (tries &lt;= 1) {
+            throw e
+        }
+        sleep(5000)
+    }
+    tries = tries - 1
+}
+
+def suiteList = []
+if(successful) {
+    def props = new Properties()
+    props.load(new StringReader(propFile))
+    suiteList = props[key].split(",")
+    suiteList.eachWithIndex { suite, i -&gt;
+        suiteList[i] = suiteList[i].trim()
+    }
+}
+
+
+suiteList.each() { println "${it}" }
+spaceSepSuites = suiteList.join(" ")
+
+def map = [ALL_TESTS: spaceSepSuites]
+return map
+                </groovyScriptContent>
+                <loadFilesFromMaster>false</loadFilesFromMaster>
+            </info>
+            <on>true</on>
+            <keepJenkinsSystemVariables>true</keepJenkinsSystemVariables>
+            <keepBuildVariables>true</keepBuildVariables>
+            <overrideBuildParameters>false</overrideBuildParameters>
+            <contributors/>
+        </EnvInjectJobProperty>
+    </properties>
+    <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+    <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+    <triggers/>
+    <concurrentBuild>true</concurrentBuild>
+    <axes>
+        <hudson.matrix.LabelAxis>
+            <name>node</name>
+            <values>
+                <string>medium</string>
+            </values>
+        </hudson.matrix.LabelAxis>
+        <ca.silvermaplesolutions.jenkins.plugins.daxis.DynamicAxis>
+            <name>suite</name>
+            <values>
+                <string>ALL_TESTS</string>
+            </values>
+            <varName>ALL_TESTS</varName>
+            <axisValues>
+                <string>default</string>
+            </axisValues>
+        </ca.silvermaplesolutions.jenkins.plugins.daxis.DynamicAxis>
+    </axes>
+    <builders>
+        <hudson.tasks.Shell>
+            <command>runtest --retries=1 --timeout=7200</command>
+        </hudson.tasks.Shell>
+    </builders>
+    <buildWrappers>
+        <hudson.plugins.timestamper.TimestamperBuildWrapper/>
+        <matrixtieparent.BuildWrapperMtp>
+            <labelName>test-coordinator</labelName>
+        </matrixtieparent.BuildWrapperMtp>
+    </buildWrappers>
+    <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+        <runSequentially>false</runSequentially>
+    </executionStrategy>
+    <assignedNode>test-coordinator</assignedNode>
+    <childCustomWorkspace>/my/custom/workspace/</childCustomWorkspace>
+</matrix-project>

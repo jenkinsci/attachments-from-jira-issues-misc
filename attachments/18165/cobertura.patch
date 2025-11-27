@@ -1,0 +1,24 @@
+Index: src/main/java/hudson/plugins/cobertura/CoberturaPublisher.java
+===================================================================
+--- src/main/java/hudson/plugins/cobertura/CoberturaPublisher.java	(revision 9030)
++++ src/main/java/hudson/plugins/cobertura/CoberturaPublisher.java	(working copy)
+@@ -186,7 +186,7 @@
+     /**
+      * {@inheritDoc}
+      */
+-    public boolean perform(Build<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
++    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+         if (!Result.SUCCESS.equals(build.getResult())) {
+             listener.getLogger().println("Skipping Cobertura coverage report as build was not successful...");
+             return true;
+@@ -191,8 +191,9 @@
+             listener.getLogger().println("Skipping Cobertura coverage report as build was not successful...");
+             return true;
+         }
++
+         listener.getLogger().println("Publishing Cobertura coverage report...");
+-        final Project<?, ?> project = build.getParent();
++        final AbstractProject<?, ?> project = (AbstractProject<?, ?>) build.getProject();
+         final boolean multipleModuleRoots;
+         if (project.getScm() instanceof SubversionSCM) {
+             // hack of the first kind

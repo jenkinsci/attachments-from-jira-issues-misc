@@ -1,0 +1,148 @@
+
+<html>
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=UTF-8">
+<title>Gmail - SVN username overridden by Hudson in local .subversion folder</title>
+<style type="text/css">
+body, td{font-family:arial,sans-serif;font-size:80%} a:link, a:active, a:visited{color:#0000CC} img{border:0} pre { white-space: pre; white-space: -moz-pre-wrap; white-space: -o-pre-wrap; white-space: pre-wrap; word-wrap: break-word; width: 800px; overflow: auto;}
+</style>
+<script>
+function Print(){document.body.offsetHeight;window.print()};
+</script>
+</head>
+<body onload="Print()">
+<table width=100% cellpadding=0 cellspacing=0 border=0>
+<tr>
+<td width=143>
+<img src="/mail/help/images/logo1.gif"
+width=143 height=59 alt="Gmail">
+</td>
+<td align=right>
+<font size=-1><b>
+Cees Bos
+&lt;cbos.ec@gmail.com&gt;
+</b></td>
+</tr>
+</table>
+<hr>
+<font size=+2>
+<b>SVN username overridden by Hudson in local .subversion folder</b></font><br>
+<font size=-1>3 messages</font>
+<hr>
+<table width=100% cellpadding=0 cellspacing=0 border=0>
+<tr>
+<td>
+<font size=-1><b>
+Cees Bos
+&lt;cbos.ec@gmail.com&gt;
+</b></font>
+</td>
+<td align=right>
+<font size=-1><b>
+Thu, Nov 11, 2010 at 3:00 PM
+</b></font>
+<tr>
+<td colspan=2>
+<font size=-1>
+<div>
+To:
+users@hudson.dev.java.net
+</div>
+</font>
+<tr>
+<td colspan=2>
+<table width=100% cellpadding=12 cellspacing=0 border=0>
+<tr>
+<td>
+<font size=-1>Hi all,<div><br></div><div>Yesterday I updated from 1.379 to 1.384.</div><div>On one of our servers we use Hudson to execute sync-merges between branches.</div><div><br></div><div>Hudson job updates to the latest revision of the target branch (just like you do with normal jobs)</div>
+<div><br></div><div>Then we start an Ant script which executes a number of SVN commands like <span style="font-family:monospace;font-size:11px;border-collapse:collapse;white-space:pre-wrap">svn merge -r revA:revB &lt;sourceurl&gt; &lt;targetfolder&gt; --accept postpone --non-interactive</span></div>
+That was working fine till yesterday.<div><br></div><div>In the local .subversion folder the credentials are stored. These credentials are used to execute the svn merge command.</div><div>We stored both username and password. (if you execute svn st -u Subversion asks for username and password and stores it in the .subserversion folder)</div>
+<div><br></div><div>With the update now Hudson is overriding these credentials by only storing the username provided in Hudson.</div><div><br></div><div>Why is this change made?<br>To keep our script running we now have to provide username and password as part of our scripts. That does not sound valid to me.</div>
+<div><br></div><div>Is this change intended or by accident? </div><div><br></div><div>Regards,</div><div>Cees</div>
+</font>
+</table>
+</table>
+<hr>
+<table width=100% cellpadding=0 cellspacing=0 border=0>
+<tr>
+<td>
+<font size=-1><b>
+Cees Bos
+&lt;cbos.ec@gmail.com&gt;
+</b></font>
+</td>
+<td align=right>
+<font size=-1><b>
+Fri, Nov 12, 2010 at 9:19 AM
+</b></font>
+<tr>
+<td colspan=2>
+<font size=-1>
+<div>
+To:
+users@hudson.dev.java.net
+</div>
+</font>
+<tr>
+<td colspan=2>
+<table width=100% cellpadding=12 cellspacing=0 border=0>
+<tr>
+<td>
+<font size=-1>Hi all,<div><br></div><div>I started an audit on the particular credentials file.</div><div><br></div><div>This is the outcome:</div><div><br></div><div><div>time-&gt;Fri Nov 12 08:53:28 2010</div><div>type=PATH msg=audit(1289548408.792:<WBR>42274): item=0 name=&quot;/home/hudson/.<WBR>subversion/auth/svn.simple/<WBR>6bc3222cd8ad55f7f92d11b22dadee<WBR>94&quot; inode=393418 dev=08:02 mode=0100644 ouid=500 ogid=0 rdev=00:00</div>
+<div>type=CWD msg=audit(1289548408.792:<WBR>42274):  cwd=&quot;<b>/opt/hudsonslave</b>&quot;</div><div>type=SYSCALL msg=audit(1289548408.792:<WBR>42274): arch=40000003 syscall=5 per=400000 success=yes exit=15 a0=98a2f48 a1=8000 a2=0 a3=8000 items=1 ppid=25046 pid=7864 auid=500 uid=500 gid=0 euid=500 suid=500 fsuid=500 egid=0 sgid=0 fsgid=0 tty=(none) ses=6647 comm=&quot;<b>java</b>&quot; exe=&quot;/usr/java/jdk1.6.0_17/<WBR>bin/java&quot; key=&quot;svncredentials&quot;</div>
+<div>----</div><div>time-&gt;Fri Nov 12 08:54:09 2010</div><div>type=PATH msg=audit(1289548449.964:<WBR>42275): item=0 name=&quot;/home/hudson/.<WBR>subversion/auth/svn.simple/<WBR>6bc3222cd8ad55f7f92d11b22dadee<WBR>94&quot; inode=393418 dev=08:02 mode=0100644 ouid=500 ogid=0 rdev=00:00</div>
+<div>type=CWD msg=audit(1289548449.964:<WBR>42275):  cwd=&quot;<b>/opt/hudsonslave</b>&quot;</div><div>type=SYSCALL msg=audit(1289548449.964:<WBR>42275): arch=40000003 syscall=5 per=400000 success=yes exit=15 a0=b4cbe090 a1=8000 a2=0 a3=8000 items=1 ppid=25046 pid=7864 auid=500 uid=500 gid=0 euid=500 suid=500 fsuid=500 egid=0 sgid=0 fsgid=0 tty=(none) ses=6647 comm=&quot;<b>java</b>&quot; exe=&quot;/usr/java/jdk1.6.0_17/<WBR>bin/java&quot; key=&quot;svncredentials&quot;</div>
+<div>----</div><div>time-&gt;Fri Nov 12 08:54:09 2010</div><div>type=PATH msg=audit(1289548449.965:<WBR>42277): item=4 name=&quot;/home/hudson/.<WBR>subversion/auth/svn.simple/<WBR>6bc3222cd8ad55f7f92d11b22dadee<WBR>94&quot; inode=393420 dev=08:02 mode=0100644 ouid=500 ogid=0 rdev=00:00</div>
+<div>type=PATH msg=audit(1289548449.965:<WBR>42277): item=3 name=&quot;/home/hudson/.<WBR>subversion/auth/svn.simple/<WBR>6bc3222cd8ad55f7f92d11b22dadee<WBR>94&quot; inode=393418 dev=08:02 mode=0100644 ouid=500 ogid=0 rdev=00:00</div><div>type=PATH msg=audit(1289548449.965:<WBR>42277): item=2 name=&quot;/home/hudson/.<WBR>subversion/auth/svn.simple/<WBR>auth.aec8133f-2c01-0010-b72c-<WBR>6d9a98d2f89a.tmp&quot; inode=393420 dev=08:02 mode=0100644 ouid=500 ogid=0 rdev=00:00</div>
+<div>type=PATH msg=audit(1289548449.965:<WBR>42277): item=1 name=&quot;/home/hudson/.<WBR>subversion/auth/svn.simple/&quot; inode=393401 dev=08:02 mode=040775 ouid=500 ogid=500 rdev=00:00</div><div>type=PATH msg=audit(1289548449.965:<WBR>42277): item=0 name=&quot;/home/hudson/.<WBR>subversion/auth/svn.simple/&quot; inode=393401 dev=08:02 mode=040775 ouid=500 ogid=500 rdev=00:00</div>
+<div>type=CWD msg=audit(1289548449.965:<WBR>42277):  cwd=&quot;<b>/opt/hudsonslave</b>&quot;</div><div>type=SYSCALL msg=audit(1289548449.965:<WBR>42277): arch=40000003 syscall=38 per=400000 success=yes exit=0 a0=b4cbe150 a1=b4cbe1b0 a2=b76c86e8 a3=b4cbe1b0 items=5 ppid=25046 pid=7864 auid=500 uid=500 gid=0 euid=500 suid=500 fsuid=500 egid=0 sgid=0 fsgid=0 tty=(none) ses=6647 comm=&quot;<b>java</b>&quot; exe=&quot;/usr/java/jdk1.6.0_17/<WBR>bin/java&quot; key=&quot;svncredentials&quot;</div>
+<div>----</div><div>time-&gt;Fri Nov 12 08:54:09 2010</div><div>type=PATH msg=audit(1289548449.966:<WBR>42278): item=0 name=&quot;/home/hudson/.<WBR>subversion/auth/svn.simple/<WBR>6bc3222cd8ad55f7f92d11b22dadee<WBR>94&quot; inode=393420 dev=08:02 mode=0100644 ouid=500 ogid=0 rdev=00:00</div>
+<div>type=CWD msg=audit(1289548449.966:<WBR>42278):  cwd=&quot;<b>/opt/hudsonslave</b>&quot;</div><div>type=SYSCALL msg=audit(1289548449.966:<WBR>42278): arch=40000003 syscall=15 per=400000 success=yes exit=0 a0=b4cbe150 a1=8124 a2=b76c86e8 a3=b4cbe150 items=1 ppid=25046 pid=7864 auid=500 uid=500 gid=0 euid=500 suid=500 fsuid=500 egid=0 sgid=0 fsgid=0 tty=(none) ses=6647 comm=&quot;<b>java</b>&quot; exe=&quot;/usr/java/jdk1.6.0_17/<WBR>bin/java&quot; key=&quot;svncredentials&quot;</div>
+<div>----</div><div><br></div><div>The parent pid is 25046.</div><div><br></div><div><div>hudson   25046 24932   0  0 Nov10 ?        00:00:00 bash -c cd &#39;/opt/hudsonslave&#39; &amp;&amp; java -Xmx512M -jar slave.jar</div>
+<div>hudson   25069 25046   0  0 Nov10 ?        00:12:28 java -Xmx512M -jar slave.jar</div></div><div><br></div><div>But the process which executed the svn actions is NOT the slave itself. Because that is PID 25069  and the action is executed by PID 7864</div>
+<div><br></div><div>So which additional action is changing the SVN credential files???</div><div><br></div><div>Regards,<br><font color=#888888>Cees</font></div><div style='padding:5 0'><font size=1 color=#888888>[Quoted text hidden]</font></div></div>
+</font>
+</table>
+</table>
+<hr>
+<table width=100% cellpadding=0 cellspacing=0 border=0>
+<tr>
+<td>
+<font size=-1><b>
+Cees Bos
+&lt;cbos.ec@gmail.com&gt;
+</b></font>
+</td>
+<td align=right>
+<font size=-1><b>
+Fri, Nov 12, 2010 at 10:18 AM
+</b></font>
+<tr>
+<td colspan=2>
+<font size=-1>
+<div>
+Draft To:
+users@hudson.dev.java.net
+</div>
+</font>
+<tr>
+<td colspan=2>
+<table width=100% cellpadding=12 cellspacing=0 border=0>
+<tr>
+<td>
+<font size=-1>Hi all,<div><br></div><div>I downgraded the SVN Plugin from 1.20 to 1.17 and that fixed the issue.</div><div><br></div><div><span style="font-family:Helvetica, Arial, sans-serif;font-size:13px;line-height:17px"><h1 style="line-height:normal;font-weight:bold;padding-top:0px;padding-right:0px;padding-bottom:0px;padding-left:0px;font-size:18pt;margin-top:32px;margin-right:0px;margin-bottom:10px;margin-left:0px;color:rgb(0, 51, 102);border-bottom-color:rgb(102, 153, 204);width:1354px">
+Change Log</h1><h3 style="line-height:normal;font-weight:bold;padding-top:0px;padding-right:0px;padding-bottom:0px;padding-left:0px;font-size:14pt;margin-top:20px;margin-right:0px;margin-bottom:4px;margin-left:0px;color:rgb(0, 51, 102)">
+<a name="12c3f60e2b9f0381_SubversionPlugin-Version1.20%28Nov1%2C2010%29"></a>Version 1.20 (Nov 1, 2010)</h3><ul style="font-size:10pt;line-height:13pt;list-style-type:disc"><li style="font-size:10pt;line-height:13pt;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px;padding-top:0px;padding-right:0px;padding-bottom:0px;padding-left:0px">
+Fixed a serialization issue.</li></ul><h3 style="line-height:normal;font-weight:bold;padding-top:0px;padding-right:0px;padding-bottom:0px;padding-left:0px;font-size:14pt;margin-top:20px;margin-right:0px;margin-bottom:4px;margin-left:0px;color:rgb(0, 51, 102)">
+<a name="12c3f60e2b9f0381_SubversionPlugin-Version1.19%28Oct29%2C2010%29"></a>Version 1.19 (Oct 29, 2010)</h3><ul style="font-size:10pt;line-height:13pt;list-style-type:disc"><li style="font-size:10pt;line-height:13pt;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px;padding-top:0px;padding-right:0px;padding-bottom:0px;padding-left:0px">
+Fixed a configuration roundtrip regression introduced in 1.18 (<a href="http://issues.hudson-ci.org/browse/HUDSON-7944" style="color:rgb(0, 51, 102)" target="_blank">issue #7944</a>)</li><li style="font-size:10pt;line-height:13pt;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px;padding-top:0px;padding-right:0px;padding-bottom:0px;padding-left:0px">
+Supported svn:externals to files (<a href="http://issues.hudson-ci.org/browse/HUDSON-7539" style="color:rgb(0, 51, 102)" target="_blank">issue #7539</a>)</li></ul><h3 style="line-height:normal;font-weight:bold;padding-top:0px;padding-right:0px;padding-bottom:0px;padding-left:0px;font-size:14pt;margin-top:20px;margin-right:0px;margin-bottom:4px;margin-left:0px;color:rgb(0, 51, 102)">
+<a name="12c3f60e2b9f0381_SubversionPlugin-Version1.18%28Oct27%2C2010%29"></a>Version 1.18 (Oct 27, 2010)</h3><ul style="font-size:10pt;line-height:13pt;list-style-type:disc"><li style="font-size:10pt;line-height:13pt;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px;padding-top:0px;padding-right:0px;padding-bottom:0px;padding-left:0px">
+<b>Requires Hudson 1.375 or newer.</b></li><li style="font-size:10pt;line-height:13pt;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px;padding-top:0px;padding-right:0px;padding-bottom:0px;padding-left:0px">
+Builds triggered via the post-commit hook check out from the revision specified by the hook. The hook specifies the revision with either the rev query parameter, or the X-Hudson-Subversion-Revision HTTP header.</li><li style="font-size:10pt;line-height:13pt;margin-top:0px;margin-right:0px;margin-bottom:0px;margin-left:0px;padding-top:0px;padding-right:0px;padding-bottom:0px;padding-left:0px">
+Uses svnkit 1.3.4 now. (<a href="http://issues.hudson-ci.org/browse/HUDSON-6417" style="color:rgb(0, 51, 102)" target="_blank">issue #6417</a>)</li></ul></span></div><div><br></div><div>I will report a ticket for this issue. </div><div style='padding:5 0'><font size=1 color=#888888>[Quoted text hidden]</font></div></font>
+</table>
+</table>
+<hr>
+</body>
+</html>

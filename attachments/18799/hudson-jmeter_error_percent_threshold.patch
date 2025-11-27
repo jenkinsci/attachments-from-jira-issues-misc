@@ -1,0 +1,282 @@
+diff -Nru jmeter.org/src/main/java/hudson/plugins/jmeter/JMeterBuildAction.java jmeter/src/main/java/hudson/plugins/jmeter/JMeterBuildAction.java
+--- jmeter.org/src/main/java/hudson/plugins/jmeter/JMeterBuildAction.java	2009-09-03 14:03:04.000000000 +0200
++++ jmeter/src/main/java/hudson/plugins/jmeter/JMeterBuildAction.java	2009-09-03 16:40:51.000000000 +0200
+@@ -48,15 +48,14 @@
+ 			try {
+ 				meterReport = new JMeterReport(this, reportFile);
+ 				if (meterReport.size() == 0) {
+-					hudsonConsoleWriter
+-							.println("jmeter report analysis is empty, ensure your jtl file is filled with samples.");
++					logger.warn("jmeter report analysis is empty, ensure your jtl file is filled with samples.");
+ 				}
+ 				jmeterReport = new WeakReference<JMeterReport>(meterReport);
+ 			} catch (IOException e) {
+ 				logger.warn("Failed to load " + reportFile, e);
+ 				Throwable ex = e;
+ 				do {
+-					hudsonConsoleWriter.println(ex.getLocalizedMessage());
++				  logger.warn(ex.getLocalizedMessage());
+ 					ex = ex.getCause();
+ 				} while (ex != null);
+ 			}
+diff -Nru jmeter.org/src/main/java/hudson/plugins/jmeter/JMeterProjectAction.java jmeter/src/main/java/hudson/plugins/jmeter/JMeterProjectAction.java
+--- jmeter.org/src/main/java/hudson/plugins/jmeter/JMeterProjectAction.java	2009-09-03 14:03:04.000000000 +0200
++++ jmeter/src/main/java/hudson/plugins/jmeter/JMeterProjectAction.java	2009-09-03 16:48:15.000000000 +0200
+@@ -3,7 +3,6 @@
+ import hudson.model.AbstractBuild;
+ import hudson.model.Action;
+ import hudson.model.Project;
+-import hudson.model.Result;
+ import hudson.util.ChartUtil;
+ import hudson.util.ColorPalette;
+ import hudson.util.DataSetBuilder;
+@@ -93,7 +92,7 @@
+ 
+ 		final LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot
+ 				.getRenderer();
+-		renderer.setStroke(new BasicStroke(4.0f));
++		renderer.setBaseStroke(new BasicStroke(4.0f));
+ 		ColorPalette.apply(renderer);
+ 
+ 		// crop extra space around the graph
+@@ -143,7 +142,7 @@
+ 
+ 		final LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot
+ 				.getRenderer();
+-		renderer.setStroke(new BasicStroke(4.0f));
++		renderer.setBaseStroke(new BasicStroke(4.0f));
+ 		ColorPalette.apply(renderer);
+ 
+ 		// crop extra space around the graph
+@@ -154,7 +153,7 @@
+ 
+ 	public void doErrorsGraph(StaplerRequest request, StaplerResponse response)
+ 			throws IOException {
+-		if (ChartUtil.awtProblem) {
++		if (ChartUtil.awtProblemCause != null) {
+ 			// not available. send out error message
+ 			response.sendRedirect2(request.getContextPath()
+ 					+ "/images/headless.png");
+@@ -170,16 +169,16 @@
+ 		for (Iterator<?> iterator = builds.iterator(); iterator.hasNext();) {
+ 			AbstractBuild<?, ?> currentBuild = (AbstractBuild<?, ?>) iterator
+ 					.next();
+-			if (Result.SUCCESS.equals(currentBuild.getResult())) {
+-				NumberOnlyBuildLabel label = new NumberOnlyBuildLabel(
+-						currentBuild);
+-				JMeterBuildAction jmeterBuildAction = currentBuild
+-						.getAction(JMeterBuildAction.class);
+-				JMeterReport jmeterReport = jmeterBuildAction.getJmeterReport();
+-				dataSetBuilderErrors.add(((double) jmeterReport.countErrors())
+-						/ jmeterReport.size() * 100, "errors", label);
+-
+-			}
++			NumberOnlyBuildLabel label = new NumberOnlyBuildLabel(
++					currentBuild);
++			JMeterBuildAction jmeterBuildAction = currentBuild
++					.getAction(JMeterBuildAction.class);
++			if (jmeterBuildAction == null)
++				continue;
++			JMeterReport jmeterReport = jmeterBuildAction.getJmeterReport();
++			if (jmeterReport == null)
++				continue;
++			dataSetBuilderErrors.add( jmeterReport.errorPercent(), "errors", label);
+ 		}
+ 
+ 		ChartUtil.generateGraph(request, response,
+@@ -188,7 +187,7 @@
+ 
+ 	public void doRespondingTimeGraph(StaplerRequest request,
+ 			StaplerResponse response) throws IOException {
+-		if (ChartUtil.awtProblem) {
++		if (ChartUtil.awtProblemCause != null) {
+ 			// not available. send out error message
+ 			response.sendRedirect2(request.getContextPath()
+ 					+ "/images/headless.png");
+@@ -204,18 +203,16 @@
+ 		for (Iterator<?> iterator = builds.iterator(); iterator.hasNext();) {
+ 			AbstractBuild<?, ?> currentBuild = (AbstractBuild<?, ?>) iterator
+ 					.next();
+-			if (Result.SUCCESS.equals(currentBuild.getResult())) {
+-				NumberOnlyBuildLabel label = new NumberOnlyBuildLabel(
+-						currentBuild);
+-				JMeterBuildAction jmeterBuildAction = currentBuild
+-						.getAction(JMeterBuildAction.class);
+-				JMeterReport jmeterReport = jmeterBuildAction.getJmeterReport();
+-				dataSetBuilderAverage.add(jmeterReport.getMax(), "max", label);
+-				dataSetBuilderAverage.add(jmeterReport.getAverage(), "average",
+-						label);
+-				dataSetBuilderAverage.add(jmeterReport.getMin(), "min", label);
+-
+-			}
++			NumberOnlyBuildLabel label = new NumberOnlyBuildLabel(currentBuild);
++			JMeterBuildAction jmeterBuildAction = currentBuild.getAction(JMeterBuildAction.class);
++			if (jmeterBuildAction == null)
++				continue;
++			JMeterReport jmeterReport = jmeterBuildAction.getJmeterReport();
++			if (jmeterReport == null) 
++				continue;
++			dataSetBuilderAverage.add(jmeterReport.getMax(), "max", label);
++			dataSetBuilderAverage.add(jmeterReport.getAverage(), "average", label);
++			dataSetBuilderAverage.add(jmeterReport.getMin(), "min", label);
+ 		}
+ 
+ 		ChartUtil.generateGraph(request, response,
+diff -Nru jmeter.org/src/main/java/hudson/plugins/jmeter/JMeterPublisher.java jmeter/src/main/java/hudson/plugins/jmeter/JMeterPublisher.java
+--- jmeter.org/src/main/java/hudson/plugins/jmeter/JMeterPublisher.java	2009-09-03 14:03:04.000000000 +0200
++++ jmeter/src/main/java/hudson/plugins/jmeter/JMeterPublisher.java	2009-09-03 16:52:58.000000000 +0200
+@@ -55,6 +55,26 @@
+ 
+ 	public static final Descriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
+ 
++	private int errorUnstableThreshold = 0;
++
++	private int errorFailedThreshold = 0;
++
++	public int getErrorUnstableThreshold() {
++		return errorUnstableThreshold;
++	}
++
++	public void setErrorUnstableThreshold(int errorUnstableThreshold) {
++		this.errorUnstableThreshold = Math.max(0, Math.min(errorUnstableThreshold, 100));
++	}
++
++	public int getErrorFailedThreshold() {
++		return errorFailedThreshold;
++	}
++
++	public void setErrorFailedThreshold(int errorFailedThreshold) {
++		this.errorFailedThreshold = Math.max(0, Math.min(errorFailedThreshold, 100));
++	}
++  
+ 	public static File getJMeterReport(AbstractBuild<?, ?> build) {
+ 		return new File(build.getRootDir(), "jmeter.xml");
+ 	}
+@@ -78,10 +98,9 @@
+ 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
+ 			BuildListener listener) throws InterruptedException, IOException {
+ 		PrintStream logger = listener.getLogger();
+-		logger.println("Recording JMeter reports " + getFilename());
++		logger.println("Recording JMeter reports '" + getFilename()); 
+ 
+-		final FilePath src = build.getProject().getWorkspace().child(
+-				getFilename());
++		final FilePath src = build.getProject().getWorkspace().child(getFilename());
+ 
+ 		if (!src.exists()) {
+ 			if (build.getResult().isWorseThan(Result.UNSTABLE)) {
+@@ -90,9 +109,10 @@
+ 				// so don't report an error
+ 				return true;
+ 			}
+-			logger.println("JMeter file " + src
+-					+ " not found. Has the report generated?");
+ 			build.setResult(Result.FAILURE);
++			logger.println("JMeter file " + src
++					+ " not found. Has the report generated? Setting Build to " 
++					+ build.getResult().toString());
+ 			return true;
+ 		}
+ 
+@@ -104,11 +124,31 @@
+ 		build.addAction(jmeterBuildAction);
+ 
+ 		if (jmeterBuildAction.isFailed()) {
+-			logger
+-					.println("JMeter report analysis failed. Setting Build to unstable.");
+ 			build.setResult(Result.UNSTABLE);
++			logger
++				.println("JMeter report analysis failed. Setting Build to " + build.getResult().toString());
++			return true;
+ 		}
+ 
++		if (errorUnstableThreshold > 0 && errorUnstableThreshold < 100) {
++			logger.println("JMeter's percentage error greater or equal than " 
++		        	+ errorUnstableThreshold + "% sets the build as " 
++		        	+ Result.UNSTABLE.toString().toLowerCase());
++		}
++		if (errorFailedThreshold > 0 && errorFailedThreshold < 100) {
++			logger.println("JMeter's percentage error greater or equal than " 
++				+ errorFailedThreshold + "% sets the build as " 
++				+ Result.FAILURE.toString().toLowerCase());
++		}
++		double errorPercent = jmeterBuildAction.getJmeterReport().errorPercent(); 
++		if (errorUnstableThreshold > 0 &&  errorPercent >= errorUnstableThreshold) {
++			build.setResult(Result.UNSTABLE);
++		} else if ( errorFailedThreshold > 0 && errorPercent >= errorFailedThreshold) {
++			build.setResult(Result.FAILURE);
++		}
++		logger.println("JMeter has reported a " + errorPercent 
++			+ "% of errors running the tests. Setting Build to " 
++			+ build.getResult().toString());
+ 		return true;
+ 	}
+ 
+diff -Nru jmeter.org/src/main/java/hudson/plugins/jmeter/JMeterReport.java jmeter/src/main/java/hudson/plugins/jmeter/JMeterReport.java
+--- jmeter.org/src/main/java/hudson/plugins/jmeter/JMeterReport.java	2009-09-03 14:03:04.000000000 +0200
++++ jmeter/src/main/java/hudson/plugins/jmeter/JMeterReport.java	2009-09-03 08:47:42.000000000 +0200
+@@ -70,6 +70,10 @@
+ 		}
+ 		return nbError;
+ 	}
++	
++	public double errorPercent() {
++	  return ((double)countErrors()) / size() * 100;
++	}
+ 
+ 	private Digester createDigester() {
+ 		Digester digester = new Digester();
+diff -Nru jmeter.org/src/main/resources/hudson/plugins/jmeter/JMeterProjectAction/floatingBox.jelly jmeter/src/main/resources/hudson/plugins/jmeter/JMeterProjectAction/floatingBox.jelly
+--- jmeter.org/src/main/resources/hudson/plugins/jmeter/JMeterProjectAction/floatingBox.jelly	2009-09-03 14:03:04.000000000 +0200
++++ jmeter/src/main/resources/hudson/plugins/jmeter/JMeterProjectAction/floatingBox.jelly	2009-09-03 14:49:32.000000000 +0200
+@@ -4,6 +4,7 @@
+   </div>
+   <div>
+     <a href="jmeter/"><img src="jmeter/respondingTimeGraph" /></a>
++    <br/>
+     <a href="jmeter/"><img src="jmeter/errorsGraph" /></a>
+   </div>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>
+diff -Nru jmeter.org/src/main/resources/hudson/plugins/jmeter/JMeterPublisher/config.jelly jmeter/src/main/resources/hudson/plugins/jmeter/JMeterPublisher/config.jelly
+--- jmeter.org/src/main/resources/hudson/plugins/jmeter/JMeterPublisher/config.jelly	2009-09-03 14:03:04.000000000 +0200
++++ jmeter/src/main/resources/hudson/plugins/jmeter/JMeterPublisher/config.jelly	2009-09-03 13:48:11.000000000 +0200
+@@ -11,4 +11,36 @@
+            ">
+ 		<f:textbox name="jmeter.filename" value="${instance.filename}" />
+ 	</f:entry>
++    
++    <f:entry title="JMeter threshold"
++        description="
++           Specify the error percentage threshold that set the build unstable or failed (a value of 0 means: don't use this threshold).
++           ">
++           <table width="250px">
++              <thead>
++                <tr>
++                  <td></td>
++                  <td colspan="2">
++                    <img src="${rootURL}/images/16x16/yellow.gif" alt="100%" /> Unstable
++                  </td>
++                  <td colspan="2">
++                    <img src="${rootURL}/images/16x16/red.gif" alt="100%" /> Failed
++                  </td>
++                </tr>
++              </thead>
++              <tbody>
++                <tr>
++                  <td style="vertical-align:middle">Thresholds:</td>
++                  <td>
++                    <f:textbox name="jmeter.errorUnstableThreshold" value="${instance.errorUnstableThreshold}" /> 
++                  </td>
++                  <td> % </td>
++                  <td>
++                    <f:textbox name="jmeter.errorFailedThreshold" value="${instance.errorFailedThreshold}" />
++                  </td>
++                  <td> % </td>
++                </tr>
++              </tbody>    
++            </table>  
++    </f:entry>
+ </j:jelly>
+\ No newline at end of file

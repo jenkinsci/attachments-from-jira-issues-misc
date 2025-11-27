@@ -1,0 +1,168 @@
+------------------------------------  ARTIFACT UNDEPLOYMENT ------------------------------------------------
+weblogic.Deployer invoked with options:  -debug -remote -verbose -noexit -name MODIS-20191101-2157 -targets AdminServer -adminurl http://10.61.0.5:7001 -user encmodisst -undeploy
+[WebLogicDeploymentManagerImpl.<init>():115] : Constructing DeploymentManager for J2EE version V1_4 deployments
+[WebLogicDeploymentManagerImpl.getNewConnection():158] : Connecting to admin server at 10.61.0.5:7001, as user encmodisst
+[ServerConnectionImpl.getEnvironment():286] : setting environment
+[ServerConnectionImpl.getEnvironment():289] : getting context using http://10.61.0.5:7001
+[ServerConnectionImpl.close():332] : Closing DM connection
+[ServerConnectionImpl.close():352] : Unregistered all listeners
+javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException
+	at weblogic.deploy.api.spi.deploy.WebLogicDeploymentManagerImpl.<init>(WebLogicDeploymentManagerImpl.java:133)
+	at weblogic.deploy.api.spi.factories.internal.DeploymentFactoryImpl.getDeploymentManager(DeploymentFactoryImpl.java:86)
+	at weblogic.deploy.api.tools.SessionHelper.getDeploymentManager(SessionHelper.java:446)
+	at weblogic.deploy.api.tools.deployer.Jsr88Operation.connect(Jsr88Operation.java:304)
+	at weblogic.deploy.api.tools.deployer.Deployer.perform(Deployer.java:137)
+	at weblogic.deploy.api.tools.deployer.Deployer.runBody(Deployer.java:88)
+	at weblogic.utils.compiler.Tool.run(Tool.java:158)
+	at weblogic.utils.compiler.Tool.run(Tool.java:115)
+	at weblogic.Deployer.run(Deployer.java:70)
+	at weblogic.Deployer.main(Deployer.java:54)
+Caused by: weblogic.deploy.api.spi.exceptions.ServerConnectionException
+	at weblogic.deploy.api.spi.deploy.internal.ServerConnectionImpl.init(ServerConnectionImpl.java:141)
+	at weblogic.deploy.api.spi.deploy.WebLogicDeploymentManagerImpl.getNewConnection(WebLogicDeploymentManagerImpl.java:160)
+	at weblogic.deploy.api.spi.deploy.WebLogicDeploymentManagerImpl.<init>(WebLogicDeploymentManagerImpl.java:130)
+	... 9 more
+Caused by: javax.naming.CommunicationException [Root exception is java.net.ConnectException: http://10.61.0.5:7001: Destination unreachable; nested exception is: 
+	java.net.ProtocolException: Tunneling result unspecified - is the HTTP server at host: '10.61.0.5' and port: '7001' a WebLogic Server?; No available router to destination]
+	at weblogic.jndi.internal.ExceptionTranslator.toNamingException(ExceptionTranslator.java:40)
+	at weblogic.jndi.WLInitialContextFactoryDelegate.toNamingException(WLInitialContextFactoryDelegate.java:792)
+	at weblogic.jndi.WLInitialContextFactoryDelegate.getInitialContext(WLInitialContextFactoryDelegate.java:366)
+	at weblogic.jndi.Environment.getContext(Environment.java:315)
+	at weblogic.jndi.Environment.getContext(Environment.java:285)
+	at weblogic.jndi.Environment.createInitialContext(Environment.java:208)
+	at weblogic.jndi.Environment.getInitialContext(Environment.java:192)
+	at weblogic.jndi.Environment.getInitialContext(Environment.java:170)
+	at weblogic.deploy.api.spi.deploy.internal.ServerConnectionImpl.getContext(ServerConnectionImpl.java:328)
+	at weblogic.deploy.api.spi.deploy.internal.ServerConnectionImpl.getEnvironment(ServerConnectionImpl.java:300)
+	at weblogic.deploy.api.spi.deploy.internal.ServerConnectionImpl.init(ServerConnectionImpl.java:139)
+	... 11 more
+Caused by: java.net.ConnectException: http://10.61.0.5:7001: Destination unreachable; nested exception is: 
+	java.net.ProtocolException: Tunneling result unspecified - is the HTTP server at host: '10.61.0.5' and port: '7001' a WebLogic Server?; No available router to destination
+	at weblogic.rjvm.RJVMFinder.findOrCreateInternal(RJVMFinder.java:216)
+	at weblogic.rjvm.RJVMFinder.findOrCreate(RJVMFinder.java:170)
+	at weblogic.rjvm.ServerURL.findOrCreateRJVM(ServerURL.java:165)
+	at weblogic.jndi.WLInitialContextFactoryDelegate$1.run(WLInitialContextFactoryDelegate.java:345)
+	at weblogic.security.acl.internal.AuthenticatedSubject.doAs(AuthenticatedSubject.java:363)
+	at weblogic.security.service.SecurityManager.runAs(SecurityManager.java:146)
+	at weblogic.jndi.WLInitialContextFactoryDelegate.getInitialContext(WLInitialContextFactoryDelegate.java:340)
+	... 19 more
+Caused by: java.rmi.ConnectException: Destination unreachable; nested exception is: 
+	java.net.ProtocolException: Tunneling result unspecified - is the HTTP server at host: '10.61.0.5' and port: '7001' a WebLogic Server?; No available router to destination
+	at weblogic.rjvm.ConnectionManager.bootstrap(ConnectionManager.java:470)
+	at weblogic.rjvm.ConnectionManager.bootstrap(ConnectionManager.java:321)
+	at weblogic.rjvm.RJVMManager.findOrCreateRemoteInternal(RJVMManager.java:260)
+	at weblogic.rjvm.RJVMManager.findOrCreate(RJVMManager.java:197)
+	at weblogic.rjvm.RJVMFinder.findOrCreateRemoteServer(RJVMFinder.java:238)
+	at weblogic.rjvm.RJVMFinder.findOrCreateInternal(RJVMFinder.java:200)
+	... 25 more
+weblogic.deploy.api.tools.deployer.DeployerException: Unable to connect to 'http://10.61.0.5:7001': Destination unreachable; nested exception is: 
+	java.net.ProtocolException: Tunneling result unspecified - is the HTTP server at host: '10.61.0.5' and port: '7001' a WebLogic Server?; No available router to destination. Ensure the url represents a running admin server and that the credentials are correct. If using http protocol, tunneling must be enabled on the admin server.
+	at weblogic.deploy.api.tools.deployer.Jsr88Operation.connect(Jsr88Operation.java:316)
+	at weblogic.deploy.api.tools.deployer.Deployer.perform(Deployer.java:137)
+	at weblogic.deploy.api.tools.deployer.Deployer.runBody(Deployer.java:88)
+	at weblogic.utils.compiler.Tool.run(Tool.java:158)
+	at weblogic.utils.compiler.Tool.run(Tool.java:115)
+	at weblogic.Deployer.run(Deployer.java:70)
+	at weblogic.Deployer.main(Deployer.java:54)
+Caused by: javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException
+	at weblogic.deploy.api.spi.deploy.WebLogicDeploymentManagerImpl.<init>(WebLogicDeploymentManagerImpl.java:133)
+	at weblogic.deploy.api.spi.factories.internal.DeploymentFactoryImpl.getDeploymentManager(DeploymentFactoryImpl.java:86)
+	at weblogic.deploy.api.tools.SessionHelper.getDeploymentManager(SessionHelper.java:446)
+	at weblogic.deploy.api.tools.deployer.Jsr88Operation.connect(Jsr88Operation.java:304)
+	... 6 more
+Caused by: weblogic.deploy.api.spi.exceptions.ServerConnectionException
+	at weblogic.deploy.api.spi.deploy.internal.ServerConnectionImpl.init(ServerConnectionImpl.java:141)
+	at weblogic.deploy.api.spi.deploy.WebLogicDeploymentManagerImpl.getNewConnection(WebLogicDeploymentManagerImpl.java:160)
+	at weblogic.deploy.api.spi.deploy.WebLogicDeploymentManagerImpl.<init>(WebLogicDeploymentManagerImpl.java:130)
+	... 9 more
+Caused by: javax.naming.CommunicationException [Root exception is java.net.ConnectException: http://10.61.0.5:7001: Destination unreachable; nested exception is: 
+	java.net.ProtocolException: Tunneling result unspecified - is the HTTP server at host: '10.61.0.5' and port: '7001' a WebLogic Server?; No available router to destination]
+	at weblogic.jndi.internal.ExceptionTranslator.toNamingException(ExceptionTranslator.java:40)
+	at weblogic.jndi.WLInitialContextFactoryDelegate.toNamingException(WLInitialContextFactoryDelegate.java:792)
+	at weblogic.jndi.WLInitialContextFactoryDelegate.getInitialContext(WLInitialContextFactoryDelegate.java:366)
+	at weblogic.jndi.Environment.getContext(Environment.java:315)
+	at weblogic.jndi.Environment.getContext(Environment.java:285)
+	at weblogic.jndi.Environment.createInitialContext(Environment.java:208)
+	at weblogic.jndi.Environment.getInitialContext(Environment.java:192)
+	at weblogic.jndi.Environment.getInitialContext(Environment.java:170)
+	at weblogic.deploy.api.spi.deploy.internal.ServerConnectionImpl.getContext(ServerConnectionImpl.java:328)
+	at weblogic.deploy.api.spi.deploy.internal.ServerConnectionImpl.getEnvironment(ServerConnectionImpl.java:300)
+	at weblogic.deploy.api.spi.deploy.internal.ServerConnectionImpl.init(ServerConnectionImpl.java:139)
+	... 11 more
+Caused by: java.net.ConnectException: http://10.61.0.5:7001: Destination unreachable; nested exception is: 
+	java.net.ProtocolException: Tunneling result unspecified - is the HTTP server at host: '10.61.0.5' and port: '7001' a WebLogic Server?; No available router to destination
+	at weblogic.rjvm.RJVMFinder.findOrCreateInternal(RJVMFinder.java:216)
+	at weblogic.rjvm.RJVMFinder.findOrCreate(RJVMFinder.java:170)
+	at weblogic.rjvm.ServerURL.findOrCreateRJVM(ServerURL.java:165)
+	at weblogic.jndi.WLInitialContextFactoryDelegate$1.run(WLInitialContextFactoryDelegate.java:345)
+	at weblogic.security.acl.internal.AuthenticatedSubject.doAs(AuthenticatedSubject.java:363)
+	at weblogic.security.service.SecurityManager.runAs(SecurityManager.java:146)
+	at weblogic.jndi.WLInitialContextFactoryDelegate.getInitialContext(WLInitialContextFactoryDelegate.java:340)
+	... 19 more
+Caused by: java.rmi.ConnectException: Destination unreachable; nested exception is: 
+	java.net.ProtocolException: Tunneling result unspecified - is the HTTP server at host: '10.61.0.5' and port: '7001' a WebLogic Server?; No available router to destination
+	at weblogic.rjvm.ConnectionManager.bootstrap(ConnectionManager.java:470)
+	at weblogic.rjvm.ConnectionManager.bootstrap(ConnectionManager.java:321)
+	at weblogic.rjvm.RJVMManager.findOrCreateRemoteInternal(RJVMManager.java:260)
+	at weblogic.rjvm.RJVMManager.findOrCreate(RJVMManager.java:197)
+	at weblogic.rjvm.RJVMFinder.findOrCreateRemoteServer(RJVMFinder.java:238)
+	at weblogic.rjvm.RJVMFinder.findOrCreateInternal(RJVMFinder.java:200)
+	... 25 more
+Unexpected Error Initializing Deployer: weblogic.Deployer$DeployerException: weblogic.deploy.api.tools.deployer.DeployerException: Unable to connect to 'http://10.61.0.5:7001': Destination unreachable; nested exception is: 
+	java.net.ProtocolException: Tunneling result unspecified - is the HTTP server at host: '10.61.0.5' and port: '7001' a WebLogic Server?; No available router to destination. Ensure the url represents a running admin server and that the credentials are correct. If using http protocol, tunneling must be enabled on the admin server.
+------------------------------------  ARTIFACT DEPLOYMENT ------------------------------------------------
+weblogic.Deployer invoked with options:  -debug -stage -remote -verbose -upload -name MODIS-20191101-2157 -source WORKSPACE\MODIS-Build\SourceCode\ETR_MODIS\dist\MODIS-20191101-2157.war -targets AdminServer -adminurl http://10.61.0.5:7001 -user encmodisst -deploy
+[WebLogicDeploymentManagerImpl.<init>():115] : Constructing DeploymentManager for J2EE version V1_4 deployments
+[WebLogicDeploymentManagerImpl.getNewConnection():158] : Connecting to admin server at 10.61.0.5:7001, as user encmodisst
+[ServerConnectionImpl.getEnvironment():286] : setting environment
+[ServerConnectionImpl.getEnvironment():289] : getting context using http://10.61.0.5:7001
+[ServerConnectionImpl.close():332] : Closing DM connection
+[ServerConnectionImpl.close():352] : Unregistered all listeners
+javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException
+	at weblogic.deploy.api.spi.deploy.WebLogicDeploymentManagerImpl.<init>(WebLogicDeploymentManagerImpl.java:133)
+	at weblogic.deploy.api.spi.factories.internal.DeploymentFactoryImpl.getDeploymentManager(DeploymentFactoryImpl.java:86)
+	at weblogic.deploy.api.tools.SessionHelper.getRemoteDeploymentManager(SessionHelper.java:496)
+	at weblogic.deploy.api.tools.deployer.Jsr88Operation.connect(Jsr88Operation.java:297)
+	at weblogic.deploy.api.tools.deployer.Deployer.perform(Deployer.java:137)
+	at weblogic.deploy.api.tools.deployer.Deployer.runBody(Deployer.java:88)
+	at weblogic.utils.compiler.Tool.run(Tool.java:158)
+	at weblogic.utils.compiler.Tool.run(Tool.java:115)
+	at weblogic.Deployer.run(Deployer.java:70)
+	at weblogic.Deployer.main(Deployer.java:54)
+Caused by: weblogic.deploy.api.spi.exceptions.ServerConnectionException
+	at weblogic.deploy.api.spi.deploy.internal.ServerConnectionImpl.init(ServerConnectionImpl.java:141)
+	at weblogic.deploy.api.spi.deploy.WebLogicDeploymentManagerImpl.getNewConnection(WebLogicDeploymentManagerImpl.java:160)
+	at weblogic.deploy.api.spi.deploy.WebLogicDeploymentManagerImpl.<init>(WebLogicDeploymentManagerImpl.java:130)
+	... 9 more
+Caused by: javax.naming.CommunicationException [Root exception is java.net.ConnectException: http://10.61.0.5:7001: Destination unreachable; nested exception is: 
+	java.net.ProtocolException: Tunneling result unspecified - is the HTTP server at host: '10.61.0.5' and port: '7001' a WebLogic Server?; No available router to destination]
+	at weblogic.jndi.internal.ExceptionTranslator.toNamingException(ExceptionTranslator.java:40)
+	at weblogic.jndi.WLInitialContextFactoryDelegate.toNamingException(WLInitialContextFactoryDelegate.java:792)
+	at weblogic.jndi.WLInitialContextFactoryDelegate.getInitialContext(WLInitialContextFactoryDelegate.java:366)
+	at weblogic.jndi.Environment.getContext(Environment.java:315)
+	at weblogic.jndi.Environment.getContext(Environment.java:285)
+	at weblogic.jndi.Environment.createInitialContext(Environment.java:208)
+	at weblogic.jndi.Environment.getInitialContext(Environment.java:192)
+	at weblogic.jndi.Environment.getInitialContext(Environment.java:170)
+	at weblogic.deploy.api.spi.deploy.internal.ServerConnectionImpl.getContext(ServerConnectionImpl.java:328)
+	at weblogic.deploy.api.spi.deploy.internal.ServerConnectionImpl.getEnvironment(ServerConnectionImpl.java:300)
+	at weblogic.deploy.api.spi.deploy.internal.ServerConnectionImpl.init(ServerConnectionImpl.java:139)
+	... 11 more
+Caused by: java.net.ConnectException: http://10.61.0.5:7001: Destination unreachable; nested exception is: 
+	java.net.ProtocolException: Tunneling result unspecified - is the HTTP server at host: '10.61.0.5' and port: '7001' a WebLogic Server?; No available router to destination
+	at weblogic.rjvm.RJVMFinder.findOrCreateInternal(RJVMFinder.java:216)
+	at weblogic.rjvm.RJVMFinder.findOrCreate(RJVMFinder.java:170)
+	at weblogic.rjvm.ServerURL.findOrCreateRJVM(ServerURL.java:165)
+	at weblogic.jndi.WLInitialContextFactoryDelegate$1.run(WLInitialContextFactoryDelegate.java:345)
+	at weblogic.security.acl.internal.AuthenticatedSubject.doAs(AuthenticatedSubject.java:363)
+	at weblogic.security.service.SecurityManager.runAs(SecurityManager.java:146)
+	at weblogic.jndi.WLInitialContextFactoryDelegate.getInitialContext(WLInitialContextFactoryDelegate.java:340)
+	... 19 more
+Caused by: java.rmi.ConnectException: Destination unreachable; nested exception is: 
+	java.net.ProtocolException: Tunneling result unspecified - is the HTTP server at host: '10.61.0.5' and port: '7001' a WebLogic Server?; No available router to destination
+	at weblogic.rjvm.ConnectionManager.bootstrap(ConnectionManager.java:470)
+	at weblogic.rjvm.ConnectionManager.bootstrap(ConnectionManager.java:321)
+	at weblogic.rjvm.RJVMManager.findOrCreateRemoteInternal(RJVMManager.java:260)
+	at weblogic.rjvm.RJVMManager.findOrCreate(RJVMManager.java:197)
+	at weblogic.rjvm.RJVMFinder.findOrCreateRemoteServer(RJVMFinder.java:238)
+	at weblogic.rjvm.RJVMFinder.findOrCreateInternal(RJVMFinder.java:200)

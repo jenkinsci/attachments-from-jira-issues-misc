@@ -1,0 +1,653 @@
+Index: pom.xml
+===============================================================
+--- pom.xml	(revision 30369)
++++ pom.xml	(working copy)
+@@ -3,7 +3,7 @@
+   <parent>
+     <groupId>org.jvnet.hudson.plugins</groupId>
+     <artifactId>plugin</artifactId>
+-    <version>1.351</version>
++    <version>1.382</version>
+     <relativePath>../pom.xml</relativePath>
+   </parent>
+ 
+Index: src/main/java/hudson/plugins/bazaar/BazaarAffectedFile.java
+===============================================================
+--- src/main/java/hudson/plugins/bazaar/BazaarAffectedFile.java	(revision 0)
++++ src/main/java/hudson/plugins/bazaar/BazaarAffectedFile.java	(revision 0)
+@@ -0,0 +1,49 @@
++package hudson.plugins.bazaar;
++
++import hudson.scm.ChangeLogSet;
++import hudson.scm.EditType;
++
++/**
++ * {@link ChangeLogSet.AffectedFile} for Bazaar.
++ *
++ * @author Alexandre Garnier <zigarn@dev.java.net>
++ */
++public class BazaarAffectedFile implements ChangeLogSet.AffectedFile {
++
++    private BazaarChangeSet changeSet;
++    private EditType editType;
++    private String oldPath;
++    private String path;
++    private String fileId;
++
++    public BazaarAffectedFile(EditType editType, String oldPath, String path, String fileId) {
++        this.editType = editType;
++        this.oldPath = oldPath;
++        this.path = path;
++        this.fileId = fileId;
++    }
++
++    public void setChangeSet(BazaarChangeSet changeSet) {
++        this.changeSet = changeSet;
++    }
++
++    public BazaarChangeSet getChangeSet() {
++        return this.changeSet;
++    }
++
++    public EditType getEditType() {
++        return this.editType;
++    }
++
++    public String getOldPath() {
++        return this.oldPath;
++    }
++
++    public String getPath() {
++        return this.path;
++    }
++
++    public String getFileId() {
++        return this.fileId;
++    }
++}
+Index: src/main/java/hudson/plugins/bazaar/BazaarChangeLogParser.java
+===============================================================
+--- src/main/java/hudson/plugins/bazaar/BazaarChangeLogParser.java	(revision 30369)
++++ src/main/java/hudson/plugins/bazaar/BazaarChangeLogParser.java	(working copy)
+@@ -2,8 +2,9 @@ package hudson.plugins.bazaar;
+ 
+ import hudson.model.AbstractBuild;
+ import hudson.scm.ChangeLogParser;
+-import java.io.BufferedReader;
++import hudson.scm.EditType;
+ 
++import java.io.BufferedReader;
+ import java.io.File;
+ import java.io.FileReader;
+ import java.io.IOException;
+@@ -97,8 +98,10 @@ public class BazaarChangeLogParser extends ChangeLogParser {
+                             entry.setMsg(message.toString());
+                             message.setLength(0);
+                         } else {
++                            if (message.length() != 0) {
++                                message.append("\n");
++                            }
+                             message.append(s);
+-                            message.append("\n");
+                         }
+                     }
+                     break;
+@@ -112,7 +115,7 @@ public class BazaarChangeLogParser extends ChangeLogParser {
+                     } else if (s.startsWith("renamed:")){
+                         state = 8;
+                     } else {
+-                        entry.getModifiedPaths().add(s);
++                        entry.addAffectedFile(createAffectedFile(EditType.EDIT, s));
+ 
+                     }
+ 
+@@ -127,7 +130,7 @@ public class BazaarChangeLogParser extends ChangeLogParser {
+                     } else if (s.startsWith("renamed:")){
+                         state = 8;
+                     } else {
+-                        entry.getAddedPaths().add(s);
++                        entry.addAffectedFile(createAffectedFile(EditType.ADD, s));
+                     }
+ 
+                     break;
+@@ -141,7 +144,7 @@ public class BazaarChangeLogParser extends ChangeLogParser {
+                     } else if (s.startsWith("renamed:")){
+                         state = 8;
+                     } else {
+-                        entry.getDeletedPaths().add(s);
++                        entry.addAffectedFile(createAffectedFile(EditType.DELETE, s));
+                     }
+ 
+                     break;
+@@ -155,7 +158,7 @@ public class BazaarChangeLogParser extends ChangeLogParser {
+                     } else if (s.startsWith("renamed:")){
+                         state = 8;
+                     } else {
+-                        entry.getModifiedPaths().add(s);
++                        entry.addAffectedFile(createAffectedFile(EditType.EDIT, s));
+                     }
+ 
+                     break;
+@@ -179,4 +182,21 @@ public class BazaarChangeLogParser extends ChangeLogParser {
+ 
+         return new BazaarChangeSetList(build, entries);
+     }
++
++    private BazaarAffectedFile createAffectedFile(EditType editType, String changelogLine) {
++        String oldPath = null;
++        String path = changelogLine.trim();
++        String fileId = "";
++        int index = changelogLine.lastIndexOf(' ');
++        if (index >= 0) {
++            path = changelogLine.substring(0, index).trim();
++            fileId = changelogLine.substring(index, changelogLine.length()).trim();
++        }
++        if (path.contains("=>")) {
++            String[] paths = path.split("=>");
++            oldPath = paths[0].trim();
++            path = paths[1].trim();
++        }
++        return new BazaarAffectedFile(editType, oldPath, path, fileId);
++    }
+ }
+Index: src/main/java/hudson/plugins/bazaar/BazaarChangeSet.java
+===============================================================
+--- src/main/java/hudson/plugins/bazaar/BazaarChangeSet.java	(revision 30369)
++++ src/main/java/hudson/plugins/bazaar/BazaarChangeSet.java	(working copy)
+@@ -2,11 +2,12 @@ package hudson.plugins.bazaar;
+ 
+ import hudson.model.User;
+ import hudson.scm.ChangeLogSet;
+-import hudson.scm.EditType;
++
++import java.util.AbstractList;
+ import java.util.ArrayList;
+-import java.util.Arrays;
+ import java.util.Collection;
+ import java.util.List;
++
+ import org.kohsuke.stapler.export.Exported;
+ 
+ /**
+@@ -26,14 +27,8 @@ public class BazaarChangeSet extends ChangeLogSet.Entry {
+ 
+     private String date;
+     private String msg;
+-    private List<String> added = new ArrayList<String>();
+-    private List<String> deleted = new ArrayList<String>();
+-    private List<String> modified = new ArrayList<String>();
+ 
+-    /**
+-     * Lazily computed.
+-     */
+-    private volatile List<String> affectedPaths;
++    private List<BazaarAffectedFile> affectedFiles = new ArrayList<BazaarAffectedFile>();
+ 
+     /**
+      * Commit message.
+@@ -60,6 +55,11 @@ public class BazaarChangeSet extends ChangeLogSet.Entry {
+     }
+ 
+     @Exported
++    public String getRevision() {
++        return this.getRevno();
++    }
++
++    @Exported
+     public String getRevid() {
+         return revid;
+     }
+@@ -71,60 +71,19 @@ public class BazaarChangeSet extends ChangeLogSet.Entry {
+ 
+     @Override
+     public Collection<String> getAffectedPaths() {
+-        if (affectedPaths == null) {
+-            List<String> r = new ArrayList<String>(added.size() + modified.size() + deleted.size());
+-            r.addAll(added);
+-            r.addAll(modified);
+-            r.addAll(deleted);
+-            affectedPaths = r;
+-        }
+-        return affectedPaths;
++        return new AbstractList<String>() {
++            public String get(int index) {
++                return affectedFiles.get(index).getPath();
++            }
++            public int size() {
++                return affectedFiles.size();
++            }
++        };
+     }
+ 
+-    /**
+-     * Gets all the files that were added.
+-     */
+-    @Exported
+-    public List<String> getAddedPaths() {
+-        return added;
+-    }
+-
+-    /**
+-     * Gets all the files that were deleted.
+-     */
+-    @Exported
+-    public List<String> getDeletedPaths() {
+-        return deleted;
+-    }
+-
+-    /**
+-     * Gets all the files that were modified.
+-     */
+-    @Exported
+-    public List<String> getModifiedPaths() {
+-        return modified;
+-    }
+-
+-    public List<String> getPaths(EditType kind) {
+-        if (kind == EditType.ADD) {
+-            return getAddedPaths();
+-        }
+-        if (kind == EditType.EDIT) {
+-            return getModifiedPaths();
+-        }
+-        if (kind == EditType.DELETE) {
+-            return getDeletedPaths();
+-        }
+-        return null;
+-    }
+-
+-    /**
+-     * Returns all three variations of {@link EditType}.
+-     * Placed here to simplify access from views.
+-     */
+-    public List<EditType> getEditTypes() {
+-        // return EditType.ALL;
+-        return Arrays.asList(EditType.ADD, EditType.EDIT, EditType.DELETE);
++    @Override
++    public Collection<BazaarAffectedFile> getAffectedFiles() {
++        return affectedFiles;
+     }
+ 
+     @Override
+@@ -159,4 +118,9 @@ public class BazaarChangeSet extends ChangeLogSet.Entry {
+     public void setDate(String date) {
+         this.date = date;
+     }
++
++    public void addAffectedFile(BazaarAffectedFile affectedFile) {
++        affectedFile.setChangeSet(this);
++        this.affectedFiles.add(affectedFile);
++    }
+ }
+Index: src/main/java/hudson/plugins/bazaar/BazaarRepositoryBrowser.java
+===============================================================
+--- src/main/java/hudson/plugins/bazaar/BazaarRepositoryBrowser.java	(revision 0)
++++ src/main/java/hudson/plugins/bazaar/BazaarRepositoryBrowser.java	(revision 0)
+@@ -0,0 +1,33 @@
++package hudson.plugins.bazaar;
++
++import hudson.scm.RepositoryBrowser;
++
++import java.io.IOException;
++import java.net.URL;
++
++/**
++ * {@link RepositoryBrowser} for Bazaar.
++ *
++ * @author Alexandre Garnier <zigarn@dev.java.net>
++ */
++public abstract class BazaarRepositoryBrowser extends RepositoryBrowser<BazaarChangeSet> {
++
++    /**
++     * Determines the link to the diff between the version
++     * in the specified revision of {@link BazaarAffectedFile} to its previous version.
++     *
++     * @return
++     *      null if the browser doesn't have any URL for diff.
++     */
++    public abstract URL getDiffLink(BazaarAffectedFile affectedFile) throws IOException;
++
++    /**
++     * Determines the link to a single file under Bazaar.
++     * This page should display all the past revisions of this file, etc.
++     *
++     * @return
++     *      null if the browser doesn't have any suitable URL.
++     */
++    public abstract URL getFileLink(BazaarAffectedFile affectedFile) throws IOException;
++
++}
+Index: src/main/java/hudson/plugins/bazaar/BazaarSCM.java
+===============================================================
+--- src/main/java/hudson/plugins/bazaar/BazaarSCM.java	(revision 30369)
++++ src/main/java/hudson/plugins/bazaar/BazaarSCM.java	(working copy)
+@@ -2,25 +2,26 @@ package hudson.plugins.bazaar;
+ 
+ import hudson.EnvVars;
+ import hudson.Extension;
+-import hudson.FilePath.FileCallable;
+ import hudson.FilePath;
++import hudson.FilePath.FileCallable;
+ import hudson.Launcher;
+ import hudson.Launcher.LocalLauncher;
+ import hudson.Launcher.ProcStarter;
++import hudson.model.BuildListener;
++import hudson.model.TaskListener;
+ import hudson.model.AbstractBuild;
+ import hudson.model.AbstractProject;
+-import hudson.model.BuildListener;
+ import hudson.model.Hudson;
+-import hudson.model.TaskListener;
+ import hudson.remoting.VirtualChannel;
+ import hudson.scm.ChangeLogParser;
+ import hudson.scm.PollingResult;
+ import hudson.scm.PollingResult.Change;
+-import hudson.scm.SCM;
+ import hudson.scm.SCMDescriptor;
+ import hudson.scm.SCMRevisionState;
++import hudson.scm.SCM;
+ import hudson.util.ArgumentListBuilder;
+ import hudson.util.FormValidation;
++
+ import java.io.ByteArrayOutputStream;
+ import java.io.File;
+ import java.io.FileOutputStream;
+@@ -33,11 +34,15 @@ import java.util.Map;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+ import java.util.regex.Pattern;
++
+ import javax.servlet.ServletException;
++
+ import net.sf.json.JSONObject;
++
+ import org.kohsuke.stapler.DataBoundConstructor;
+ import org.kohsuke.stapler.QueryParameter;
+ import org.kohsuke.stapler.StaplerRequest;
++import org.kohsuke.stapler.export.Exported;
+ import org.kohsuke.stapler.framework.io.ByteBuffer;
+ 
+ /**
+@@ -52,11 +57,13 @@ public class BazaarSCM extends SCM implements Serializable {
+      */
+     private final String source;
+     private final boolean clean;
++    private final BazaarRepositoryBrowser browser;
+ 
+     @DataBoundConstructor
+-    public BazaarSCM(String source, boolean clean) {
++    public BazaarSCM(String source, boolean clean, BazaarRepositoryBrowser browser) {
+         this.source = source;
+         this.clean = clean;
++        this.browser = browser;
+     }
+ 
+     /**
+@@ -76,6 +83,12 @@ public class BazaarSCM extends SCM implements Serializable {
+         return clean;
+     }
+ 
++    @Override
++    @Exported
++    public BazaarRepositoryBrowser getBrowser() {
++        return browser;
++    }
++
+     private String getRevid(Launcher launcher, TaskListener listener, String root)
+             throws InterruptedException {
+         String rev = null;
+@@ -270,7 +283,7 @@ public class BazaarSCM extends SCM implements Serializable {
+     }
+ 
+     @Override
+-    public void buildEnvVars(AbstractBuild build, Map<String, String> env) {
++    public void buildEnvVars(AbstractBuild<?,?> build, Map<String, String> env) {
+     }
+ 
+     @Override
+@@ -290,7 +303,7 @@ public class BazaarSCM extends SCM implements Serializable {
+         private transient String version;
+ 
+         private DescriptorImpl() {
+-            super(BazaarSCM.class, null);
++            super(BazaarSCM.class, BazaarRepositoryBrowser.class);
+             load();
+         }
+ 
+Index: src/main/java/hudson/plugins/bazaar/browsers/Loggerhead.java
+===============================================================
+--- src/main/java/hudson/plugins/bazaar/browsers/Loggerhead.java	(revision 0)
++++ src/main/java/hudson/plugins/bazaar/browsers/Loggerhead.java	(revision 0)
+@@ -0,0 +1,94 @@
++package hudson.plugins.bazaar.browsers;
++
++import hudson.Extension;
++import hudson.model.Descriptor;
++import hudson.plugins.bazaar.BazaarAffectedFile;
++import hudson.plugins.bazaar.BazaarChangeSet;
++import hudson.plugins.bazaar.BazaarRepositoryBrowser;
++import hudson.scm.RepositoryBrowser;
++
++import java.io.IOException;
++import java.net.URL;
++
++import org.kohsuke.stapler.DataBoundConstructor;
++
++/**
++ * {@link RepositoryBrowser} for Loggerhead.
++ *
++ * @author Alexandre Garnier <zigarn@dev.java.net>
++ */
++public class Loggerhead extends BazaarRepositoryBrowser {
++
++    /**
++     * The URL of the Loggerhead repository.
++     *
++     * This is normally like <tt>http://bazaar.launchpad.net/~myteam/myproject/</tt>
++     * Normalized to have '/' at the tail.
++     */
++    public final URL url;
++
++    @DataBoundConstructor
++    public Loggerhead(URL url) {
++        this.url = normalizeToEndWithSlash(url);
++    }
++
++    @Override
++    public URL getChangeSetLink(BazaarChangeSet changeSet) throws IOException {
++        return new URL(this.url, "./revision/" + changeSet.getRevno());
++    }
++
++    @Override
++    public URL getDiffLink(BazaarAffectedFile affectedFile) throws IOException {
++        URL url = null;
++        String path = affectedFile.getPath().trim();
++        if (! isFolderPath(path) && ! isRenaming(affectedFile)) {
++            return new URL(this.url, String.format("./revision/%s/%s", affectedFile.getChangeSet().getRevno(),
++                                                                       trimHeadSlash(path)));
++        }
++        return url;
++    }
++
++    private static boolean isRenaming(BazaarAffectedFile affectedFile) {
++        return affectedFile.getOldPath() != null;
++    }
++
++    @Override
++    public URL getFileLink(BazaarAffectedFile affectedFile) throws IOException {
++        String path = affectedFile.getPath().trim();
++        return new URL(this.url, String.format("./%s/%s/%s?file_id=%s", getBrowsingType(path),
++                                                                        affectedFile.getChangeSet().getRevno(),
++                                                                        trimHeadSlash(path),
++                                                                        affectedFile.getFileId()));
++    }
++
++    private static String getBrowsingType(String path) {
++        String browsingType = "annotate";
++        if (isFolderPath(path)) {
++            browsingType = "files";
++        }
++        return browsingType;
++    }
++
++    private static boolean isFolderPath(String path) {
++        return path.endsWith("/");
++    }
++
++
++    @Extension
++    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
++
++    public Descriptor<RepositoryBrowser<?>> getDescriptor() {
++        return DESCRIPTOR;
++    }
++
++    public static class DescriptorImpl extends Descriptor<RepositoryBrowser<?>> {
++        public DescriptorImpl() {
++            super(Loggerhead.class);
++        }
++
++        @Override
++        public String getDisplayName() {
++            return "Loggerhead";
++        }
++    }
++}
+Index: src/main/resources/hudson/plugins/bazaar/BazaarChangeSetList/digest.jelly
+===============================================================
+--- src/main/resources/hudson/plugins/bazaar/BazaarChangeSetList/digest.jelly	(revision 30369)
++++ src/main/resources/hudson/plugins/bazaar/BazaarChangeSetList/digest.jelly	(working copy)
+@@ -8,15 +8,15 @@
+ 
+   <j:choose>
+     <j:when test="${it.emptySet}">
+-      No changes.
++      ${%No changes.}
+     </j:when>
+     <j:otherwise>
+-      Changes
++      ${%Changes}
+       <ol>
+         <j:forEach var="cs" items="${it.logs}" varStatus="loop">
+-          <li>Revno: ${cs.revno}
++          <li value="${cs.revno}" title="revno: ${cs.revno}, revid: ${cs.revid}">
+             ${cs.msgAnnotated}
+-            (<a href="changes#detail${loop.index}">detail</a>
++            (<a href="changes#detail${loop.index}">${%detail}</a>
+             <j:text>)</j:text>
+           </li>
+         </j:forEach>
+Index: src/main/resources/hudson/plugins/bazaar/BazaarChangeSetList/digest_fr.properties
+===============================================================
+--- src/main/resources/hudson/plugins/bazaar/BazaarChangeSetList/digest_fr.properties	(revision 0)
++++ src/main/resources/hudson/plugins/bazaar/BazaarChangeSetList/digest_fr.properties	(revision 0)
+@@ -0,0 +1,3 @@
++No\ changes.=Aucun changement.
++Changes=Changements
++detail=détails
+Index: src/main/resources/hudson/plugins/bazaar/BazaarChangeSetList/index.jelly
+===============================================================
+--- src/main/resources/hudson/plugins/bazaar/BazaarChangeSetList/index.jelly	(revision 30369)
++++ src/main/resources/hudson/plugins/bazaar/BazaarChangeSetList/index.jelly	(working copy)
+@@ -2,7 +2,9 @@
+   Displays Bazaar change log.
+ -->
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+-  <h2>Summary</h2>
++  <j:set var="browser" value="${it.build.parent.scm.effectiveBrowser}"/>
++
++  <h2>${%Summary}</h2>
+   <ol>
+     <j:forEach var="cs" items="${it.logs}">
+       <li><st:out value="${cs.msg}"/></li>
+@@ -14,21 +16,31 @@
+         <td colspan="2" class="changeset">
+           <a name="detail${loop.index}"></a>
+           <div class="changeset-message">
+-            <b>
+-              Changeset revno ${cs.revno} by ${cs.author} (Revision id: ${cs.revid}):
++            <b title="revno: ${cs.revno}, revid: ${cs.revid}">
++              ${%Revision}
++              <a href="${browser.getChangeSetLink(cs)}">${cs.revision}</a> ${%by} <a href="${rootURL}/${cs.author.url}/">${cs.author}</a>
+             </b><br/>
+             ${cs.msgAnnotated}
+           </div>
+         </td>
+       </tr>
+ 
+-      <j:forEach var="k" items="${cs.editTypes}">
+-        <j:forEach var="p" items="${cs.getPaths(k)}">
+-          <tr>
+-            <td width="20"><t:editTypeIcon type="${k}" /></td>
+-            <td>${p}</td>
+-          </tr>
+-        </j:forEach>
++      <j:forEach var="af" items="${cs.affectedFiles}">
++        <tr>
++          <td width="20"><t:editTypeIcon type="${af.editType}" /></td>
++          <td title="fileid: ${af.fileId}">
++            <j:set var="oldPath" value="${af.oldPath}"/>
++            <j:if test="${oldPath!=null}">
++              ${oldPath}<st:nbsp/>=><st:nbsp/>
++            </j:if>
++            <a href="${browser.getFileLink(af)}">${af.path}</a>
++            <j:set var="diff" value="${browser.getDiffLink(af)}"/>
++            <j:if test="${diff!=null}">
++              <st:nbsp/>
++              <a href="${diff}">(diff)</a>
++            </j:if>
++          </td>
++        </tr>
+       </j:forEach>
+     </j:forEach>
+   </table>
+Index: src/main/resources/hudson/plugins/bazaar/BazaarChangeSetList/index_fr.properties
+===============================================================
+--- src/main/resources/hudson/plugins/bazaar/BazaarChangeSetList/index_fr.properties	(revision 0)
++++ src/main/resources/hudson/plugins/bazaar/BazaarChangeSetList/index_fr.properties	(revision 0)
+@@ -0,0 +1,3 @@
++Summary=Résumé
++Revision=Modification
++by=par
+Index: src/main/resources/hudson/plugins/bazaar/BazaarSCM/config.jelly
+===============================================================
+--- src/main/resources/hudson/plugins/bazaar/BazaarSCM/config.jelly	(revision 30369)
++++ src/main/resources/hudson/plugins/bazaar/BazaarSCM/config.jelly	(working copy)
+@@ -2,6 +2,7 @@
+   <f:entry title="${%Repository URL}" help="/plugin/bazaar/help.html">
+     <f:textbox field="source" />
+   </f:entry>
++  <t:listScmBrowsers name="bzr.browser" />
+   <f:advanced>
+     <f:entry title="${%Clean Build}" help="/plugin/bazaar/clean.html">
+       <f:checkbox name="bzr.clean" checked="${instance.clean}" />
+Index: src/main/resources/hudson/plugins/bazaar/browsers/Loggerhead/config.jelly
+===============================================================
+--- src/main/resources/hudson/plugins/bazaar/browsers/Loggerhead/config.jelly	(revision 0)
++++ src/main/resources/hudson/plugins/bazaar/browsers/Loggerhead/config.jelly	(revision 0)
+@@ -0,0 +1,5 @@
++<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
++  <f:entry title="URL" field="url">
++    <f:textbox />
++  </f:entry>
++</j:jelly>
+Index: src/main/resources/hudson/plugins/bazaar/browsers/Loggerhead/help-url.html
+===============================================================
+--- src/main/resources/hudson/plugins/bazaar/browsers/Loggerhead/help-url.html	(revision 0)
++++ src/main/resources/hudson/plugins/bazaar/browsers/Loggerhead/help-url.html	(revision 0)
+@@ -0,0 +1,5 @@
++<div>
++  The repository browser URL for the root of the project.
++  For example, a Launchpad project called <tt>myproject</tt> would use
++  <tt>http://bazaar.launchpad.net/~myteam/myproject/</tt>.
++</div>
+Index: src/main/resources/hudson/plugins/bazaar/browsers/Loggerhead/help-url_fr.html
+===============================================================
+--- src/main/resources/hudson/plugins/bazaar/browsers/Loggerhead/help-url_fr.html	(revision 0)
++++ src/main/resources/hudson/plugins/bazaar/browsers/Loggerhead/help-url_fr.html	(revision 0)
+@@ -0,0 +1,5 @@
++<div>
++  L'URL racine du projet pour le navigateur de l'outil de gestion de configuration du code.
++  Par exemple, pour un projet Launchpad appelÃ© <tt>monprojet</tt>&nbsp;:
++  <tt>http://bazaar.launchpad.net/~monequipe/monprojet</tt>.
++</div>

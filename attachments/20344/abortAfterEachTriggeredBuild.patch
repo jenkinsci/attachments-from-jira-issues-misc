@@ -1,0 +1,22 @@
+diff --git a/src/main/java/hudson/plugins/parameterizedtrigger/TriggerBuilder.java b/src/main/java/hudson/plugins/parameterizedtrigger/TriggerBuilder.java
+index 2bc465e..f0c8529 100644
+--- a/src/main/java/hudson/plugins/parameterizedtrigger/TriggerBuilder.java
++++ b/src/main/java/hudson/plugins/parameterizedtrigger/TriggerBuilder.java
+@@ -7,6 +7,7 @@ import hudson.Util;
+ import hudson.model.AbstractBuild;
+ import hudson.model.AbstractProject;
+ import hudson.model.BuildListener;
++import hudson.model.Result;
+ import hudson.tasks.BuildStepDescriptor;
+ import hudson.tasks.BuildStepMonitor;
+ import hudson.tasks.Builder;
+@@ -69,6 +70,9 @@ public class TriggerBuilder extends Builder {
+ 	                        AbstractBuild b = f.get();
+ 	                        listener.getLogger().println(b.getFullDisplayName()+" completed. Result was "+b.getResult());
+ 	                        build.setResult(e.getKey().getBlock().mapResult(b.getResult()));
++	                        if (b.getResult().isWorseThan(Result.SUCCESS)) {
++	                        	return false;
++	                        }
+ 	                    } catch (CancellationException x) {
+ 	                        throw new AbortException(p.getFullDisplayName() +" aborted.");
+ 	                    }

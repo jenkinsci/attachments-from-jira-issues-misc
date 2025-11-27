@@ -1,0 +1,107 @@
+Index: src/test/java/io/jenkins/plugins/analysis/warnings/MavenProjectQualityGateITest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>ISO-8859-1
+===================================================================
+--- src/test/java/io/jenkins/plugins/analysis/warnings/MavenProjectQualityGateITest.java	(date 1527083251000)
++++ src/test/java/io/jenkins/plugins/analysis/warnings/MavenProjectQualityGateITest.java	(date 1527088445000)
+@@ -2,7 +2,14 @@
+ 
+ import java.io.IOException;
+ 
++import org.junit.Before;
++import org.jvnet.hudson.test.ToolInstallations;
++
++import hudson.FilePath;
+ import hudson.maven.MavenModuleSet;
++import hudson.model.TopLevelItem;
++import hudson.tasks.Maven;
++import hudson.tasks.Maven.MavenInstallation;
+ 
+ /**
+  * Integration tests of {@link hudson.maven.MavenModuleSet} with {@link io.jenkins.plugins.analysis.core.quality.QualityGate}.
+@@ -10,11 +17,18 @@
+  * @author Michaela Reitschuster
+  */
+ public class MavenProjectQualityGateITest extends AbstractQualityGateITest<MavenModuleSet> {
++    @Before
++    public void initializeMaven() throws Exception {
++        MavenInstallation mvn = ToolInstallations.configureMaven35();
++        MavenInstallation m3 = new MavenInstallation("apache-maven-3.3.9", mvn.getHome(), j.NO_PROPERTIES);
++        j.jenkins.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(m3);
++    }
+ 
+     @Override
+     protected MavenModuleSet getProject() {
+         MavenModuleSet project = createJob();
+         copyFilesToWorkspace(project, "checkstyle-qualitygate.xml");
++        copyToWorkspace(project, "pom.xml");
+         return project;
+     }
+ 
+@@ -26,4 +40,25 @@
+             throw new AssertionError(e);
+         }
+     }
++
++    /**
++     * Copies the specified files to the workspace.
++     *
++     * @param job
++     *         the job to get the workspace for
++     * @param fileNames
++     *         the files to copy
++     */
++    private void copyToWorkspace(final TopLevelItem job, final String... fileNames) {
++        try {
++            FilePath workspace = j.jenkins.getWorkspaceFor(job);
++            for (String fileName : fileNames) {
++                workspace.child(fileName).copyFrom(asInputStream(fileName));
++            }
++        }
++        catch (IOException | InterruptedException e) {
++            throw new AssertionError(e);
++        }
++    }
++
+ }
+Index: src/test/resources/io/jenkins/plugins/analysis/warnings/pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/resources/io/jenkins/plugins/analysis/warnings/pom.xml	(date 1527088147000)
++++ src/test/resources/io/jenkins/plugins/analysis/warnings/pom.xml	(date 1527088147000)
+@@ -0,0 +1,12 @@
++<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
++  <modelVersion>4.0.0</modelVersion>
++
++  <artifactId>warnings-test</artifactId>
++  <packaging>jar</packaging>
++  <name>Warnings Plug-in Test</name>
++  <version>0.0.1-SNAPSHOT</version>
++  <groupId>org.jvnet.hudson.plugins</groupId>
++
++</project>
++
+Index: pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- pom.xml	(date 1527083251000)
++++ pom.xml	(date 1527087817000)
+@@ -97,6 +97,12 @@
+       </exclusions>
+     </dependency>
+ 
++    <dependency>
++      <groupId>org.jenkins-ci.main</groupId>
++      <artifactId>jenkins-test-harness-tools</artifactId>
++      <version>2.2</version>
++      <scope>test</scope>
++    </dependency>
+     <dependency>
+       <groupId>org.jvnet.hudson.plugins</groupId>
+       <artifactId>analysis-test</artifactId>

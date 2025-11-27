@@ -1,0 +1,38 @@
+Index: src/main/java/hudson/plugins/cygpath/CygpathLauncherDecorator.java
+===================================================================
+--- src/main/java/hudson/plugins/cygpath/CygpathLauncherDecorator.java	(revision 150011)
++++ src/main/java/hudson/plugins/cygpath/CygpathLauncherDecorator.java	(revision 150012)
+@@ -82,6 +82,11 @@
+                     if (exe.indexOf('/')<0 && exe.indexOf('\\')<0)
+                         return cmds;    // if the executable is a single token, it'll be found in PATH. "cygpath -w" would append the current directory in front, which won't work.
+ 
++						
++					if (getCygpathExe() == null) {
++						return cmds; // dont do the modifications in case that cygwin is not installed
++					}
++						
+                     ByteArrayOutputStream out = new ByteArrayOutputStream();
+                     if(base.launch().cmds(getCygpathExe(),"-w",exe).stdout(out).join()==0) {
+                         // replace by the converted path
+@@ -135,11 +140,19 @@
+                 }
+             }
+ 
+-            throw new IOException2("Failed to locate Cygwin installation. Is Cygwin installed?",err);
++			// situation, where cygpath is not found or installed  - no error.
++			return null;
+         }
+ 
+         public String call() throws IOException {
+-            return new File(getCygwinRoot(),"bin\\cygpath").getPath();
++			File root = getCygwinRoot();
++			if (root != null) {
++				return new File(root,"bin\\cygpath").getPath();
++			}
++			else {
++			         // cygwin not installed.
++				return null;
++			}
+         }
+     }
+ }

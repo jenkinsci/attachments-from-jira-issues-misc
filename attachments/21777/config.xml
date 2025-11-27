@@ -1,0 +1,177 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Support for building hotfixes for 4.0.x</description>
+  <logRotator>
+    <daysToKeep>30</daysToKeep>
+    <numToKeep>-1</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.batch__task.BatchTaskProperty>
+      <tasks>
+        <hudson.plugins.batch__task.BatchTask>
+          <name>Make release</name>
+          <script># Copied here due to JENKINS-13647&#xd;
+EVVERSION=4.0.1&#xd;
+EVRELEASE_TYPE=rc&#xd;
+EVRELEASE=$BUILD_NUMBER.$EVRELEASE_TYPE.rhel5&#xd;
+BUILD_RPM_REPO=1&#xd;
+&#xd;
+set -x&#xd;
+EVSHORTVER=$(echo $EVVERSION | cut -d&apos;.&apos; -f1-3)&#xd;
+EVTAGVERSION=$(echo $EVVERSION | tr \. _)&#xd;
+/u/builduser/bin/make_release.sh rhel5-x86_64 $JOB_NAME &quot;ev-$EVSHORTVER&quot; &quot;ev-$EVVERSION-$EVRELEASE_TYPE&quot;&#xd;
+if [ &quot;$EVRELEASE_TYPE&quot; = &quot;final&quot; ]; then&#xd;
+  for f in $(find ./ -type d -maxdepth 1); do &#xd;
+      (cd $f; cvs tag -F &quot;release_EV_$EVTAGVERSION&quot;) &#xd;
+  done&#xd;
+fi</script>
+        </hudson.plugins.batch__task.BatchTask>
+      </tasks>
+    </hudson.plugins.batch__task.BatchTaskProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>BASE_RPM_BUILD</name>
+          <description>The path to the base rpm build to base hotfix on</description>
+          <defaultValue>/u/ftp/pub/RELEASES/ev-4.0.0/ev-4.0.0-final</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>RPMS_TO_BUILD</name>
+          <description>Space separated list of RPM packages to build</description>
+          <defaultValue>easyviz-installation vdbserver cluster-backbone mcop vdbclient</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <EnvInjectJobProperty>
+      <info>
+        <propertiesContent>EVVERSION=4.0.1
+EVRELEASE_TYPE=rc
+EVRELEASE=$BUILD_NUMBER.$EVRELEASE_TYPE.rhel5
+BUILD_RPM_REPO=1</propertiesContent>
+        <loadFilesFromMaster>false</loadFilesFromMaster>
+      </info>
+      <on>true</on>
+      <keepJenkinsSystemVariables>true</keepJenkinsSystemVariables>
+      <keepBuildVariables>true</keepBuildVariables>
+      <contributors/>
+    </EnvInjectJobProperty>
+  </properties>
+  <scm class="hudson.scm.CVSSCM">
+    <cvsroot>:pserver:builduser@cvs.medical-insight.com:/home/cvs</cvsroot>
+    <module>evadmin
+evbase
+tinymath
+openglutils
+ftgl
+sparrow
+asm
+trident
+mcop
+mistral
+yargnits
+sickle
+sturgeon
+charls
+vdbclient
+qtutility
+cluster-backbone
+camutility
+libwfm
+general3d
+virtualxray3d
+fus3d
+general2d
+session-manager
+dicom-export
+wfm
+pasviewer
+ris
+docview
+report
+easyviz-themes
+evassistant
+ev-user-manual
+vdbpacssync
+wlmscp
+hl7tools
+ris-webservices
+wksprefetch
+documentrepository
+vdbtools
+evlogin
+evncserver2
+winclient-dist
+auditimport
+auditlogweb
+easyviz-installation
+installation
+vdbserver</module>
+    <branch>branch_EV_4_0_hotfix</branch>
+    <canUseUpdate>false</canUseUpdate>
+    <useHeadIfNotFound>false</useHeadIfNotFound>
+    <flatten>false</flatten>
+    <repositoryBrowser class="hudson.scm.browsers.ViewCVS">
+      <url>http://cvsweb.medical-insight.com/cgi-bin/cvsweb.cgi/?f=h</url>
+    </repositoryBrowser>
+    <isTag>false</isTag>
+    <excludedRegions></excludedRegions>
+  </scm>
+  <assignedNode>rhel5_x86_64</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector"/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>RPM_DIR=&quot;$WORKSPACE/redhat&quot;
+sudo evadmin/evadmin rpm -e --allmatches --nodeps --noscripts
+
+make -f evadmin/Makefile INCLUDE_EASYVIZ_INSTALLATION=1 RPM_DIR=$RPM_DIR &quot;$WORKSPACE/redhat&quot;
+ALLRPMS=&quot;$(make -f evadmin/Makefile INCLUDE_EASYVIZ_INSTALLATION=1 EV2-topol-print)&quot;
+for p in $RPMS_TO_BUILD; do 
+  if ! echo &quot;$ALLRPMS&quot; | grep &quot;^$p$&quot; ; then
+   echo &quot;package $p not recognized&quot;
+   exit 1; 
+  fi
+done
+
+cp -a $BASE_RPM_BUILD/rhel5-x86_64/packages/*.rpm $RPM_DIR/RPMS/i386
+cp -a $BASE_RPM_BUILD/rhel5-x86_64/devel/*.rpm $RPM_DIR/RPMS/i386
+cp -a $BASE_RPM_BUILD/rhel5-x86_64/debuginfo/*.rpm $RPM_DIR/RPMS/i386
+cp -a $BASE_RPM_BUILD/rhel5-x86_64/themes/*/*-theme*.rpm $RPM_DIR/RPMS/noarch/
+cp -a $BASE_RPM_BUILD/rhel5-x86_64/themes/*/*winclient*.rpm $RPM_DIR/RPMS/noarch
+
+rm -f $RPM_DIR/RPMS/*/{easyviz,ris}*{database,rendernode,workstation,dicomnode}*rpm
+rm -f $RPM_DIR/SRPMS/*/{easyviz,ris}*{database,rendernode,workstation,dicomnode}*rpm
+
+for p in $RPMS_TO_BUILD; do 
+   if [ &quot;$p&quot; = &quot;vdbtools&quot; -o &quot;$p&quot; = &quot;winclient-dist&quot; -o &quot;$p&quot; = &quot;asm&quot; ]; then
+    rm -f $RPM_DIR/RPMS/*/$p-*.rpm
+    rm -f $RPM_DIR/SRPMS/$p-*.src.rpm
+   else 
+     rm -f $RPM_DIR/RPMS/*/$p-[0-9]*.rpm
+     rm -f $RPM_DIR/RPMS/*/$p-devel-[0-9]*.rpm
+     rm -f $RPM_DIR/RPMS/*/$p-debuginfo-[0-9]*.rpm
+     rm -f $RPM_DIR/SRPMS/$p-*.src.rpm
+   fi
+done
+
+/u/builduser/bin/make_rpm_build.sh EXTRA_CONFIGURE=&quot;--enable-warnings --enable-fatal-warnings --disable-dependency-tracking --enable-visibility-hidden --enable-core2 --cache-file=../config.cache&quot;  EasyViz2-make-release
+</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.Mailer>
+      <recipients></recipients>
+      <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>true</sendToIndividuals>
+    </hudson.tasks.Mailer>
+  </publishers>
+  <buildWrappers/>
+</project>

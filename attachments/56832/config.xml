@@ -1,0 +1,96 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@2.42">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@1.9.2"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@1.9.2">
+      <jobProperties>
+        <string>org.jenkinsci.plugins.workflow.job.properties.DisableConcurrentBuildsJobProperty</string>
+        <string>jenkins.model.BuildDiscarderProperty</string>
+      </jobProperties>
+      <triggers/>
+      <parameters/>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description/>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.6"/>
+    <com.sonyericsson.jenkins.plugins.bfa.model.ScannerJobProperty plugin="build-failure-analyzer@2.1.0">
+      <doNotScan>false</doNotScan>
+    </com.sonyericsson.jenkins.plugins.bfa.model.ScannerJobProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.4">
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers>
+        <com.atlassian.bitbucket.jenkins.internal.trigger.BitbucketWebhookTriggerImpl plugin="atlassian-bitbucket-server-integration@3.1.0">
+          <spec/>
+          <pullRequestTrigger>true</pullRequestTrigger>
+          <refTrigger>false</refTrigger>
+          <version>1</version>
+        </com.atlassian.bitbucket.jenkins.internal.trigger.BitbucketWebhookTriggerImpl>
+      </triggers>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>20</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <org.jenkinsci.plugins.workflow.job.properties.DisableConcurrentBuildsJobProperty>
+      <abortPrevious>false</abortPrevious>
+    </org.jenkinsci.plugins.workflow.job.properties.DisableConcurrentBuildsJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@2633.v6baeedc13805">
+    <scm class="com.atlassian.bitbucket.jenkins.internal.scm.BitbucketSCM" plugin="atlassian-bitbucket-server-integration@3.1.0">
+      <gitSCM plugin="git@4.10.0">
+        <configVersion>2</configVersion>
+        <userRemoteConfigs class="singleton-list">
+          <hudson.plugins.git.UserRemoteConfig>
+            <name>bb_server_int_tst1_repo</name>
+            <url>https://git.***/scm/ittst001/bb_server_int_tst1_repo.git</url>
+            <credentialsId>Bitbucket_local_admin_git.***</credentialsId>
+          </hudson.plugins.git.UserRemoteConfig>
+        </userRemoteConfigs>
+        <branches>
+          <hudson.plugins.git.BranchSpec>
+            <name>**</name>
+          </hudson.plugins.git.BranchSpec>
+        </branches>
+        <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+        <browser class="hudson.plugins.git.browser.Stash">
+          <url>https://git.***/projects/ITTST001/repos/bb_server_int_tst1_repo</url>
+        </browser>
+        <submoduleCfg class="empty-list"/>
+        <extensions/>
+      </gitSCM>
+      <branches reference="../gitSCM/branches"/>
+      <extensions/>
+      <id>5804fcac-5e73-4445-b4fd-09e9f4fc66bf</id>
+      <repositories>
+        <com.atlassian.bitbucket.jenkins.internal.scm.BitbucketSCMRepository>
+          <credentialsId>Bitbucket_local_admin_git.***</credentialsId>
+          <sshCredentialsId/>
+          <projectKey>ITTST001</projectKey>
+          <projectName>IT Test Project 001</projectName>
+          <repositoryName>bb_server_int_tst1_repo</repositoryName>
+          <repositorySlug>bb_server_int_tst1_repo</repositorySlug>
+          <serverId>443df3f1-3ee1-4262-bd9c-e7ceb6ec4b26</serverId>
+          <mirrorName/>
+        </com.atlassian.bitbucket.jenkins.internal.scm.BitbucketSCMRepository>
+      </repositories>
+      <isWebhookRegistered>true</isWebhookRegistered>
+    </scm>
+    <scriptPath>ThirdParty/Jenkins/Jenkinsfile</scriptPath>
+    <lightweight>true</lightweight>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

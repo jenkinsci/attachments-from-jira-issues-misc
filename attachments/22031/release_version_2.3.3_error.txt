@@ -1,0 +1,37 @@
+[INFO] Checking in modified POMs...
+[INFO] EXECUTING: cmd.exe /X /C "hg branch"
+[INFO] EXECUTING: cmd.exe /X /C "hg commit --message "[maven-release-plugin] prepare release myAppReleaseConfig-1.0.0" <http://buildPC:8080/job/MYAPP-RELEASE-CONFIG2/au.com.myCompany.myApp$myAppReleaseConfig/ws/pom.xml">
+[INFO] Tagging release with the label myAppReleaseConfig-1.0.0...
+[INFO] EXECUTING: cmd.exe /X /C "hg tag --message "[maven-release-plugin]  copy for tag myAppReleaseConfig-1.0.0" myAppReleaseConfig-1.0.0"
+[INFO] EXECUTING: cmd.exe /X /C "hg locate"
+[INFO] Transforming 'Easysure Release Configuration'...
+[INFO] Not removing release POMs
+[INFO] Checking in modified POMs...
+[INFO] EXECUTING: cmd.exe /X /C "hg branch"
+[INFO] EXECUTING: cmd.exe /X /C "hg commit --message "[maven-release-plugin] prepare for next development iteration" <http://buildPC:8080/job/MYAPP-RELEASE-CONFIG2/au.com.myCompany.myApp$myAppReleaseConfig/ws/pom.xml">
+[INFO] Release preparation complete.
+[INFO] 
+[INFO] --- maven-release-plugin:2.3.2:perform (default-cli) @ myAppReleaseConfig ---
+[INFO] Checking out the project to perform the release ...
+[INFO] Removing <http://buildPC:8080/job/MYAPP-RELEASE-CONFIG2/au.com.myCompany.myApp$myAppReleaseConfig/ws/target/checkout>
+[INFO] EXECUTING: cmd.exe /X /C "hg clone -r myAppReleaseConfig-1.0.0 https://buildUser:buildPassword@mercurial/hg/myApp/ <http://buildPC:8080/job/MYAPP-RELEASE-CONFIG2/au.com.myCompany.myApp$myAppReleaseConfig/ws/target/checkout">
+[ERROR] 
+EXECUTION FAILED
+  Execution of cmd : clone failed with exit code: 255.
+  Working directory was: 
+    <http://buildPC:8080/job/MYAPP-RELEASE-CONFIG2/au.com.myCompany.myApp$myAppReleaseConfig/ws/target>
+  Your Hg installation seems to be valid and complete.
+    Hg version: 2.1.1 (OK)
+
+
+[INFO] EXECUTING: cmd.exe /X /C "hg locate"
+[INFO] Executing goals 'deploy'...
+[INFO] [INFO] Scanning for projects...
+[INFO] [INFO] ------------------------------------------------------------------------
+[INFO] [INFO] BUILD FAILURE
+[INFO] [INFO] ------------------------------------------------------------------------
+[INFO] [INFO] Total time: 0.062s
+[INFO] [INFO] Finished at: Fri Jun 22 12:48:57 EST 2012
+[INFO] [INFO] Final Memory: 3M/7M
+[INFO] [INFO] ------------------------------------------------------------------------
+[INFO] [ERROR] The goal you specified requires a project to execute but there is no POM in this directory (<http://buildPC:8080/job/MYAPP-RELEASE-CONFIG2/au.com.myCompany.myApp$myAppReleaseConfig/ws/target/checkout).> Please verify you invoked Maven from the correct directory. -> [Help 1]

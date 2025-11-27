@@ -1,0 +1,234 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.security.AuthorizationMatrixProperty>
+      <permission>hudson.model.Item.Build:deepak_garg</permission>
+      <permission>hudson.model.Item.Build:authenticated</permission>
+      <permission>hudson.model.Item.Build:dennis_baker</permission>
+      <permission>hudson.model.Item.Build:srini_venkatraman</permission>
+      <permission>hudson.model.Item.Workspace:deepak_garg</permission>
+      <permission>hudson.model.Item.Workspace:authenticated</permission>
+      <permission>hudson.model.Item.Workspace:dennis_baker</permission>
+      <permission>hudson.model.Item.Workspace:srini_venkatraman</permission>
+      <permission>hudson.model.Item.Read:deepak_garg</permission>
+      <permission>hudson.model.Item.Read:authenticated</permission>
+      <permission>hudson.model.Item.Read:dennis_baker</permission>
+      <permission>hudson.model.Item.Read:srini_venkatraman</permission>
+    </hudson.security.AuthorizationMatrixProperty>
+    <hudson.queueSorter.PrioritySorterJobProperty>
+      <priority>80</priority>
+    </hudson.queueSorter.PrioritySorterJobProperty>
+    <hudson.plugins.disk__usage.DiskUsageProperty/>
+    <org.jvnet.hudson.plugins.shelveproject.ShelveProjectProperty/>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <name>origin</name>
+        <refspec>+refs/heads/main_int:refs/remotes/origin/main_int</refspec>
+        <url>git@thoroughbred:flt/root.git</url>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>remotes/origin/main_int</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <recursiveSubmodules>true</recursiveSubmodules>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <authorOrCommitter>true</authorOrCommitter>
+    <clean>false</clean>
+    <wipeOutWorkspace>true</wipeOutWorkspace>
+    <pruneBranches>false</pruneBranches>
+    <remotePoll>true</remotePoll>
+    <buildChooser class="hudson.plugins.git.util.DefaultBuildChooser"/>
+    <gitTool>Default</gitTool>
+    <submoduleCfg class="list"/>
+    <relativeTargetDir></relativeTargetDir>
+    <excludedRegions></excludedRegions>
+    <excludedUsers></excludedUsers>
+    <gitConfigName></gitConfigName>
+    <gitConfigEmail></gitConfigEmail>
+    <skipTag>false</skipTag>
+    <scmName></scmName>
+  </scm>
+  <assignedNode>bslave02</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector">
+    <hudson.triggers.SCMTrigger>
+      <spec>*/7 * * * *</spec>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <customWorkspace>/data/JBuilds/${JOB_NAME}/anroot</customWorkspace>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>/tools/admin/newciBuild.sh ${branch} ${WORKSPACE} ${JOB_NAME} ${BUILD_NUMBER}
+log=/home/hudson/.hudson/jobs/${JOB_NAME}/builds/${BUILD_NUMBER}/build.xml</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>echo &quot;CPPCHECK-Start `date +%H:%M:%S`&quot;
+cd ..
+/tools/bin/apc -command &quot;cd anroot;ant exec-cppcheck&quot;
+echo &quot;CPPCHECK-End `date +%H:%M:%S`&quot;</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>#echo &quot;SmokeTest-Start `date +%H:%M:%S`&quot;
+#mkdir -p ${LOG_DIR}
+#if [ -d ${pimagedir} ] ; then
+# fimagenum=`cd ${fimagedir};ls -t |tail -1`
+# fimagename=`cd ${fimagedir}/${fimagenum};ls an-*.tgz`
+#  echo &quot;Install branch ${branch} image ${BUILD_NUMBER} to chassis ${chassis_ip}&quot;
+#  cd ${QA_WKSPACE};bin/run bin/test-jobs.tcl --dut ${chassis} --image /export/annfs/builds/${fimagedir}/${fimagenum}/${fimagename} -include-tests &quot;&quot; -exclude-tests &quot;&quot; --install-dpkg-packages-dir ${pimagedir} --install-dpkg-packages-host ${NODE_NAME} --install-dpkg-target-host ${chassis_ip} --install-dpkg-tos-restart-delay 120 --junit-report-file ${JOB_NAME}.xml
+
+# perl /tools/bin/parse_smoketest_log.pl #${WORKSPACE}/${JOB_NAME}.xml ${VERSION} ${BUILD_URL}
+#else
+ # cp ${LOG_DIR}/../../notest.xml #${WORKSPACE}/${JOB_NAME}.xml
+#fi
+#cp ${WORKSPACE}/${JOB_NAME}.xml ${LOG_DIR}/.
+#echo &quot;SmokeTest-End `date +%H:%M:%S`&quot;</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.plugins.warnings.WarningsPublisher>
+      <healthy></healthy>
+      <unHealthy></unHealthy>
+      <thresholdLimit>low</thresholdLimit>
+      <pluginName>[WARNINGS] </pluginName>
+      <defaultEncoding></defaultEncoding>
+      <canRunOnFailed>false</canRunOnFailed>
+      <useDeltaValues>false</useDeltaValues>
+      <thresholds>
+        <unstableTotalAll></unstableTotalAll>
+        <unstableTotalHigh></unstableTotalHigh>
+        <unstableTotalNormal></unstableTotalNormal>
+        <unstableTotalLow></unstableTotalLow>
+        <unstableNewAll></unstableNewAll>
+        <unstableNewHigh></unstableNewHigh>
+        <unstableNewNormal></unstableNewNormal>
+        <unstableNewLow></unstableNewLow>
+        <failedTotalAll></failedTotalAll>
+        <failedTotalHigh></failedTotalHigh>
+        <failedTotalNormal></failedTotalNormal>
+        <failedTotalLow></failedTotalLow>
+        <failedNewAll></failedNewAll>
+        <failedNewHigh></failedNewHigh>
+        <failedNewNormal></failedNewNormal>
+        <failedNewLow></failedNewLow>
+      </thresholds>
+      <shouldDetectModules>false</shouldDetectModules>
+      <parserConfigurations/>
+      <consoleLogParsers>
+        <string>GNU compiler 4 (gcc)</string>
+      </consoleLogParsers>
+    </hudson.plugins.warnings.WarningsPublisher>
+    <hudson.tasks.BuildTrigger>
+      <childProjects>main_ci</childProjects>
+      <threshold>
+        <name>SUCCESS</name>
+        <ordinal>0</ordinal>
+        <color>BLUE</color>
+      </threshold>
+    </hudson.tasks.BuildTrigger>
+    <hudson.plugins.postbuildtask.PostbuildTask>
+      <tasks>
+        <hudson.plugins.postbuildtask.TaskProperties>
+          <logTexts>
+            <hudson.plugins.postbuildtask.LogProperties>
+              <logText>BUILD FAILED</logText>
+              <operator>AND</operator>
+            </hudson.plugins.postbuildtask.LogProperties>
+          </logTexts>
+          <EscalateStatus>false</EscalateStatus>
+          <RunIfJobSuccessful>false</RunIfJobSuccessful>
+          <script>/tools/bin/build_failed.sh ${BUILD_NUMBER} ${WORKSPACE} ${JOB_NAME}</script>
+        </hudson.plugins.postbuildtask.TaskProperties>
+      </tasks>
+    </hudson.plugins.postbuildtask.PostbuildTask>
+    <hudson.plugins.jira.JiraIssueUpdater/>
+    <org.jenkinsci.plugins.cppcheck.CppcheckPublisher>
+      <cppcheckConfig>
+        <pattern>cppcheck.*.xml</pattern>
+        <useWorkspaceAsRootPath>false</useWorkspaceAsRootPath>
+        <ignoreBlankFiles>false</ignoreBlankFiles>
+        <configSeverityEvaluation>
+          <threshold>0</threshold>
+          <newThreshold>0</newThreshold>
+          <failureThreshold>0</failureThreshold>
+          <newFailureThreshold>0</newFailureThreshold>
+          <healthy>0</healthy>
+          <unHealthy>0</unHealthy>
+          <severityError>true</severityError>
+          <severityWarning>true</severityWarning>
+          <severityStyle>true</severityStyle>
+          <severityPerformance>true</severityPerformance>
+          <severityInformation>true</severityInformation>
+        </configSeverityEvaluation>
+        <configGraph>
+          <xSize>500</xSize>
+          <ySize>200</ySize>
+          <displayAllErrors>true</displayAllErrors>
+          <displayErrorSeverity>true</displayErrorSeverity>
+          <displayWarningSeverity>true</displayWarningSeverity>
+          <displayStyleSeverity>true</displayStyleSeverity>
+          <displayPerformanceSeverity>true</displayPerformanceSeverity>
+          <displayInformationSeverity>true</displayInformationSeverity>
+        </configGraph>
+      </cppcheckConfig>
+    </org.jenkinsci.plugins.cppcheck.CppcheckPublisher>
+    <hudson.plugins.emailext.ExtendedEmailPublisher>
+      <recipientList>dennis_baker@affirmednetworks.com,release-engineering@affirmednetworks.com,Dayan_Ambalavanar@affirmednetworks.com</recipientList>
+      <configuredTriggers>
+        <hudson.plugins.emailext.plugins.trigger.FailureTrigger>
+          <email>
+            <recipientList></recipientList>
+            <subject>$PROJECT_DEFAULT_SUBJECT</subject>
+            <body>$PROJECT_DEFAULT_CONTENT</body>
+            <sendToDevelopers>true</sendToDevelopers>
+            <sendToRequester>false</sendToRequester>
+            <includeCulprits>true</includeCulprits>
+            <sendToRecipientList>true</sendToRecipientList>
+          </email>
+        </hudson.plugins.emailext.plugins.trigger.FailureTrigger>
+        <hudson.plugins.emailext.plugins.trigger.SuccessTrigger>
+          <email>
+            <recipientList></recipientList>
+            <subject>$PROJECT_DEFAULT_SUBJECT</subject>
+            <body>$PROJECT_DEFAULT_CONTENT</body>
+            <sendToDevelopers>true</sendToDevelopers>
+            <sendToRequester>false</sendToRequester>
+            <includeCulprits>false</includeCulprits>
+            <sendToRecipientList>true</sendToRecipientList>
+          </email>
+        </hudson.plugins.emailext.plugins.trigger.SuccessTrigger>
+      </configuredTriggers>
+      <contentType>text/html</contentType>
+      <defaultSubject>$DEFAULT_SUBJECT</defaultSubject>
+      <defaultContent>${JELLY_SCRIPT,template=&quot;html&quot;}</defaultContent>
+    </hudson.plugins.emailext.ExtendedEmailPublisher>
+  </publishers>
+  <buildWrappers>
+    <hudson.plugins.build__timeout.BuildTimeoutWrapper>
+      <timeoutMinutes>360</timeoutMinutes>
+      <failBuild>true</failBuild>
+    </hudson.plugins.build__timeout.BuildTimeoutWrapper>
+    <hudson.plugins.timestamper.TimestamperBuildWrapper/>
+    <hudson.plugins.setenv.SetEnvBuildWrapper>
+      <localVarText>branch=main_int
+LOG_DIR=/mnt/logstore/CI/${JOB_NAME}/${BUILD_NUMBER}
+QA_WKSPACE=/home/SAauto_user/autotest.beta/anroot
+pimagedir=/mnt/annfs1/builds/${branch}/${BUILD_NUMBER}
+fimagedir=/mnt/annfs1/builds/${branch}
+VERSION=LR3
+chassis=chassis16
+chassis_ip=10.6.1.23</localVarText>
+    </hudson.plugins.setenv.SetEnvBuildWrapper>
+  </buildWrappers>
+</project>

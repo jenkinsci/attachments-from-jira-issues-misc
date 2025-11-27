@@ -1,0 +1,110 @@
+Running from: /usr/share/jenkins/jenkins.war
+Feb 04, 2012 1:00:20 PM winstone.Logger logInternal
+INFO: Beginning extraction from war file
+Jenkins home directory: /var/lib/jenkins found at: EnvVars.masterEnvVars.get("JENKINS_HOME")
+Feb 04, 2012 1:00:21 PM winstone.Logger logInternal
+INFO: HTTP Listener started: port=8080
+Feb 04, 2012 1:00:21 PM winstone.Logger logInternal
+INFO: Winstone Servlet Engine v0.9.10 running: controlPort=disabled
+Feb 04, 2012 1:00:22 PM jenkins.InitReactorRunner$1 onAttained
+INFO: Started initialization
+Feb 04, 2012 1:00:22 PM jenkins.InitReactorRunner$1 onAttained
+INFO: Listed all plugins
+Feb 04, 2012 1:00:22 PM jenkins.InitReactorRunner$1 onAttained
+INFO: Prepared all plugins
+Feb 04, 2012 1:00:22 PM jenkins.InitReactorRunner$1 onAttained
+INFO: Started all plugins
+Feb 04, 2012 1:00:22 PM jenkins.InitReactorRunner$1 onAttained
+INFO: Augmented all extensions
+hudson.util.IOException2: Unable to read /var/lib/jenkins/jobs/mysql-proxy/builds/2012-02-04_12-53-47/build.xml
+        at hudson.XmlFile.unmarshal(XmlFile.java:160)
+        at hudson.model.Run.reload(Run.java:283)
+        at hudson.model.Run.<init>(Run.java:272)
+        at hudson.model.AbstractBuild.<init>(AbstractBuild.java:163)
+        at hudson.model.Build.<init>(Build.java:100)
+        at hudson.model.FreeStyleBuild.<init>(FreeStyleBuild.java:41)
+        at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+        at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:57)
+        at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+        at java.lang.reflect.Constructor.newInstance(Constructor.java:525)
+        at hudson.model.AbstractProject.loadBuild(AbstractProject.java:949)
+        at hudson.model.AbstractProject$1.create(AbstractProject.java:256)
+        at hudson.model.AbstractProject$1.create(AbstractProject.java:254)
+        at hudson.model.RunMap.load(RunMap.java:221)
+        at hudson.model.AbstractProject.onLoad(AbstractProject.java:254)
+        at hudson.model.Project.onLoad(Project.java:88)
+        at hudson.model.Items.load(Items.java:115)
+        at jenkins.model.Jenkins$14.run(Jenkins.java:2372)
+        at org.jvnet.hudson.reactor.TaskGraphBuilder$TaskImpl.run(TaskGraphBuilder.java:146)
+        at org.jvnet.hudson.reactor.Reactor.runTask(Reactor.java:259)
+        at jenkins.model.Jenkins$5.runTask(Jenkins.java:812)
+        at org.jvnet.hudson.reactor.Reactor$2.run(Reactor.java:187)
+        at org.jvnet.hudson.reactor.Reactor$Node.run(Reactor.java:94)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1110)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:603)
+        at java.lang.Thread.run(Thread.java:722)
+Caused by: com.thoughtworks.xstream.converters.ConversionException: Cannot deserialize object with new readObject()/writeObject() methods
+---- Debugging information ----
+class               : hudson.model.FreeStyleBuild
+required-type       : org.eclipse.jgit.lib.ObjectId
+path                : /build/actions/hudson.plugins.git.util.BuildData/buildsByBranchName/entry/hudson.plugins.git.util.Build/revision/sha1
+line number         : 17
+-------------------------------
+        at com.thoughtworks.xstream.converters.reflection.SerializableConverter.doUnmarshal(SerializableConverter.java:281)
+        at com.thoughtworks.xstream.converters.reflection.AbstractReflectionConverter.unmarshal(AbstractReflectionConverter.java:162)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:82)
+        at com.thoughtworks.xstream.core.AbstractReferenceUnmarshaller.convert(AbstractReferenceUnmarshaller.java:63)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:76)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:60)
+        at hudson.util.RobustReflectionConverter.unmarshalField(RobustReflectionConverter.java:290)
+        at hudson.util.RobustReflectionConverter.doUnmarshal(RobustReflectionConverter.java:233)
+        at hudson.util.RobustReflectionConverter.unmarshal(RobustReflectionConverter.java:180)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:82)
+        at com.thoughtworks.xstream.core.AbstractReferenceUnmarshaller.convert(AbstractReferenceUnmarshaller.java:63)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:76)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:60)
+        at hudson.util.RobustReflectionConverter.unmarshalField(RobustReflectionConverter.java:290)
+        at hudson.util.RobustReflectionConverter.doUnmarshal(RobustReflectionConverter.java:233)
+        at hudson.util.RobustReflectionConverter.unmarshal(RobustReflectionConverter.java:180)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:82)
+        at com.thoughtworks.xstream.core.AbstractReferenceUnmarshaller.convert(AbstractReferenceUnmarshaller.java:63)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:76)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:60)
+        at com.thoughtworks.xstream.converters.collections.AbstractCollectionConverter.readItem(AbstractCollectionConverter.java:71)
+        at com.thoughtworks.xstream.converters.collections.MapConverter.populateMap(MapConverter.java:79)
+        at com.thoughtworks.xstream.converters.collections.MapConverter.unmarshal(MapConverter.java:66)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:82)
+        at com.thoughtworks.xstream.core.AbstractReferenceUnmarshaller.convert(AbstractReferenceUnmarshaller.java:63)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:76)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:60)
+        at hudson.util.RobustReflectionConverter.unmarshalField(RobustReflectionConverter.java:290)
+        at hudson.util.RobustReflectionConverter.doUnmarshal(RobustReflectionConverter.java:233)
+        at hudson.util.RobustReflectionConverter.unmarshal(RobustReflectionConverter.java:180)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:82)
+        at com.thoughtworks.xstream.core.AbstractReferenceUnmarshaller.convert(AbstractReferenceUnmarshaller.java:63)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:76)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:60)
+        at com.thoughtworks.xstream.converters.collections.AbstractCollectionConverter.readItem(AbstractCollectionConverter.java:71)
+        at hudson.util.RobustCollectionConverter.populateCollection(RobustCollectionConverter.java:85)
+        at com.thoughtworks.xstream.converters.collections.CollectionConverter.unmarshal(CollectionConverter.java:61)
+        at hudson.util.RobustCollectionConverter.unmarshal(RobustCollectionConverter.java:76)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:82)
+        at com.thoughtworks.xstream.core.AbstractReferenceUnmarshaller.convert(AbstractReferenceUnmarshaller.java:63)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:76)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:60)
+        at hudson.util.RobustReflectionConverter.unmarshalField(RobustReflectionConverter.java:290)
+        at hudson.util.RobustReflectionConverter.doUnmarshal(RobustReflectionConverter.java:233)
+        at hudson.util.RobustReflectionConverter.unmarshal(RobustReflectionConverter.java:180)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:82)
+        at com.thoughtworks.xstream.core.AbstractReferenceUnmarshaller.convert(AbstractReferenceUnmarshaller.java:63)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:76)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:60)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.start(TreeUnmarshaller.java:137)
+        at com.thoughtworks.xstream.core.AbstractTreeMarshallingStrategy.unmarshal(AbstractTreeMarshallingStrategy.java:33)
+        at com.thoughtworks.xstream.XStream.unmarshal(XStream.java:926)
+        at hudson.util.XStream2.unmarshal(XStream2.java:91)
+        at com.thoughtworks.xstream.XStream.unmarshal(XStream.java:912)
+        at hudson.XmlFile.unmarshal(XmlFile.java:156)
+        ... 25 more
+
+........

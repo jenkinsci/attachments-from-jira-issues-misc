@@ -1,0 +1,86 @@
+Index: src/main/java/com/g2one/hudson/grails/GrailsBuilder.java
+===================================================================
+--- src/main/java/com/g2one/hudson/grails/GrailsBuilder.java	(revision 18391)
++++ src/main/java/com/g2one/hudson/grails/GrailsBuilder.java	(arbetskopia)
+@@ -37,14 +37,20 @@
+     private String projectBaseDir;
+     private String serverPort;
+ 
++    /**
++     * System properties to be passed to Grails. Follows {@link Properties} syntax.
++     */
++    private String properties;
++
+     @DataBoundConstructor
+-    public GrailsBuilder(String targets, String name, String grailsWorkDir, String projectWorkDir, String projectBaseDir, String serverPort) {
++    public GrailsBuilder(String targets, String name, String grailsWorkDir, String projectWorkDir, String projectBaseDir, String serverPort, String properties) {
+         this.name = name;
+         this.targets = targets;
+         this.grailsWorkDir = grailsWorkDir;
+         this.projectWorkDir = projectWorkDir;
+         this.projectBaseDir = projectBaseDir;
+         this.serverPort = serverPort;
++        this.properties = properties;
+     }
+ 
+     public String getProjectBaseDir() {
+@@ -79,6 +85,14 @@
+         this.serverPort = serverPort;
+     }
+ 
++    public String getProperties() {
++	return properties;
++    }
++    
++    public void setProperties(String properties) {
++        this.properties = properties;
++    }
++
+     public String getName() {
+         return name;
+     }
+@@ -95,7 +109,7 @@
+         return null;
+     }
+ 
+-    public boolean perform(Build<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
++    public boolean perform(Build<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+         Project proj = build.getProject();
+         List<String[]> targetsToRun = getTargetsToRun();
+         if (targetsToRun.size() > 0) {
+@@ -142,6 +156,7 @@
+                 if (sytemProperties.size() > 0) {
+                     args.addKeyValuePairs("-D", sytemProperties);
+                 }
++                args.addKeyValuePairsFromPropertyString("-D", properties, build.getBuildVariableResolver());
+ 
+                 args.add(target);
+                 for (int i = 1; i < targetsAndArgs.length; i++) {
+Index: src/main/resources/com/g2one/hudson/grails/GrailsBuilder/config.jelly
+===================================================================
+--- src/main/resources/com/g2one/hudson/grails/GrailsBuilder/config.jelly	(revision 18391)
++++ src/main/resources/com/g2one/hudson/grails/GrailsBuilder/config.jelly	(arbetskopia)
+@@ -35,4 +35,9 @@
+              description="Specify the project base dir (optional).  For most projects this may be left blank.  This value only needs to be specified if the Grails project is not at the root of the workspace.  If the Grails project is not at the root of the workspace, this value should represent a relative path down to the Grails project from the workspace root.">
+         <f:textbox name="grails.projectBaseDir" value="${instance.projectBaseDir}"/>
+     </f:entry>
++    <f:entry title="Properties"
++             description="Additional system properties to set (optional)"
++             help="${rootURL}/plugin/grails/help/projectConfig/properties.html">
++      <f:textarea name="grails.properties" value="${instance.properties}"/>
++    </f:entry>
+ </j:jelly>
+\ No newline at end of file
+Index: src/main/webapp/help/projectConfig/properties.html
+===================================================================
+--- src/main/webapp/help/projectConfig/properties.html	(revision 0)
++++ src/main/webapp/help/projectConfig/properties.html	(revision 0)
+@@ -0,0 +1,8 @@
++<div>
++  Properties needed by your Grails build can be specified here (in the standard properties file format):
++  <pre># comment
++name1=value1
++name2=value2
++</pre>
++  These are passed to Grails like <tt>"-Dname1=value1 -Dname2=value2"</tt>
++</div>

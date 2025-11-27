@@ -1,0 +1,263 @@
+Index: src/test/java/hudson/plugins/mercurial/MercurialSCMTest.java
+===================================================================
+--- src/test/java/hudson/plugins/mercurial/MercurialSCMTest.java	(revision 33948)
++++ src/test/java/hudson/plugins/mercurial/MercurialSCMTest.java	(working copy)
+@@ -23,7 +23,7 @@
+ 
+     public void testBasicOps() throws Exception {
+         FreeStyleProject p = createFreeStyleProject();
+-        p.setScm(new MercurialSCM(hgInstallation, repo.getPath(), null, null, null, null, false, false));
++        p.setScm(new MercurialSCM(hgInstallation, repo.getPath(), null, null, null, null, null, false, false));
+ 
+         hg(repo, "init");
+         touchAndCommit(repo, "a");
+@@ -43,7 +43,7 @@
+         touchAndCommit(repo, "b-1");
+         FreeStyleProject p = createFreeStyleProject();
+         // Clone off b.
+-        p.setScm(new MercurialSCM(hgInstallation, repo.getPath(), "b", null, null, null, false, false));
++        p.setScm(new MercurialSCM(hgInstallation, repo.getPath(), "b", null, null, null, null, false, false));
+         buildAndCheck(p, "b-1");
+         hg(repo, "update", "--clean", "default");
+         touchAndCommit(repo, "default-2");
+@@ -55,7 +55,7 @@
+         assertTrue(pollSCMChanges(p));
+         buildAndCheck(p, "b-2");
+         // Switch to default branch with an existing workspace.
+-        p.setScm(new MercurialSCM(hgInstallation, repo.getPath(), null, null, null, null, false, false));
++        p.setScm(new MercurialSCM(hgInstallation, repo.getPath(), null, null, null, null, null, false, false));
+         // Should now consider preexisting changesets in default to be poll triggers.
+         assertTrue(pollSCMChanges(p));
+         // Should switch working copy to default branch.
+@@ -68,7 +68,7 @@
+     @Bug(1099)
+     public void testPollingLimitedToModules() throws Exception {
+         FreeStyleProject p = createFreeStyleProject();
+-        p.setScm(new MercurialSCM(hgInstallation, repo.getPath(), null, "dir1 dir2", null, null, false, false));
++        p.setScm(new MercurialSCM(hgInstallation, repo.getPath(), null, "dir1 dir2", null, null, null, false, false));
+         hg(repo, "init");
+         touchAndCommit(repo, "dir1/f");
+         buildAndCheck(p, "dir1/f");
+@@ -94,7 +94,22 @@
+     @Bug(6337)
+     public void testPollingLimitedToModules2() throws Exception {
+         FreeStyleProject p = createFreeStyleProject();
+-        p.setScm(new MercurialSCM(hgInstallation, repo.getPath(), null, "dir1", null, null, false, false));
++        p.setScm(new MercurialSCM(hgInstallation, repo.getPath(), null, "dir1", null, null, null, false, false));
++        hg(repo, "init");
++        touchAndCommit(repo, "starter");
++        pollSCMChanges(p);
++        buildAndCheck(p, "starter");
++        touchAndCommit(repo, "dir2/f");
++        assertFalse(pollSCMChanges(p));
++        touchAndCommit(repo, "dir1/f");
++        assertTrue(pollSCMChanges(p));
++        buildAndCheck(p, "dir1/f");
++    }
++    
++    @Bug(7239)
++    public void testPollingLimitedToModules3() throws Exception {
++        FreeStyleProject p = createFreeStyleProject();
++        p.setScm(new MercurialSCM(hgInstallation, repo.getPath(), null, "dir1", "dir1/ff", null, null, false, false));
+         hg(repo, "init");
+         touchAndCommit(repo, "starter");
+         pollSCMChanges(p);
+@@ -104,13 +119,16 @@
+         touchAndCommit(repo, "dir1/f");
+         assertTrue(pollSCMChanges(p));
+         buildAndCheck(p, "dir1/f");
++        touchAndCommit(repo, "dir1/ff");
++        assertFalse(pollSCMChanges(p));
++        buildAndCheck(p, "dir1/ff");
+     }
+ 
+     @Bug(4702)
+     public void testChangelogLimitedToModules() throws Exception {
+         FreeStyleProject p = createFreeStyleProject();
+         // Control case: no modules specified.
+-        p.setScm(new MercurialSCM(hgInstallation, repo.getPath(), null, null, null, null, false, false));
++        p.setScm(new MercurialSCM(hgInstallation, repo.getPath(), null, null, null, null, null, false, false));
+         hg(repo, "init");
+         touchAndCommit(repo, "dir1/f1");
+         p.scheduleBuild2(0).get();
+@@ -120,7 +138,7 @@
+         ChangeLogSet.Entry entry = it.next();
+         assertEquals(Collections.singleton("dir2/f1"), new HashSet<String>(entry.getAffectedPaths()));
+         assertFalse(it.hasNext());
+-        p.setScm(new MercurialSCM(hgInstallation, repo.getPath(), null, "dir1 extra", null, null, false, false));
++        p.setScm(new MercurialSCM(hgInstallation, repo.getPath(), null, "dir1 extra", null, null, null, false, false));
+         // dir2/f2 change should be ignored.
+         touchAndCommit(repo, "dir1/f2");
+         touchAndCommit(repo, "dir2/f2");
+@@ -154,7 +172,7 @@
+         hg(repo, "branch", "b");
+         touchAndCommit(repo, "variant");
+         FreeStyleProject p = createFreeStyleProject();
+-        p.setScm(new MercurialSCM(hgInstallation, repo.getPath(), "${BRANCH}", null, null, null, false, false));
++        p.setScm(new MercurialSCM(hgInstallation, repo.getPath(), "${BRANCH}", null, null, null, null, false, false));
+         // This is not how a real parameterized build runs, but using ParametersDefinitionProperty just looks untestable:
+         String log = buildAndCheck(p, "variant", new ParametersAction(new StringParameterValue("BRANCH", "b")));
+         assertTrue(log, log.contains("--rev b"));
+@@ -167,7 +185,7 @@
+     @Bug(6517)
+     public void testFileListOmittedForMerges() throws Exception {
+         FreeStyleProject p = createFreeStyleProject();
+-        p.setScm(new MercurialSCM(hgInstallation, repo.getPath(), null, null, null, null, false, false));
++        p.setScm(new MercurialSCM(hgInstallation, repo.getPath(), null, null, null, null, null, false, false));
+         hg(repo, "init");
+         touchAndCommit(repo, "f1");
+         p.scheduleBuild2(0).get();
+@@ -190,7 +208,7 @@
+     @Bug(3602)
+     public void testSubdirectoryCheckout() throws Exception {
+         FreeStyleProject p = createFreeStyleProject();
+-        p.setScm(new MercurialSCM(hgInstallation, repo.getPath(), null, null, "repo", null, false, false));
++        p.setScm(new MercurialSCM(hgInstallation, repo.getPath(), null, null, null, "repo", null, false, false));
+         hg(repo, "init");
+         touchAndCommit(repo, "f1");
+         buildAndCheck(p, "repo/f1");
+Index: src/test/java/hudson/plugins/mercurial/ForestTest.java
+===================================================================
+--- src/test/java/hudson/plugins/mercurial/ForestTest.java	(revision 33944)
++++ src/test/java/hudson/plugins/mercurial/ForestTest.java	(working copy)
+@@ -26,7 +26,7 @@
+         touchAndCommit(toprepo, "a");
+         touchAndCommit(subrepo, "b");
+         FreeStyleProject p = createFreeStyleProject();
+-        p.setScm(new MercurialSCM("forested" ,toprepo.getPath(), null, null, null, null, true, true));
++        p.setScm(new MercurialSCM("forested" ,toprepo.getPath(), null, null, null, null, null, true, true));
+         buildAndCheck(p, "sub/b");
+         FilePath ws = p.getSomeWorkspace();
+         ws.child("junk").touch(0);
+Index: src/main/resources/hudson/plugins/mercurial/MercurialSCM/config.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/mercurial/MercurialSCM/config.jelly	(revision 33954)
++++ src/main/resources/hudson/plugins/mercurial/MercurialSCM/config.jelly	(working copy)
+@@ -22,6 +22,9 @@
+     <f:entry field="modules" title="${%Modules}">
+       <f:textbox/>
+     </f:entry>
++    <f:entry field="excludedRegions" title="${%Excluded Regions}">
++      <f:textarea/>
++    </f:entry>
+     <f:entry field="clean" title="${%Clean Build}">
+       <f:checkbox/>
+     </f:entry>
+@@ -34,4 +37,4 @@
+   </f:advanced>
+ 
+   <t:listScmBrowsers name="mercurial.browser" />
+-</j:jelly>
++</j:jelly>
+\ No newline at end of file
+Index: src/main/resources/hudson/plugins/mercurial/MercurialSCM/help-excludedRegions.html
+===================================================================
+--- src/main/resources/hudson/plugins/mercurial/MercurialSCM/help-excludedRegions.html	(revision 0)
++++ src/main/resources/hudson/plugins/mercurial/MercurialSCM/help-excludedRegions.html	(revision 0)
+@@ -0,0 +1,12 @@
++<div>
++  If set, and Hudson is set to poll for changes, Hudson will ignore any files and/or folders in this list when determining if a build needs to be triggered.
++  <p/>Each exclusion uses regular expression pattern matching, and must be separated by a new line.
++  <p/>
++  <pre>
++	 src/main/web/.*\.html
++	 src/main/web/.*\.jpeg
++	 src/main/web/.*\.gif
++  </pre>
++  The example above illustrates that if only html/jpeg/gif files have been committed to the SCM a build will not occur.
++  <p/>More information on regular expressions can be found <a href="http://www.regular-expressions.info/">here</a>.
++</div>
+\ No newline at end of file
+Index: src/main/java/hudson/plugins/mercurial/MercurialSCM.java
+===================================================================
+--- src/main/java/hudson/plugins/mercurial/MercurialSCM.java	(revision 33944)
++++ src/main/java/hudson/plugins/mercurial/MercurialSCM.java	(working copy)
+@@ -85,6 +85,11 @@
+     private final String modules;
+ 
+     /**
++    * The regions of the repository that should be excluded when pooling for changes
++    */
++    private final String excludedRegions;
++    
++    /**
+      * In-repository branch to follow. Null indicates "default".
+      */
+     private final String branch;
+@@ -98,10 +103,11 @@
+     private HgBrowser browser;
+ 
+     @DataBoundConstructor
+-    public MercurialSCM(String installation, String source, String branch, String modules, String subdir, HgBrowser browser, boolean clean, boolean forest) {
++    public MercurialSCM(String installation, String source, String branch, String modules, String excludedRegions, String subdir, HgBrowser browser, boolean clean, boolean forest) {
+         this.installation = installation;
+         this.source = source;
+         this.modules = Util.fixNull(modules);
++        this.excludedRegions = excludedRegions;
+         this.subdir = Util.fixEmptyAndTrim(subdir);
+         this.clean = clean;
+         this.forest = forest;
+@@ -325,14 +331,29 @@
+             // Old project created before this feature was added.
+             return changedFileNames;
+         }
++        
++        Pattern[] patterns = getExcludedRegionsPatterns();
+ 
+         Set<String> affecting = new HashSet<String>();
+ 
+         for (String changedFile : changedFileNames) {
+-            for (String dependency : _modules) {
++            out: for (String dependency : _modules) {
+                 if (changedFile.startsWith(dependency)) {
++                    
++                    if (patterns != null)
++                    {
++                        for (Pattern pattern : patterns)
++                        {
++                            if (pattern.matcher(changedFile).matches())
++                            {
++                                // The file is part of the excluded pattern therefore don't add it to the list of changes
++                                break out;
++                            }
++                        }
++                    }
++                    
+                     affecting.add(changedFile);
+-                    break;
++                    break out;
+                 }
+             }
+         }
+@@ -620,6 +641,31 @@
+     public String getModules() {
+         return modules;
+     }
++    
++    public String getExcludedRegions() {
++        return excludedRegions;
++    }
++    
++    public String[] getExcludedRegionsNormalized() {
++        return excludedRegions == null ? null : excludedRegions.split("[\\r\\n]+");
++    }
++    
++    private Pattern[] getExcludedRegionsPatterns() {
++        String[] excludedRegions = getExcludedRegionsNormalized();
++        if (excludedRegions != null) {
++             Pattern[] patterns = new Pattern[excludedRegions.length];
++
++             int i = 0;
++             for (String excludedRegion : excludedRegions)
++             {
++                 patterns[i++] = Pattern.compile(excludedRegion);
++             }
++
++             return patterns;
++        }
++
++        return null;
++    }
+ 
+     static boolean CACHE_LOCAL_REPOS = false;
+     private @CheckForNull String cachedSource(Node node, Launcher launcher, TaskListener listener, boolean fromPolling) {

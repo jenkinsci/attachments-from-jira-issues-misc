@@ -1,0 +1,233 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x015cfbc4, pid=6012, tid=2156
+#
+# JRE version: 6.0_18-b07
+# Java VM: Java HotSpot(TM) Client VM (16.0-b13 mixed mode, sharing windows-x86 )
+# Problematic frame:
+# J  com.codahale.metrics.LongAdder.sum()J
+#
+# If you would like to submit a bug report, please visit:
+#   http://java.sun.com/webapps/bugreport/crash.jsp
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x03397c00):  JavaThread "jenkins.util.Timer [#3]" daemon [_thread_in_Java, id=2156, stack(0x059c0000,0x05a10000)]
+
+siginfo: ExceptionCode=0xc0000005, reading address 0xa5498a67
+
+Registers:
+EAX=0x00000001, EBX=0x00000000, ECX=0x25498a68, EDX=0x00000000
+ESP=0x05a0f5a0, EBP=0x05a0f5b8, ESI=0x254942a0, EDI=0x00000002
+EIP=0x015cfbc4, EFLAGS=0x00010293
+
+Top of Stack: (sp=0x05a0f5a0)
+0x05a0f5a0:   242fa3a8 015c347d 35ff74e0 00000000
+0x05a0f5b0:   254942a0 358e5db8 05a0f5ec 00f12e83
+0x05a0f5c0:   00000000 00f12e83 29a7eab8 05a0f5cc
+0x05a0f5d0:   34e8dccc 05a0f5f4 34e8df10 00000000
+0x05a0f5e0:   34e8dce8 05a0f5c8 05a0f5f4 05a0f620
+0x05a0f5f0:   00f12e83 29a764c0 391598f8 24274228
+0x05a0f600:   05a0f600 360736c8 05a0f634 36073b18
+0x05a0f610:   00000000 36073710 05a0f5f4 05a0f628 
+
+Instructions: (pc=0x015cfbc4)
+0x015cfbb4:   00 8b 4c 9e 0c 83 f9 00 0f 84 1f 00 00 00 3b 01
+0x015cfbc4:   f2 0f 10 81 ff ff ff 7f 66 0f 7e c6 66 0f 73 d0 
+
+
+Stack: [0x059c0000,0x05a10000],  sp=0x05a0f5a0,  free space=13d05a0f0d4k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+J  com.codahale.metrics.LongAdder.sum()J
+j  com.codahale.metrics.Counter.getCount()J+4
+j  com.codahale.metrics.json.MetricsModule$CounterSerializer.serialize(Lcom/codahale/metrics/Counter;Lcom/fasterxml/jackson/core/JsonGenerator;Lcom/fasterxml/jackson/databind/SerializerProvider;)V+8
+j  com.codahale.metrics.json.MetricsModule$CounterSerializer.serialize(Ljava/lang/Object;Lcom/fasterxml/jackson/core/JsonGenerator;Lcom/fasterxml/jackson/databind/SerializerProvider;)V+7
+J  com.fasterxml.jackson.databind.ser.std.MapSerializer.serializeFields(Ljava/util/Map;Lcom/fasterxml/jackson/core/JsonGenerator;Lcom/fasterxml/jackson/databind/SerializerProvider;)V
+j  com.fasterxml.jackson.databind.ser.std.MapSerializer.serialize(Ljava/util/Map;Lcom/fasterxml/jackson/core/JsonGenerator;Lcom/fasterxml/jackson/databind/SerializerProvider;)V+54
+j  com.fasterxml.jackson.databind.ser.std.MapSerializer.serialize(Ljava/lang/Object;Lcom/fasterxml/jackson/core/JsonGenerator;Lcom/fasterxml/jackson/databind/SerializerProvider;)V+7
+J  com.fasterxml.jackson.databind.ser.DefaultSerializerProvider.serializeValue(Lcom/fasterxml/jackson/core/JsonGenerator;Ljava/lang/Object;)V
+j  com.fasterxml.jackson.databind.ObjectMapper.writeValue(Lcom/fasterxml/jackson/core/JsonGenerator;Ljava/lang/Object;)V+54
+J  com.fasterxml.jackson.core.base.GeneratorBase.writeObject(Ljava/lang/Object;)V
+J  com.fasterxml.jackson.core.JsonGenerator.writeObjectField(Ljava/lang/String;Ljava/lang/Object;)V
+j  com.codahale.metrics.json.MetricsModule$MetricRegistrySerializer.serialize(Lcom/codahale/metrics/MetricRegistry;Lcom/fasterxml/jackson/core/JsonGenerator;Lcom/fasterxml/jackson/databind/SerializerProvider;)V+33
+j  com.codahale.metrics.json.MetricsModule$MetricRegistrySerializer.serialize(Ljava/lang/Object;Lcom/fasterxml/jackson/core/JsonGenerator;Lcom/fasterxml/jackson/databind/SerializerProvider;)V+7
+J  com.fasterxml.jackson.databind.ser.DefaultSerializerProvider.serializeValue(Lcom/fasterxml/jackson/core/JsonGenerator;Ljava/lang/Object;)V
+j  com.fasterxml.jackson.databind.ObjectWriter._configAndWriteValue(Lcom/fasterxml/jackson/core/JsonGenerator;Ljava/lang/Object;)V+55
+j  com.fasterxml.jackson.databind.ObjectWriter.writeValue(Ljava/io/OutputStream;Ljava/lang/Object;)V+13
+j  jenkins.metrics.api.MetricsRootAction$Sampler.doRun()V+35
+j  hudson.triggers.SafeTimerTask.run()V+8
+j  java.util.concurrent.Executors$RunnableAdapter.call()Ljava/lang/Object;+4
+j  java.util.concurrent.FutureTask$Sync.innerRunAndReset()Z+30
+j  java.util.concurrent.FutureTask.runAndReset()Z+4
+j  java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$101(Ljava/util/concurrent/ScheduledThreadPoolExecutor$ScheduledFutureTask;)Z+1
+j  java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.runPeriodic()V+1
+j  java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run()V+8
+J  java.util.concurrent.ThreadPoolExecutor$Worker.runTask(Ljava/lang/Runnable;)V
+j  java.util.concurrent.ThreadPoolExecutor$Worker.run()V+28
+j  java.lang.Thread.run()V+11
+v  ~StubRoutines::call_stub
+V  [jvm.dll+0xf072c]
+V  [jvm.dll+0x17fd51]
+V  [jvm.dll+0xf08f7]
+V  [jvm.dll+0xf096d]
+V  [jvm.dll+0x11a4c0]
+V  [jvm.dll+0x1dd924]
+V  [jvm.dll+0x17f9cc]
+C  [msvcr71.dll+0x9565]
+C  [kernel32.dll+0x4d3c9]
+C  [ntdll.dll+0x41603]
+C  [ntdll.dll+0x415d6]
+
+
+---------------  P R O C E S S  ---------------
+
+Java Threads: ( => current thread )
+  0x04e08800 JavaThread "Metrics-HealthChecks-232" daemon [_thread_blocked, id=3880, stack(0x06020000,0x06070000)]
+  0x04e09400 JavaThread "Metrics-HealthChecks-231" daemon [_thread_blocked, id=4364, stack(0x05fd0000,0x06020000)]
+  0x04e09000 JavaThread "Metrics-HealthChecks-230" daemon [_thread_blocked, id=6032, stack(0x05f80000,0x05fd0000)]
+  0x04e0ac00 JavaThread "Metrics-HealthChecks-229" daemon [_thread_blocked, id=3864, stack(0x04950000,0x049a0000)]
+  0x04e0b400 JavaThread "RequestHandlerThread[#15]" daemon [_thread_blocked, id=4392, stack(0x04900000,0x04950000)]
+  0x04e0a000 JavaThread "RequestHandlerThread[#14]" daemon [_thread_blocked, id=5932, stack(0x048b0000,0x04900000)]
+  0x04e09c00 JavaThread "RequestHandlerThread[#13]" daemon [_thread_blocked, id=4720, stack(0x04860000,0x048b0000)]
+  0x03396400 JavaThread "cmd /c call C:\Windows\TEMP\hudson2675592512987847721.bat: stdout copier" [_thread_in_native, id=3188, stack(0x046d0000,0x04720000)]
+  0x03394000 JavaThread "pool-1-svnkit-thread-1" daemon [_thread_blocked, id=3548, stack(0x047c0000,0x04810000)]
+  0x03397000 JavaThread "Executor #0 for master : executing KomalogWin - trunk #6752" [_thread_in_native, id=4144, stack(0x04810000,0x04860000)]
+  0x03396c00 JavaThread "RequestHandlerThread[#12]" daemon [_thread_blocked, id=2396, stack(0x04620000,0x04670000)]
+  0x03395800 JavaThread "RequestHandlerThread[#11]" daemon [_thread_blocked, id=5852, stack(0x045d0000,0x04620000)]
+  0x03396000 JavaThread "RequestHandlerThread[#10]" daemon [_thread_blocked, id=2776, stack(0x03800000,0x03850000)]
+  0x04e08400 JavaThread "JmDNS(tdnightwork.local.).State.Timer" [_thread_blocked, id=3552, stack(0x05d30000,0x05d80000)]
+  0x04e07c00 JavaThread "JmDNS(tdnightwork.local.).Timer" daemon [_thread_blocked, id=4436, stack(0x05ce0000,0x05d30000)]
+  0x0339b400 JavaThread "SocketListener(tdnightwork.local.)" daemon [_thread_in_native, id=4932, stack(0x05c90000,0x05ce0000)]
+  0x03395400 JavaThread "Jenkins UDP 33848 monitoring thread" [_thread_in_native, id=5656, stack(0x04770000,0x047c0000)]
+  0x03394c00 JavaThread "TCP slave agent listener port=0" [_thread_in_native, id=4216, stack(0x04720000,0x04770000)]
+  0x0339ac00 JavaThread "NioSocketAcceptor-1" [_thread_in_native, id=4668, stack(0x05c40000,0x05c90000)]
+  0x0339a800 JavaThread "jenkins.util.Timer [#10]" daemon [_thread_blocked, id=6068, stack(0x05bf0000,0x05c40000)]
+  0x0339a000 JavaThread "jenkins.util.Timer [#9]" daemon [_thread_blocked, id=2392, stack(0x05ba0000,0x05bf0000)]
+  0x03399c00 JavaThread "jenkins.util.Timer [#8]" daemon [_thread_blocked, id=4524, stack(0x05b50000,0x05ba0000)]
+  0x03399400 JavaThread "jenkins.util.Timer [#7]" daemon [_thread_blocked, id=5860, stack(0x05b00000,0x05b50000)]
+  0x03399000 JavaThread "jenkins.util.Timer [#6]" daemon [_thread_blocked, id=3000, stack(0x05ab0000,0x05b00000)]
+  0x03398800 JavaThread "jenkins.util.Timer [#5]" daemon [_thread_blocked, id=4056, stack(0x05a60000,0x05ab0000)]
+  0x03398400 JavaThread "jenkins.util.Timer [#4]" daemon [_thread_blocked, id=2972, stack(0x05a10000,0x05a60000)]
+=>0x03397c00 JavaThread "jenkins.util.Timer [#3]" daemon [_thread_in_Java, id=2156, stack(0x059c0000,0x05a10000)]
+  0x03397800 JavaThread "jenkins.util.Timer [#2]" daemon [_thread_blocked, id=4352, stack(0x05970000,0x059c0000)]
+  0x03393c00 JavaThread "jenkins.util.Timer [#1]" daemon [_thread_blocked, id=4356, stack(0x04680000,0x046d0000)]
+  0x00deec00 JavaThread "Jenkins cron thread" [_thread_blocked, id=3808, stack(0x04580000,0x045d0000)]
+  0x00c89000 JavaThread "DestroyJavaVM" [_thread_blocked, id=5908, stack(0x00320000,0x00370000)]
+  0x03372400 JavaThread "LauncherControlThread[ControlPort=-1]" [_thread_blocked, id=4124, stack(0x04530000,0x04580000)]
+  0x03d9ec00 JavaThread "RequestHandlerThread[#2] Acceptor0 SelectChannelConnector@0.0.0.0:8080" daemon [_thread_in_native, id=3716, stack(0x044e0000,0x04530000)]
+  0x00df6c00 JavaThread "RequestHandlerThread[#1] Selector0" daemon [_thread_in_native, id=3932, stack(0x03850000,0x038a0000)]
+  0x03b4ec00 JavaThread "Java2D Disposer" daemon [_thread_blocked, id=3520, stack(0x03630000,0x03680000)]
+  0x03d9c400 JavaThread "HashSessionScavenger-0" daemon [_thread_blocked, id=5076, stack(0x035a0000,0x035f0000)]
+  0x00debc00 JavaThread "Low Memory Detector" daemon [_thread_blocked, id=5704, stack(0x031d0000,0x03220000)]
+  0x00ddc800 JavaThread "CompilerThread0" daemon [_thread_blocked, id=216, stack(0x03180000,0x031d0000)]
+  0x00dd9800 JavaThread "Attach Listener" daemon [_thread_blocked, id=3796, stack(0x03130000,0x03180000)]
+  0x00dd5800 JavaThread "Finalizer" daemon [_thread_blocked, id=4368, stack(0x030a0000,0x030f0000)]
+  0x00dd0c00 JavaThread "Reference Handler" daemon [_thread_blocked, id=6080, stack(0x03050000,0x030a0000)]
+
+Other Threads:
+  0x00dcf800 VMThread [stack: 0x03000000,0x03050000] [id=2408]
+  0x00df5400 WatcherThread [stack: 0x03220000,0x03270000] [id=2584]
+
+VM state:not at safepoint (normal execution)
+
+VM Mutex/Monitor currently owned by a thread: None
+
+Heap
+ def new generation   total 22528K, used 2511K [0x24100000, 0x25970000, 0x29650000)
+  eden space 20032K,  10% used [0x24100000, 0x242fa730, 0x25490000)
+  from space 2496K,  19% used [0x25490000, 0x25509670, 0x25700000)
+  to   space 2496K,   0% used [0x25700000, 0x25700000, 0x25970000)
+ tenured generation   total 49908K, used 36041K [0x29650000, 0x2c70d000, 0x34100000)
+   the space 49908K,  72% used [0x29650000, 0x2b9825d8, 0x2b982600, 0x2c70d000)
+ compacting perm gen  total 42496K, used 42440K [0x34100000, 0x36a80000, 0x38100000)
+   the space 42496K,  99% used [0x34100000, 0x36a72338, 0x36a72400, 0x36a80000)
+    ro space 10240K,  51% used [0x38100000, 0x38627b58, 0x38627c00, 0x38b00000)
+    rw space 12288K,  54% used [0x38b00000, 0x39194ce0, 0x39194e00, 0x39700000)
+
+Dynamic libraries:
+0x00400000 - 0x00424000 	C:\Windows\system32\java.exe
+0x77160000 - 0x77288000 	C:\Windows\system32\ntdll.dll
+0x772b0000 - 0x7738d000 	C:\Windows\system32\kernel32.dll
+0x76b50000 - 0x76c16000 	C:\Windows\system32\ADVAPI32.dll
+0x77010000 - 0x770d2000 	C:\Windows\system32\RPCRT4.dll
+0x7c340000 - 0x7c396000 	C:\Program Files\Java\jre6\bin\msvcr71.dll
+0x6d800000 - 0x6da97000 	C:\Program Files\Java\jre6\bin\client\jvm.dll
+0x769e0000 - 0x76a7d000 	C:\Windows\system32\USER32.dll
+0x76a80000 - 0x76acc000 	C:\Windows\system32\GDI32.dll
+0x73c00000 - 0x73c32000 	C:\Windows\system32\WINMM.dll
+0x76930000 - 0x769da000 	C:\Windows\system32\msvcrt.dll
+0x76da0000 - 0x76ee5000 	C:\Windows\system32\ole32.dll
+0x768a0000 - 0x7692e000 	C:\Windows\system32\OLEAUT32.dll
+0x73bc0000 - 0x73bfe000 	C:\Windows\system32\OLEACC.dll
+0x767c0000 - 0x767de000 	C:\Windows\system32\IMM32.DLL
+0x76ef0000 - 0x76fb8000 	C:\Windows\system32\MSCTF.dll
+0x75620000 - 0x7564c000 	C:\Windows\system32\apphelp.dll
+0x77290000 - 0x77299000 	C:\Windows\system32\LPK.DLL
+0x76ad0000 - 0x76b4d000 	C:\Windows\system32\USP10.dll
+0x6d7b0000 - 0x6d7bc000 	C:\Program Files\Java\jre6\bin\verify.dll
+0x6d330000 - 0x6d34f000 	C:\Program Files\Java\jre6\bin\java.dll
+0x6d290000 - 0x6d298000 	C:\Program Files\Java\jre6\bin\hpi.dll
+0x75810000 - 0x75817000 	C:\Windows\system32\PSAPI.DLL
+0x6d7f0000 - 0x6d7ff000 	C:\Program Files\Java\jre6\bin\zip.dll
+0x759c0000 - 0x764d1000 	C:\Windows\system32\SHELL32.DLL
+0x76c20000 - 0x76c79000 	C:\Windows\system32\SHLWAPI.dll
+0x743f0000 - 0x7458e000 	C:\Windows\WinSxS\x86_microsoft.windows.common-controls_6595b64144ccf1df_6.0.6002.18305_none_5cb72f2a088b0ed3\comctl32.dll
+0x74cc0000 - 0x74cfb000 	C:\Windows\system32\rsaenh.dll
+0x756d0000 - 0x756ee000 	C:\Windows\system32\USERENV.dll
+0x756b0000 - 0x756c4000 	C:\Windows\system32\Secur32.dll
+0x6d610000 - 0x6d623000 	C:\Program Files\Java\jre6\bin\net.dll
+0x77390000 - 0x773bd000 	C:\Windows\system32\WS2_32.dll
+0x772a0000 - 0x772a6000 	C:\Windows\system32\NSI.dll
+0x74d30000 - 0x74d6b000 	C:\Windows\system32\mswsock.dll
+0x74ea0000 - 0x74ea5000 	C:\Windows\System32\wship6.dll
+0x74ae0000 - 0x74aef000 	C:\Windows\system32\NLAapi.dll
+0x75080000 - 0x75099000 	C:\Windows\system32\IPHLPAPI.DLL
+0x75040000 - 0x75075000 	C:\Windows\system32\dhcpcsvc.DLL
+0x75350000 - 0x7537c000 	C:\Windows\system32\DNSAPI.dll
+0x75030000 - 0x75037000 	C:\Windows\system32\WINNSI.DLL
+0x75000000 - 0x75022000 	C:\Windows\system32\dhcpcsvc6.DLL
+0x73b50000 - 0x73b5f000 	C:\Windows\system32\napinsp.dll
+0x73b10000 - 0x73b18000 	C:\Windows\System32\winrnr.dll
+0x76fc0000 - 0x77009000 	C:\Windows\system32\WLDAP32.dll
+0x74af0000 - 0x74af5000 	C:\Windows\System32\wshtcpip.dll
+0x73b40000 - 0x73b46000 	C:\Windows\system32\rasadhlp.dll
+0x6d790000 - 0x6d798000 	C:\Program Files\Java\jre6\bin\sunmscapi.dll
+0x75120000 - 0x75215000 	C:\Windows\system32\CRYPT32.dll
+0x75280000 - 0x75292000 	C:\Windows\system32\MSASN1.dll
+0x6d000000 - 0x6d14a000 	C:\Program Files\Java\jre6\bin\awt.dll
+0x6f830000 - 0x6f872000 	C:\Windows\system32\WINSPOOL.DRV
+0x6d230000 - 0x6d284000 	C:\Program Files\Java\jre6\bin\fontmanager.dll
+0x71d10000 - 0x71d1c000 	C:\Windows\system32\DWMAPI.DLL
+0x6d630000 - 0x6d639000 	C:\Program Files\Java\jre6\bin\nio.dll
+0x10000000 - 0x1003d000 	C:\Windows\Temp\jna-224932011\jna3053278539108220800.dll
+0x6d560000 - 0x6d569000 	C:\Program Files\Java\jre6\bin\management.dll
+
+VM Arguments:
+jvm_args: -Xrs -Xmx256m -Dhudson.lifecycle=hudson.lifecycle.WindowsServiceLifecycle 
+java_command: d:\NightlyBuilds\Jenkins\jenkins.war --httpPort=8080
+Launcher Type: SUN_STANDARD
+
+Environment Variables:
+JAVA_HOME=C:\Program Files\Java\jdk1.6.0_18
+PATH=C:\Program Files\Embarcadero\RAD Studio\12.0\bin;C:\Users\Public\Documents\RAD Studio\12.0\Bpl;C:\Program Files\Embarcadero\RAD Studio\12.0\bin64;C:\Users\Public\Documents\RAD Studio\12.0\Bpl\Win64;C:\Program Files\CollabNet\Subversion Client;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Program Files\TortoiseSVN\bin;C:\Program Files\Embarcadero\RAD Studio\7.0\bin;C:\Users\Public\Documents\RAD Studio\7.0\Bpl;Q:\Tools;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\WindowsPowerShell\v1.0\
+USERNAME=TDNIGHTWORK$
+OS=Windows_NT
+PROCESSOR_IDENTIFIER=x86 Family 6 Model 15 Stepping 6, GenuineIntel
+
+
+
+---------------  S Y S T E M  ---------------
+
+OS: Windows Server 2008 Build 6002 Service Pack 2
+
+CPU:total 2 (2 cores per cpu, 1 threads per core) family 6 model 15 stepping 6, cmov, cx8, fxsr, mmx, sse, sse2, sse3, ssse3
+
+Memory: 4k page, physical 4193388k(2826656k free), swap 8643760k(7300108k free)
+
+vm_info: Java HotSpot(TM) Client VM (16.0-b13) for windows-x86 JRE (1.6.0_18-b07), built on Dec 17 2009 13:35:55 by "java_re" with MS VC++ 7.1 (VS2003)
+
+time: Tue Feb 17 09:13:20 2015
+elapsed time: 3466 seconds
+

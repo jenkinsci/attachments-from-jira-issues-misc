@@ -1,0 +1,94 @@
+Different error on subsequent restart of Master.
+
+Feb 19, 2015 9:29:49 PM SEVERE hudson.remoting.ExportTable unexportByOid
+
+Trying to unexport an object that's already unexported
+java.lang.IllegalStateException: Invalid object ID 2 iota=9
+	at hudson.remoting.ExportTable.diagnoseInvalidId(ExportTable.java:346)
+	at hudson.remoting.ExportTable.unexportByOid(ExportTable.java:369)
+	at hudson.remoting.Channel.unexport(Channel.java:603)
+	at hudson.remoting.UnexportCommand.execute(UnexportCommand.java:38)
+	at hudson.remoting.Channel$2.handle(Channel.java:474)
+	at hudson.remoting.AbstractByteArrayCommandTransport$1.handle(AbstractByteArrayCommandTransport.java:61)
+	at org.jenkinsci.remoting.nio.NioChannelHub$2.run(NioChannelHub.java:584)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:262)
+	at hudson.remoting.SingleLaneExecutorService$1.run(SingleLaneExecutorService.java:111)
+	at jenkins.util.ContextResettingExecutorService$1.run(ContextResettingExecutorService.java:28)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:262)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+	at java.lang.Thread.run(Thread.java:745)
+Caused by: java.lang.Exception: Object was recently deallocated
+    #2 (ref.0) : [hudson.remoting.JarLoader]
+      Created at Thu Feb 19 21:28:38 PST 2015
+    	at hudson.remoting.ExportTable$Entry.<init>(ExportTable.java:93)
+    	at hudson.remoting.ExportTable.export(ExportTable.java:297)
+    	at hudson.remoting.Channel.internalExport(Channel.java:591)
+    	at hudson.remoting.Channel.export(Channel.java:582)
+    	at hudson.remoting.Channel.<init>(Channel.java:466)
+    	at hudson.remoting.ChannelBuilder.build(ChannelBuilder.java:149)
+    	at hudson.remoting.ChannelBuilder.build(ChannelBuilder.java:159)
+    	at org.jenkinsci.remoting.nio.NioChannelBuilder.build(NioChannelBuilder.java:36)
+    	at org.jenkinsci.remoting.nio.NioChannelBuilder.build(NioChannelBuilder.java:52)
+    	at jenkins.slaves.JnlpSlaveAgentProtocol$Handler.jnlpConnect(JnlpSlaveAgentProtocol.java:120)
+    	at jenkins.slaves.DefaultJnlpSlaveReceiver.handle(DefaultJnlpSlaveReceiver.java:63)
+    	at jenkins.slaves.JnlpSlaveAgentProtocol2$Handler2.run(JnlpSlaveAgentProtocol2.java:57)
+    	at jenkins.slaves.JnlpSlaveAgentProtocol2.handle(JnlpSlaveAgentProtocol2.java:31)
+    	at hudson.TcpSlaveAgentListener$ConnectionHandler.run(TcpSlaveAgentListener.java:157)
+      Released at Thu Feb 19 21:29:49 PST 2015
+    	at hudson.remoting.ExportTable$Entry.release(ExportTable.java:125)
+    	at hudson.remoting.ExportTable.unexportByOid(ExportTable.java:374)
+    	at hudson.remoting.Channel.unexport(Channel.java:603)
+    	at hudson.remoting.UnexportCommand.execute(UnexportCommand.java:38)
+    	at hudson.remoting.Channel$2.handle(Channel.java:474)
+    	at hudson.remoting.AbstractByteArrayCommandTransport$1.handle(AbstractByteArrayCommandTransport.java:61)
+    	at org.jenkinsci.remoting.nio.NioChannelHub$2.run(NioChannelHub.java:584)
+    	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)
+    	at java.util.concurrent.FutureTask.run(FutureTask.java:262)
+    	at hudson.remoting.SingleLaneExecutorService$1.run(SingleLaneExecutorService.java:111)
+    	at jenkins.util.ContextResettingExecutorService$1.run(ContextResettingExecutorService.java:28)
+    	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)
+    	at java.util.concurrent.FutureTask.run(FutureTask.java:262)
+    	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+    	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+    	at java.lang.Thread.run(Thread.java:745)
+    Caused by: Command hudson.remoting.UnexportCommand@23828411 created at
+    	at hudson.remoting.Command.<init>(Command.java:67)
+    	at hudson.remoting.Command.<init>(Command.java:50)
+    	at hudson.remoting.UnexportCommand.<init>(UnexportCommand.java:33)
+    	at hudson.remoting.RemoteInvocationHandler.finalize(RemoteInvocationHandler.java:229)
+    	at java.lang.System$2.invokeFinalize(System.java:1267)
+    	at java.lang.ref.Finalizer.runFinalizer(Finalizer.java:98)
+    	at java.lang.ref.Finalizer.access$100(Finalizer.java:34)
+    	at java.lang.ref.Finalizer$FinalizerThread.run(Finalizer.java:210)
+	at hudson.remoting.ExportTable.diagnoseInvalidId(ExportTable.java:339)
+	... 15 more
+Caused by:   Released at Thu Feb 19 21:29:49 PST 2015
+	at hudson.remoting.ExportTable$Entry.release(ExportTable.java:125)
+	at hudson.remoting.ExportTable.unexportByOid(ExportTable.java:374)
+	... 14 more
+Caused by: Command hudson.remoting.UnexportCommand@23828411 created at
+	at hudson.remoting.Command.<init>(Command.java:67)
+	at hudson.remoting.Command.<init>(Command.java:50)
+	at hudson.remoting.UnexportCommand.<init>(UnexportCommand.java:33)
+	at hudson.remoting.RemoteInvocationHandler.finalize(RemoteInvocationHandler.java:229)
+	at java.lang.System$2.invokeFinalize(System.java:1267)
+	at java.lang.ref.Finalizer.runFinalizer(Finalizer.java:98)
+	at java.lang.ref.Finalizer.access$100(Finalizer.java:34)
+	at java.lang.ref.Finalizer$FinalizerThread.run(Finalizer.java:210)
+
+Feb 19, 2015 9:29:49 PM SEVERE hudson.remoting.ExportTable unexportByOid
+
+2nd unexport attempt is here
+Command hudson.remoting.UnexportCommand@7b72c63a created at
+	at hudson.remoting.Command.<init>(Command.java:67)
+	at hudson.remoting.Command.<init>(Command.java:50)
+	at hudson.remoting.UnexportCommand.<init>(UnexportCommand.java:33)
+	at hudson.remoting.RemoteInvocationHandler.finalize(RemoteInvocationHandler.java:229)
+	at java.lang.System$2.invokeFinalize(System.java:1267)
+	at java.lang.ref.Finalizer.runFinalizer(Finalizer.java:98)
+	at java.lang.ref.Finalizer.access$100(Finalizer.java:34)
+	at java.lang.ref.Finalizer$FinalizerThread.run(Finalizer.java:210)
+

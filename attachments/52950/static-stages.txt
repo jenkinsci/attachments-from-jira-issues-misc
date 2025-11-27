@@ -1,0 +1,82 @@
+pipeline {
+    agent none
+    stages {
+        stage('Test') {
+			parallel {
+				stage('success1') {
+					agent {
+						label 'small'
+					}
+					steps {
+						sh 'sleep 1'
+						writeFile file: 'report.xml', text: """\
+							<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+							<testsuite errors="0" failures="0" name="success1" tests="1">
+								<testcase classname="ClassTest" name="testMethod" />
+							</testsuite>
+						""".stripIndent()
+						junit testResults: 'report.xml'
+						echo 'hello'
+					}
+				}
+				stage('success2') {
+					agent {
+						label 'small'
+					}
+					steps {
+						sh 'sleep 30'
+						writeFile file: 'report.xml', text: """\
+							<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+							<testsuite errors="0" failures="0" name="success2" tests="1">
+								<testcase classname="ClassTest" name="testMethod" />
+							</testsuite>
+						""".stripIndent()
+						junit testResults: 'report.xml'
+						echo 'hello'
+					}
+				}
+				stage('unstable') {
+					agent {
+						label 'small'
+					}
+					steps {
+						sh 'sleep 5'
+						writeFile file: 'report.xml', text: '''\
+							<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+							<testsuite errors="1" failures="1" name="unstable" tests="1">
+								<testcase classname="ClassTest" name="testMethod">
+									<failure message="Unstable"><![CDATA[Unstable Message]></failure>
+								</testcase>
+							</testsuite>
+						'''.stripIndent()
+						junit testResults: 'report.xml'
+						echo 'hello'
+					}
+				}
+				stage('failure') {
+					agent {
+						label 'small'
+					}
+					steps {
+						sh 'sleep 10'
+						writeFile file: 'report.xml', text: '''\
+							<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+							<testsuite errors="1" failures="1" name="failure" tests="1">
+								<testcase classname="ClassTest" name="testMethod">
+									<failure message="Failure"><![CDATA[Failure Message]></failure>
+								</testcase>
+							</testsuite>
+						'''.stripIndent()
+						sh 'missingCommand'
+					}
+					post {
+						always {
+							junit testResults: 'report.xml'
+							echo 'hello'
+						}
+					}
+				}
+			}
+        }
+    }
+}

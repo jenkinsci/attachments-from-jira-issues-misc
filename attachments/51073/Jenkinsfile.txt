@@ -1,0 +1,49 @@
+#!/usr/bin/env groovy
+@Library('csf-jenkinslib') _
+pipeline {
+    agent {
+        kubernetes {
+            label "k8s-csf-anchore-scan-ansible-${cto.devops.jenkins.Utils.getTimestamp()}"
+            inheritFrom 'k8s-dind'
+            containerTemplate {
+                name 'ansible-anchore-scan'
+                image "aado-docker-releases.${env.DOCKER_REGISTRY_URL}/build_centos7_ansible"
+                alwaysPullImage true
+                workingDir '/home/jenkins'
+                ttyEnabled true
+                command 'cat'
+                args ''
+            }
+        }
+    }
+    parameters {
+        string(defaultValue: 'csf-docker-delivered.repo.lab.pl.alcatel-lucent.com/os_base/centos-nano', description: 'the images names and tags,separated by ",",eg: image1:tag1,image2:tag2', name: 'imagesList')
+    }
+    options {
+        // Prefix each line of jenkins pipeline console output with a timestamp
+        timestamps()
+        // buildDiscarder: daysToKeepStr is retention period, artifactDaysToKeepStr is unused
+        buildDiscarder(logRotator(daysToKeepStr: '30', artifactDaysToKeepStr: '0'))
+        // All pipeline to define timeout, after which Jenkins will abort the pipeline
+        timeout(time: 60, unit: 'MINUTES')
+    }
+    stages {
+        stage('Scan') {
+            steps {
+                csfAnchoreScan imagesList:"${imagesList}".tokenize(","), archiveAnchoreReport: true
+                script {
+                    ArrayList imgLst = "${imagesList}".tokenize(",");
+                    currentBuild.description = ''
+                    imgLst.each{
+                       currentBuild.description += it + '<br>'
+                    }
+                }
+            }
+        }
+    }
+    post {
+        always {
+          deleteDir()
+        }
+    }
+}

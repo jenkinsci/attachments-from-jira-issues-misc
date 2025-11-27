@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <org.jenkinsci.plugins.mavenrepocleaner.MavenRepoCleanerProperty plugin="maven-repo-cleaner@1.2">
+      <notOnThisProject>false</notOnThisProject>
+    </org.jenkinsci.plugins.mavenrepocleaner.MavenRepoCleanerProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector"/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.plugins.testlink.TestLinkBuilder plugin="testlink@3.1.8">
+      <testLinkName>testlink </testLinkName>
+      <testProjectName>My first project</testProjectName>
+      <testPlanName>My first test plan</testPlanName>
+      <buildName>examples-$BUILD_NUMBER</buildName>
+      <customFields>Java Class</customFields>
+      <singleBuildSteps>
+        <hudson.tasks.Maven>
+          <targets>test -DsuiteXmlFiles=suite.xml</targets>
+          <mavenName>apache-maven-3.0.5-bin</mavenName>
+          <usePrivateRepository>false</usePrivateRepository>
+          <settings class="jenkins.mvn.DefaultSettingsProvider"/>
+          <globalSettings class="jenkins.mvn.DefaultGlobalSettingsProvider"/>
+        </hudson.tasks.Maven>
+      </singleBuildSteps>
+      <transactional>false</transactional>
+      <failedTestsMarkBuildAsFailure>false</failedTestsMarkBuildAsFailure>
+      <failIfNoResults>false</failIfNoResults>
+      <executionOrderComparator/>
+      <failure>false</failure>
+      <resultSeekers>
+        <hudson.plugins.testlink.result.TestNGClassNameResultSeeker>
+          <includePattern>target/**/testng-results.xml</includePattern>
+          <keyCustomField>Java Class</keyCustomField>
+          <includeNotes>false</includeNotes>
+          <parser/>
+          <attachTestNGXML>false</attachTestNGXML>
+          <markSkippedTestAsBlocked>false</markSkippedTestAsBlocked>
+        </hudson.plugins.testlink.result.TestNGClassNameResultSeeker>
+      </resultSeekers>
+    </hudson.plugins.testlink.TestLinkBuilder>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

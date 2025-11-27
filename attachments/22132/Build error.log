@@ -1,0 +1,64 @@
+Started by an SCM change
+Building remotely on Slave_A
+Updating https://svn_url/svn/asa_w2w/trunk
+U         asa_w2w\projectA.csproj
+At revision 63
+hudson.util.IOException2: revision check failed on https://svn_url/svn/asa_w2w/trunk
+	at hudson.scm.SubversionChangeLogBuilder.buildModule(SubversionChangeLogBuilder.java:170)
+	at hudson.scm.SubversionChangeLogBuilder.run(SubversionChangeLogBuilder.java:112)
+	at hudson.scm.SubversionSCM.calcChangeLog(SubversionSCM.java:555)
+	at hudson.scm.SubversionSCM.checkout(SubversionSCM.java:702)
+	at hudson.model.AbstractProject.checkout(AbstractProject.java:1195)
+	at hudson.model.AbstractBuild$AbstractRunner.checkout(AbstractBuild.java:573)
+	at hudson.model.AbstractBuild$AbstractRunner.run(AbstractBuild.java:462)
+	at hudson.model.Run.run(Run.java:1404)
+	at hudson.model.FreeStyleBuild.run(FreeStyleBuild.java:46)
+	at hudson.model.ResourceController.execute(ResourceController.java:88)
+	at hudson.model.Executor.run(Executor.java:238)
+Caused by: org.tmatesoft.svn.core.SVNException: svn: OPTIONS /svn/asa_w2w/trunk failed
+	at org.tmatesoft.svn.core.internal.io.dav.http.HTTPConnection.request(HTTPConnection.java:291)
+	at org.tmatesoft.svn.core.internal.io.dav.http.HTTPConnection.request(HTTPConnection.java:276)
+	at org.tmatesoft.svn.core.internal.io.dav.http.HTTPConnection.request(HTTPConnection.java:264)
+	at org.tmatesoft.svn.core.internal.io.dav.DAVConnection.exchangeCapabilities(DAVConnection.java:516)
+	at org.tmatesoft.svn.core.internal.io.dav.DAVConnection.open(DAVConnection.java:98)
+	at org.tmatesoft.svn.core.internal.io.dav.DAVRepository.openConnection(DAVRepository.java:1001)
+	at org.tmatesoft.svn.core.internal.io.dav.DAVRepository.getLatestRevision(DAVRepository.java:178)
+	at org.tmatesoft.svn.core.wc.SVNBasicClient.getRevisionNumber(SVNBasicClient.java:482)
+	at org.tmatesoft.svn.core.wc.SVNBasicClient.getLocations(SVNBasicClient.java:873)
+	at org.tmatesoft.svn.core.wc.SVNBasicClient.createRepository(SVNBasicClient.java:534)
+	at org.tmatesoft.svn.core.wc.SVNLogClient.doLog(SVNLogClient.java:1019)
+	at org.tmatesoft.svn.core.wc.SVNLogClient.doLog(SVNLogClient.java:894)
+	at org.tmatesoft.svn.core.wc.SVNLogClient.doLog(SVNLogClient.java:826)
+	at hudson.scm.SubversionChangeLogBuilder.buildModule(SubversionChangeLogBuilder.java:158)
+	... 10 more
+Caused by: org.tmatesoft.svn.core.SVNErrorMessage: svn: OPTIONS /svn/asa_w2w/trunk failed
+	at org.tmatesoft.svn.core.SVNErrorMessage.create(SVNErrorMessage.java:200)
+	at org.tmatesoft.svn.core.SVNErrorMessage.create(SVNErrorMessage.java:146)
+	at org.tmatesoft.svn.core.SVNErrorMessage.create(SVNErrorMessage.java:89)
+	... 24 more
+Caused by: org.tmatesoft.svn.core.SVNAuthenticationException: svn: OPTIONS request failed on '/svn/asa_w2w/trunk'
+svn: OPTIONS of /svn/asa_w2w/trunk: 403 Forbidden (https://svn_url/svn/asa_w2w/trunk)
+	at org.tmatesoft.svn.core.internal.wc.SVNErrorManager.error(SVNErrorManager.java:62)
+	at org.tmatesoft.svn.core.internal.wc.SVNErrorManager.error(SVNErrorManager.java:51)
+	at org.tmatesoft.svn.core.internal.io.dav.http.HTTPConnection._request(HTTPConnection.java:638)
+	at org.tmatesoft.svn.core.internal.io.dav.http.HTTPConnection.request(HTTPConnection.java:285)
+	... 23 more
+Caused by: org.tmatesoft.svn.core.SVNErrorMessage: svn: OPTIONS request failed on '/svn/asa_w2w/trunk'
+	at org.tmatesoft.svn.core.SVNErrorMessage.create(SVNErrorMessage.java:200)
+	at org.tmatesoft.svn.core.SVNErrorMessage.create(SVNErrorMessage.java:146)
+	at org.tmatesoft.svn.core.SVNErrorMessage.create(SVNErrorMessage.java:89)
+	at org.tmatesoft.svn.core.SVNErrorMessage.wrap(SVNErrorMessage.java:366)
+	... 25 more
+Caused by: org.tmatesoft.svn.core.SVNErrorMessage: svn: OPTIONS of /svn/asa_w2w/trunk: 403 Forbidden (https://svn_url)
+	at org.tmatesoft.svn.core.SVNErrorMessage.create(SVNErrorMessage.java:200)
+	at org.tmatesoft.svn.core.SVNErrorMessage.create(SVNErrorMessage.java:181)
+	at org.tmatesoft.svn.core.SVNErrorMessage.create(SVNErrorMessage.java:133)
+	at org.tmatesoft.svn.core.internal.io.dav.http.HTTPRequest.createDefaultErrorMessage(HTTPRequest.java:430)
+	at org.tmatesoft.svn.core.internal.io.dav.http.HTTPRequest.dispatch(HTTPRequest.java:187)
+	at org.tmatesoft.svn.core.internal.io.dav.http.HTTPConnection._request(HTTPConnection.java:364)
+	... 24 more
+Email was triggered for: Failure
+Sending email for trigger: Failure
+Sending email to: 
+Notifying upstream projects of job completion
+Finished: FAILURE

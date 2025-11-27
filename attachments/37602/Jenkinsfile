@@ -1,0 +1,44 @@
+pipeline {
+    agent any
+
+    tools {
+        nodejs 'node6'
+    }
+
+    stages {
+        stage('Installing') {
+            steps {
+                echo 'Installing...'
+
+                sh 'node -v'
+                sh 'yarn --version'
+                sh 'npm --version'
+
+                sh 'npm install'
+            }
+        }
+        stage('Test') {
+            steps {
+                echo 'Testing..'
+                sh 'npm run test:ci'
+            }
+        }
+        stage('Build') {
+            steps {
+                echo 'Building...'
+                sh 'npm run build:beta'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo 'Deploying....'
+            }
+        }
+    }
+
+    post {
+        failure {
+            echo 'Failed!'
+        }
+    }
+}

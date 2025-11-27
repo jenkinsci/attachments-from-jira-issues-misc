@@ -1,0 +1,13 @@
+diff --git a/src/main/java/hudson/plugins/analysis/core/HealthAwareRecorder.java b/src/main/java/hudson/plugins/analysis/core/HealthAwareRecorder.java
+index 8d64186..0274402 100644
+--- a/src/main/java/hudson/plugins/analysis/core/HealthAwareRecorder.java
++++ b/src/main/java/hudson/plugins/analysis/core/HealthAwareRecorder.java
+@@ -440,7 +440,7 @@
+             print(outputStream,
+                     "If you are building on the master: please check if the file is accessible under '$JENKINS_HOME/[job-name]/workspace/%s'%n",
+                     slaveFileName);
+-            exception.printStackTrace(new PrintStream(outputStream, false, getDefaultEncoding()));
++            exception.printStackTrace(new PrintStream(outputStream, false, EncodingValidator.getEncoding(getDefaultEncoding())));
+         }
+         catch (IOException error) {
+             // ignore

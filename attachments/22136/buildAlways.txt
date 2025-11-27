@@ -1,0 +1,54 @@
+After a job failed there should be a possibility to run the next job.
+
+My contribution to FlowDSL.groovy :
+
+    def buildAlways(Map args, String jobName) {
+        // ask for job with name ${name}
+        JobInvocation job = new JobInvocation(flowRun, jobName)
+        def p = job.getProject()
+        listener.logger.println("Trigger job " + HyperlinkNote.encodeTo('/'+ p.getUrl(), p.getFullDisplayName()))
+        Run r = flowRun.schedule(job, getActions(args));
+        listener.logger.println(HyperlinkNote.encodeTo('/'+ r.getUrl(), r.getFullDisplayName())+" completed")
+        return job;
+    }
+
+    def build(Map args, String jobName) {
+        if (flowRun.state.result.isWorseThan(SUCCESS)) {
+            fail()
+        }
+	buildAlways(args, jobName)
+    }
+
+My workaround is:
+
+parallel (
+{
+	build("aaa")
+		flowRun.state.result = hudson.model.Result.SUCCESS
+		build("bbb")
+			flowRun.state.result = hudson.model.Result.SUCCESS
+			build("ccc")
+},{
+	build("dddd")
+		flowRun.state.result = hudson.model.Result.SUCCESS
+		build("eeee")
+			flowRun.state.result = hudson.model.Result.SUCCESS
+			build("ffff")
+} )
+
+I run visual tests. Every test should run, even if there are errors.
+
+
+With my contribution it looks like this:
+
+parallel (
+{
+	build("aaa")
+		buildAlways("bbb")
+			buildAlways("ccc")
+},{
+	build("dddd")
+		buildAlways("eeee")
+			buildAlways("ffff")
+} )
+

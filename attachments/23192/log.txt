@@ -1,0 +1,1383 @@
+Started by upstream project "Optimus_Unstable" build number 40
+originally caused by: 
+ Started by user anonymous
+Building in workspace /home/jan/.jenkins/jobs/Static_code_analysis/workspace
+
+Deleting project workspace... 
+$ hg clone --rev default --noupdate ssh://jgo@no-srv01//hg_root/optimus /home/jan/.jenkins/jobs/Static_code_analysis/workspace
+adding changesets
+adding manifests
+adding file changes
+added 24 changesets with 865 changes to 742 files
+[workspace] $ hg update --rev default
+549 files updated, 0 files merged, 0 files removed, 0 files unresolved
+[workspace] $ hg log --rev . --template {node}
+[workspace] $ hg log --rev . --template {rev}
+[workspace] $ hg log --rev cf2ae9d52b859a5a1b792223924bfb40e9f46056
+[workspace] $ hg log --template "<changeset node='{node}' author='{author|xmlescape}' rev='{rev}' date='{date}'><msg>{desc|xmlescape}</msg><added>{file_adds|stringify|xmlescape}</added><deleted>{file_dels|stringify|xmlescape}</deleted><files>{files|stringify|xmlescape}</files><parents>{parents}</parents></changeset>\n" --rev default:0 --follow --prune cf2ae9d52b859a5a1b792223924bfb40e9f46056
+Parsing POMs
+Modules changed, recalculating dependency graph
+[workspace] $ java -Xmx4g -XX:MaxPermSize=256m -cp /home/jan/.jenkins/plugins/maven-plugin/WEB-INF/lib/maven3-agent-1.2.jar:/home/jan/.jenkins/tools/hudson.tasks.Maven_MavenInstallation/Maven/boot/plexus-classworlds-2.4.jar org.jvnet.hudson.maven3.agent.Maven3Main /home/jan/.jenkins/tools/hudson.tasks.Maven_MavenInstallation/Maven /home/jan/.jenkins/war/WEB-INF/lib/remoting-2.21.jar /home/jan/.jenkins/plugins/maven-plugin/WEB-INF/lib/maven3-interceptor-1.2.jar 46806
+<===[JENKINS REMOTING CAPACITY]===>channel started
+log4j:WARN No appenders could be found for logger (org.apache.commons.beanutils.converters.BooleanConverter).
+log4j:WARN Please initialize the log4j system properly.
+Executing Maven:  -B -f /home/jan/.jenkins/jobs/Static_code_analysis/workspace/pom.xml clean package jxr:jxr pmd:cpd pmd:pmd checkstyle:checkstyle findbugs:findbugs -DskipTests=true
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.noesis.optimus:common:jar:11.1.0-SNAPSHOT
+[WARNING] 'dependencyManagement.dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.springframework:spring-orm:jar -> duplicate declaration of version ${spring.version} @ com.noesis.optimus:application:11.1.0-SNAPSHOT, /home/jan/.jenkins/jobs/Static_code_analysis/workspace/pom.xml, line 292, column 19
+[WARNING] 'dependencyManagement.dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.springframework:spring-test:jar -> duplicate declaration of version ${spring.version} @ com.noesis.optimus:application:11.1.0-SNAPSHOT, /home/jan/.jenkins/jobs/Static_code_analysis/workspace/pom.xml, line 371, column 19
+[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-pmd-plugin is missing. @ com.noesis.optimus:application:11.1.0-SNAPSHOT, /home/jan/.jenkins/jobs/Static_code_analysis/workspace/pom.xml, line 604, column 15
+[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-compiler-plugin is missing. @ com.noesis.optimus:application:11.1.0-SNAPSHOT, /home/jan/.jenkins/jobs/Static_code_analysis/workspace/pom.xml, line 593, column 15
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:findbugs-maven-plugin is missing. @ com.noesis.optimus:application:11.1.0-SNAPSHOT, /home/jan/.jenkins/jobs/Static_code_analysis/workspace/pom.xml, line 612, column 15
+[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-jar-plugin is missing. @ com.noesis.optimus:application:11.1.0-SNAPSHOT, /home/jan/.jenkins/jobs/Static_code_analysis/workspace/pom.xml, line 623, column 15
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.noesis.optimus:io:jar:11.1.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-pmd-plugin is missing. @ com.noesis.optimus:application:11.1.0-SNAPSHOT, /home/jan/.jenkins/jobs/Static_code_analysis/workspace/pom.xml, line 604, column 15
+[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-compiler-plugin is missing. @ com.noesis.optimus:application:11.1.0-SNAPSHOT, /home/jan/.jenkins/jobs/Static_code_analysis/workspace/pom.xml, line 593, column 15
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:findbugs-maven-plugin is missing. @ com.noesis.optimus:application:11.1.0-SNAPSHOT, /home/jan/.jenkins/jobs/Static_code_analysis/workspace/pom.xml, line 612, column 15
+[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-jar-plugin is missing. @ com.noesis.optimus:application:11.1.0-SNAPSHOT, /home/jan/.jenkins/jobs/Static_code_analysis/workspace/pom.xml, line 623, column 15
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.noesis.optimus:application:pom:11.1.0-SNAPSHOT
+[WARNING] 'dependencyManagement.dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.springframework:spring-orm:jar -> duplicate declaration of version ${spring.version} @ line 292, column 19
+[WARNING] 'dependencyManagement.dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.springframework:spring-test:jar -> duplicate declaration of version ${spring.version} @ line 371, column 19
+[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-pmd-plugin is missing. @ line 604, column 15
+[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-compiler-plugin is missing. @ line 593, column 15
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:findbugs-maven-plugin is missing. @ line 612, column 15
+[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-jar-plugin is missing. @ line 623, column 15
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] Optimus
+[INFO] common
+[INFO] io
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building Optimus 11.1.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ application ---
+[TASKS] Scanning folder '/home/jan/.jenkins/jobs/Static_code_analysis/workspace' for files matching the pattern '**/*.java' - excludes: common/**/*, io/**/*
+[TASKS] Found 0 files to scan for tasks
+Found 0 open tasks.
+[TASKS] Computing warning deltas based on reference build #52
+[INFO] 
+[INFO] --- maven-jar-plugin:2.4:test-jar (default) @ application ---
+[WARNING] JAR will be empty - no content was marked for inclusion!
+[INFO] Building jar: /home/jan/.jenkins/jobs/Static_code_analysis/workspace/target/application-11.1.0-SNAPSHOT-tests.jar
+[INFO] 
+[INFO] --- maven-jxr-plugin:2.3:jxr (default-cli) @ application ---
+[INFO] 
+[INFO] --- maven-pmd-plugin:2.7.1:cpd (default-cli) @ application ---
+[DRY] No report found for mojo cpd
+[INFO] 
+[INFO] --- maven-pmd-plugin:2.7.1:pmd (default-cli) @ application ---
+[PMD] No report found for mojo pmd
+[INFO] 
+[INFO] --- maven-checkstyle-plugin:2.9.1:checkstyle (default-cli) @ application ---
+[CHECKSTYLE] No report found for mojo checkstyle
+[INFO] 
+[INFO] --- findbugs-maven-plugin:2.5.2:findbugs (default-cli) @ application ---
+[FINDBUGS] No report found for mojo findbugs
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building common 11.1.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ common ---
+[TASKS] Scanning folder '/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common' for files matching the pattern '**/*.java' - excludes: 
+[TASKS] Found 189 files to scan for tasks
+Found 19 open tasks.
+[TASKS] Computing warning deltas based on reference build #52
+[INFO] 
+[INFO] --- maven-resources-plugin:2.5:resources (default-resources) @ common ---
+[debug] execute contextualize
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 2 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ common ---
+[INFO] Compiling 170 source files to /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/target/classes
+[WARNING] bootstrap class path not set in conjunction with -source 1.6
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/SerializedArray.java:[126,53] [unchecked] unchecked cast
+[WARNING] 
+    T extends Object declared in class SerializedArray
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/LongIdEntity.java:[147,37] [unchecked] unchecked cast
+[WARNING] 
+    T extends OptimusEntity declared in method <T>toNamedMap(Map<String,T>,Collection<T>)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/LazyReference.java:[84,54] [unchecked] unchecked conversion
+[WARNING] 
+    T extends OptimusEntity declared in class LazyReference
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/LazyReference.java:[86,56] [unchecked] unchecked cast
+[WARNING] 
+    CAP#1 extends OptimusEntity from capture of ? extends OptimusEntity
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/TargetSetting.java:[32,7] [serial] serializable class TargetSetting has no definition of serialVersionUID
+[WARNING] /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Memo.java:[39,7] [serial] serializable class Memo has no definition of serialVersionUID
+[WARNING] /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/AbstractMethod.java:[125,21] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/AbstractMethod.java:[150,20] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/AbstractMethod.java:[168,47] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/AbstractMethod.java:[296,15] [rawtypes] found raw type: SummaryInput
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/AbstractMethod.java:[322,33] [rawtypes] found raw type: ExperimentValue
+[WARNING] 
+    T extends Comparable declared in interface ExperimentValue
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/AbstractMethod.java:[322,91] [rawtypes] found raw type: ExperimentValue
+[WARNING] 
+    T extends Comparable declared in interface ExperimentValue
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/Method.java:[58,13] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/Method.java:[66,34] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Graph.java:[49,21] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Graph.java:[213,20] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Graph.java:[217,41] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/MethodType.java:[77,44] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/MethodType.java:[77,9] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/MethodType.java:[80,19] [rawtypes] found raw type: OptimizationMethodInput
+[WARNING] 
+    T extends Comparable declared in class OptimizationMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/MethodType.java:[82,19] [rawtypes] found raw type: TableMethodInput
+[WARNING] 
+    T extends Comparable declared in class TableMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/MethodType.java:[82,15] [unchecked] unchecked call to TableMethodInput(Input<T>) as a member of the raw type TableMethodInput
+[WARNING] 
+    T extends Comparable declared in class TableMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/MethodType.java:[84,19] [rawtypes] found raw type: DoeMethodInput
+[WARNING] 
+    T extends Comparable declared in class DoeMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/Summary.java:[47,7] [rawtypes] found raw type: SummaryInput
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/Summary.java:[61,2] [rawtypes] found raw type: ExperimentValue
+[WARNING] 
+    T extends Comparable declared in interface ExperimentValue
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/MethodInput.java:[27,39] [rawtypes] found raw type: Comparable
+[WARNING] 
+    T extends Object declared in interface Comparable
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[56,29] [rawtypes] found raw type: Comparable
+[WARNING] 
+    T extends Object declared in interface Comparable
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[121,10] [rawtypes] found raw type: MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[132,10] [rawtypes] found raw type: MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[143,10] [rawtypes] found raw type: MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[154,10] [rawtypes] found raw type: MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[159,27] [rawtypes] found raw type: MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[159,74] [rawtypes] found raw type: MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[168,36] [unchecked] unchecked cast
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[173,25] [unchecked] unchecked call to setValue(T) as a member of the raw type MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[178,25] [rawtypes] found raw type: MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[184,32] [unchecked] unchecked cast
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[189,21] [unchecked] unchecked call to setValue(T) as a member of the raw type MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[194,21] [rawtypes] found raw type: MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[200,33] [unchecked] unchecked cast
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[205,22] [unchecked] unchecked call to setValue(T) as a member of the raw type MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[210,22] [rawtypes] found raw type: MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[216,33] [unchecked] unchecked cast
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[221,22] [unchecked] unchecked call to setValue(T) as a member of the raw type MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[226,22] [rawtypes] found raw type: MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[232,15] [rawtypes] found raw type: MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[233,35] [unchecked] unchecked cast
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[241,12] [rawtypes] found raw type: MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[241,43] [rawtypes] found raw type: MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/Input.java:[242,20] [unchecked] unchecked call to setValue(T) as a member of the raw type MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/InputArray.java:[62,21] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/InputArray.java:[65,20] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/project/InputArray.java:[69,41] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/SummaryInput.java:[39,36] [rawtypes] found raw type: Comparable
+[WARNING] 
+    T extends Object declared in interface Comparable
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/SummaryInput.java:[39,80] [rawtypes] found raw type: ExperimentValue
+[WARNING] 
+    T extends Comparable declared in interface ExperimentValue
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/SummaryInput.java:[46,57] [rawtypes] found raw type: MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/SummaryInput.java:[46,53] [unchecked] unchecked conversion
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/SummaryInput.java:[60,45] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/SummaryInput.java:[61,17] [unchecked] unchecked conversion
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/SummaryInput.java:[87,9] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/SummaryInput.java:[91,29] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/SummaryInput.java:[92,17] [unchecked] unchecked conversion
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/SummaryInput.java:[107,58] [rawtypes] found raw type: Comparable
+[WARNING] 
+    T extends Object declared in interface Comparable
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/SummaryInput.java:[108,54] [unchecked] unchecked cast
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/ExperimentValue.java:[10,43] [rawtypes] found raw type: Comparable
+[WARNING] 
+    T extends Object declared in interface Comparable
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/Experiment.java:[206,10] [rawtypes] found raw type: ExperimentValue
+[WARNING] 
+    T extends Comparable declared in interface ExperimentValue
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/Experiment.java:[209,10] [rawtypes] found raw type: Comparable
+[WARNING] 
+    T extends Object declared in interface Comparable
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/Experiment.java:[212,52] [rawtypes] found raw type: ExperimentValue
+[WARNING] 
+    T extends Comparable declared in interface ExperimentValue
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/Experiment.java:[212,20] [rawtypes] found raw type: Comparable
+[WARNING] 
+    T extends Object declared in interface Comparable
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/Experiment.java:[217,16] [unchecked] unchecked call to setValue(Experiment,T) as a member of the raw type ExperimentValue
+[WARNING] 
+    T extends Comparable declared in interface ExperimentValue
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/Experiment.java:[220,49] [rawtypes] found raw type: ExperimentValue
+[WARNING] 
+    T extends Comparable declared in interface ExperimentValue
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/Experiment.java:[220,20] [rawtypes] found raw type: Comparable
+[WARNING] 
+    T extends Object declared in interface Comparable
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/Experiment.java:[221,32] [unchecked] unchecked cast
+[WARNING] 
+    T extends Comparable declared in method <T>getValue(ExperimentValue)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/MultipleTypedField.java:[67,42] [rawtypes] found raw type: Comparable
+[WARNING] 
+    T extends Object declared in interface Comparable
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/MultipleTypedField.java:[146,17] [unchecked] unchecked cast
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/MultipleTypedField.java:[148,17] [unchecked] unchecked cast
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/MultipleTypedField.java:[150,17] [unchecked] unchecked cast
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/MultipleTypedField.java:[67,7] [serial] serializable class MultipleTypedField has no definition of serialVersionUID
+[WARNING] /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/Array.java:[61,29] [rawtypes] found raw type: Comparable
+[WARNING] 
+    T extends Object declared in interface Comparable
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/HardReferenceSerializedArray.java:[173,20] [unchecked] unchecked cast
+[WARNING] 
+    T extends Object declared in class HardReferenceSerializedArray
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/HardReferenceSerializedArray.java:[53,7] [serial] serializable class HardReferenceSerializedArray has no definition of serialVersionUID
+[WARNING] /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/AbstractDataBucket.java:[68,37] [unchecked] unchecked cast
+[WARNING] 
+    T extends Object declared in method <T>createNewBucketInstance(T)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/AbstractDataBucket.java:[71,37] [unchecked] unchecked cast
+[WARNING] 
+    T extends Object declared in method <T>createNewBucketInstance(T)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/AbstractDataBucket.java:[74,37] [unchecked] unchecked cast
+[WARNING] 
+    T extends Object declared in method <T>createNewBucketInstance(T)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/AbstractMethodInput.java:[44,52] [rawtypes] found raw type: Comparable
+[WARNING] 
+    T extends Object declared in interface Comparable
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/AbstractMethodInput.java:[55,10] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/AbstractMethodInput.java:[77,35] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/AbstractMethodInput.java:[84,11] [unchecked] unchecked conversion
+[WARNING] 
+    T extends Comparable declared in class AbstractMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/nominal/NominalMethodInput.java:[41,42] [rawtypes] found raw type: Comparable
+[WARNING] 
+    T extends Object declared in interface Comparable
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/nominal/NominalMethodInput.java:[52,16] [rawtypes] found raw type: MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/nominal/NominalMethodInput.java:[52,47] [rawtypes] found raw type: MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/nominal/NominalMethodInput.java:[56,30] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/nominal/NominalMethodInput.java:[57,24] [unchecked] unchecked call to setInput(Input<T>) as a member of the raw type MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/nominal/NominalMethodInput.java:[61,23] [unchecked] unchecked call to setValue(T) as a member of the raw type MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/nominal/NominalMethodInput.java:[65,29] [unchecked] unchecked cast
+[WARNING] 
+    T extends Comparable declared in class NominalMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/table/TableMethodInput.java:[45,40] [rawtypes] found raw type: Comparable
+[WARNING] 
+    T extends Object declared in interface Comparable
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/table/TableMethodInput.java:[45,60] [rawtypes] found raw type: AbstractMethodInput
+[WARNING] 
+    T extends Comparable declared in class AbstractMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/table/TableMethodInput.java:[51,12] [unchecked] unchecked call to setInput(Input<T>) as a member of the raw type AbstractMethodInput
+[WARNING] 
+    T extends Comparable declared in class AbstractMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/main/java/com/noesis/optimus/model/method/table/TableMethodInput.java:[64,29] [rawtypes] found raw type: MultipleTypedField
+[INFO] [debug] execute contextualize
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/resources
+
+[INFO] --- maven-resources-plugin:2.5:testResources (default-testResources) @ common ---
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ common ---
+[INFO] Compiling 19 source files to /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/target/test-classes
+[WARNING] bootstrap class path not set in conjunction with -source 1.6
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/model/filter/ExpressionResolverTest.java:[18,29] [deprecation] Assert in junit.framework has been deprecated
+[WARNING] /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/EntityUtilsPathTest.java:[14,29] [deprecation] Assert in junit.framework has been deprecated
+[WARNING] /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/EntityUtilsTest.java:[26,29] [deprecation] Assert in junit.framework has been deprecated
+[WARNING] /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/model/filter/ExpressionResolverTest.java:[204,47] [unchecked] unchecked conversion
+[WARNING] 
+    T extends String declared in class MapDictionary
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[100,18] [rawtypes] found raw type: HardReferenceSerializedArray
+[WARNING] 
+    T extends Object declared in class HardReferenceSerializedArray
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[101,18] [rawtypes] found raw type: HardReferenceSerializedArray
+[WARNING] 
+    T extends Object declared in class HardReferenceSerializedArray
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[114,16] [rawtypes] found raw type: Collection
+[WARNING] 
+    E extends Object declared in interface Collection
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[120,16] [rawtypes] found raw type: Collection
+[WARNING] 
+    E extends Object declared in interface Collection
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[128,16] [rawtypes] found raw type: MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[134,16] [rawtypes] found raw type: MultipleTypedField
+[WARNING] 
+    T extends Comparable declared in class MultipleTypedField
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[144,16] [rawtypes] found raw type: List
+[WARNING] 
+    E extends Object declared in interface List
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[144,56] [rawtypes] found raw type: ArrayList
+[WARNING] 
+    E extends Object declared in class ArrayList
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[144,74] [rawtypes] found raw type: ArrayList
+[WARNING] 
+    E extends Object declared in class ArrayList
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[144,70] [unchecked] unchecked call to ArrayList(Collection<? extends E>) as a member of the raw type ArrayList
+[WARNING] 
+    E extends Object declared in class ArrayList
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[145,16] [rawtypes] found raw type: List
+[WARNING] 
+    E extends Object declared in interface List
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[145,58] [rawtypes] found raw type: ArrayList
+[WARNING] 
+    E extends Object declared in class ArrayList
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[145,76] [rawtypes] found raw type: ArrayList
+[WARNING] 
+    E extends Object declared in class ArrayList
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[145,72] [unchecked] unchecked call to ArrayList(Collection<? extends E>) as a member of the raw type ArrayList
+[WARNING] 
+    E extends Object declared in class ArrayList
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[148,151] [rawtypes] found raw type: ArrayList
+[WARNING] 
+    E extends Object declared in class ArrayList
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[148,147] [unchecked] unchecked call to ArrayList(Collection<? extends E>) as a member of the raw type ArrayList
+[WARNING] 
+    E extends Object declared in class ArrayList
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[148,176] [rawtypes] found raw type: ArrayList
+[WARNING] 
+    E extends Object declared in class ArrayList
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[148,172] [unchecked] unchecked call to ArrayList(Collection<? extends E>) as a member of the raw type ArrayList
+[WARNING] 
+    E extends Object declared in class ArrayList
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[167,16] [rawtypes] found raw type: Set
+[WARNING] 
+    E extends Object declared in interface Set
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[167,55] [rawtypes] found raw type: HashSet
+[WARNING] 
+    E extends Object declared in class HashSet
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[167,71] [rawtypes] found raw type: HashSet
+[WARNING] 
+    E extends Object declared in class HashSet
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[167,67] [unchecked] unchecked call to HashSet(Collection<? extends E>) as a member of the raw type HashSet
+[WARNING] 
+    E extends Object declared in class HashSet
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[168,16] [rawtypes] found raw type: Set
+[WARNING] 
+    E extends Object declared in interface Set
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[168,57] [rawtypes] found raw type: HashSet
+[WARNING] 
+    E extends Object declared in class HashSet
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[168,73] [rawtypes] found raw type: HashSet
+[WARNING] 
+    E extends Object declared in class HashSet
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[168,69] [unchecked] unchecked call to HashSet(Collection<? extends E>) as a member of the raw type HashSet
+[WARNING] 
+    E extends Object declared in class HashSet
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[170,143] [rawtypes] found raw type: ArrayList
+[WARNING] 
+    E extends Object declared in class ArrayList
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[170,139] [unchecked] unchecked call to ArrayList(Collection<? extends E>) as a member of the raw type ArrayList
+[WARNING] 
+    E extends Object declared in class ArrayList
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[170,168] [rawtypes] found raw type: ArrayList
+[WARNING] 
+    E extends Object declared in class ArrayList
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/reflectionassert/OptimusEntityComparator.java:[170,164] [unchecked] unchecked call to ArrayList(Collection<? extends E>) as a member of the raw type ArrayList
+[WARNING] 
+    E extends Object declared in class ArrayList
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/EntityUtilsPathTest.java:[32,39] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/EntityUtilsPathTest.java:[43,39] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/EntityUtilsPathTest.java:[45,10] [rawtypes] found raw type: List
+[WARNING] 
+    E extends Object declared in interface List
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/EntityUtilsPathTest.java:[46,10] [rawtypes] found raw type: List
+[WARNING] 
+    E extends Object declared in interface List
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/EntityUtilsPathTest.java:[46,44] [unchecked] unchecked generic array creation for varargs parameter of type Pair<String,? extends Class<? extends INT#1>>[]
+[WARNING] 
+    INT#1 extends LongIdEntity,Named
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/EntityUtilsPathTest.java:[59,39] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/EntityUtilsPathTest.java:[61,10] [rawtypes] found raw type: List
+[WARNING] 
+    E extends Object declared in interface List
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/EntityUtilsPathTest.java:[61,44] [unchecked] unchecked generic array creation for varargs parameter of type Pair<String,? extends Class<? extends INT#1>>[]
+[WARNING] 
+    INT#1 extends LongIdEntity,Named
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/EntityUtilsPathTest.java:[70,39] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/EntityUtilsPathTest.java:[72,10] [rawtypes] found raw type: List
+[WARNING] 
+    E extends Object declared in interface List
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/EntityUtilsPathTest.java:[72,44] [unchecked] unchecked generic array creation for varargs parameter of type Pair<String,Class<Project>>[]
+[WARNING] /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/ScannerTest.java:[214,12] [rawtypes] found raw type: Pair
+[WARNING] 
+    T1 extends Object declared in class Pair
+    T2 extends Object declared in class Pair
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/ScannerTest.java:[214,57] [unchecked] unchecked conversion
+[WARNING] 
+    T extends Object declared in method <T>getRandomValue(Class<T>)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/ScannerTest.java:[214,39] [unchecked] unchecked method invocation: method getRandomValue in class ScannerTest is applied to given types
+[WARNING] 
+    T extends Object declared in method <T>getRandomValue(Class<T>)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/ScannerTest.java:[216,17] [unchecked] unchecked conversion
+[WARNING]     Pair
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/ScannerTest.java:[230,41] [unchecked] unchecked cast
+[WARNING] 
+    T extends Object declared in method <T>getRandomValue(Class<T>)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/ScannerTest.java:[234,40] [unchecked] unchecked cast
+[WARNING] 
+    T extends Object declared in method <T>getRandomValue(Class<T>)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/ScannerTest.java:[238,62] [unchecked] unchecked cast
+[WARNING] 
+    T extends Object declared in method <T>getRandomValue(Class<T>)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/ScannerTest.java:[242,41] [unchecked] unchecked cast
+[WARNING] 
+    T extends Object declared in method <T>getRandomValue(Class<T>)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/ScannerTest.java:[246,38] [unchecked] unchecked cast
+[WARNING] 
+    T extends Object declared in method <T>getRandomValue(Class<T>)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/ScannerTest.java:[257,23] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/ScannerTest.java:[300,32] [unchecked] unchecked conversion
+[WARNING]     List
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/ScannerTest.java:[313,12] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/model/filter/OperatorsTest.java:[28,95] [unchecked] unchecked generic array creation for varargs parameter of type Class<? extends Object>[]
+[WARNING] /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/model/filter/OperatorsTest.java:[30,113] [unchecked] unchecked generic array creation for varargs parameter of type Class<? extends INT#1>[]
+[WARNING] 
+    INT#1 extends Object,Serializable,Comparable<? extends INT#2>
+    INT#2 extends Object,Serializable,Comparable<?>
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/model/filter/OperatorsTest.java:[34,15] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/model/filter/OperatorsTest.java:[35,23] [rawtypes] found raw type: Operator
+[WARNING] 
+    T extends Object declared in interface Operator
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/model/filter/OperatorsTest.java:[39,15] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/model/filter/OperatorsTest.java:[40,23] [rawtypes] found raw type: Operator
+[WARNING] 
+    T extends Object declared in interface Operator
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[87,21] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[87,63] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[89,12] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[91,12] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[106,15] [rawtypes] found raw type: SummaryInput
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[106,59] [rawtypes] found raw type: SummaryInput
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[110,15] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[111,28] [rawtypes] found raw type: SummaryInput
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[139,16] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[140,10] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[140,28] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[151,54] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[181,15] [rawtypes] found raw type: SummaryInput
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[181,52] [rawtypes] found raw type: SummaryInput
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[182,15] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[183,12] [rawtypes] found raw type: SummaryInput
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[183,34] [rawtypes] found raw type: SummaryInput
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[216,17] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[240,15] [rawtypes] found raw type: SummaryInput
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[241,12] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[270,38] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[270,16] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[274,26] [unchecked] unchecked call to setHighValue(T) as a member of the raw type Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[275,25] [unchecked] unchecked call to setLowValue(T) as a member of the raw type Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[276,26] [unchecked] unchecked call to setHighValue(T) as a member of the raw type Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[277,26] [unchecked] unchecked call to setStepValue(T) as a member of the raw type Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[280,26] [unchecked] unchecked call to setHighValue(T) as a member of the raw type Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[281,25] [unchecked] unchecked call to setLowValue(T) as a member of the raw type Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[282,26] [unchecked] unchecked call to setHighValue(T) as a member of the raw type Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[283,26] [unchecked] unchecked call to setStepValue(T) as a member of the raw type Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[286,26] [unchecked] unchecked call to setHighValue(T) as a member of the raw type Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[287,25] [unchecked] unchecked call to setLowValue(T) as a member of the raw type Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[288,26] [unchecked] unchecked call to setHighValue(T) as a member of the raw type Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[289,26] [unchecked] unchecked call to setStepValue(T) as a member of the raw type Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[326,44] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/src/test/java/com/noesis/optimus/util/TestObjectBuilder.java:[326,16] [rawtypes] found raw type: MethodInput
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ common ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.3.2:jar (default-jar) @ common ---
+[INFO] Building jar: /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/target/common-11.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-jar-plugin:2.3.2:test-jar (default) @ common ---
+[INFO] Building jar: /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/target/common-11.1.0-SNAPSHOT-tests.jar
+[INFO] 
+[INFO] --- maven-jxr-plugin:2.3:jxr (default-cli) @ common ---
+[INFO] 
+[INFO] --- maven-pmd-plugin:2.7.1:cpd (default-cli) @ common ---
+[DRY] Finding all files that match the pattern cpd.xml
+[DRY] Parsing 1 files in /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/target
+[DRY] Successfully parsed file /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/target/cpd.xml of module common with 36 warnings.
+[DRY] Computing warning deltas based on reference build #52
+[INFO] 
+[INFO] --- maven-pmd-plugin:2.7.1:pmd (default-cli) @ common ---
+[PMD] Finding all files that match the pattern pmd.xml
+[PMD] Parsing 1 files in /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/target
+[PMD] Successfully parsed file /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/target/pmd.xml of module common with 9 warnings.
+[PMD] Computing warning deltas based on reference build #52
+[INFO] 
+[INFO] --- maven-checkstyle-plugin:2.9.1:checkstyle (default-cli) @ common ---
+[INFO] 
+[INFO] There are 1105 checkstyle errors.
+[CHECKSTYLE] Finding all files that match the pattern checkstyle-result.xml
+[CHECKSTYLE] Parsing 1 files in /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/target
+[CHECKSTYLE] Successfully parsed file /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/target/checkstyle-result.xml of module common with 1105 warnings.
+[CHECKSTYLE] Computing warning deltas based on reference build #52
+[INFO] 
+[INFO] --- findbugs-maven-plugin:2.5.2:findbugs (default-cli) @ common ---
+[INFO] Fork Value is true
+     [java] Warnings generated: 6
+[INFO] Done FindBugs Analysis....
+[FINDBUGS] Finding all files that match the pattern findbugsXml.xml
+[FINDBUGS] Parsing 1 files in /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/target
+[FINDBUGS] Successfully parsed file /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/target/findbugsXml.xml of module common with 6 warnings.
+[FINDBUGS] Computing warning deltas based on reference build #52
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building io 11.1.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ io ---
+[TASKS] Scanning folder '/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io' for files matching the pattern '**/*.java' - excludes: 
+[TASKS] Found 184 files to scan for tasks
+Found 39 open tasks.
+[TASKS] Computing warning deltas based on reference build #52
+[debug] execute contextualize
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-resources-plugin:2.5:resources (default-resources) @ io ---
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ io ---
+[INFO] Compiling 92 source files to /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/target/classes
+[WARNING] bootstrap class path not set in conjunction with -source 1.6
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/AbstractParser.java:[163,54] [rawtypes] found raw type: HashMap
+[WARNING] 
+    K extends Object declared in class HashMap
+    V extends Object declared in class HashMap
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/AbstractParser.java:[163,50] [unchecked] unchecked conversion
+[WARNING]     HashMap
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/AbstractParser.java:[165,54] [rawtypes] found raw type: HashMap
+[WARNING] 
+    K extends Object declared in class HashMap
+    V extends Object declared in class HashMap
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/AbstractParser.java:[165,50] [unchecked] unchecked conversion
+[WARNING]     HashMap
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/AbstractParser.java:[167,56] [rawtypes] found raw type: HashMap
+[WARNING] 
+    K extends Object declared in class HashMap
+    V extends Object declared in class HashMap
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/AbstractParser.java:[167,52] [unchecked] unchecked conversion
+[WARNING]     HashMap
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/AbstractParser.java:[169,56] [rawtypes] found raw type: HashMap
+[WARNING] 
+    K extends Object declared in class HashMap
+    V extends Object declared in class HashMap
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/AbstractParser.java:[169,52] [unchecked] unchecked conversion
+[WARNING]     HashMap
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/AbstractParser.java:[442,2] [rawtypes] found raw type: Comparable
+[WARNING] 
+    T extends Object declared in interface Comparable
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/AbstractParser.java:[476,2] [rawtypes] found raw type: Comparable
+[WARNING] 
+    T extends Object declared in interface Comparable
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/OptimusParser.java:[47,2] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/ParserContext.java:[102,40] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/ParserContext.java:[102,90] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/ParserContext.java:[309,9] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/ParserContext.java:[318,36] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/ParserContext.java:[347,9] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/ParserContext.java:[351,19] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/ParserContext.java:[359,21] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/ParserContext.java:[371,17] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/ParserFactory.java:[91,32] [unchecked] unchecked cast
+[WARNING] 
+    T extends Object declared in method <T>createParser(Class<T>,int,Scanner)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/AbstractMethodParser.java:[96,23] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/AbstractMethodParser.java:[151,23] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/NominalMethodParserV3.java:[56,23] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/NominalMethodParserV3.java:[57,21] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/NominalMethodParserV3.java:[57,57] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/NominalMethodInputParserV4.java:[31,63] [rawtypes] found raw type: NominalMethodInput
+[WARNING] 
+    T extends Comparable declared in class NominalMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/NominalMethodInputParserV4.java:[34,12] [rawtypes] found raw type: NominalMethodInput
+[WARNING] 
+    T extends Comparable declared in class NominalMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/NominalMethodInputParserV4.java:[35,10] [rawtypes] found raw type: NominalMethodInput
+[WARNING] 
+    T extends Comparable declared in class NominalMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/NominalMethodInputParserV4.java:[35,43] [rawtypes] found raw type: NominalMethodInput
+[WARNING] 
+    T extends Comparable declared in class NominalMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/NominalMethodInputParserV4.java:[36,20] [unchecked] unchecked call to setInput(Input<T>) as a member of the raw type AbstractMethodInput
+[WARNING] 
+    T extends Comparable declared in class AbstractMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/NominalMethodInputParserV4.java:[37,20] [unchecked] unchecked call to setValue(T) as a member of the raw type NominalMethodInput
+[WARNING] 
+    T extends Comparable declared in class NominalMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/OptimusFileParser.java:[355,38] [static] static method should be qualified by type name, AbstractParser, instead of by an expression
+[WARNING] /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/MooMethodParserV3.java:[124,23] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/MooMethodParserV3.java:[132,21] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/MooMethodParserV3.java:[132,57] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/MooMethodParserV3.java:[135,12] [rawtypes] found raw type: NominalMethodInput
+[WARNING] 
+    T extends Comparable declared in class NominalMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/MooMethodParserV3.java:[140,14] [rawtypes] found raw type: DoeMethodInput
+[WARNING] 
+    T extends Comparable declared in class DoeMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/MooMethodParserV3.java:[143,14] [rawtypes] found raw type: MooMethodInput
+[WARNING] 
+    T extends Comparable declared in class MooMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/CatiaFileParserV3.java:[54,33] [unchecked] unchecked generic array creation for varargs parameter of type Pair<String,MixedType>[]
+[WARNING] /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/AbaqusExtractionRuleParserV1.java:[56,33] [unchecked] unchecked generic array creation for varargs parameter of type Pair<String,MixedType>[]
+[WARNING] /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/DuplicateParserException.java:[30,7] [serial] serializable class DuplicateParserException has no definition of serialVersionUID
+[WARNING] /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/ParserNotFoundException.java:[30,7] [serial] serializable class ParserNotFoundException has no definition of serialVersionUID
+[WARNING] /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/DistributionParserV2.java:[56,21] [rawtypes] found raw type: Point
+[WARNING] 
+    N extends Number declared in class Point
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/DistributionParserV2.java:[56,51] [rawtypes] found raw type: Point
+[WARNING] 
+    N extends Number declared in class Point
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/InputArrayParserV1.java:[42,21] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/InputArrayParserV1.java:[42,51] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/InputArrayParserV1.java:[50,19] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/InputArrayParserV1.java:[51,12] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/LineAnnotationParserV1.java:[49,31] [rawtypes] found raw type: Point
+[WARNING] 
+    N extends Number declared in class Point
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/LineAnnotationParserV1.java:[49,27] [unchecked] unchecked call to Point(N,N) as a member of the raw type Point
+[WARNING] 
+    N extends Number declared in class Point
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/LineAnnotationParserV1.java:[49,27] [unchecked] unchecked conversion
+[WARNING]     Point
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/LineAnnotationParserV1.java:[64,20] [rawtypes] found raw type: Point
+[WARNING] 
+    N extends Number declared in class Point
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/LineAnnotationParserV1.java:[64,16] [unchecked] unchecked call to Point(N,N) as a member of the raw type Point
+[WARNING] 
+    N extends Number declared in class Point
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/LineAnnotationParserV1.java:[64,16] [unchecked] unchecked conversion
+[WARNING]     Point
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/OptimizationMethodInputParserV4.java:[31,68] [rawtypes] found raw type: OptimizationMethodInput
+[WARNING] 
+    T extends Comparable declared in class OptimizationMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/OptimizationMethodInputParserV4.java:[34,12] [rawtypes] found raw type: OptimizationMethodInput
+[WARNING] 
+    T extends Comparable declared in class OptimizationMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/OptimizationMethodInputParserV4.java:[36,10] [rawtypes] found raw type: OptimizationMethodInput
+[WARNING] 
+    T extends Comparable declared in class OptimizationMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/OptimizationMethodInputParserV4.java:[36,52] [rawtypes] found raw type: OptimizationMethodInput
+[WARNING] 
+    T extends Comparable declared in class OptimizationMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/OptimizationMethodParserV3.java:[63,23] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/OptimizationMethodParserV3.java:[71,21] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/OptimizationMethodParserV3.java:[71,57] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/OptimizationMethodParserV3.java:[74,12] [rawtypes] found raw type: NominalMethodInput
+[WARNING] 
+    T extends Comparable declared in class NominalMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/OptimizationMethodParserV3.java:[79,14] [rawtypes] found raw type: DoeMethodInput
+[WARNING] 
+    T extends Comparable declared in class DoeMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/OptimizationMethodParserV3.java:[82,14] [rawtypes] found raw type: OptimizationMethodInput
+[WARNING] 
+    T extends Comparable declared in class OptimizationMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/GraphParserV16.java:[87,23] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/GraphParserV16.java:[87,53] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/GraphParserV16.java:[90,14] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/SummaryParserV9.java:[99,15] [rawtypes] found raw type: SummaryInput
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/SummaryParserV9.java:[99,52] [rawtypes] found raw type: SummaryInput
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/SummaryParserV9.java:[101,12] [rawtypes] found raw type: SummaryInput
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/SummaryParserV9.java:[101,44] [rawtypes] found raw type: SummaryInput
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/SummaryParserV9.java:[103,12] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/SummaryParserV9.java:[107,34] [unchecked] unchecked call to setNominalValue(T) as a member of the raw type SummaryInput
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/SummaryParserV9.java:[114,12] [rawtypes] found raw type: SummaryInput
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/SummaryParserV9.java:[114,44] [rawtypes] found raw type: SummaryInput
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/SummaryParserV9.java:[116,12] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/SummaryParserV9.java:[221,73] [rawtypes] found raw type: SummaryInput
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/SummaryParserV9.java:[249,19] [rawtypes] found raw type: SummaryInput
+[WARNING] 
+    T extends Comparable declared in class SummaryInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/DoeMethodParserV6.java:[150,23] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/DoeMethodParserV6.java:[152,21] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/DoeMethodParserV6.java:[152,57] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/DoeMethodParserV6.java:[156,14] [rawtypes] found raw type: NominalMethodInput
+[WARNING] 
+    T extends Comparable declared in class NominalMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/DoeMethodParserV6.java:[160,14] [rawtypes] found raw type: DoeMethodInput
+[WARNING] 
+    T extends Comparable declared in class DoeMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/DoeMethodParserV6.java:[163,14] [rawtypes] found raw type: DoeMethodInput
+[WARNING] 
+    T extends Comparable declared in class DoeMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/DoeMethodParserV6.java:[163,47] [rawtypes] found raw type: DoeMethodInput
+[WARNING] 
+    T extends Comparable declared in class DoeMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/ParsingException.java:[30,7] [serial] serializable class ParsingException has no definition of serialVersionUID
+[WARNING] /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/TableMethodParserV5.java:[53,23] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/TableMethodParserV5.java:[54,21] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/TableMethodParserV5.java:[54,57] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/TableMethodParserV5.java:[58,12] [rawtypes] found raw type: TableMethodInput
+[WARNING] 
+    T extends Comparable declared in class TableMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/TableMethodParserV5.java:[58,47] [rawtypes] found raw type: TableMethodInput
+[WARNING] 
+    T extends Comparable declared in class TableMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/TableMethodParserV5.java:[58,43] [unchecked] unchecked call to TableMethodInput(Input<T>) as a member of the raw type TableMethodInput
+[WARNING] 
+    T extends Comparable declared in class TableMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/TableMethodParserV5.java:[83,15] [rawtypes] found raw type: MethodInput
+[WARNING] 
+    T extends Comparable declared in interface MethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/TableMethodParserV5.java:[85,59] [unchecked] unchecked call to setExperimentValue(int,T) as a member of the raw type TableMethodInput
+[WARNING] 
+    T extends Comparable declared in class TableMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/InputParserV6.java:[41,43] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/InputParserV6.java:[44,12] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/InputParserV6.java:[46,4] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/InputParserV6.java:[75,12] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/main/java/com/noesis/optimus/io/InputParserV6.java:[101,10] [rawtypes] found raw type: Input
+[INFO] 
+[INFO] --- maven-resources-plugin:2.5:testResources (default-testResources) @ io ---
+[debug] execute contextualize
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 163 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ io ---
+[INFO] Compiling 92 source files to /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/target/test-classes
+[WARNING] bootstrap class path not set in conjunction with -source 1.6
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/NominalMethodOutputParserV1Test.java:[34,29] [deprecation] Assert in junit.framework has been deprecated
+[WARNING] /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/OrphanMethodsParserV2Test.java:[30,29] [deprecation] Assert in junit.framework has been deprecated
+[WARNING] /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/TableMethodParserV5Test.java:[31,29] [deprecation] Assert in junit.framework has been deprecated
+[WARNING] /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/AbstractFileParserTestclass.java:[140,12] [rawtypes] found raw type: Parser
+[WARNING] 
+    T extends Object declared in interface Parser
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/AbstractFileParserTestclass.java:[141,12] [rawtypes] found raw type: Parser
+[WARNING] 
+    T extends Object declared in interface Parser
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/AbstractFileParserTestclass.java:[141,58] [unchecked] unchecked conversion
+[WARNING]     Parser
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/AbstractFileParserTestclass.java:[142,13] [unchecked] unchecked conversion
+[WARNING] 
+    T extends Object declared in method <T>createTestParser(Class<T>,int,String)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/AbstractFileParserTestclass.java:[204,49] [unchecked] unchecked conversion
+[WARNING]     List
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/AbstractFileParserTestclass.java:[233,37] [rawtypes] found raw type: Parser
+[WARNING] 
+    T extends Object declared in interface Parser
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/AbstractFileParserTestclass.java:[238,94] [unchecked] unchecked cast
+[WARNING] 
+    CAP#1 extends Parser from capture of ? extends Parser
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/AbstractFileParserTestclass.java:[242,44] [unchecked] unchecked cast
+[WARNING] 
+    CAP#1 extends Parser from capture of ? extends Parser
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/AbstractFileParserTestclass.java:[257,10] [rawtypes] found raw type: Parser
+[WARNING] 
+    T extends Object declared in interface Parser
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/AbstractFileParserTestclass.java:[257,28] [rawtypes] found raw type: AbstractParser
+[WARNING] 
+    T extends Object declared in class AbstractParser
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/AbstractFileParserTestclass.java:[341,40] [rawtypes] found raw type: MockObject
+[WARNING] 
+    T extends Object declared in class MockObject
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/AbstractFileParserTestclass.java:[341,36] [unchecked] unchecked call to MockObject(Class<?>,Object) as a member of the raw type MockObject
+[WARNING] /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/AbstractFileParserTestclass.java:[341,36] [unchecked] unchecked conversion
+[WARNING]     MockObject
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidCsvParserTest.java:[97,14] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidCsvParserTest.java:[118,37] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidCsvParserTest.java:[123,48] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidCsvParserTest.java:[125,12] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/DoeMethodInputParserV3Test.java:[63,15] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/DoeMethodInputParserV3Test.java:[73,17] [rawtypes] found raw type: DoeMethodInput
+[WARNING] 
+    T extends Comparable declared in class DoeMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/DoeMethodInputParserV3Test.java:[74,10] [rawtypes] found raw type: DoeMethodInput
+[WARNING] 
+    T extends Comparable declared in class DoeMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/InputParserV6Test.java:[55,17] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/InputParserV6Test.java:[56,10] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/CsvParserTest.java:[118,37] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/CsvParserTest.java:[206,39] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/GlobalParserTest.java:[93,16] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/GlobalParserTest.java:[148,21] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/GlobalParserTest.java:[148,52] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/GlobalParserTest.java:[153,16] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/GlobalParserTest.java:[159,116] [unchecked] unchecked call to <A>getAnnotation(Class<A>) as a member of the raw type Class
+[WARNING] 
+    A extends Annotation declared in method <A>getAnnotation(Class<A>)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/GlobalParserTest.java:[172,15] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/GlobalParserTest.java:[173,24] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/GlobalParserTest.java:[192,10] [rawtypes] found raw type: Parser
+[WARNING] 
+    T extends Object declared in interface Parser
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/GlobalParserTest.java:[192,43] [unchecked] unchecked conversion
+[WARNING] 
+    T extends Object declared in method <T>createTestParser(Class<T>,int,String)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/GlobalParserTest.java:[192,42] [unchecked] unchecked method invocation: method createTestParser in class AbstractFileParserTestclass is applied to given types
+[WARNING] 
+    T extends Object declared in method <T>createTestParser(Class<T>,int,String)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/GlobalParserTest.java:[202,12] [rawtypes] found raw type: Parser
+[WARNING] 
+    T extends Object declared in interface Parser
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/GlobalParserTest.java:[202,45] [unchecked] unchecked conversion
+[WARNING] 
+    T extends Object declared in method <T>createTestParser(Class<T>,int,String)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/GlobalParserTest.java:[202,44] [unchecked] unchecked method invocation: method createTestParser in class AbstractFileParserTestclass is applied to given types
+[WARNING] 
+    T extends Object declared in method <T>createTestParser(Class<T>,int,String)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/GlobalParserTest.java:[220,10] [rawtypes] found raw type: Parser
+[WARNING] 
+    T extends Object declared in interface Parser
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/GlobalParserTest.java:[220,53] [unchecked] unchecked conversion
+[WARNING] 
+    T extends Object declared in method <T>createParser(Class<T>,int,Scanner)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/GlobalParserTest.java:[220,52] [unchecked] unchecked method invocation: method createParser in class ParserFactory is applied to given types
+[WARNING] 
+    T extends Object declared in method <T>createParser(Class<T>,int,Scanner)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/GlobalParserTest.java:[251,14] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/GlobalParserTest.java:[251,43] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/GlobalParserTest.java:[253,45] [unchecked] unchecked conversion
+[WARNING] 
+    T extends Object declared in method <T>createParser(Class<T>,int,Scanner)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/GlobalParserTest.java:[253,44] [unchecked] unchecked method invocation: method createParser in class ParserFactory is applied to given types
+[WARNING] 
+    T extends Object declared in method <T>createParser(Class<T>,int,Scanner)
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/AbstractFileParserTestclass.java:[396,16] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/AbstractFileParserTestclass.java:[394,84] [unchecked] unchecked cast
+[WARNING]     Object
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/NominalMethodInputParserV4Test.java:[56,10] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/NominalMethodInputParserV4Test.java:[56,28] [rawtypes] found raw type: Input
+[WARNING] 
+    T extends Comparable declared in class Input
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/NominalMethodInputParserV4Test.java:[60,17] [rawtypes] found raw type: NominalMethodInput
+[WARNING] 
+    T extends Comparable declared in class NominalMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/NominalMethodInputParserV4Test.java:[61,10] [rawtypes] found raw type: NominalMethodInput
+[WARNING] 
+    T extends Comparable declared in class NominalMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/ParserScanningLearningTest.java:[70,21] [rawtypes] found raw type: Parser
+[WARNING] 
+    T extends Object declared in interface Parser
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/ParserScanningLearningTest.java:[70,51] [rawtypes] found raw type: Parser
+[WARNING] 
+    T extends Object declared in interface Parser
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/ParserScanningLearningTest.java:[72,12] [rawtypes] found raw type: Parser
+[WARNING] 
+    T extends Object declared in interface Parser
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/ParserScanningLearningTest.java:[88,10] [rawtypes] found raw type: Parser
+[WARNING] 
+    T extends Object declared in interface Parser
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/MemoParserV1Test.java:[58,17] [deprecation] Date(int,int,int) in Date has been deprecated
+[WARNING] /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/MooMethodInputParserV4Test.java:[50,17] [rawtypes] found raw type: MooMethodInput
+[WARNING] 
+    T extends Comparable declared in class MooMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/MooMethodInputParserV4Test.java:[51,10] [rawtypes] found raw type: MooMethodInput
+[WARNING] 
+    T extends Comparable declared in class MooMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/OptimusFileParserFuzzingIT.java:[142,50] [unchecked] unchecked conversion
+[WARNING]     List
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/OptimusFileParserFuzzingIT.java:[156,50] [unchecked] unchecked conversion
+[WARNING]     List
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/OptimusFileParserFuzzingIT.java:[173,50] [unchecked] unchecked conversion
+[WARNING]     List
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/OptimusFileParserFuzzingIT.java:[222,50] [unchecked] unchecked conversion
+[WARNING]     List
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/OptimizationMethodInputParserV4Test.java:[51,17] [rawtypes] found raw type: OptimizationMethodInput
+[WARNING] 
+    T extends Comparable declared in class OptimizationMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/OptimizationMethodInputParserV4Test.java:[52,10] [rawtypes] found raw type: OptimizationMethodInput
+[WARNING] 
+    T extends Comparable declared in class OptimizationMethodInput
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[132,14] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[132,41] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[133,15] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[148,14] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[148,41] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[169,289] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[224,15] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[234,16] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[278,16] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[278,41] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[305,12] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[306,27] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[329,79] [unchecked] unchecked cast
+[WARNING]     Object
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[404,114] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[492,88] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[492,22] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[493,22] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[493,41] [rawtypes] found raw type: HashMap
+[WARNING] 
+    K extends Object declared in class HashMap
+    V extends Object declared in class HashMap
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[493,37] [unchecked] unchecked conversion
+[WARNING]     HashMap
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[494,15] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[494,47] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[576,16] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[584,48] [rawtypes] found raw type: Class
+[WARNING] 
+    T extends Object declared in class Class
+/home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/csv/ValidRandomDataCsvParserIT.java:[640,0] [serial] serializable class Row has no definition of serialVersionUID
+[WARNING] /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/src/test/java/com/noesis/optimus/io/FreeformAnnotationParserV1Test.java:[75,4] [rawtypes] found raw type: Point
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ io ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.3.2:jar (default-jar) @ io ---
+[INFO] Building jar: /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/target/io-11.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-jar-plugin:2.3.2:test-jar (default) @ io ---
+[INFO] Building jar: /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/target/io-11.1.0-SNAPSHOT-tests.jar
+[INFO] 
+[INFO] --- maven-jxr-plugin:2.3:jxr (default-cli) @ io ---
+[INFO] 
+[INFO] --- maven-pmd-plugin:2.7.1:cpd (default-cli) @ io ---
+[DRY] Finding all files that match the pattern cpd.xml
+[DRY] Parsing 1 files in /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/target
+[DRY] Successfully parsed file /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/target/cpd.xml of module io with 2 warnings.
+[DRY] Computing warning deltas based on reference build #52
+[INFO] 
+[INFO] --- maven-pmd-plugin:2.7.1:pmd (default-cli) @ io ---
+[PMD] Finding all files that match the pattern pmd.xml
+[PMD] Parsing 1 files in /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/target
+[PMD] Successfully parsed file /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/target/pmd.xml of module io with 15 warnings.
+[PMD] Computing warning deltas based on reference build #52
+[INFO] 
+[INFO] --- maven-checkstyle-plugin:2.9.1:checkstyle (default-cli) @ io ---
+[INFO] 
+[INFO] There are 111 checkstyle errors.
+[CHECKSTYLE] Finding all files that match the pattern checkstyle-result.xml
+[CHECKSTYLE] Parsing 1 files in /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/target
+[CHECKSTYLE] Successfully parsed file /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/target/checkstyle-result.xml of module io with 111 warnings.
+[CHECKSTYLE] Computing warning deltas based on reference build #52
+[INFO] 
+[INFO] --- findbugs-maven-plugin:2.5.2:findbugs (default-cli) @ io ---
+[INFO] Fork Value is true
+     [java] Warnings generated: 12
+[INFO] Done FindBugs Analysis....
+[FINDBUGS] Finding all files that match the pattern findbugsXml.xml
+[FINDBUGS] Parsing 1 files in /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/target
+[FINDBUGS] Successfully parsed file /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/target/findbugsXml.xml of module io with 12 warnings.
+[FINDBUGS] Computing warning deltas based on reference build #52
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary:
+[INFO] 
+[INFO] Optimus ........................................... SUCCESS [8.621s]
+[INFO] common ............................................ SUCCESS [1:09.651s]
+[INFO] io ................................................ SUCCESS [40.366s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 2:01.069s
+[INFO] Finished at: Fri Feb 15 15:03:38 CET 2013
+[INFO] Final Memory: 68M/655M
+[INFO] ------------------------------------------------------------------------
+[JENKINS] Archiving /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/pom.xml to /home/jan/.jenkins/jobs/Static_code_analysis/modules/com.noesis.optimus$common/builds/2013-02-15_15-01-30/archive/com.noesis.optimus/common/11.1.0-SNAPSHOT/common-11.1.0-SNAPSHOT.pom
+[JENKINS] Archiving /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/target/common-11.1.0-SNAPSHOT.jar to /home/jan/.jenkins/jobs/Static_code_analysis/modules/com.noesis.optimus$common/builds/2013-02-15_15-01-30/archive/com.noesis.optimus/common/11.1.0-SNAPSHOT/common-11.1.0-SNAPSHOT.jar
+[JENKINS] Archiving /home/jan/.jenkins/jobs/Static_code_analysis/workspace/common/target/common-11.1.0-SNAPSHOT-tests.jar to /home/jan/.jenkins/jobs/Static_code_analysis/modules/com.noesis.optimus$common/builds/2013-02-15_15-01-30/archive/com.noesis.optimus/common/11.1.0-SNAPSHOT/common-11.1.0-SNAPSHOT-tests.jar
+[JENKINS] Archiving /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/pom.xml to /home/jan/.jenkins/jobs/Static_code_analysis/modules/com.noesis.optimus$io/builds/2013-02-15_15-01-30/archive/com.noesis.optimus/io/11.1.0-SNAPSHOT/io-11.1.0-SNAPSHOT.pom
+[JENKINS] Archiving /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/target/io-11.1.0-SNAPSHOT.jar to /home/jan/.jenkins/jobs/Static_code_analysis/modules/com.noesis.optimus$io/builds/2013-02-15_15-01-30/archive/com.noesis.optimus/io/11.1.0-SNAPSHOT/io-11.1.0-SNAPSHOT.jar
+[JENKINS] Archiving /home/jan/.jenkins/jobs/Static_code_analysis/workspace/io/target/io-11.1.0-SNAPSHOT-tests.jar to /home/jan/.jenkins/jobs/Static_code_analysis/modules/com.noesis.optimus$io/builds/2013-02-15_15-01-30/archive/com.noesis.optimus/io/11.1.0-SNAPSHOT/io-11.1.0-SNAPSHOT-tests.jar
+[JENKINS] Archiving /home/jan/.jenkins/jobs/Static_code_analysis/workspace/pom.xml to /home/jan/.jenkins/jobs/Static_code_analysis/modules/com.noesis.optimus$application/builds/2013-02-15_15-01-30/archive/com.noesis.optimus/application/11.1.0-SNAPSHOT/application-11.1.0-SNAPSHOT.pom
+[JENKINS] Archiving /home/jan/.jenkins/jobs/Static_code_analysis/workspace/target/application-11.1.0-SNAPSHOT-tests.jar to /home/jan/.jenkins/jobs/Static_code_analysis/modules/com.noesis.optimus$application/builds/2013-02-15_15-01-30/archive/com.noesis.optimus/application/11.1.0-SNAPSHOT/application-11.1.0-SNAPSHOT-tests.jar
+Waiting for Jenkins to finish collecting data
+channel stopped
+[workspace] $ /bin/sh -xe /tmp/hudson4699336080369268338.sh
++ cowsay -f moose Updating lines of code metrics
+ ________________________________ 
+< Updating lines of code metrics >
+ -------------------------------- 
+  \
+   \   \_\_    _/_/
+    \      \__/
+           (oo)\_______
+           (__)\       )\/\
+               ||----w |
+               ||     ||
++ ./lines_of_code.sh /home/jan/.jenkins/jobs/Static_code_analysis/workspace
++ grep -v bootstrap
++ grep -v jscolor
++ grep -v speech-bubbles
++ grep -v jquery
++ grep -v javadoc_stylesheet.css
++ grep -v eu/webtoolkit/
+defined(@array) is deprecated at /usr/bin/cloc line 1054.
+	(Maybe you should just omit the defined()?)
+defined(@array) is deprecated at /usr/bin/cloc line 1056.
+	(Maybe you should just omit the defined()?)
+defined(@array) is deprecated at /usr/bin/cloc line 1379.
+	(Maybe you should just omit the defined()?)
+defined(@array) is deprecated at /usr/bin/cloc line 1510.
+	(Maybe you should just omit the defined()?)
+[WARNINGS] Parsing warnings in console log with parser Java Compiler (javac)
+[WARNINGS] Parsing warnings in console log with parser Maven
+[WARNINGS] Parsing warnings in console log with parser JavaDoc Tool
+
+Deleting project workspace... 
+done
+
+Finished: SUCCESS

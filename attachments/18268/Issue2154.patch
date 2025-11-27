@@ -1,0 +1,20 @@
+Index: main/remoting/src/main/java/hudson/remoting/Pipe.java
+===================================================================
+--- main/remoting/src/main/java/hudson/remoting/Pipe.java	(revision 17553)
++++ main/remoting/src/main/java/hudson/remoting/Pipe.java	(working copy)
+@@ -153,13 +153,14 @@
+ 
+             // we want 'oidRos' to send data to this PipedOutputStream
+             PipedOutputStream pos = new PipedOutputStream();
++            PipedInputStream pis = new PipedInputStream(pos);
+             final int oidPos = channel.export(pos);
+ 
+             // tell 'ros' to connect to our 'pos'.
+             channel.send(new ConnectCommand(oidRos, oidPos));
+ 
+             out = null;
+-            in = new PipedInputStream(pos);
++            in = pis;
+         }
+     }
+ 

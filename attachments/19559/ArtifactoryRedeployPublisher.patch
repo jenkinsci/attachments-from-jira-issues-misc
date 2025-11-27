@@ -1,0 +1,25 @@
+Index: ArtifactoryRedeployPublisher.java
+===================================================================
+--- ArtifactoryRedeployPublisher.java	(.../vendor/artifactory-1.1.0/src/main/java/org/jfrog/hudson/ArtifactoryRedeployPublisher.java)	(revision 44)
++++ ArtifactoryRedeployPublisher.java	(.../tags/artifactory-1.1.0-yale-1.0.1/src/main/java/org/jfrog/hudson/ArtifactoryRedeployPublisher.java)	(revision 52)
+@@ -93,6 +93,19 @@
+             return true;
+         }
+ 
++        /**
++         * START Patch for ignoring m2release builds...
++         */
++        if(!build.getCauses().isEmpty()
++        && build.getCauses().get(0) != null
++        && build.getCauses().get(0).getClass().getName().equals("org.jvnet.hudson.plugins.m2release.ReleaseCause")){
++            listener.getLogger().append("M2 Release build, not uploading artifacts to Artifactory. ");
++        	return true; 
++        }
++        /**
++         * END Patch for ignoring m2release builds...
++         */
++        
+         MavenAbstractArtifactRecord mar = getAction(build);
+         if (mar == null) {
+             listener.getLogger().println("No artifacts are recorded. Is this a Maven project?");
+

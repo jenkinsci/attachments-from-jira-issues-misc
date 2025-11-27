@@ -1,0 +1,49 @@
+diff --git a/pom.xml b/pom.xml
+index 8981615..a214d5f 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -3,7 +3,7 @@
+     <parent>
+     	<groupId>org.jenkins-ci.plugins</groupId>
+     	<artifactId>plugin</artifactId>
+-        <version>1.557</version>
++        <version>1.586</version>
+   	</parent>
+ 
+     <groupId>org.jenkins-ci.plugins</groupId>
+@@ -124,6 +124,23 @@
+                 <artifactId>maven-release-plugin</artifactId>
+                 <version>2.5</version>
+             </plugin>
++            <plugin>
++                <groupId>org.jenkins-ci.tools</groupId>
++                <artifactId>maven-hpi-plugin</artifactId>
++                <configuration>
++                    <maskClasses>
++                        net.java.dev.jna.
++                        com.google.common.
++                    </maskClasses>
++                </configuration>
++            </plugin>
++            <plugin>
++                <groupId>org.jenkins-ci.tools</groupId>
++                <artifactId>maven-hpi-plugin</artifactId>
++                <configuration>
++                    <pluginFirstClassLoader>true</pluginFirstClassLoader>
++                </configuration>
++            </plugin>
+         </plugins>
+ 	</build>
+ 	<reporting>
+@@ -139,6 +156,11 @@
+     </reporting>
+     <dependencies>
+         <dependency>
++            <groupId>net.java.dev.jna</groupId>
++            <artifactId>jna</artifactId>
++            <version>3.3.0</version>
++        </dependency>
++        <dependency>
+             <groupId>org.libvirt</groupId>
+             <artifactId>libvirt</artifactId>
+             <version>0.4.7</version>

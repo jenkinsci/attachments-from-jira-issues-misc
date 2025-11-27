@@ -1,0 +1,82 @@
+### Eclipse Workspace Patch 1.0
+#P ci-game
+Index: src/main/java/hudson/plugins/cigame/rules/unittesting/IncreasingFailedTestsRule.java
+===================================================================
+--- src/main/java/hudson/plugins/cigame/rules/unittesting/IncreasingFailedTestsRule.java	(revision 16079)
++++ src/main/java/hudson/plugins/cigame/rules/unittesting/IncreasingFailedTestsRule.java	(working copy)
+@@ -1,12 +1,12 @@
+ package hudson.plugins.cigame.rules.unittesting;
+ 
+-import java.util.List;
+-
+ import hudson.model.AbstractBuild;
+ import hudson.model.Result;
+ import hudson.plugins.cigame.model.Rule;
+ import hudson.plugins.cigame.model.RuleResult;
+-import hudson.tasks.junit.TestResultAction;
++import hudson.tasks.test.AbstractTestResultAction;
++
++import java.util.List;
+ 
+ /**
+  * Rule for giving points if a new test is added and fails.
+@@ -27,14 +27,15 @@
+         return "Increased number of failed tests";
+     }
+ 
++    @SuppressWarnings("unchecked")
+     public RuleResult evaluate(AbstractBuild<?, ?> build) {
+-        List<TestResultAction> actions = build.getActions(TestResultAction.class);
+-        for (TestResultAction action : actions) {
++        List<AbstractTestResultAction> actions = build.getActions(AbstractTestResultAction.class);
++        for (AbstractTestResultAction action : actions) {
+             if ((action != null) && (action.getPreviousResult() != null)) {
+                 return evaluate(build.getResult(), 
+                         build.getPreviousBuild().getResult(), 
+-                        action.getResult().getFailCount(), 
+-                        action.getPreviousResult().getResult().getFailCount());
++                        action.getFailCount(), 
++                        action.getPreviousResult().getFailCount());
+             }
+         }
+         return null;
+Index: src/main/java/hudson/plugins/cigame/rules/unittesting/IncreasingPassedTestsRule.java
+===================================================================
+--- src/main/java/hudson/plugins/cigame/rules/unittesting/IncreasingPassedTestsRule.java	(revision 16079)
++++ src/main/java/hudson/plugins/cigame/rules/unittesting/IncreasingPassedTestsRule.java	(working copy)
+@@ -1,12 +1,12 @@
+ package hudson.plugins.cigame.rules.unittesting;
+ 
+-import java.util.List;
+-
+ import hudson.model.AbstractBuild;
+ import hudson.model.Result;
+ import hudson.plugins.cigame.model.Rule;
+ import hudson.plugins.cigame.model.RuleResult;
+-import hudson.tasks.junit.TestResultAction;
++import hudson.tasks.test.AbstractTestResultAction;
++
++import java.util.List;
+ 
+ /**
+  * Rule that gives points for increasing the number of passed tests.
+@@ -23,14 +23,15 @@
+         pointsForEachFixedFailure = points;
+     }
+ 
++    @SuppressWarnings("unchecked")
+     public RuleResult evaluate(AbstractBuild<?, ?> build) {
+-        List<TestResultAction> actions = build.getActions(TestResultAction.class);
+-        for (TestResultAction action : actions) {
++        List<AbstractTestResultAction> actions = build.getActions(AbstractTestResultAction.class);
++        for (AbstractTestResultAction action : actions) {
+             if ((action != null) && (action.getPreviousResult() != null)) {
+                 return evaluate(build.getResult(), 
+                         build.getPreviousBuild().getResult(), 
+-                        action.getResult().getPassCount(), 
+-                        action.getPreviousResult().getResult().getPassCount());
++                        action.getTotalCount()-action.getFailCount(), 
++                        action.getPreviousResult().getTotalCount()-action.getPreviousResult().getFailCount());
+             }
+         }
+         return null;

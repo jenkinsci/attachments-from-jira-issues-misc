@@ -1,0 +1,81 @@
+From f4e1e40d9994068947db68743fa0587d3b496311 Mon Sep 17 00:00:00 2001
+From: Toan Pham <toan0210@gmail.com>
+Date: Fri, 10 Feb 2017 04:42:58 +0100
+Subject: [PATCH] Fix bug basic authentication can't work with group membership
+ strategy
+
+Signed-off-by: Toan Pham <toan0210@gmail.com>
+---
+ .../hudson/security/LDAPBindSecurityRealm.groovy   | 46 ++++++++++++++++++++--
+ 1 file changed, 42 insertions(+), 4 deletions(-)
+
+diff --git a/src/main/resources/hudson/security/LDAPBindSecurityRealm.groovy b/src/main/resources/hudson/security/LDAPBindSecurityRealm.groovy
+index 0636171..9e9d5db 100644
+--- a/src/main/resources/hudson/security/LDAPBindSecurityRealm.groovy
++++ b/src/main/resources/hudson/security/LDAPBindSecurityRealm.groovy
+@@ -25,10 +25,15 @@ import org.acegisecurity.providers.ProviderManager
+ import org.acegisecurity.providers.anonymous.AnonymousAuthenticationProvider
+ import org.acegisecurity.providers.ldap.LdapAuthenticationProvider
+ import org.acegisecurity.providers.ldap.authenticator.BindAuthenticator2
++import org.acegisecurity.providers.ldap.populator.DefaultLdapAuthoritiesPopulator
++import org.acegisecurity.ldap.InitialDirContextFactory;
+ import org.acegisecurity.ldap.DefaultInitialDirContextFactory
+ import org.acegisecurity.ldap.search.FilterBasedLdapUserSearch
+ import org.acegisecurity.providers.rememberme.RememberMeAuthenticationProvider
++import org.acegisecurity.userdetails.ldap.LdapUserDetails
+ import jenkins.model.Jenkins
++import jenkins.security.plugins.ldap.FromUserRecordLDAPGroupMembershipStrategy
++import hudson.security.LDAPSecurityRealm
+ import hudson.security.LDAPSecurityRealm.AuthoritiesPopulatorImpl
+ import hudson.Util
+ import javax.naming.Context
+@@ -65,10 +70,43 @@ bindAuthenticator(BindAuthenticator2,initialDirContextFactory) {
+     userSearch = ldapUserSearch;
+ }
+
+-authoritiesPopulator(AuthoritiesPopulatorImpl, initialDirContextFactory, instance.groupSearchBase) {
+-    // see DefaultLdapAuthoritiesPopulator for other possible configurations
+-    searchSubtree = true;
+-    groupSearchFilter = "(| (member={0}) (uniqueMember={0}) (memberUid={1}))";
++class CustomAuthoritiesPopulatorImpl extends DefaultLdapAuthoritiesPopulator {
++    LDAPSecurityRealm instance = null;
++    public CustomAuthoritiesPopulatorImpl(
++            LDAPSecurityRealm instance,
++            InitialDirContextFactory initialDirContextFactory,
++            String groupSearchBase)
++    {
++        super(initialDirContextFactory, groupSearchBase);
++        super.setRolePrefix("");
++        super.setConvertToUpperCase(false);
++        this.instance = instance;
++    }
++
++    /* allow authen process use our group membership strategy */
++    @Override
++    protected Set getAdditionalRoles(LdapUserDetails userDetails) {
++        if (instance.groupMembershipStrategy != null)
++            return instance.groupMembershipStrategy.getGrantedAuthorities(
++                userDetails
++            )
++        else
++            return new HashSet()
++    }
++}
++
++if (instance.groupMembershipStrategy instanceof FromUserRecordLDAPGroupMembershipStrategy) {
++    authoritiesPopulator(CustomAuthoritiesPopulatorImpl, instance, initialDirContextFactory, instance.groupSearchBase) {
++        searchSubtree = true;
++        groupSearchFilter = "(| (member={0}) (uniqueMember={0}) (memberUid={1}))";
++    }
++}
++else {
++    authoritiesPopulator(AuthoritiesPopulatorImpl, initialDirContextFactory, instance.groupSearchBase) {
++        // see DefaultLdapAuthoritiesPopulator for other possible configurations
++        searchSubtree = true;
++        groupSearchFilter = "(| (member={0}) (uniqueMember={0}) (memberUid={1}))";
++   }
+ }
+
+ authenticationManager(ProviderManager) {
+--
+1.8.3.1

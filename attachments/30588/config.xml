@@ -1,0 +1,129 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson>
+  <disabledAdministrativeMonitors>
+    <string>hudson.diagnosis.ReverseProxySetupMonitor</string>
+    <string>hudson.node_monitors.MonitorMarkedNodeOffline</string>
+    <string>hudson.diagnosis.TooManyJobsButNoView</string>
+    <string>hudsonHomeIsFull</string>
+  </disabledAdministrativeMonitors>
+  <version>1.609.2</version>
+  <numExecutors>2</numExecutors>
+  <mode>EXCLUSIVE</mode>
+  <useSecurity>true</useSecurity>
+  <authorizationStrategy class="hudson.security.ProjectMatrixAuthorizationStrategy">
+    <permission>hudson.model.Computer.Build:contint</permission>
+    <permission>hudson.model.Hudson.Administer:epg</permission>
+    <permission>hudson.scm.SCM.Tag:contint</permission>
+    <permission>org.jfrog.hudson.ArtifactoryPlugin.Promote:contint</permission>
+    <permission>org.jfrog.hudson.ArtifactoryPlugin.Release:contint</permission>
+  </authorizationStrategy>
+  <securityRealm class="hudson.security.LDAPSecurityRealm" plugin="ldap@1.11">
+    <server>MASKED</server>
+    <rootDN>o=TID</rootDN>
+    <inhibitInferRootDN>false</inhibitInferRootDN>
+    <userSearchBase></userSearchBase>
+    <userSearch>uid={0}</userSearch>
+    <groupSearchBase>ou=groups</groupSearchBase>
+    <groupMembershipStrategy class="jenkins.security.plugins.ldap.FromGroupSearchLDAPGroupMembershipStrategy">
+      <filter></filter>
+    </groupMembershipStrategy>
+    <disableMailAddressResolver>false</disableMailAddressResolver>
+    <displayNameAttributeName>displayname</displayNameAttributeName>
+    <mailAddressAttributeName>mail</mailAddressAttributeName>
+    <userIdStrategy class="jenkins.model.IdStrategy$CaseInsensitive"/>
+    <groupIdStrategy class="jenkins.model.IdStrategy$CaseInsensitive"/>
+  </securityRealm>
+  <disableRememberMe>false</disableRememberMe>
+  <projectNamingStrategy class="jenkins.model.ProjectNamingStrategy$DefaultProjectNamingStrategy"/>
+  <workspaceDir>${ITEM_ROOTDIR}/workspace</workspaceDir>
+  <buildsDir>${ITEM_ROOTDIR}/builds</buildsDir>
+  <systemMessage>
+&lt;h1&gt;EPG - Distributed Continuous Integration Platform&lt;/h1&gt;</systemMessage>
+  <markupFormatter class="hudson.markup.RawHtmlMarkupFormatter" plugin="antisamy-markup-formatter@1.3">
+    <disableSyntaxHighlighting>false</disableSyntaxHighlighting>
+  </markupFormatter>
+  <jdks/>
+  <viewsTabBar class="hudson.views.DefaultViewsTabBar"/>
+  <myViewsTabBar class="hudson.views.DefaultMyViewsTabBar"/>
+  <clouds>
+    <org.jenkinsci.plugins.vSphereCloud plugin="vsphere-cloud@2.6">
+      <name>vSphereCloud</name>
+      <vsDescription>EPG</vsDescription>
+      <maxOnlineSlaves>4</maxOnlineSlaves>
+      <vsConnectionConfig>
+        <vsHost>https://prod-epg-vc-01</vsHost>
+        <credentialsId>a77878d0-afad-46d1-9a89-234155d51f81</credentialsId>
+      </vsConnectionConfig>
+    </org.jenkinsci.plugins.vSphereCloud>
+    <com.nirima.jenkins.plugins.docker.DockerCloud plugin="docker-plugin@0.11.0">
+      <name>docker</name>
+      <templates>
+        <com.nirima.jenkins.plugins.docker.DockerTemplate>
+          <configVersion>2</configVersion>
+          <labelString>dock, dockRHA, gbic</labelString>
+          <launcher class="com.nirima.jenkins.plugins.docker.launcher.DockerComputerSSHLauncher">
+            <sshConnector plugin="ssh-slaves@1.10">
+              <port>22</port>
+              <credentialsId>e40adca1-3abd-4db9-953d-e7d47ec87a55</credentialsId>
+              <jvmOptions></jvmOptions>
+              <javaPath></javaPath>
+              <launchTimeoutSeconds>60</launchTimeoutSeconds>
+              <maxNumRetries>0</maxNumRetries>
+              <retryWaitTime>0</retryWaitTime>
+            </sshConnector>
+          </launcher>
+          <remoteFsMapping></remoteFsMapping>
+          <remoteFs>/home/contint</remoteFs>
+          <instanceCap>3</instanceCap>
+          <mode>NORMAL</mode>
+          <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
+          <numExecutors>1</numExecutors>
+          <dockerTemplateBase>
+            <image>artifactory.hi.inet/dcip/base:6</image>
+            <dockerCommand></dockerCommand>
+            <lxcConfString></lxcConfString>
+            <hostname></hostname>
+            <dnsHosts/>
+            <volumes/>
+            <volumesFrom2/>
+            <environment/>
+            <bindPorts></bindPorts>
+            <bindAllPorts>false</bindAllPorts>
+            <memoryLimit>2560</memoryLimit>
+            <privileged>false</privileged>
+            <tty>false</tty>
+            <extraHosts class="java.util.Collections$UnmodifiableRandomAccessList" resolves-to="java.util.Collections$UnmodifiableList">
+              <c class="list"/>
+              <list reference="../c"/>
+            </extraHosts>
+          </dockerTemplateBase>
+          <removeVolumes>false</removeVolumes>
+          <pullStrategy>PULL_LATEST</pullStrategy>
+        </com.nirima.jenkins.plugins.docker.DockerTemplate>
+      </templates>
+      <serverUrl>http://ci-epg-dprha-01:2375</serverUrl>
+      <connectTimeout>5</connectTimeout>
+      <readTimeout>15</readTimeout>
+      <version></version>
+      <credentialsId></credentialsId>
+      <containerCap>2147483647</containerCap>
+    </com.nirima.jenkins.plugins.docker.DockerCloud>
+  </clouds>
+  <quietPeriod>5</quietPeriod>
+  <scmCheckoutRetryCount>0</scmCheckoutRetryCount>
+  <views>
+    <hudson.model.AllView>
+      <owner class="hudson" reference="../../.."/>
+      <name>All</name>
+      <filterExecutors>true</filterExecutors>
+      <filterQueue>true</filterQueue>
+      <properties class="hudson.model.View$PropertyList"/>
+    </hudson.model.AllView>
+  </views>
+  <primaryView>All</primaryView>
+  <slaveAgentPort>0</slaveAgentPort>
+  <label></label>
+  <nodeProperties/>
+  <globalNodeProperties/>
+  <noUsageStatistics>true</noUsageStatistics>
+</hudson>

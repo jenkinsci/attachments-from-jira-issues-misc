@@ -1,0 +1,167 @@
+Index: src/main/java/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition.java
+===================================================================
+--- src/main/java/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition.java	(revision 29370)
++++ src/main/java/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterDefinition.java	(working copy)
+@@ -108,7 +108,9 @@
+         super(PARAMETER_NAME); // we keep the name of the parameter not
+                                // internationalized, it will save many
+                                // issues when updating system settings
+-        this.pvob = ClearCaseUcmBaselineUtils.prefixWithSlash(pvob);
++        // Actually, pvob should be prefixed with slave OS separator.
++        // But at this stage, I don't think we can determine it.
++        this.pvob = ClearCaseUcmBaselineUtils.prefixWithSeparator(pvob);
+         this.component = component;
+         this.promotionLevel = promotionLevel;
+         this.restrictions = restrictions;
+Index: src/main/java/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterValue.java
+===================================================================
+--- src/main/java/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterValue.java	(revision 29370)
++++ src/main/java/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineParameterValue.java	(working copy)
+@@ -45,14 +45,17 @@
+ import hudson.plugins.clearcase.ucm.UcmMakeBaseline;
+ import hudson.plugins.clearcase.ucm.UcmMakeBaselineComposite;
+ import hudson.plugins.clearcase.util.BuildVariableResolver;
++import hudson.plugins.clearcase.util.PathUtil;
+ import hudson.tasks.BuildWrapper;
+ import hudson.tasks.Publisher;
+ import hudson.util.DescribableList;
+ import hudson.util.VariableResolver;
+-import java.io.File;
++
+ import java.io.IOException;
+ import java.util.List;
+ import java.util.Map;
++
++import org.apache.commons.lang.StringUtils;
+ import org.kohsuke.stapler.DataBoundConstructor;
+ import org.kohsuke.stapler.export.Exported;
+ 
+@@ -100,7 +103,7 @@
+ 
+     public ClearCaseUcmBaselineParameterValue(String name, String pvob, String component, String promotionLevel, String viewName, String baseline, boolean forceRmview, boolean snapshotView) {
+         super(name);
+-        this.pvob = ClearCaseUcmBaselineUtils.prefixWithSlash(pvob);
++        this.pvob = ClearCaseUcmBaselineUtils.prefixWithSeparator(pvob);
+         this.component = component;
+         this.promotionLevel = promotionLevel;
+         this.viewName = viewName;
+@@ -259,6 +262,11 @@
+                         }
+                     }
+ 
++                    final String newlineForOS = launcher.isUnix() ? "\n" : "\r\n";
++                    // We assume that the slave OS file separator is the same than the server, since we have no way of
++                    // determining the OS of the Clearcase server
++                    final String fileSepForOS = PathUtil.fileSepForOS(launcher.isUnix());
++
+                     if(forceRmview || !lastBuildUsedSameBaseline || !viewPath.exists()) {
+                         // --- 1. We remove the view if it already exists ---
+ 
+@@ -272,51 +280,39 @@
+                         cleartool.mkview(viewName, snapshotView, null);
+ 
+                         // --- 3. We create the configspec ---
+-
+-                        configSpec.append("element * CHECKEDOUT\n");
+-                        configSpec.append("element ").append(rootDir).append("/... ").append(baseline).append('\n');
+-
++                        
++                        configSpec.append("element * CHECKEDOUT").append(newlineForOS);
++                        StringBuilder loadRules = new StringBuilder();
++                        
+                         // cleartool lsbl -fmt "%[depends_on_closure]p" <baseline>@<pvob>
+                         String[] dependentBaselines = cleartool.getDependentBaselines(pvob, baseline);
+ 
+                         for(String dependentBaselineSelector: dependentBaselines) {
+-                            String dependentBaseline = dependentBaselineSelector.split("@")[0];
+-                            String component = cleartool.getComponentFromBaseline(pvob, dependentBaseline);
+-                            rootDir = cleartool.getComponentRootDir(pvob, component);
+-                            configSpec.append("element ").append(rootDir).append("/... ").append(dependentBaseline).append('\n');
+-                        }
+-
+-                        configSpec.append("element * /main/0\n");
+-
+-                        // is any download restriction defined?
+-                        if(restrictions != null && restrictions.size() > 0) {
+-                            for(String restriction: restrictions) {
+-                                if(restriction.startsWith(rootDir)) {
+-                                    configSpec.append("load ").append(restriction).append('\n');
+-                                }
++                            int indexOfSeparator = dependentBaselineSelector.indexOf('@');
++                            if (indexOfSeparator == -1) {
++                                continue;
+                             }
+-                        }
+-                        else {
+-                            configSpec.append("load ").append(rootDir).append('\n');
+-                        }
+-
+-                        for(String dependentBaselineSelector: dependentBaselines) {
+-                            String dependentBaseline = dependentBaselineSelector.split("@")[0];
++                            String dependentBaseline = dependentBaselineSelector.substring(0, indexOfSeparator);
+                             String component = cleartool.getComponentFromBaseline(pvob, dependentBaseline);
+                             rootDir = cleartool.getComponentRootDir(pvob, component);
+-
++                            configSpec.append("element \"").append(rootDir).append(fileSepForOS + "...\" ").append(dependentBaseline).append(" -nocheckout")
++                                    .append(newlineForOS);
+                             // is any download restriction defined?
+                             if(restrictions != null && restrictions.size() > 0) {
+                                 for(String restriction: restrictions) {
+                                     if(restriction.startsWith(rootDir)) {
+-                                        configSpec.append("load ").append(restriction).append('\n');
++                                        loadRules.append("load ").append(restriction).append(newlineForOS);
+                                     }
+                                 }
+                             }
+                             else {
+-                                configSpec.append("load ").append(rootDir).append('\n');
++                                loadRules.append("load ").append(rootDir).append(newlineForOS);
+                             }
+                         }
++                        configSpec.append(newlineForOS);
++                        configSpec.append("element * /main/0 -ucm -nocheckout").append(newlineForOS);
++                        configSpec.append(newlineForOS);
++                        configSpec.append(loadRules).append(newlineForOS);
+ 
+                         listener.getLogger().println("The view will be created based on the following config spec:");
+                         listener.getLogger().println("--- config spec start ---");
+@@ -342,7 +338,7 @@
+                             env.put(AbstractClearCaseScm.CLEARCASE_VIEWNAME_ENVSTR,
+                                     viewName);
+                             env.put(AbstractClearCaseScm.CLEARCASE_VIEWPATH_ENVSTR,
+-                                    env.get("WORKSPACE") + File.separator + viewName);
++                                    env.get("WORKSPACE") + fileSepForOS + viewName);
+                         }
+                     };
+                 }
+Index: src/main/java/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineUtils.java
+===================================================================
+--- src/main/java/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineUtils.java	(revision 29370)
++++ src/main/java/com/michelin/cio/hudson/plugins/clearcaseucmbaseline/ClearCaseUcmBaselineUtils.java	(working copy)
+@@ -29,6 +29,7 @@
+ import java.io.BufferedReader;
+ import java.io.ByteArrayInputStream;
+ import java.io.ByteArrayOutputStream;
++import java.io.File;
+ import java.io.IOException;
+ import java.io.InputStreamReader;
+ 
+@@ -37,12 +38,12 @@
+  */
+ public class ClearCaseUcmBaselineUtils {
+ 
+-    public static String prefixWithSlash(final String s) {
+-        if(s != null && s.length() > 0 && s.startsWith("\\")) {
+-            return '/' + s.substring(1);
+-        }
+-        if(s != null && s.length() > 0 && !s.startsWith("/")) {
+-            return '/' + s;
++    public static String prefixWithSeparator(final String s) {
++        if (s != null && s.length() > 0) {
++            char firstCharacter = s.charAt(0);
++            if (firstCharacter != '\\' && firstCharacter != '/') {
++                return File.separatorChar + s;
++            }
+         }
+         return s;
+     }

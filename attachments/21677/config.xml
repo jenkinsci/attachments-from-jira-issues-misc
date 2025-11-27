@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <actions/>
+  <description/>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.redmine.RedmineProjectProperty>
+      <redmineWebsite>http://redmine.office.carpe-hora.com/projects/t-resa/</redmineWebsite>
+      <projectName>t-resa</projectName>
+      <redmineVersion>true</redmineVersion>
+    </hudson.plugins.redmine.RedmineProjectProperty>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <name>origin</name>
+        <refspec>+refs/heads/*:refs/remotes/origin/*</refspec>
+        <url>gitch:t-resa.git</url>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>master</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <recursiveSubmodules>false</recursiveSubmodules>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <authorOrCommitter>false</authorOrCommitter>
+    <clean>false</clean>
+    <wipeOutWorkspace>false</wipeOutWorkspace>
+    <pruneBranches>false</pruneBranches>
+    <remotePoll>false</remotePoll>
+    <buildChooser class="hudson.plugins.git.util.DefaultBuildChooser"/>
+    <gitTool>Default</gitTool>
+    <submoduleCfg class="list"/>
+    <relativeTargetDir/>
+    <excludedRegions/>
+    <excludedUsers/>
+    <gitConfigName/>
+    <gitConfigEmail/>
+    <skipTag>false</skipTag>
+    <scmName/>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector">
+    <hudson.triggers.SCMTrigger>
+      <spec>* * * * *</spec>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>git submodule update --init --recursive</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>if [ ! -d ./cache ] ; then
+  mkdir ./cache
+fi
+
+if [ ! -d ./log ] ; then
+  mkdir ./log
+fi
+
+if [ ! -d ./reports ] ; then
+  mkdir ./reports
+fi</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>find . -regextype posix-egrep -regex "/var/www/t-resa(/|/plugins/[^/]*Plugin/)lib/model/(map|[^/]*/map)/[^/]*TableMap.php" -exec rm -r {}     \;
+./symfony cc &gt; /dev/null
+./symfony propel:build --all-classes &gt; /dev/null
+./symfony propel:build-sql &gt; /dev/null
+./symfony propel:insert-sql --no-confirmation --env=test  &gt; /dev/null
+exit 0</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>nb_solr=`ps aux | grep start-index | wc -l`
+if [ $nb_solr -lt 2 ] ; then
+  ./start-index.sh 2&amp;&gt;1 &gt; /dev/null &amp;
+fi
+./lib/task/solr/reindex.sh -e test &gt; /dev/null</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command># insert twice to prevent errors
+./symfony propel:insert-sql --no-confirmation --env=test &gt; /dev/null
+./symfony test:all --xml=reports/build_$BUILD_NUMBER.xml -t </command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.junit.JUnitResultArchiver>
+      <testResults>reports/build_*.xml</testResults>
+      <keepLongStdio>false</keepLongStdio>
+      <testDataPublishers/>
+    </hudson.tasks.junit.JUnitResultArchiver>
+    <hudson.tasks.Mailer>
+      <recipients>julien_muetton@carpe-hora.com kevin_gomez@carpe-hora.com ludovic_pelle@carpe-hora.com romain_therrat@carpe-hora.com</recipients>
+      <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>false</sendToIndividuals>
+    </hudson.tasks.Mailer>
+  </publishers>
+  <buildWrappers/>
+</project>

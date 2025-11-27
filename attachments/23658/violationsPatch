@@ -1,0 +1,823 @@
+Index: pom.xml
+===================================================================
+--- pom.xml	(revision 40817)
++++ pom.xml	(working copy)
+@@ -94,6 +94,13 @@
+ 			<version>0.10</version>
+ 			<optional>true</optional>
+ 		</dependency>
++		<dependency>
++			<groupId>org.jenkins-ci.plugins</groupId>
++			<artifactId>violations</artifactId>
++			<version>0.7.11</version>
++			<scope>compile</scope>
++			<optional>true</optional>
++		</dependency>
+ 	</dependencies>
+ 
+ 	<scm>
+Index: src/main/java/configurationslicing/violations/AbstractViolationSliceSpec.java
+===================================================================
+--- src/main/java/configurationslicing/violations/AbstractViolationSliceSpec.java	(revision 0)
++++ src/main/java/configurationslicing/violations/AbstractViolationSliceSpec.java	(working copy)
+@@ -0,0 +1,241 @@
++package configurationslicing.violations;
++
++import hudson.maven.MavenReporter;
++import hudson.maven.MavenModuleSet;
++import hudson.model.AbstractProject;
++import hudson.model.Descriptor;
++import hudson.model.FreeStyleProject;
++import hudson.model.Hudson;
++import hudson.plugins.violations.TypeConfig;
++import hudson.plugins.violations.ViolationsPublisher;
++import hudson.plugins.violations.hudson.maven.ViolationsMavenReporter;
++import hudson.tasks.Publisher;
++import hudson.util.DescribableList;
++
++import java.io.IOException;
++import java.util.ArrayList;
++import java.util.List;
++import java.util.Map.Entry;
++import java.util.Set;
++
++import org.apache.commons.lang.StringUtils;
++
++import configurationslicing.UnorderedStringSlicer.UnorderedStringSlicerSpec;
++
++/**
++ * @author Michael Klein
++ */
++public abstract class AbstractViolationSliceSpec extends
++		UnorderedStringSlicerSpec<AbstractProject<?, ?>> {
++
++	protected static final String DISABLED = "(Disabled)";
++	protected static final String SEPARATOR = ",";
++
++	private String name;
++	private String url;
++
++	protected AbstractViolationSliceSpec(String name, String url) {
++		this.name = name;
++		this.url = url;
++	}
++
++	public abstract String getViolationType();
++
++	@Override
++	public String getConfiguredValueDescription() {
++		return "Min(sunny), Max(stormy), Unstable <i>(e.g. 10,885,999)</i>";
++	}
++
++	public String getName() {
++		return name;
++	}
++
++	public String getUrl() {
++		return url;
++	}
++
++	public String getName(AbstractProject<?, ?> item) {
++		return item.getName();
++	}
++
++	public String getDefaultValueString() {
++		return DISABLED;
++	}
++
++	public List<AbstractProject<?, ?>> getWorkDomain() {
++		return (List) Hudson.getInstance().getItems(AbstractProject.class);
++	}
++
++	public Set<Entry<String, TypeConfig>> getViolationTypeConfigs(AbstractProject<?, ?> project) {
++		Set<Entry<String, TypeConfig>> typeConfigs = null;
++
++		if (project instanceof FreeStyleProject) {
++			DescribableList<Publisher, Descriptor<Publisher>> publishers = project
++					.getPublishersList();
++			Descriptor<Publisher> descriptor = Hudson.getInstance()
++					.getDescriptor(ViolationsPublisher.class);
++			Publisher publisher = publishers.get(descriptor);
++			ViolationsPublisher violationPublisher = (ViolationsPublisher) publisher;
++
++			if (violationPublisher == null) {
++				//violations not activated
++				return typeConfigs;
++			}
++
++			typeConfigs = violationPublisher.getConfig().getTypeConfigs().entrySet();
++		} else if (project instanceof MavenModuleSet) {
++			DescribableList<MavenReporter, Descriptor<MavenReporter>> reporters = ((MavenModuleSet) project)
++					.getReporters();
++
++			for (MavenReporter mavenReporter : reporters) {
++				if (mavenReporter instanceof ViolationsMavenReporter) {
++					typeConfigs = ((ViolationsMavenReporter) mavenReporter)
++							.getConfig().getTypeConfigs().entrySet();
++				}
++			}
++
++		}
++		return typeConfigs;
++	}
++
++	public List<String> getValues(AbstractProject<?, ?> project) {
++		List<String> values = new ArrayList<String>();
++		String violation = null;
++		Set<Entry<String, TypeConfig>> typeConfigs = getViolationTypeConfigs(project);
++
++		if (typeConfigs == null) {
++			values.add(DISABLED);
++
++			return values;
++		}
++		for (Entry<String, TypeConfig> entry : typeConfigs) {
++			if (entry.getValue().getType().equals(getViolationType())) {
++				violation = entry.getValue().getMin() + SEPARATOR
++						+ entry.getValue().getMax() + SEPARATOR
++						+ entry.getValue().getUnstable();
++				values.add(violation);
++
++			}
++		}
++
++		return values;
++	}
++
++	public boolean setValues(AbstractProject<?, ?> item, List<String> set) {
++		String configLine;
++		List<String> values = new ArrayList<String>();
++		boolean disabled = false;
++		configLine = set.iterator().next();
++
++		if (DISABLED.equals(configLine) || StringUtils.isEmpty(configLine)
++				|| configLine == null) {
++			disabled = true;
++		} else {
++			final String[] split = configLine.split(SEPARATOR);
++			if (split.length == 3) {
++				values.add(split[0]);
++				values.add(split[1]);
++				values.add(split[2]);
++
++			} else {
++				disabled = true;
++			}
++		}
++
++		boolean saved = false;
++		boolean oneSaved = false;
++
++		try {
++			if (disabled) {
++				oneSaved = removeViolations(item);
++			} else {
++				oneSaved = addViolations(item, values);
++			}
++			if (oneSaved) {
++				try {
++					item.save();
++				} catch (IOException e) {
++					throw new RuntimeException(e);
++				}
++				saved = true;
++			}
++			return saved;
++		} catch (IOException e) {
++			return false;
++		}
++	}
++
++	private void updateViolationValues(Set<Entry<String, TypeConfig>> typeConfigs, List<String> values){
++		int min = Integer.parseInt(values.get(0));
++		int max = Integer.parseInt(values.get(1));
++		int unstable = Integer.parseInt(values.get(2));
++
++		for (Entry<String, TypeConfig> entry : typeConfigs) {
++			if (entry.getValue().getType().equals(getViolationType())) {
++				entry.getValue().setMin(min);
++				entry.getValue().setMax(max);
++				entry.getValue().setUnstable(unstable);
++			}
++		}
++	}
++
++	public boolean addViolations(AbstractProject<?, ?> item, List<String> values) throws IOException {
++		Set<Entry<String, TypeConfig>> typeConfigs = getViolationTypeConfigs(item);
++
++		if (typeConfigs != null) {
++			// update values
++			updateViolationValues(typeConfigs, values);
++
++			return true;
++		}
++		// violations not activated -> activate it
++		if (item instanceof FreeStyleProject) {
++			ViolationsPublisher violationPublisher = new ViolationsPublisher();
++			typeConfigs = violationPublisher.getConfig().getTypeConfigs().entrySet();
++			updateViolationValues(typeConfigs, values);
++			item.getPublishersList().add(violationPublisher);
++
++			return true;
++
++		} else if (item instanceof MavenModuleSet) {
++			ViolationsMavenReporter violationMavenReporter = new ViolationsMavenReporter();
++			typeConfigs = violationMavenReporter.getConfig().getTypeConfigs().entrySet();
++			updateViolationValues(typeConfigs, values);
++			((MavenModuleSet) item).getReporters().add(violationMavenReporter);
++
++			return true;
++		}
++		return false;
++	}
++
++	public boolean removeViolations(AbstractProject<?, ?> item) throws IOException {
++		if (item instanceof FreeStyleProject) {
++			DescribableList<Publisher, Descriptor<Publisher>> publishers = item
++					.getPublishersList();
++			Descriptor<Publisher> descriptor = Hudson.getInstance()
++					.getDescriptor(ViolationsPublisher.class);
++			Publisher publisher = publishers.get(descriptor);
++
++			if (publisher != null) {
++				item.getPublishersList().remove(descriptor);
++
++				return true;
++			}
++			return false;
++		}
++		if (item instanceof MavenModuleSet) {
++			DescribableList<MavenReporter, Descriptor<MavenReporter>> reporters = ((MavenModuleSet) item)
++					.getReporters();
++
++			for (MavenReporter mavenReporter : reporters) {
++				if (mavenReporter instanceof ViolationsMavenReporter) {
++					((MavenModuleSet) item).getReporters().remove(mavenReporter);
++
++					return true;
++				}
++			}
++		}
++		return false;
++	}
++
++}
+Index: src/main/java/configurationslicing/violations/ViolationCheckstyle.java
+===================================================================
+--- src/main/java/configurationslicing/violations/ViolationCheckstyle.java	(revision 0)
++++ src/main/java/configurationslicing/violations/ViolationCheckstyle.java	(working copy)
+@@ -0,0 +1,29 @@
++package configurationslicing.violations;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import configurationslicing.UnorderedStringSlicer;
++
++/**
++ * @author Michael Klein
++ */
++@Extension
++public class ViolationCheckstyle extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++	public ViolationCheckstyle() {
++		super(new ViolationCheckstyleSliceSpec());
++	}
++
++	public static class ViolationCheckstyleSliceSpec extends AbstractViolationSliceSpec {
++
++		public ViolationCheckstyleSliceSpec() {
++			super("Violation - Checkstyle", "violationcheckstyle");
++		}
++
++		@Override
++		public String getViolationType() {
++			return "checkstyle";		// There is no way to get it from the plugin
++		}
++
++	}
++}
+Index: src/main/java/configurationslicing/violations/ViolationCodenarc.java
+===================================================================
+--- src/main/java/configurationslicing/violations/ViolationCodenarc.java	(revision 0)
++++ src/main/java/configurationslicing/violations/ViolationCodenarc.java	(working copy)
+@@ -0,0 +1,30 @@
++package configurationslicing.violations;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import configurationslicing.UnorderedStringSlicer;
++
++/**
++ * @author Michael Klein
++ */
++@Extension
++public class ViolationCodenarc extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++	public ViolationCodenarc() {
++		super(new ViolationCodenarcSliceSpec());
++	}
++
++	public static class ViolationCodenarcSliceSpec extends AbstractViolationSliceSpec {
++
++		public ViolationCodenarcSliceSpec() {
++			super("Violation - CodeNarc", "violationcodenarc");
++		}
++
++		@Override
++		public String getViolationType() {
++			// There is no way to get it from the plugin
++			return "codenarc";
++		}
++
++	}
++}
+Index: src/main/java/configurationslicing/violations/ViolationCpd.java
+===================================================================
+--- src/main/java/configurationslicing/violations/ViolationCpd.java	(revision 0)
++++ src/main/java/configurationslicing/violations/ViolationCpd.java	(working copy)
+@@ -0,0 +1,30 @@
++package configurationslicing.violations;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import configurationslicing.UnorderedStringSlicer;
++
++/**
++ * @author Michael Klein
++ */
++@Extension
++public class ViolationCpd extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++	public ViolationCpd() {
++		super(new ViolationCpdSliceSpec());
++	}
++
++	public static class ViolationCpdSliceSpec extends AbstractViolationSliceSpec {
++
++		public ViolationCpdSliceSpec() {
++			super("Violation - CPD", "violationcpd");
++		}
++
++		@Override
++		public String getViolationType() {
++			// There is no way to get it from the plugin
++			return "cpd";
++		}
++
++	}
++}
+Index: src/main/java/configurationslicing/violations/ViolationCpplint.java
+===================================================================
+--- src/main/java/configurationslicing/violations/ViolationCpplint.java	(revision 0)
++++ src/main/java/configurationslicing/violations/ViolationCpplint.java	(working copy)
+@@ -0,0 +1,30 @@
++package configurationslicing.violations;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import configurationslicing.UnorderedStringSlicer;
++
++/**
++ * @author Michael Klein
++ */
++@Extension
++public class ViolationCpplint extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++	public ViolationCpplint() {
++		super(new ViolationCpplintSliceSpec());
++	}
++
++	public static class ViolationCpplintSliceSpec extends AbstractViolationSliceSpec {
++
++		public ViolationCpplintSliceSpec() {
++			super("Violation - Cpplint", "violationcpplint");
++		}
++
++		@Override
++		public String getViolationType() {
++			// There is no way to get it from the plugin
++			return "cpplint";
++		}
++
++	}
++}
+Index: src/main/java/configurationslicing/violations/ViolationCsslint.java
+===================================================================
+--- src/main/java/configurationslicing/violations/ViolationCsslint.java	(revision 0)
++++ src/main/java/configurationslicing/violations/ViolationCsslint.java	(working copy)
+@@ -0,0 +1,30 @@
++package configurationslicing.violations;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import configurationslicing.UnorderedStringSlicer;
++
++/**
++ * @author Michael Klein
++ */
++@Extension
++public class ViolationCsslint extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++	public ViolationCsslint() {
++		super(new ViolationCsslintSliceSpec());
++	}
++
++	public static class ViolationCsslintSliceSpec extends AbstractViolationSliceSpec {
++
++		public ViolationCsslintSliceSpec() {
++			super("Violation - CSSLint", "violationcsslint");
++		}
++
++		@Override
++		public String getViolationType() {
++			// There is no way to get it from the plugin
++			return "csslint";
++		}
++
++	}
++}
+Index: src/main/java/configurationslicing/violations/ViolationFindbugs.java
+===================================================================
+--- src/main/java/configurationslicing/violations/ViolationFindbugs.java	(revision 0)
++++ src/main/java/configurationslicing/violations/ViolationFindbugs.java	(working copy)
+@@ -0,0 +1,30 @@
++package configurationslicing.violations;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import configurationslicing.UnorderedStringSlicer;
++
++/**
++ * @author Michael Klein
++ */
++@Extension
++public class ViolationFindbugs extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++	public ViolationFindbugs() {
++		super(new ViolationFindbugsSliceSpec());
++	}
++
++	public static class ViolationFindbugsSliceSpec extends AbstractViolationSliceSpec {
++
++		public ViolationFindbugsSliceSpec() {
++			super("Violation - Findbugs", "violationfindbugs");
++		}
++
++		@Override
++		public String getViolationType() {
++			// There is no way to get it from the plugin
++			return "findbugs";
++		}
++
++	}
++}
+Index: src/main/java/configurationslicing/violations/ViolationFxcop.java
+===================================================================
+--- src/main/java/configurationslicing/violations/ViolationFxcop.java	(revision 0)
++++ src/main/java/configurationslicing/violations/ViolationFxcop.java	(working copy)
+@@ -0,0 +1,30 @@
++package configurationslicing.violations;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import configurationslicing.UnorderedStringSlicer;
++
++/**
++ * @author Michael Klein
++ */
++@Extension
++public class ViolationFxcop extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++	public ViolationFxcop() {
++		super(new ViolationFxcopSliceSpec());
++	}
++
++	public static class ViolationFxcopSliceSpec extends AbstractViolationSliceSpec {
++
++		public ViolationFxcopSliceSpec() {
++			super("Violation - FxCop", "violationfxcop");
++		}
++
++		@Override
++		public String getViolationType() {
++			// There is no way to get it from the plugin
++			return "fxcop";
++		}
++
++	}
++}
+Index: src/main/java/configurationslicing/violations/ViolationGendarme.java
+===================================================================
+--- src/main/java/configurationslicing/violations/ViolationGendarme.java	(revision 0)
++++ src/main/java/configurationslicing/violations/ViolationGendarme.java	(working copy)
+@@ -0,0 +1,30 @@
++package configurationslicing.violations;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import configurationslicing.UnorderedStringSlicer;
++
++/**
++ * @author Michael Klein
++ */
++@Extension
++public class ViolationGendarme extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++	public ViolationGendarme() {
++		super(new ViolationGendarmeSliceSpec());
++	}
++
++	public static class ViolationGendarmeSliceSpec extends AbstractViolationSliceSpec {
++
++		public ViolationGendarmeSliceSpec() {
++			super("Violation - Gendarme", "violationgendarme");
++		}
++
++		@Override
++		public String getViolationType() {
++			// There is no way to get it from the plugin
++			return "gendarme";
++		}
++
++	}
++}
+Index: src/main/java/configurationslicing/violations/ViolationJcreport.java
+===================================================================
+--- src/main/java/configurationslicing/violations/ViolationJcreport.java	(revision 0)
++++ src/main/java/configurationslicing/violations/ViolationJcreport.java	(working copy)
+@@ -0,0 +1,30 @@
++package configurationslicing.violations;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import configurationslicing.UnorderedStringSlicer;
++
++/**
++ * @author Michael Klein
++ */
++@Extension
++public class ViolationJcreport extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++	public ViolationJcreport() {
++		super(new ViolationJcreportSliceSpec());
++	}
++
++	public static class ViolationJcreportSliceSpec extends AbstractViolationSliceSpec {
++
++		public ViolationJcreportSliceSpec() {
++			super("Violation - JcReport", "violationjcreport");
++		}
++
++		@Override
++		public String getViolationType() {
++			// There is no way to get it from the plugin
++			return "jcreport";
++		}
++
++	}
++}
+Index: src/main/java/configurationslicing/violations/ViolationJslint.java
+===================================================================
+--- src/main/java/configurationslicing/violations/ViolationJslint.java	(revision 0)
++++ src/main/java/configurationslicing/violations/ViolationJslint.java	(working copy)
+@@ -0,0 +1,30 @@
++package configurationslicing.violations;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import configurationslicing.UnorderedStringSlicer;
++
++/**
++ * @author Michael Klein
++ */
++@Extension
++public class ViolationJslint extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++	public ViolationJslint() {
++		super(new ViolationJslintSliceSpec());
++	}
++
++	public static class ViolationJslintSliceSpec extends AbstractViolationSliceSpec {
++
++		public ViolationJslintSliceSpec() {
++			super("Violation - JSLint", "violationjslint");
++		}
++
++		@Override
++		public String getViolationType() {
++			// There is no way to get it from the plugin
++			return "jslint";
++		}
++
++	}
++}
+Index: src/main/java/configurationslicing/violations/ViolationPep8.java
+===================================================================
+--- src/main/java/configurationslicing/violations/ViolationPep8.java	(revision 0)
++++ src/main/java/configurationslicing/violations/ViolationPep8.java	(working copy)
+@@ -0,0 +1,30 @@
++package configurationslicing.violations;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import configurationslicing.UnorderedStringSlicer;
++
++/**
++ * @author Michael Klein
++ */
++@Extension
++public class ViolationPep8 extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++	public ViolationPep8() {
++		super(new ViolationPep8SliceSpec());
++	}
++
++	public static class ViolationPep8SliceSpec extends AbstractViolationSliceSpec {
++
++		public ViolationPep8SliceSpec() {
++			super("Violation - Pep8", "violationpep8");
++		}
++
++		@Override
++		public String getViolationType() {
++			// There is no way to get it from the plugin
++			return "pep8";
++		}
++
++	}
++}
+Index: src/main/java/configurationslicing/violations/ViolationPerlcritic.java
+===================================================================
+--- src/main/java/configurationslicing/violations/ViolationPerlcritic.java	(revision 0)
++++ src/main/java/configurationslicing/violations/ViolationPerlcritic.java	(working copy)
+@@ -0,0 +1,30 @@
++package configurationslicing.violations;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import hudson.plugins.violations.types.perlcritic.PerlCriticDescriptor;
++import configurationslicing.UnorderedStringSlicer;
++
++/**
++ * @author Michael Klein
++ */
++@Extension
++public class ViolationPerlcritic extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++	public ViolationPerlcritic() {
++		super(new ViolationPerlcriticSliceSpec());
++	}
++
++	public static class ViolationPerlcriticSliceSpec extends AbstractViolationSliceSpec {
++
++		public ViolationPerlcriticSliceSpec() {
++			super("Violation - PerlCritic", "violationperlcritic");
++		}
++
++		@Override
++		public String getViolationType() {
++			return PerlCriticDescriptor.TYPE_NAME;
++		}
++
++	}
++}
+Index: src/main/java/configurationslicing/violations/ViolationPmd.java
+===================================================================
+--- src/main/java/configurationslicing/violations/ViolationPmd.java	(revision 0)
++++ src/main/java/configurationslicing/violations/ViolationPmd.java	(working copy)
+@@ -0,0 +1,30 @@
++package configurationslicing.violations;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import configurationslicing.UnorderedStringSlicer;
++
++/**
++ * @author Michael Klein
++ */
++@Extension
++public class ViolationPmd extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++	public ViolationPmd() {
++		super(new ViolationPmdSliceSpec());
++	}
++
++	public static class ViolationPmdSliceSpec extends AbstractViolationSliceSpec {
++
++		public ViolationPmdSliceSpec() {
++			super("Violation - PMD", "violationpmd");
++		}
++
++		@Override
++		public String getViolationType() {
++			// There is no way to get it from the plugin
++			return "pmd";
++		}
++
++	}
++}
+Index: src/main/java/configurationslicing/violations/ViolationPylint.java
+===================================================================
+--- src/main/java/configurationslicing/violations/ViolationPylint.java	(revision 0)
++++ src/main/java/configurationslicing/violations/ViolationPylint.java	(working copy)
+@@ -0,0 +1,30 @@
++package configurationslicing.violations;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import configurationslicing.UnorderedStringSlicer;
++
++/**
++ * @author Michael Klein
++ */
++@Extension
++public class ViolationPylint extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++	public ViolationPylint() {
++		super(new ViolationPylintSliceSpec());
++	}
++
++	public static class ViolationPylintSliceSpec extends AbstractViolationSliceSpec {
++
++		public ViolationPylintSliceSpec() {
++			super("Violation - Pylint", "violationpylint");
++		}
++
++		@Override
++		public String getViolationType() {
++			// There is no way to get it from the plugin
++			return "pylint";
++		}
++
++	}
++}
+Index: src/main/java/configurationslicing/violations/ViolationSimian.java
+===================================================================
+--- src/main/java/configurationslicing/violations/ViolationSimian.java	(revision 0)
++++ src/main/java/configurationslicing/violations/ViolationSimian.java	(working copy)
+@@ -0,0 +1,30 @@
++package configurationslicing.violations;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import configurationslicing.UnorderedStringSlicer;
++
++/**
++ * @author Michael Klein
++ */
++@Extension
++public class ViolationSimian extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++	public ViolationSimian() {
++		super(new ViolationSimianSliceSpec());
++	}
++
++	public static class ViolationSimianSliceSpec extends AbstractViolationSliceSpec {
++
++		public ViolationSimianSliceSpec() {
++			super("Violation - Simian", "violationsimian");
++		}
++
++		@Override
++		public String getViolationType() {
++			// There is no way to get it from the plugin
++			return "simian";
++		}
++
++	}
++}
+Index: src/main/java/configurationslicing/violations/ViolationStylecop.java
+===================================================================
+--- src/main/java/configurationslicing/violations/ViolationStylecop.java	(revision 0)
++++ src/main/java/configurationslicing/violations/ViolationStylecop.java	(working copy)
+@@ -0,0 +1,30 @@
++package configurationslicing.violations;
++
++import hudson.Extension;
++import hudson.model.AbstractProject;
++import configurationslicing.UnorderedStringSlicer;
++
++/**
++ * @author Michael Klein
++ */
++@Extension
++public class ViolationStylecop extends UnorderedStringSlicer<AbstractProject<?, ?>> {
++
++	public ViolationStylecop() {
++		super(new ViolationStylecopSliceSpec());
++	}
++
++	public static class ViolationStylecopSliceSpec extends AbstractViolationSliceSpec {
++
++		public ViolationStylecopSliceSpec() {
++			super("Violation - StyleCop", "violationstylecop");
++		}
++
++		@Override
++		public String getViolationType() {
++			// There is no way to get it from the plugin
++			return "stylecop";
++		}
++
++	}
++}

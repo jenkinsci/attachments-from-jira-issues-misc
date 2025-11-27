@@ -1,0 +1,13 @@
+Index: src/main/java/hudson/plugins/active_directory/ActiveDirectorySecurityRealm.java
+===================================================================
+--- src/main/java/hudson/plugins/active_directory/ActiveDirectorySecurityRealm.java	(revision 13354)
++++ src/main/java/hudson/plugins/active_directory/ActiveDirectorySecurityRealm.java	(working copy)
+@@ -157,7 +157,7 @@
+             if(a==null) throw new NamingException();
+             LOGGER.fine(ldapServer+" resolved to "+ a.get());
+ 
+-            return a.get().toString().split(" ")[3];
++            return a.get().toString().split(" ")[3].replaceAll("\\.$", "");
+         }
+     }
+ 

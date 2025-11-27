@@ -1,0 +1,19 @@
+pipeline {
+    agent any
+    stages {
+        stage('Build') {
+            steps {
+                script {
+                    run_sim()
+                    sh 'false'
+                }
+            }
+        }
+    }
+}
+
+def run_sim() {
+    for (i in (1..60).toList()) {
+        sh "echo $i && sleep 1"
+    }
+}

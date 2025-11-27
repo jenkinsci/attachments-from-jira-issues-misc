@@ -1,0 +1,40 @@
+Index: src/main/resources/hudson/model/RadiatorView/main.jelly
+===================================================================
+--- src/main/resources/hudson/model/RadiatorView/main.jelly	(revision 29996)
++++ src/main/resources/hudson/model/RadiatorView/main.jelly	(working copy)
+@@ -26,7 +26,7 @@
+ 			<t:setIconSize />
+ 
+ 			<j:set var="dashStyle"
+-				value="overflow: visible; left: 0px; top: 0px; position: absolute; height: 100%; z-index: 9999; width: 100%; background-color: white; background-image: url(/static/0360aadc/images/hudson.png); background-repeat: no-repeat; background-position: left bottom;" />
++				value="overflow: visible; left: 0px; top: 0px; position: absolute; height: 100%; z-index: 9999; width: 100%; background-color: white; background-image: url(${rootURL}/static/0360aadc/images/hudson.png); background-repeat: no-repeat; background-position: left bottom;" />
+ 			<j:if test="${from.getHighVis()}">
+ 				<j:set var="dashStyle"
+ 					value="overflow: visible; left: 0px; top: 0px; position: absolute; height: 100%; z-index: 9999; width: 100%; background-color: black;" />
+@@ -131,4 +131,4 @@
+ 		fadeIn.animate();
+ 		});
+   </script>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>
+Index: src/main/resources/hudson/model/RadiatorView/job.jelly
+===================================================================
+--- src/main/resources/hudson/model/RadiatorView/job.jelly	(revision 29996)
++++ src/main/resources/hudson/model/RadiatorView/job.jelly	(working copy)
+@@ -20,7 +20,7 @@
+ 				style="white-space: nowrap; color: ${job.color}; font-size: ${jobFont}; font-weight:bold;"
+ 				href="${job.url}">${job.name}</a>
+ 
+-			<img src="/images/16x16/${job.job.buildHealth.iconUrl}" alt="${job.job.buildHealth.description}" />
++			<img src="${rootURL}/images/16x16/${job.job.buildHealth.iconUrl}" alt="${job.job.buildHealth.description}" />
+ 			<j:set var="failColor" value="#00FF00" />
+ 			<j:if test="${job.failCount > 0}">
+ 				<j:set var="failColor" value="#FF0000" />
+@@ -41,4 +41,4 @@
+ 		</j:if>
+ 		 </div>
+ 	</td>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>

@@ -1,0 +1,194 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf130
+{\fonttbl\f0\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww28600\viewh18000\viewkind0
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f0\fs22 \cf0 \CocoaLigature0 <?xml version='1.0' encoding='UTF-8'?>\
+<project>\
+  <actions/>\
+  <description>Build job on driver_profile for develop branch</description>\
+  <displayName>driver_profile_develop_builder</displayName>\
+  <logRotator class="hudson.tasks.LogRotator">\
+    <daysToKeep>7</daysToKeep>\
+    <numToKeep>7</numToKeep>\
+    <artifactDaysToKeep>7</artifactDaysToKeep>\
+    <artifactNumToKeep>7</artifactNumToKeep>\
+  </logRotator>\
+  <keepDependencies>false</keepDependencies>\
+  <properties>\
+    <hudson.model.ParametersDefinitionProperty>\
+      <parameterDefinitions>\
+        <hudson.model.StringParameterDefinition>\
+          <name>Ruby_Version</name>\
+          <description>Please specify the Ruby version or leave as it is for default</description>\
+          <defaultValue>2.1.1</defaultValue>\
+        </hudson.model.StringParameterDefinition>\
+      </parameterDefinitions>\
+    </hudson.model.ParametersDefinitionProperty>\
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.25">\
+      <autoRebuild>false</autoRebuild>\
+      <rebuildDisabled>false</rebuildDisabled>\
+    </com.sonyericsson.rebuild.RebuildSettings>\
+    <com.synopsys.arc.jenkinsci.plugins.jobrestrictions.jobs.JobRestrictionProperty plugin="job-restrictions@0.4"/>\
+    <org.jvnet.hudson.plugins.shelveproject.ShelveProjectProperty plugin="shelve-project-plugin@1.5"/>\
+  </properties>\
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.0">\
+    <configVersion>2</configVersion>\
+    <userRemoteConfigs>\
+      <hudson.plugins.git.UserRemoteConfig>\
+        <url>ssh://git@git.corp.somethingcabs.com:2222/supply/driver_profile.git</url>\
+        <credentialsId>fe3c4f32dd68b749a9a8</credentialsId>\
+      </hudson.plugins.git.UserRemoteConfig>\
+    </userRemoteConfigs>\
+    <branches>\
+      <hudson.plugins.git.BranchSpec>\
+        <name>develop</name>\
+      </hudson.plugins.git.BranchSpec>\
+    </branches>\
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>\
+    <submoduleCfg class="list"/>\
+    <extensions>\
+      <hudson.plugins.git.extensions.impl.WipeWorkspace/>\
+      <hudson.plugins.git.extensions.impl.SubmoduleOption>\
+        <disableSubmodules>false</disableSubmodules>\
+        <recursiveSubmodules>true</recursiveSubmodules>\
+        <trackingSubmodules>false</trackingSubmodules>\
+      </hudson.plugins.git.extensions.impl.SubmoduleOption>\
+    </extensions>\
+  </scm>\
+  <assignedNode>Traditional</assignedNode>\
+  <canRoam>false</canRoam>\
+  <disabled>false</disabled>\
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>\
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>\
+  <jdk>(Default)</jdk>\
+  <triggers>\
+    <hudson.triggers.SCMTrigger>\
+      <spec>H/5 * * * *</spec>\
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>\
+    </hudson.triggers.SCMTrigger>\
+  </triggers>\
+  <concurrentBuild>false</concurrentBuild>\
+  <builders>\
+    <hudson.tasks.Shell>\
+      <command>rm -rf slocData\
+mkdir slocData\
+sloccount --duplicates --wide --details . &gt; slocData/sloccount.sc</command>\
+    </hudson.tasks.Shell>\
+    <hudson.tasks.Shell>\
+      <command>#!/bin/bash -x\
+#checklist for version key value\
+/home/releasebot/jenkins/scripts/developversion.sh</command>\
+    </hudson.tasks.Shell>\
+    <hudson.tasks.Shell>\
+      <command>#!/bin/bash -x\
+#Pakcaging task\
+/home/releasebot/jenkins/scripts/generate_ror_tar.sh driver_profile</command>\
+    </hudson.tasks.Shell>\
+  </builders>\
+  <publishers>\
+    <htmlpublisher.HtmlPublisher plugin="htmlpublisher@1.4">\
+      <reportTargets>\
+        <htmlpublisher.HtmlPublisherTarget>\
+          <reportName>Ruby Critic Report</reportName>\
+          <reportDir>tmp/rubycritic/</reportDir>\
+          <reportFiles>overview.html</reportFiles>\
+          <alwaysLinkTsomethingstBuild>false</alwaysLinkTsomethingstBuild>\
+          <keepAll>false</keepAll>\
+          <allowMissing>false</allowMissing>\
+          <wrapperName>htmlpublisher-wrapper.html</wrapperName>\
+        </htmlpublisher.HtmlPublisherTarget>\
+      </reportTargets>\
+    </htmlpublisher.HtmlPublisher>\
+    <hudson.plugins.sloccount.SloccountPublisher plugin="sloccount@1.20">\
+      <pattern>slocData/sloccount.sc</pattern>\
+      <encoding></encoding>\
+      <commentIsCode>false</commentIsCode>\
+      <numBuildsInGraph>0</numBuildsInGraph>\
+      <ignoreBuildFailure>false</ignoreBuildFailure>\
+    </hudson.plugins.sloccount.SloccountPublisher>\
+    <org.jenkinsci.plugins.postbuildscript.PostBuildScript plugin="postbuildscript@0.17">\
+      <scriptOnlyIfSuccess>true</scriptOnlyIfSuccess>\
+      <scriptOnlyIfFailure>false</scriptOnlyIfFailure>\
+      <markBuildUnstable>false</markBuildUnstable>\
+      <executeOn>BOTH</executeOn>\
+    </org.jenkinsci.plugins.postbuildscript.PostBuildScript>\
+    <hudson.plugins.s3.S3BucketPublisher plugin="s3@0.8">\
+      <profileName>s3-upload-snapshot</profileName>\
+      <entries>\
+        <hudson.plugins.s3.Entry>\
+          <bucket>something-artifacts-snapshot/driver_profile</bucket>\
+          <sourceFile>*.tar.gz</sourceFile>\
+          <storageClass>STANDARD</storageClass>\
+          <selectedRegion>ap-southeast-3</selectedRegion>\
+          <noUploadOnFailure>true</noUploadOnFailure>\
+          <uploadFromSlave>true</uploadFromSlave>\
+          <managedArtifacts>false</managedArtifacts>\
+          <useServerSideEncryption>false</useServerSideEncryption>\
+          <flatten>true</flatten>\
+        </hudson.plugins.s3.Entry>\
+      </entries>\
+      <dontWaitForConcurrentBuildCompletion>false</dontWaitForConcurrentBuildCompletion>\
+      <userMetadata/>\
+    </hudson.plugins.s3.S3BucketPublisher>\
+    <hudson.plugins.emailext.ExtendedEmailPublisher plugin="email-ext@2.40.5">\
+      <recipientList> me@somethingcabs.com</recipientList>\
+      <configuredTriggers>\
+        <hudson.plugins.emailext.plugins.trigger.FailureTrigger>\
+          <email>\
+            <recipientList></recipientList>\
+            <subject>$PROJECT_DEFAULT_SUBJECT</subject>\
+            <body>$PROJECT_DEFAULT_CONTENT</body>\
+            <recipientProviders>\
+              <hudson.plugins.emailext.plugins.recipients.DevelopersRecipientProvider/>\
+            </recipientProviders>\
+            <attachmentsPattern></attachmentsPattern>\
+            <attachBuildLog>false</attachBuildLog>\
+            <compressBuildLog>false</compressBuildLog>\
+            <replyTo>$PROJECT_DEFAULT_REPLYTO</replyTo>\
+            <contentType>project</contentType>\
+          </email>\
+        </hudson.plugins.emailext.plugins.trigger.FailureTrigger>\
+        <hudson.plugins.emailext.plugins.trigger.FixedTrigger>\
+          <email>\
+            <recipientList></recipientList>\
+            <subject>$PROJECT_DEFAULT_SUBJECT</subject>\
+            <body>$PROJECT_DEFAULT_CONTENT</body>\
+            <recipientProviders>\
+              <hudson.plugins.emailext.plugins.recipients.DevelopersRecipientProvider/>\
+              <hudson.plugins.emailext.plugins.recipients.ListRecipientProvider/>\
+            </recipientProviders>\
+            <attachmentsPattern></attachmentsPattern>\
+            <attachBuildLog>false</attachBuildLog>\
+            <compressBuildLog>false</compressBuildLog>\
+            <replyTo>$PROJECT_DEFAULT_REPLYTO</replyTo>\
+            <contentType>project</contentType>\
+          </email>\
+        </hudson.plugins.emailext.plugins.trigger.FixedTrigger>\
+      </configuredTriggers>\
+      <contentType>text/html</contentType>\
+      <defaultSubject>$DEFAULT_SUBJECT</defaultSubject>\
+      <defaultContent>$DEFAULT_CONTENT</defaultContent>\
+      <attachmentsPattern></attachmentsPattern>\
+      <presendScript>$DEFAULT_PRESEND_SCRIPT</presendScript>\
+      <attachBuildLog>false</attachBuildLog>\
+      <compressBuildLog>false</compressBuildLog>\
+      <replyTo>$DEFAULT_REPLYTO</replyTo>\
+      <saveOutput>false</saveOutput>\
+      <disabled>false</disabled>\
+    </hudson.plugins.emailext.ExtendedEmailPublisher>\
+    <org.jenkins.plugins.audit2db.internal.DbAuditPublisherImpl plugin="audit2db@0.5"/>\
+  </publishers>\
+  <buildWrappers>\
+    <hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.7.2"/>\
+    <ruby-proxy-object>\
+      <ruby-object ruby-class="Jenkins::Plugin::Proxies::BuildWrapper" pluginid="rvm">\
+        <object ruby-class="RvmWrapper" pluginid="rvm">\
+          <impl pluginid="rvm" ruby-class="String">$Ruby_Version</impl>\
+        </object>\
+        <pluginid pluginid="rvm" ruby-class="String">rvm</pluginid>\
+      </ruby-object>\
+    </ruby-proxy-object>\
+  </buildWrappers>\
+</project>}

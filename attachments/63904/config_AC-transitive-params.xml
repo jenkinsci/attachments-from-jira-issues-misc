@@ -1,0 +1,197 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@1436.vfa_244484591f">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2214.vb_b_34b_2ea_9b_83"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2214.vb_b_34b_2ea_9b_83">
+      <jobProperties/>
+      <triggers/>
+      <parameters/>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description>Test</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.8.1">
+      <gitLabConnection>Redacted</gitLabConnection>
+      <jobCredentialId></jobCredentialId>
+      <useAlternativeCredential>false</useAlternativeCredential>
+    </com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <org.biouno.unochoice.ChoiceParameter plugin="uno-choice@2.8.3">
+          <name>BuildType</name>
+          <description>Load (refresh) the project and application lists, or build what is currently available</description>
+          <randomName>choice-parameter-222092739653498</randomName>
+          <visibleItemCount>1</visibleItemCount>
+          <script class="org.biouno.unochoice.model.GroovyScript">
+            <secureScript plugin="script-security@1369.v9b_98a_4e95b_2d">
+              <script>return [&apos;Load project and application list from the SVN&apos;, &apos;Build installer for selected project and application:selected&apos;, &apos;Deploy integral installer on staging system:disabled&apos;]</script>
+              <sandbox>false</sandbox>
+            </secureScript>
+            <secureFallbackScript plugin="script-security@1369.v9b_98a_4e95b_2d">
+              <script>return [&apos;Error parsing BuildType script&apos;]</script>
+              <sandbox>false</sandbox>
+            </secureFallbackScript>
+          </script>
+          <projectName>Installer Framework package creation - test</projectName>
+          <projectFullName>Installer Framework package creation - test</projectFullName>
+          <choiceType>PT_RADIO</choiceType>
+          <filterable>false</filterable>
+          <filterLength>1</filterLength>
+        </org.biouno.unochoice.ChoiceParameter>
+        <hudson.model.BooleanParameterDefinition>
+          <name>DryRun</name>
+          <description>Build installer(s) using the latest application release, but without publishing anywhere nor committing to the SVN</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <org.biouno.unochoice.CascadeChoiceParameter plugin="uno-choice@2.8.3">
+          <name>ProjectSelection</name>
+          <description>Select project to get a list of applications for which installer package(s) build is available</description>
+          <randomName>choice-parameter-226615412408186</randomName>
+          <visibleItemCount>1</visibleItemCount>
+          <script class="org.biouno.unochoice.model.GroovyScript">
+            <secureScript plugin="script-security@1369.v9b_98a_4e95b_2d">
+              <script>import groovy.io.FileType
+import jenkins.model.Jenkins
+import hudson.model.Node
+import hudson.slaves.EnvironmentVariablesNodeProperty
+import hudson.EnvVars
+
+EnvVars getCombinedNodeEnvironment(Node node) {
+  def combined = new EnvVars(node.toComputer().getEnvironment())
+  combined.overrideExpandingAll(Jenkins.instance.
+       getGlobalNodeProperties().
+       get(EnvironmentVariablesNodeProperty).
+       getEnvVars() ?: new EnvVars())
+  combined.overrideExpandingAll((node.
+       getNodeProperty(EnvironmentVariablesNodeProperty)?.
+       getEnvVars()) ?: new EnvVars())
+  return combined
+}
+
+EnvVars getCombinedNodeEnvironment(String nodename) {
+  if (nodename == &apos;master&apos; || !nodename)
+    return getCombinedNodeEnvironment(Jenkins.instance)
+  else
+    return getCombinedNodeEnvironment(Jenkins.instance.getNode(nodename))
+}
+
+try {
+	if (BuildType.equals(&quot;Load project and application list from the SVN&quot;)) {
+		return [&apos;INSTALLER_PackageCreationJenkins&apos;]
+	} else if (BuildType.equals(&quot;Build installer for selected project and application&quot;)) {
+		return [&apos;Proj1&apos;, &apos;Proj2&apos;, &apos;Proj3&apos;]
+	} else {
+		return [&quot;Unknown BuildType!?!&quot;]
+	}
+} catch (e) { return [e.toString()] }
+</script>
+              <sandbox>false</sandbox>
+            </secureScript>
+            <secureFallbackScript plugin="script-security@1369.v9b_98a_4e95b_2d">
+              <script>return [&apos;Error parsing ProjectSelection script&apos;]</script>
+              <sandbox>false</sandbox>
+            </secureFallbackScript>
+          </script>
+          <projectName>Installer Framework package creation - test</projectName>
+          <projectFullName>Installer Framework package creation - test</projectFullName>
+          <parameters class="linked-hash-map"/>
+          <referencedParameters>BuildType</referencedParameters>
+          <choiceType>PT_SINGLE_SELECT</choiceType>
+          <filterable>false</filterable>
+          <filterLength>1</filterLength>
+        </org.biouno.unochoice.CascadeChoiceParameter>
+        <org.biouno.unochoice.CascadeChoiceParameter plugin="uno-choice@2.8.3">
+          <name>ApplicationSelection</name>
+          <description>Select application for which installer package(s) build is available</description>
+          <randomName>choice-parameter-256923386560640</randomName>
+          <visibleItemCount>1</visibleItemCount>
+          <script class="org.biouno.unochoice.model.GroovyScript">
+            <secureScript plugin="script-security@1369.v9b_98a_4e95b_2d">
+              <script>import groovy.io.FileType
+import jenkins.model.Jenkins
+import hudson.model.Node
+import hudson.slaves.EnvironmentVariablesNodeProperty
+import hudson.EnvVars
+
+EnvVars getCombinedNodeEnvironment(Node node) {
+  def combined = new EnvVars(node.toComputer().getEnvironment())
+  combined.overrideExpandingAll(Jenkins.instance.
+       getGlobalNodeProperties().
+       get(EnvironmentVariablesNodeProperty).
+       getEnvVars() ?: new EnvVars())
+  combined.overrideExpandingAll((node.
+       getNodeProperty(EnvironmentVariablesNodeProperty)?.
+       getEnvVars()) ?: new EnvVars())
+  return combined
+}
+
+EnvVars getCombinedNodeEnvironment(String nodename) {
+  if (nodename == &apos;master&apos; || !nodename)
+    return getCombinedNodeEnvironment(Jenkins.instance)
+  else
+    return getCombinedNodeEnvironment(Jenkins.instance.getNode(nodename))
+}
+
+try {
+	// Obtain workspace root
+	def workspaceDirPath = getCombinedNodeEnvironment(&apos;&apos;).expand(&apos;$INSTALLER_PCJ_WORKSPACE&apos;)
+	if (workspaceDirPath == null || workspaceDirPath.isEmpty() || workspaceDirPath.toString().contains(&apos;$&apos;)) {
+		throw new Exception(&quot;Error, environment not initialized, load list from the SVN first&quot;)
+	}
+	// Obtain application list
+	if (ProjectSelection.toLowerCase().contains(&quot;error&quot;) || ProjectSelection.equals(&quot;INSTALLER_PackageCreationJenkins&quot;)) {
+		return []
+	} else  {
+		if (ProjectSelection.toLowerCase().contains(&quot;1&quot;)) return [&apos;Proj1App1&apos;, &apos;Proj1App2&apos;, &apos;Proj1App3&apos;]
+		if (ProjectSelection.toLowerCase().contains(&quot;2&quot;)) return [&apos;Proj2App1&apos;, &apos;Proj2App2&apos;, &apos;Proj2App3&apos;]
+		if (ProjectSelection.toLowerCase().contains(&quot;3&quot;)) return [&apos;Proj3App1&apos;, &apos;Proj3App2&apos;, &apos;Proj3App3&apos;]
+	}
+} catch (e) { return [e.toString()] }
+</script>
+              <sandbox>false</sandbox>
+            </secureScript>
+            <secureFallbackScript plugin="script-security@1369.v9b_98a_4e95b_2d">
+              <script>return [&apos;Error parsing ApplicationSelection script&apos;]</script>
+              <sandbox>false</sandbox>
+            </secureFallbackScript>
+          </script>
+          <projectName>Installer Framework package creation - test</projectName>
+          <projectFullName>Installer Framework package creation - test</projectFullName>
+          <parameters class="linked-hash-map"/>
+          <referencedParameters>ProjectSelection</referencedParameters>
+          <choiceType>PT_SINGLE_SELECT</choiceType>
+          <filterable>false</filterable>
+          <filterLength>1</filterLength>
+        </org.biouno.unochoice.CascadeChoiceParameter>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.14">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>true</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>true</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit>ProjectSelection, ApplicationSelection</paramsToUseForLimit>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@3969.vdc9d3a_efcc6a_">
+    <script>pipeline {
+    agent any
+
+    stages {
+        stage(&apos;Hello&apos;) {
+            steps {
+                echo &apos;Hello World&apos;
+            }
+        }
+    }
+}
+</script>
+    <sandbox>false</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

@@ -1,0 +1,133 @@
+[ZAP Jenkins Plugin] START PRE-BUILD ENVIRONMENT VARIABLE REPLACEMENT
+	HOST = [ 127.0.0.1 ]
+	PORT = [ 8081 ]
+
+	SESSION FILENAME = [  ]
+	INTERNAL SITES = [  ]
+
+	CONTEXT NAME = [ forms-ui-55 ]
+
+	INCLUDE IN CONTEXT = [ https://REDACTED.cloudfront.net.* ]
+
+	EXCLUDE FROM CONTEXT = [ https://REDACTED.cloudfront.net/addressService/addresses.* ]
+
+	STARTING POINT (URL) = [ https://REDACTED.cloudfront.net ]
+	REPORT FILENAME = [ JENKINS_ZAP_VULNERABILITY_REPORT ]
+	REPORT TITLE = [  ]
+
+	COMMAND LINE = 
+		OPTION : [ -installdir ]
+		VALUE  : [ /usr/share/owasp-zap ]
+ 
+		OPTION : [ -suppinfo ]
+		VALUE  : [  ]
+
+[ZAP Jenkins Plugin] END PRE-BUILD ENVIRONMENT VARIABLE REPLACEMENT
+
+[ZAP Jenkins Plugin] CLEAR LOGS IN SETTINGS...
+	ZAP HOME DIRECTORY [ ../../../home/jenkins-slave/.ZAP ]
+	JENKINS WORKSPACE [ /home/jenkins-slave/workspace/zap-demo ]
+	CLEARING ZAP HOME DIRECTORY/LOGS
+
+	[ /../../../home/jenkins-slave/.ZAP/zap.log ] LOG HAS BEEN FOUND
+	DELETE [zap.log] FROM [/../../../home/jenkins-slave/.ZAP/zap.log]
+
+[zap-demo] $ /bin/sh -xe /home/jenkins-slave/jenkins2770777607481161234.sh
++ [[ -f /home/jenkins-slave/.ZAP/zap.log ]]
++ echo 'No log found'
+No log found
++ java -version
+openjdk version "1.8.0_171"
+OpenJDK Runtime Environment (build 1.8.0_171-b10)
+OpenJDK 64-Bit Server VM (build 25.171-b10, mixed mode)
+
+[ZAP Jenkins Plugin] START BUILD STEP
+
+[ZAP Jenkins Plugin] PLUGIN VALIDATION (PLG), VARIABLE VALIDATION AND ENVIRONMENT INJECTOR EXPANSION (EXP)
+	ZAP INSTALLATION DIRECTORY = [ /usr/share/owasp-zap ]
+	(EXP) HOST = [ 127.0.0.1 ]
+	(EXP) PORT = [ 8081 ]
+	(EXP) LOAD SESSION = [ /home/jenkins-slave/workspace/zap-demo/owaspzap/sessions/forms-ui.session ]
+	(EXP) CONTEXT NAME = [ forms-ui-55 ]
+	(EXP) INCLUDE IN CONTEXT = [ https://REDACTED.cloudfront.net.* ]
+	(EXP) EXCLUDE FROM CONTEXT = [ https://REDACTED.cloudfront.net/addressService/addresses.* ]
+	(EXP) STARTING POINT (URL) = [ https://REDACTED.cloudfront.net ]
+
+[ZAP Jenkins Plugin] CONFIGURE RUN COMMANDS for [ /usr/share/owasp-zap/zap.sh ]
+[ZAP Jenkins Plugin] EXECUTE LAUNCH COMMAND
+[owasp-zap] $ /usr/share/owasp-zap/zap.sh -daemon -host 127.0.0.1 -port 8081 -config api.key=ZAPROXY-PLUGIN -dir ../../../home/jenkins-slave/.ZAP -installdir /usr/share/owasp-zap -suppinfo
+
+[ZAP Jenkins Plugin] INITIALIZATION [ START ]
+Found Java version 1.8.0_171
+Available memory: 32012 MB
+Setting jvm heap size: -Xmx8003m
+OWASP ZAP
+Version: 2.7.0
+Installed Add-ons: [[id=alertFilters, version=6.0.0], [id=ascanrules, version=28.0.0], [id=bruteforce, version=7.0.0], [id=coreLang, version=12.0.0], [id=diff, version=8.0.0], [id=directorylistv1, version=3.0.0], [id=fuzz, version=10.0.0], [id=gettingStarted, version=8.0.0], [id=help, version=8.0.0], [id=importurls, version=5.0.0], [id=invoke, version=8.0.0], [id=jxbrowser, version=7.0.0], [id=jxbrowserlinux64, version=5.0.0], [id=onlineMenu, version=6.0.0], [id=pscanrules, version=21.0.0], [id=quickstart, version=22.0.0], [id=replacer, version=4.0.0], [id=reveal, version=2.0.0], [id=saverawmessage, version=4.0.0], [id=scripts, version=22.0.0], [id=selenium, version=13.0.0], [id=spiderAjax, version=20.0.0], [id=tips, version=6.0.0], [id=webdriverlinux, version=4.0.0], [id=websocket, version=14.0.0], [id=zest, version=26.0.0]]
+Operating System: Linux
+Java Version: Oracle Corporation 1.8.0_171
+System's Locale: en_US
+Display Locale: en_GB
+Format Locale: en_GB
+ZAP Home Directory: /usr/share/owasp-zap/../../../home/jenkins-slave/.ZAP/
+Look and Feel: Metal (javax.swing.plaf.metal.MetalLookAndFeel)
+
+ERROR: java.net.ConnectException: Connection refused (Connection refused)
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:350)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:206)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:188)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:392)
+	at java.net.Socket.connect(Socket.java:589)
+	at org.jenkinsci.plugins.zap.ZAPDriver.waitForSuccessfulConnectionToZap(ZAPDriver.java:746)
+	at org.jenkinsci.plugins.zap.ZAPDriver.access$100(ZAPDriver.java:112)
+	at org.jenkinsci.plugins.zap.ZAPDriver$WaitZAPDriverInitCallable.invoke(ZAPDriver.java:2710)
+	at org.jenkinsci.plugins.zap.ZAPDriver$WaitZAPDriverInitCallable.invoke(ZAPDriver.java:2696)
+	at hudson.FilePath$FileCallableWrapper.call(FilePath.java:2816)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:153)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:50)
+	at hudson.remoting.Request$2.run(Request.java:336)
+	at hudson.remoting.InterceptingExecutorService$1.call(InterceptingExecutorService.java:68)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at hudson.remoting.Engine$1$1.run(Engine.java:94)
+	at java.lang.Thread.run(Thread.java:748)
+
+ERROR: java.io.IOException: remote file operation failed: /home/jenkins-slave/workspace/zap-demo at hudson.remoting.Channel@1a9b74d8:JNLP4-connect connection from blddev-02adcf13b.col-nonprod.nonprod.aws.ds.cloud/172.17.17.11:48338: java.io.IOException: Failed to deserialize response to UserRequest:org.jenkinsci.plugins.zap.ZAPDriver$WaitZAPDriverInitCallable@60a7d38f: java.lang.SecurityException: Rejected: org.apache.tools.ant.Location; see https://jenkins.io/redirect/class-filter/
+	at hudson.FilePath.act(FilePath.java:1005)
+	at hudson.FilePath.act(FilePath.java:987)
+	at org.jenkinsci.plugins.zap.ZAPDriver.startZAP(ZAPDriver.java:659)
+	at org.jenkinsci.plugins.zap.ZAPBuilder.perform(ZAPBuilder.java:277)
+	at hudson.tasks.BuildStepMonitor$1.perform(BuildStepMonitor.java:20)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.perform(AbstractBuild.java:744)
+	at hudson.model.Build$BuildExecution.build(Build.java:206)
+	at hudson.model.Build$BuildExecution.doRun(Build.java:163)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.run(AbstractBuild.java:504)
+	at hudson.model.Run.execute(Run.java:1727)
+	at hudson.model.FreeStyleBuild.run(FreeStyleBuild.java:43)
+	at hudson.model.ResourceController.execute(ResourceController.java:97)
+	at hudson.model.Executor.run(Executor.java:429)
+Caused by: java.io.IOException: Failed to deserialize response to UserRequest:org.jenkinsci.plugins.zap.ZAPDriver$WaitZAPDriverInitCallable@60a7d38f: java.lang.SecurityException: Rejected: org.apache.tools.ant.Location; see https://jenkins.io/redirect/class-filter/
+	at hudson.remoting.Channel.call(Channel.java:960)
+	at hudson.FilePath.act(FilePath.java:998)
+	... 12 more
+Caused by: java.lang.SecurityException: Rejected: org.apache.tools.ant.Location; see https://jenkins.io/redirect/class-filter/
+	at hudson.remoting.ClassFilter.check(ClassFilter.java:76)
+	at hudson.remoting.MultiClassLoaderSerializer$Input.resolveClass(MultiClassLoaderSerializer.java:129)
+	at java.io.ObjectInputStream.readNonProxyDesc(ObjectInputStream.java:1858)
+	at java.io.ObjectInputStream.readClassDesc(ObjectInputStream.java:1744)
+	at java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2032)
+	at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1566)
+	at java.io.ObjectInputStream.defaultReadFields(ObjectInputStream.java:2277)
+	at java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2201)
+	at java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2059)
+	at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1566)
+	at java.io.ObjectInputStream.readObject(ObjectInputStream.java:426)
+	at hudson.remoting.UserRequest.deserialize(UserRequest.java:277)
+	at hudson.remoting.UserResponse.retrieve(UserRequest.java:310)
+	at hudson.remoting.Channel.call(Channel.java:952)
+	... 13 more
+
+Build step 'Execute ZAP' marked build as failure
+Finished: FAILURE

@@ -1,0 +1,65 @@
+#!groovy
+@Library('jenkins-shared-library') _
+def iis = new iis()
+
+pipeline {
+    agent any
+
+	options {
+		buildDiscarder(logRotator(numToKeepStr:'3'))
+	}
+
+    environment {
+        SERVER = 'capps-dev'
+        DEPARTMENT = 'scheduling'
+        APPLICATION = 't4-scheduling'
+        WEBSITE = 'ApiT4Scheduling'
+        CONFIGURATION = 'Release'
+        FRAMEWORK = 'netcoreapp1.0'
+        PORT = '2450'
+        PUBLISH_TEST = true
+    }
+
+    stages {
+        stage("restore") {
+            steps {
+                bat "dotnet restore"
+            }            
+        }
+        stage("build") {
+            steps {
+                bat "dotnet build --configuration ${CONFIGURATION}"
+            }
+        }
+        stage("publish") {
+            steps {
+                bat "dotnet publish Expl.Api.T4.Scheduling.csproj --configuration ${CONFIGURATION}"
+            }
+        }
+        stage("deploy") {
+            steps {
+                script {
+                    getNextAvailablePortNumber()
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            deleteDir()
+        }
+		failure {
+            emailext to: "bberwanger@expl.com, ",
+				replyTo: 'jenkins@expl.com',
+                subject: "Build Failed",
+                body: "${BUILD_URL}"
+		}
+		unstable {
+            emailext to: "bberwanger@expl.com",
+				replyTo: 'jenkins@expl.com',
+                subject: "Build Unstable",
+                body: "${BUILD_URL}"
+		}
+    }
+}

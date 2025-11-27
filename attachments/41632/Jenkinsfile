@@ -1,0 +1,178 @@
+#!groovy
+
+node {
+    checkout scm
+    currentBuild.displayName = "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
+    
+    bname = "${env.BRANCH_NAME}"
+    tokens = bname.tokenize("/")
+    branch = tokens[0]
+   
+    pom = readMavenPom file: 'pom.xml'
+    
+    println "Group ID: ${pom.groupId}"
+    println "Artifact ID: ${pom.artifactId}"
+    println "Version: ${pom.version}"
+    println "Packaging: ${pom.packaging}"
+    println "Name: ${pom.name}"
+    println "Branch: ${branch}"
+    println "Build Server: ${pom.properties.buildServer}"
+    println "Build Priority: ${pom.properties.buildPriority}"
+    println "Build Path: ${pom.properties.buildPath}"
+
+    env.gidname = "${pom.properties.buildServer}"    
+    env.tarfilename = "${pom.artifactId}-${pom.version}" 
+    env.bpriority = "${pom.properties.buildPriority}"
+    env.src = "${pom.properties.buildPath}${pom.artifactId}"
+    email_recipients = "system_errors@cookmedical.com"
+    
+    properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '10')), pipelineTriggers([[$class: 'BitBucketTrigger'], pollSCM('')])])
+
+    script {
+        switch(branch) {
+            case "feature":
+                repository = "jbase-test-releases"
+                toservers = null
+                roomnbr = "370"
+                break
+            case "dev":
+                repository = "jbase-test-releases"
+                toservers = "null"
+                roomnbr = "371"
+                break
+            case "release":
+                repository = "jbase-test-releases"
+                toservers = "${gidname}-test.cookgroup.nao"
+                roomnbr = "372"
+                break
+            case "bugfix":
+                repository = "jbase-test-releases"
+                toservers = null   
+                roomnbr = "375"
+                break
+            case "master":
+                repository = "jbase-releases"
+                toservers = "${gidname}.cookgroup.nao ${gidname}-dev.cookgroup.nao"
+                roomnbr = "374"
+                break
+            case "hotfix": 
+                repository = "jbase-test-releases"
+                toservers = null
+                roomnbr = "373"
+                break    
+        }
+    }
+
+    if (toservers != null) {
+        toserver = toservers.split(" ")
+    }
+
+    println "Repository: ${repository}"
+    println "ToServers: ${toservers}"
+}   
+
+hipchatSend color: 'GRAY', credentialId: '', message: "Build Started - Job Name: ${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER} - <a href='${env.JOB_DISPLAY_URL}'>Open</a>", notify: true, room: roomnbr, sendAs: '', server: 'hipchat.cookgroup.nao', v2enabled: true
+
+pipeline {
+    agent any 
+
+    stages {
+        stage('Rsync') {
+            when {
+                expression { toservers != null }
+            }
+            steps {
+                rsync_server_loop(toserver)
+           }
+        }    
+        stage('Build') {
+            when {
+                expression { toservers != null }
+            }
+            steps {
+                build_server_loop(toserver)
+            }
+        }        
+        stage('Deploy Nexus') {
+           when {
+                expression { toservers != null }
+            }            
+            steps {
+                echo "Deploying to Nexus for ${tarfilename}"
+                sh "mkdir -p /tmp/root${src}"
+                sh "cp -R ${WORKSPACE}/* /tmp/root${src}"
+                sh "cd /tmp/root"
+                sh "tar --exclude='./.git' --exclude='./*.zip' -cvf /tmp/${tarfilename}.tar ./"
+                sh "/usr/local/maven-3.1.1/bin/mvn deploy:deploy-file -Durl=https://css-nexus-p1.cookgroup.nao/nexus/content/repositories/${repository}/ -DpomFile=${WORKSPACE}/pom.xml -Dfile=/tmp/${tarfilename}.tar -DgeneratePom=false -Dpackaging=tar -DrepositoryId=jbase"
+                sh "rm -fr /tmp/root"
+                sh "rm -fr /tmp/${tarfilename}.tar"
+            }
+        }       
+    }
+
+    post {
+        always {
+            echo ''
+        }
+        success {
+            hipchatSend color: 'GREEN', credentialId: '', message: "Build Success - Job Name: ${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER} - <a href='${env.JOB_DISPLAY_URL}'>Open</a>", notify: true, room: roomnbr, sendAs: '', server: 'hipchat.cookgroup.nao', v2enabled: true
+        }
+        failure {
+            hipchatSend color: 'RED', credentialId: '', message: "Build failure - Job Name: ${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER} - <a href='${env.JOB_DISPLAY_URL}'>Open</a>", notify: true, room: roomnbr, sendAs: '', server: 'hipchat.cookgroup.nao', v2enabled: true
+            sendEmail("Fail")
+        }
+        unstable {
+            echo ''
+        }
+        changed {
+            echo ''
+        }
+    }
+}
+
+@NonCPS
+def getChangeString() {
+    MAX_MSG_LEN = 100
+    def changeString = ""
+
+    echo "Gathering SCM changes"
+    def changeLogSets = currentBuild.changeSets
+    for (int i = 0; i < changeLogSets.size(); i++) {
+        def entries = changeLogSets[i].items
+        for (int j = 0; j < entries.length; j++) {
+            def entry = entries[j]
+            truncated_msg = entry.msg.take(MAX_MSG_LEN)
+            changeString += " - ${truncated_msg} [${entry.author}]\n"
+        }
+    }
+
+    if (!changeString) {
+        changeString = " - No new changes"
+    }
+    return changeString
+}
+
+def sendEmail(status) {
+    mail (
+    to: "$email_recipients", 
+    subject: "Build $BUILD_NUMBER - " + status + " ($JOB_NAME)", 
+    body: "Changes:\n " + getChangeString() + "\n\n Check console output at: $BUILD_URL/console" + "\n")
+}
+
+def rsync_server_loop(list) {
+    for (int i = 0; i < list.size(); i++) {
+        echo "Rsyncing to ${list[i]}"
+        sshagent(["a75e89f0-2c42-421a-b795-c374b9d8aeaf"]) {
+            sh "rsync --delete --no-relative --exclude-from=.excludes -arv ${WORKSPACE}/ sysjobs@${list[i]}:${src}"                    
+        }
+    }
+}    
+
+def build_server_loop(list) {
+    for (int i = 0; i < list.size(); i++) {
+        echo "Building on ${list[i]}"
+        sshagent(['a75e89f0-2c42-421a-b795-c374b9d8aeaf']) {
+            sh "ssh -l sysjobs ${list[i]} /data/files/bin/git-build.sh ${bpriority} ${src} ${branch}"
+        }
+    }
+}

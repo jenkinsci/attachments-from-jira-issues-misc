@@ -1,0 +1,49 @@
+Connecting to IBM WebSphere Application Server...
+The following artifacts will be deployed in this order...
+-------------------------------------------
+XXX.ear
+-------------------------------------------
+Error deploying to IBM WebSphere Application Server: org.jenkinsci.plugins.websphere.services.deployment.DeploymentServiceException: ADMA0092E: An unexpected exception occurred while preparing task WebServicesClientBindPortInfo.  Exception: java.lang.ExceptionInInitializerError
+	at org.jenkinsci.plugins.websphere.services.deployment.WebSphereDeploymentService.getAppName(WebSphereDeploymentService.java:193)
+	at org.jenkinsci.plugins.websphere.services.deployment.WebSphereDeploymentService.getAppName(WebSphereDeploymentService.java:169)
+	at org.jenkinsci.plugins.websphere_deployer.WebSphereDeployerPlugin.getAppName(WebSphereDeployerPlugin.java:318)
+	at org.jenkinsci.plugins.websphere_deployer.WebSphereDeployerPlugin.createArtifact(WebSphereDeployerPlugin.java:275)
+	at org.jenkinsci.plugins.websphere_deployer.WebSphereDeployerPlugin.perform(WebSphereDeployerPlugin.java:197)
+	at hudson.tasks.BuildStepMonitor$3.perform(BuildStepMonitor.java:45)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.perform(AbstractBuild.java:779)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.performAllBuildSteps(AbstractBuild.java:720)
+	at hudson.model.Build$BuildExecution.post2(Build.java:185)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.post(AbstractBuild.java:665)
+	at hudson.model.Run.execute(Run.java:1753)
+	at hudson.model.FreeStyleBuild.run(FreeStyleBuild.java:43)
+	at hudson.model.ResourceController.execute(ResourceController.java:98)
+	at hudson.model.Executor.run(Executor.java:404)
+Caused by: com.ibm.websphere.management.application.client.AppDeploymentException: ADMA0092E: An unexpected exception occurred while preparing task WebServicesClientBindPortInfo.  Exception: java.lang.ExceptionInInitializerError [Root exception is java.lang.ExceptionInInitializerError]
+	at com.ibm.websphere.management.application.client.AppDeploymentController.getNthTask(AppDeploymentController.java:851)
+	at com.ibm.websphere.management.application.client.AppDeploymentController.getNextTask(AppDeploymentController.java:887)
+	at org.jenkinsci.plugins.websphere.services.deployment.WebSphereDeploymentService.getAppName(WebSphereDeploymentService.java:185)
+	... 13 more
+Caused by: java.lang.ExceptionInInitializerError
+	at com.ibm.ws.webservices.custom.CustomPropertyProviderImpl.<init>(CustomPropertyProviderImpl.java:46)
+	at com.ibm.ws.webservices.custom.CustomPropertyProviderFactory.<clinit>(CustomPropertyProviderFactory.java:29)
+	at com.ibm.ws.webservices.deploy.DeployUtils.<clinit>(DeployUtils.java:216)
+	at com.ibm.ws.webservices.deploy.WSBindingsFileAccessor.getClientBinding(WSBindingsFileAccessor.java:454)
+	at com.ibm.ws.webservices.deploy.ClientBindPortInfoTaskHelper.prepareTask(ClientBindPortInfoTaskHelper.java:204)
+	at com.ibm.websphere.management.application.client.AppDeploymentController.prepareTask(AppDeploymentController.java:862)
+	at com.ibm.websphere.management.application.client.AppDeploymentController.getNthTask(AppDeploymentController.java:842)
+	... 15 more
+Caused by: org.apache.commons.discovery.DiscoveryException: Class org.apache.commons.logging.impl.SLF4JLogFactory does not implement org.apache.commons.logging.LogFactory
+	at org.apache.commons.discovery.tools.ClassUtils.verifyAncestory(ClassUtils.java:180)
+	at org.apache.commons.discovery.tools.SPInterface.verifyAncestory(SPInterface.java:201)
+	at org.apache.commons.discovery.tools.SPInterface.newInstance(SPInterface.java:195)
+	at org.apache.commons.discovery.tools.DiscoverClass.newInstance(DiscoverClass.java:579)
+	at org.apache.commons.discovery.tools.DiscoverSingleton.find(DiscoverSingleton.java:418)
+	at org.apache.commons.discovery.tools.DiscoverSingleton.find(DiscoverSingleton.java:378)
+	at com.ibm.ws.webservices.engine.components.logger.LogFactory$2.run(LogFactory.java:147)
+	at com.ibm.ws.security.util.AccessController.doPrivileged(AccessController.java:63)
+	at com.ibm.ws.webservices.engine.components.logger.LogFactory.createLogFactory(LogFactory.java:141)
+	at com.ibm.ws.webservices.engine.components.logger.LogFactory.<clinit>(LogFactory.java:98)
+	... 22 more
+
+Build step 'Deploy To IBM WebSphere Application Server' changed build result to FAILURE
+Finished: FAILURE

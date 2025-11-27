@@ -1,0 +1,172 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <logRotator>
+    <daysToKeep>25</daysToKeep>
+    <numToKeep>25</numToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>profiles</name>
+          <description></description>
+          <defaultValue>96358GW 96368GW 96348GW 96338GW 96816R</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <de.fspengler.hudson.plugin.LogActionProperty/>
+  </properties>
+  <scm class="hudson.plugins.clearcase.ClearCaseSCM">
+    <viewName>hudson_comm</viewName>
+    <mkviewOptionalParam></mkviewOptionalParam>
+    <filteringOutDestroySubBranchEvent>false</filteringOutDestroySubBranchEvent>
+    <useUpdate>true</useUpdate>
+    <removeViewOnRename>false</removeViewOnRename>
+    <excludedRegions></excludedRegions>
+    <configSpec>element * CHECKEDOUT&#xd;
+&#xd;
+# Lines below were used during kernel upgrade, now they are turned off after the completion for kernel upgrade project&#xd;
+# if a file is modified after labeling consider it has already been merged -&gt; use the latest dev version&#xd;
+# element * .../Irvine_CommEngine_Devel/{created_since(19-dec-07.12:00)}&#xd;
+# for kernel files not yet merged, use original version from 3rd part tree&#xd;
+# element -file /CommEngine/kernel/.../* .../Irvine_CommEngine_3rd_Party/LATEST -nocheckout&#xd;
+&#xd;
+# for all other files use standard version selection&#xd;
+element * .../Irvine_CommEngine_Devel/LATEST&#xd;
+element * .../Richmond_CommEngine_Devel/LATEST&#xd;
+element * /main/0 -mkbranch Irvine_CommEngine_Devel&#xd;
+&#xd;
+load /vobs/CommEngine/cfe&#xd;
+load /vobs/CommEngine/docs&#xd;
+load /vobs/CommEngine/data-model&#xd;
+load /vobs/CommEngine/hostTools&#xd;
+load /vobs/CommEngine/Makefile&#xd;
+load /vobs/CommEngine/make.common&#xd;
+load /vobs/CommEngine/make.voice&#xd;
+load /vobs/CommEngine/make.deprules&#xd;
+load /vobs/CommEngine/release&#xd;
+load /vobs/CommEngine/shared&#xd;
+load /vobs/CommEngine/toolChains&#xd;
+load /vobs/CommEngine/bcmdrivers&#xd;
+load /vobs/CommEngine/kernel&#xd;
+load /vobs/CommEngine/targets&#xd;
+load /vobs/CommEngine/userapps&#xd;
+load /vobs/CommEngine/userspace&#xd;
+load /vobs/CommEngine/unittests&#xd;
+load /vobs/CommEngine/version.make&#xd;
+load /vobs/CommEngine/xChange</configSpec>
+    <useDynamicView>false</useDynamicView>
+    <viewDrive>/view</viewDrive>
+    <branch></branch>
+    <vobPaths>vobs/CommEngine/cfe vobs/CommEngine/docs vobs/CommEngine/data-model vobs/CommEngine/hostTools vobs/CommEngine/Makefile vobs/CommEngine/make.common vobs/CommEngine/make.voice vobs/CommEngine/make.deprules vobs/CommEngine/release vobs/CommEngine/shared vobs/CommEngine/toolChains vobs/CommEngine/bcmdrivers vobs/CommEngine/kernel vobs/CommEngine/targets vobs/CommEngine/userapps vobs/CommEngine/userspace vobs/CommEngine/unittests vobs/CommEngine/version.make vobs/CommEngine/xChange</vobPaths>
+    <doNotUpdateConfigSpec>false</doNotUpdateConfigSpec>
+  </scm>
+  <quietPeriod>5</quietPeriod>
+  <assignedNode>master</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <triggers class="vector">
+    <hudson.triggers.SCMTrigger>
+      <spec>*/1 * * * *</spec>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#clean the previous images
+mkdir -p hudson_comm/vobs/CommEngine/images
+cd hudson_comm/vobs/CommEngine/images
+rm -f *GW_fs_kernel</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>#!/usr/local/bin/perl
+chdir(&quot;hudson_comm/vobs/CommEngine&quot;);
+my $profile_list = $ENV{&apos;PROFILES&apos;};
+@profiles= split(&apos; &apos;,$profile_list);
+map {system(&quot;make PROFILE=$_&quot;);system(&quot;cp -f kernel/linux/System.map images/System$_.map&quot;); system(&quot;chmod oug-w images/System$_.map&quot;); system(&quot;make PROFILE=$_ clean&quot;)} @profiles;</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>#!/usr/local/bin/perl
+
+# This script renames the images and pushes them to the cdrouter host for testing
+
+use strict;
+use File::Path;
+
+#find and read output file content into list
+my $image_path=&apos;/projects/dsl_hudson/jobs/BSE_DSL_CommEngine/workspace/hudson_comm/vobs/CommEngine/images/&apos;;
+my $IMAGE_DIR;
+opendir $IMAGE_DIR, &quot;$image_path&quot;;
+my @image_files = readdir $IMAGE_DIR; closedir $IMAGE_DIR;
+
+#copy ssh keys in case they were removed
+`cp -rp /auto/Hudson/ssh_config/.ssh /home/sqabuilder`;
+
+#rename the images
+foreach (@image_files)
+{
+   if ($_ =~ /(.+)kernel/)
+   {
+      my $name = $image_path.$1.&apos;kernel&apos;;
+      my $orig_name = $image_path.$_;
+
+      print &quot;\nrenaming $_ to $name&quot;;
+      rename ($orig_name, $name);
+      #print $name;
+      `scp $name sqabuilder\@dsl-cdrouter:/tftpboot/cpecode/Hudson`;
+   }
+}</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>hudson_comm/vobs/CommEngine/images/**</artifacts>
+      <latestOnly>false</latestOnly>
+    </hudson.tasks.ArtifactArchiver>
+    <hudson.tasks.BuildTrigger>
+      <childProjects>BSE_DSL_CDRouter</childProjects>
+      <threshold>
+        <name>SUCCESS</name>
+        <ordinal>0</ordinal>
+        <color>BLUE</color>
+      </threshold>
+    </hudson.tasks.BuildTrigger>
+    <hudson.tasks.Fingerprinter>
+      <targets></targets>
+      <recordBuildArtifacts>false</recordBuildArtifacts>
+    </hudson.tasks.Fingerprinter>
+    <hudson.plugins.warnings.WarningsPublisher>
+      <threshold></threshold>
+      <newThreshold></newThreshold>
+      <failureThreshold></failureThreshold>
+      <newFailureThreshold></newFailureThreshold>
+      <healthy></healthy>
+      <unHealthy></unHealthy>
+      <height></height>
+      <pluginName>[WARNINGS] </pluginName>
+      <thresholdLimit>low</thresholdLimit>
+      <defaultEncoding></defaultEncoding>
+      <pattern></pattern>
+      <parserNames/>
+      <canRunOnFailed>false</canRunOnFailed>
+    </hudson.plugins.warnings.WarningsPublisher>
+    <hudson.plugins.doxygen.DoxygenArchiver>
+      <doxyfilePath></doxyfilePath>
+      <keepAll>false</keepAll>
+      <publishType>HtmlDirectory</publishType>
+      <doxygenHtmlDirectory>hudson_comm/vobs/CommEngine/docs/doxygen/html</doxygenHtmlDirectory>
+    </hudson.plugins.doxygen.DoxygenArchiver>
+    <hudson.plugins.emotional__hudson.EmotionalHudsonPublisher/>
+  </publishers>
+  <buildWrappers>
+    <hudson.plugins.locksandlatches.LockWrapper>
+      <locks>
+        <hudson.plugins.locksandlatches.LockWrapper_-LockWaitConfig>
+          <name>(default)</name>
+        </hudson.plugins.locksandlatches.LockWrapper_-LockWaitConfig>
+      </locks>
+    </hudson.plugins.locksandlatches.LockWrapper>
+  </buildWrappers>
+</project>

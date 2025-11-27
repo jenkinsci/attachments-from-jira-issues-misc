@@ -1,0 +1,98 @@
+Started by user Pier-Luc Lafleur
+Running as SYSTEM
+Building in workspace /var/lib/jenkins/workspace/deploy
+[WS-CLEANUP] Deleting project workspace...
+[WS-CLEANUP] Deferred wipeout is used...
+[WS-CLEANUP] Done
+The recommended git tool is: NONE
+using credential 4dd9f245-88ef-4ef4-ba9b-e00d29445439
+Cloning the remote Git repository
+Cloning repository git@github.com:Backyard/timby-web.git
+ > git init /var/lib/jenkins/workspace/deploy # timeout=10
+Fetching upstream changes from git@github.com:Backyard/timby-web.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.17.1'
+using GIT_SSH to set credentials 
+ > git fetch --tags --progress -- git@github.com:Backyard/timby-web.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git config remote.origin.url git@github.com:Backyard/timby-web.git # timeout=10
+ > git config --add remote.origin.fetch +refs/heads/*:refs/remotes/origin/* # timeout=10
+Avoid second fetch
+ > git rev-parse refs/remotes/origin/692-saving-captions^{commit} # timeout=10
+Checking out Revision e3a1945855f5cd9dcd25f09d54cbcc3fce963fc5 (refs/remotes/origin/692-saving-captions)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f e3a1945855f5cd9dcd25f09d54cbcc3fce963fc5 # timeout=10
+Commit message: "Forgot one! Close report shouldn't save so type=button."
+ > git rev-list --no-walk e3a1945855f5cd9dcd25f09d54cbcc3fce963fc5 # timeout=10
+ > git remote # timeout=10
+ > git submodule init # timeout=10
+ > git submodule sync # timeout=10
+ > git config --get remote.origin.url # timeout=10
+ > git submodule init # timeout=10
+ > git config -f .gitmodules --get-regexp ^submodule\.(.+)\.url # timeout=10
+ > git config --get submodule.ci/ami.url # timeout=10
+ > git remote # timeout=10
+ > git config --get remote.origin.url # timeout=10
+ > git config -f .gitmodules --get submodule.ci/ami.path # timeout=10
+using GIT_SSH to set credentials 
+ > git submodule update --init --recursive ci/ami # timeout=10
+FATAL: Error creating extended parser class: null
+java.lang.IllegalStateException
+	at org.objectweb.asm.tree.analysis.BasicInterpreter.<init>(BasicInterpreter.java:66)
+	at org.parboiled.transform.RuleMethodInterpreter.<init>(RuleMethodInterpreter.java:42)
+	at org.parboiled.transform.InstructionGraphCreator.process(InstructionGraphCreator.java:41)
+	at org.parboiled.transform.ParserTransformer.runMethodTransformers(ParserTransformer.java:62)
+	at org.parboiled.transform.ParserTransformer.extendParserClass(ParserTransformer.java:45)
+	at org.parboiled.transform.ParserTransformer.transformParser(ParserTransformer.java:39)
+	at org.parboiled.Parboiled.createParser(Parboiled.java:54)
+Caused: java.lang.RuntimeException: Error creating extended parser class: null
+	at org.parboiled.Parboiled.createParser(Parboiled.java:58)
+	at org.jenkinsci.plugins.tokenmacro.Parser.process(Parser.java:80)
+	at org.jenkinsci.plugins.tokenmacro.Parser.process(Parser.java:74)
+	at org.jenkinsci.plugins.tokenmacro.TokenMacro.expand(TokenMacro.java:199)
+	at org.jenkinsci.plugins.tokenmacro.TokenMacro.expandAll(TokenMacro.java:237)
+	at org.jenkinsci.plugins.tokenmacro.TokenMacro.expandAll(TokenMacro.java:211)
+	at jenkins.plugins.slack.JenkinsTokenExpander.expand(JenkinsTokenExpander.java:22)
+	at jenkins.plugins.slack.ActiveNotifier$MessageBuilder.appendCustomMessage(ActiveNotifier.java:443)
+	at jenkins.plugins.slack.ActiveNotifier.started(ActiveNotifier.java:69)
+	at jenkins.plugins.slack.SlackNotifier.prebuild(SlackNotifier.java:617)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.preBuild(AbstractBuild.java:854)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.preBuild(AbstractBuild.java:849)
+	at hudson.model.Build$BuildExecution.doRun(Build.java:145)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.run(AbstractBuild.java:513)
+	at hudson.model.Run.execute(Run.java:1907)
+	at hudson.model.FreeStyleBuild.run(FreeStyleBuild.java:43)
+	at hudson.model.ResourceController.execute(ResourceController.java:97)
+	at hudson.model.Executor.run(Executor.java:429)
+[Slack Notifications] found #663 as previous completed, non-aborted build
+[Slack Notifications] will send OnEveryFailureNotification because build matches and user preferences allow it
+ERROR: Build step failed with exception
+java.lang.IllegalStateException
+	at org.objectweb.asm.tree.analysis.BasicInterpreter.<init>(BasicInterpreter.java:66)
+	at org.parboiled.transform.RuleMethodInterpreter.<init>(RuleMethodInterpreter.java:42)
+	at org.parboiled.transform.InstructionGraphCreator.process(InstructionGraphCreator.java:41)
+	at org.parboiled.transform.ParserTransformer.runMethodTransformers(ParserTransformer.java:62)
+	at org.parboiled.transform.ParserTransformer.extendParserClass(ParserTransformer.java:45)
+	at org.parboiled.transform.ParserTransformer.transformParser(ParserTransformer.java:39)
+	at org.parboiled.Parboiled.createParser(Parboiled.java:54)
+Caused: java.lang.RuntimeException: Error creating extended parser class: null
+	at org.parboiled.Parboiled.createParser(Parboiled.java:58)
+	at org.jenkinsci.plugins.tokenmacro.Parser.process(Parser.java:80)
+	at org.jenkinsci.plugins.tokenmacro.Parser.process(Parser.java:74)
+	at org.jenkinsci.plugins.tokenmacro.TokenMacro.expand(TokenMacro.java:199)
+	at org.jenkinsci.plugins.tokenmacro.TokenMacro.expandAll(TokenMacro.java:237)
+	at org.jenkinsci.plugins.tokenmacro.TokenMacro.expandAll(TokenMacro.java:211)
+	at jenkins.plugins.slack.JenkinsTokenExpander.expand(JenkinsTokenExpander.java:22)
+	at jenkins.plugins.slack.ActiveNotifier$MessageBuilder.appendCustomMessage(ActiveNotifier.java:443)
+	at jenkins.plugins.slack.ActiveNotifier.getBuildStatusMessage(ActiveNotifier.java:248)
+	at jenkins.plugins.slack.ActiveNotifier.completed(ActiveNotifier.java:125)
+	at jenkins.plugins.slack.SlackNotifier.perform(SlackNotifier.java:607)
+	at hudson.tasks.BuildStepMonitor$1.perform(BuildStepMonitor.java:20)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.perform(AbstractBuild.java:803)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.performAllBuildSteps(AbstractBuild.java:752)
+	at hudson.model.Build$BuildExecution.cleanUp(Build.java:187)
+	at hudson.model.Run.execute(Run.java:1954)
+	at hudson.model.FreeStyleBuild.run(FreeStyleBuild.java:43)
+	at hudson.model.ResourceController.execute(ResourceController.java:97)
+	at hudson.model.Executor.run(Executor.java:429)
+Build step 'Slack Notifications' marked build as failure
+Finished: FAILURE

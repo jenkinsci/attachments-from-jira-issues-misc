@@ -1,0 +1,200 @@
+Index: main/core/src/main/java/hudson/maven/MavenUtil.java
+===================================================================
+--- main/core/src/main/java/hudson/maven/MavenUtil.java	(revision 12988)
++++ main/core/src/main/java/hudson/maven/MavenUtil.java	(working copy)
+@@ -55,7 +55,11 @@
+      * @param profiles
+      *      Profiles to activate/deactivate. Can be null.
+      */
+-    public static MavenEmbedder createEmbedder(TaskListener listener, File mavenHome, String profiles) throws MavenEmbedderException, IOException {
++    public static MavenEmbedder createEmbedder(TaskListener listener, File mavenHone, String profiles) throws MavenEmbedderException, IOException {
++        return createEmbedder(listener,mavenHone,profiles,null);
++    }
++    
++    public static MavenEmbedder createEmbedder(TaskListener listener, File mavenHome, String profiles, File alternateSettings) throws MavenEmbedderException, IOException {
+         MavenEmbedder maven = new MavenEmbedder(mavenHome);
+ 
+         ClassLoader cl = MavenUtil.class.getClassLoader();
+@@ -72,6 +76,7 @@
+         }
+ 
+         maven.setProfiles(profiles);
++        maven.setAlternateSettings(alternateSettings);
+         maven.start();
+ 
+         return maven;
+Index: main/core/src/main/java/hudson/maven/MavenModuleSetBuild.java
+===================================================================
+--- main/core/src/main/java/hudson/maven/MavenModuleSetBuild.java	(revision 12988)
++++ main/core/src/main/java/hudson/maven/MavenModuleSetBuild.java	(working copy)
+@@ -332,6 +332,8 @@
+                         margs.add("-B").add("-f", pom.getRemote());
+                         if(project.usesPrivateRepository())
+                             margs.add("-Dmaven.repo.local="+project.getWorkspace().child(".repository"));
++                        if(project.getAlternateSettings()!=null)
++                            margs.add("-s").add(project.getWorkspace().child(project.getAlternateSettings()));
+                         margs.addTokenized(project.getGoals());
+ 
+                         Builder builder = new Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars);
+@@ -386,7 +388,7 @@
+ 
+             List<PomInfo> poms;
+             try {
+-                poms = project.getModuleRoot().act(new PomParser(listener, mvn,project.getRootPOM(),project.getProfiles()));
++                poms = project.getModuleRoot().act(new PomParser(listener, mvn,project.getRootPOM(),project.getProfiles(),project.getAlternateSettings()));
+             } catch (IOException e) {
+                 if (e.getCause() instanceof AbortException)
+                     throw (AbortException) e.getCause();
+@@ -646,12 +648,14 @@
+         private final boolean versbose = debug;
+         private final MavenInstallation mavenHome;
+         private final String profiles;
++        private final String alternateSettings;
+ 
+-        public PomParser(BuildListener listener, MavenInstallation mavenHome, String rootPOM, String profiles) {
++        public PomParser(BuildListener listener, MavenInstallation mavenHome, String rootPOM, String profiles, String alternateSettings) {
+             this.listener = listener;
+             this.mavenHome = mavenHome;
+             this.rootPOM = rootPOM;
+             this.profiles = profiles;
++            this.alternateSettings = alternateSettings;
+         }
+ 
+         /**
+@@ -686,8 +690,14 @@
+             if(versbose)
+                 logger.println("Parsing "+pom);
+ 
++            File settingsLoc = (alternateSettings==null)?null:new File(ws.getParentFile(),alternateSettings);
++            if((settingsLoc!=null) && !settingsLoc.exists()) {
++                logger.println(Messages.MavenModuleSetBuild_NoSuchFile(alternateSettings));
++                throw new AbortException();
++            }
++            
+             try {
+-                MavenEmbedder embedder = mavenHome.createEmbedder(listener,profiles);
++                MavenEmbedder embedder = mavenHome.createEmbedder(listener,profiles,settingsLoc);
+                 MavenProject mp = embedder.readProject(pom);
+                 Map<MavenProject,String> relPath = new HashMap<MavenProject,String>();
+                 MavenUtil.resolveModules(embedder,mp,getRootPath(),relPath,listener);
+Index: main/core/src/main/java/hudson/maven/MavenModuleSet.java
+===================================================================
+--- main/core/src/main/java/hudson/maven/MavenModuleSet.java	(revision 12988)
++++ main/core/src/main/java/hudson/maven/MavenModuleSet.java	(working copy)
+@@ -56,6 +56,8 @@
+ 
+     private String goals;
+ 
++    private String alternateSettings;
++    
+     /**
+      * Default goals specified in POM. Can be null.
+      */
+@@ -457,6 +459,13 @@
+     }
+ 
+     /**
++     * Gets the workspace relative path to an alternate Maven settings.xml file.
++     */
++    public String getAlternateSettings() {
++        return alternateSettings;
++    }
++    
++    /**
+      * If the list of configured goals contain the "-P" option,
+      * return the configured profiles. Otherwise null.
+      */
+@@ -539,6 +548,7 @@
+         if(rootPOM!=null && rootPOM.equals("pom.xml"))   rootPOM=null;   // normalization
+ 
+         goals = Util.fixEmpty(req.getParameter("goals").trim());
++        alternateSettings = Util.fixEmpty(req.getParameter("alternateSettings").trim());
+         mavenOpts = Util.fixEmpty(req.getParameter("mavenOpts").trim());
+         mavenName = req.getParameter("maven_version");
+         aggregatorStyleBuild = !req.hasParameter("maven.perModuleBuild");
+Index: main/core/src/main/java/hudson/maven/MavenEmbedder.java
+===================================================================
+--- main/core/src/main/java/hudson/maven/MavenEmbedder.java	(revision 12988)
++++ main/core/src/main/java/hudson/maven/MavenEmbedder.java	(working copy)
+@@ -161,6 +161,8 @@
+ 
+     private String profiles;
+ 
++    private File alternateSettings;
++    
+     /**
+      * This option determines whether the embedder is to be aligned to the user
+      * installation.
+@@ -235,6 +237,15 @@
+     public void setProfiles(String profiles) {
+         this.profiles = profiles;
+     }
++    
++    /**
++     * Sets alternate settings file
++     * 
++     * This method needs to be called before the embedder is {@link #start() started}.
++     */
++    public void setAlternateSettings(File alternateSettings) {
++        this.alternateSettings = alternateSettings;
++    }
+ 
+     /**
+      * Set the classloader to use with the maven embedder.
+@@ -748,7 +759,15 @@
+ 
+             try
+             {
+-                settings = settingsBuilder.buildSettings();
++                if (alternateSettings==null)
++                {
++                    settings = settingsBuilder.buildSettings();
++                }
++                else
++                {
++                    settings = settingsBuilder.buildSettings(alternateSettings,false);
++                }
++                    
+             }
+             catch ( IOException e )
+             {
+Index: main/core/src/main/java/hudson/tasks/Maven.java
+===================================================================
+--- main/core/src/main/java/hudson/tasks/Maven.java	(revision 12988)
++++ main/core/src/main/java/hudson/tasks/Maven.java	(working copy)
+@@ -341,8 +341,8 @@
+             }
+         }
+ 
+-        public MavenEmbedder createEmbedder(BuildListener listener, String profiles) throws MavenEmbedderException, IOException {
+-            return MavenUtil.createEmbedder(listener,getHomeDir(),profiles);
++        public MavenEmbedder createEmbedder(BuildListener listener, String profiles, File settings) throws MavenEmbedderException, IOException {
++            return MavenUtil.createEmbedder(listener,getHomeDir(),profiles,settings);
+         }
+ 
+         private static final long serialVersionUID = 1L;
+Index: main/core/src/main/resources/hudson/maven/MavenModuleSet/configure-entries.jelly
+===================================================================
+--- main/core/src/main/resources/hudson/maven/MavenModuleSet/configure-entries.jelly	(revision 12988)
++++ main/core/src/main/resources/hudson/maven/MavenModuleSet/configure-entries.jelly	(working copy)
+@@ -41,6 +41,9 @@
+       <f:textbox name="goals" value="${it.userConfiguredGoals}"/>
+     </f:entry>
+     <f:advanced>
++      <f:entry title="${%Alternate settings}" help="/help/maven/alternate-settings.html">
++        <f:textbox name="alternateSettings" value="${it.alternateSettings}"/>
++      </f:entry>
+       <f:entry title="MAVEN_OPTS" help="/help/maven/maven-opts.html">
+         <f:expandableTextbox name="mavenOpts" value="${it.mavenOpts}" />
+       </f:entry>
+Index: main/war/resources/help/maven/alternate-settings.html
+===================================================================
+--- main/war/resources/help/maven/alternate-settings.html	(revision 0)
++++ main/war/resources/help/maven/alternate-settings.html	(revision 0)
+@@ -0,0 +1,5 @@
++<div>
++	Specifies a path to an alternate settings.xml file to Maven. This is
++	equivalent to -s or --settings on the command line. The path is relative
++	to the workspace root.
++</div>
+\ No newline at end of file

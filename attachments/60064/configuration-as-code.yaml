@@ -1,0 +1,218 @@
+unclassified:
+  casCGlobalConfig:
+    configurationPath: "configuration-as-code.yaml"
+  gitSCM:
+    addGitTagAction: true
+    allowSecondFetch: true
+    createAccountBasedOnEmail: true
+    disableGitToolChooser: true
+    globalConfigEmail: "test@example.com"
+    globalConfigName: "test user"
+    hideCredentials: true
+    showEntireCommitSummaryInChanges: true
+    useExistingAccountWithSameEmail: true
+  globalLibraries:
+    libraries:
+    - defaultVersion: "master"
+      name: "Lib-Legacy-01"
+      retriever:
+        legacySCM:
+          scm:
+            git:
+              branches:
+              - name: "^${library.Lib-01.version}"
+              buildChooser: "default"
+              extensions:
+              - checkoutOption:
+                  timeout: 13
+              - cloneOption:
+                  depth: 1
+                  honorRefspec: true
+                  noTags: true
+                  shallow: true
+              - submoduleOption:
+                  depth: 1
+                  disableSubmodules: false
+                  parentCredentials: true
+                  recursiveSubmodules: true
+                  shallow: true
+                  threads: 3
+                  timeout: 23
+                  trackingSubmodules: true
+              - changelogToBranch:
+                  options:
+                    compareRemote: "origin"
+                    compareTarget: "master"
+              - relativeTargetDirectory:
+                  relativeTargetDir: "subdir-dest"
+              - localBranch:
+                  localBranch: "master-separately-specified"
+              - cleanCheckout:
+                  deleteUntrackedNestedRepositories: true
+              - cleanBeforeCheckout:
+                  deleteUntrackedNestedRepositories: true
+              - "perBuildTag"
+              - scmName:
+                  name: "origin-custom"
+              - userIdentity:
+                  email: "custom-email@custom.domain"
+                  name: "custom-user-name"
+              - "gitLFSPull"
+              - userExclusion:
+                  excludedUsers: "mwaite-ignored-on-poll"
+              - messageExclusion:
+                  excludedMessage: "ignore this commit message"
+              - "pruneStaleBranch"
+              - pruneTags:
+                  pruneTags: false
+              - sparseCheckoutPaths:
+                  sparseCheckoutPaths:
+                  - path: "sparse/path-1"
+                  - path: "sparse/path-2"
+              userRemoteConfigs:
+              - url: "https://github.com/jenkinsci/git-client-plugin.git"
+    - cachingConfiguration:
+        refreshTimeMinutes: 51
+      defaultVersion: "master"
+      name: "Lib-modern-01"
+      retriever:
+        modernSCM:
+          scm:
+            git:
+              id: "lib-modern-01-unique-id"
+              remote: "https://github.com/jenkinsci/elastic-axis.git"
+              traits:
+              - "gitBranchDiscovery"
+              - checkoutOptionTrait:
+                  extension:
+                    timeout: 37
+              - cloneOptionTrait:
+                  extension:
+                    depth: 2
+                    honorRefspec: true
+                    noTags: true
+                    shallow: true
+                    timeout: 41
+              - submoduleOptionTrait:
+                  extension:
+                    disableSubmodules: false
+                    parentCredentials: true
+                    recursiveSubmodules: true
+                    shallow: true
+                    threads: 16
+                    timeout: 2
+                    trackingSubmodules: true
+    - allowVersionOverride: false
+      cachingConfiguration:
+        refreshTimeMinutes: 57
+      defaultVersion: "master"
+      name: "modern-GitHub-library"
+      retriever:
+        modernSCM:
+          scm:
+            github:
+              configuredByUrl: true
+              id: "b4aa0153-0ffa-4560-8ffa-8c10e1a34efc"
+              repoOwner: "MarkEWaite"
+              repository: "elastic-axis"
+              repositoryUrl: "https://github.com/MarkEWaite/elastic-axis.git"
+              traits:
+              - gitHubBranchDiscovery:
+                  strategyId: 1
+              - gitHubPullRequestDiscovery:
+                  strategyId: 1
+              - gitHubForkDiscovery:
+                  strategyId: 1
+                  trust: "gitHubTrustPermissions"
+              - checkoutOptionTrait:
+                  extension:
+                    timeout: 43
+              - cloneOptionTrait:
+                  extension:
+                    depth: 2
+                    honorRefspec: true
+                    noTags: true
+                    shallow: true
+                    timeout: 93
+              - submoduleOptionTrait:
+                  extension:
+                    disableSubmodules: false
+                    parentCredentials: true
+                    recursiveSubmodules: true
+                    shallow: true
+                    timeout: 13
+                    trackingSubmodules: true
+              - "localBranchTrait"
+              - "gitHubSshCheckout"
+              - cleanAfterCheckoutTrait:
+                  extension:
+                    deleteUntrackedNestedRepositories: true
+              - cleanBeforeCheckoutTrait:
+                  extension:
+                    deleteUntrackedNestedRepositories: true
+              - userIdentityTrait:
+                  extension:
+                    email: "user-email@example.com"
+                    name: "user-name"
+              - "gitLFSPullTrait"
+              - "pruneStaleBranchTrait"
+              - "pruneStaleTagTrait"
+              - "authorInChangelogTrait"
+              - refSpecs:
+                  templates:
+                  - value: "+refs/heads/*:refs/remotes/@{remote}/*"
+    - defaultVersion: "master"
+      implicit: true
+      name: "modern-GitLab-library"
+      retriever:
+        modernSCM:
+          scm:
+            gitlab:
+              id: "187475a8-874d-45c9-9ba8-df28020c724b"
+              projectOwner: "markewaite"
+              projectPath: "MarkEWaite/git-client-plugin"
+              serverName: "default"
+              traits:
+              - gitLabBranchDiscovery:
+                  strategyId: 1
+              - gitLabOriginDiscovery:
+                  strategyId: 1
+              - gitLabForkDiscovery:
+                  strategyId: 1
+                  trust: "gitLabTrustPermissions"
+              - checkoutOptionTrait:
+                  extension:
+                    timeout: 51
+              - cloneOptionTrait:
+                  extension:
+                    honorRefspec: true
+                    noTags: true
+                    shallow: true
+                    timeout: 71
+              - submoduleOptionTrait:
+                  extension:
+                    disableSubmodules: false
+                    parentCredentials: true
+                    recursiveSubmodules: true
+                    shallow: true
+                    threads: 14
+                    timeout: 87
+                    trackingSubmodules: true
+    - allowVersionOverride: false
+      cachingConfiguration:
+        refreshTimeMinutes: 123
+      defaultVersion: "master"
+      name: "modern-Gitea-library"
+      retriever:
+        modernSCM:
+          scm:
+            gitea:
+              id: "d6fc89f1-e6da-4097-9883-d0ba7349f64d"
+              traits:
+              - giteaBranchDiscovery:
+                  strategyId: 1
+              - giteaPullRequestDiscovery:
+                  strategyId: 1
+              - giteaForkDiscovery:
+                  strategyId: 1
+                  trust: "giteaTrustContributors"

@@ -1,0 +1,17 @@
+Index: src/main/java/hudson/scm/SubversionSCM.java
+===================================================================
+--- src/main/java/hudson/scm/SubversionSCM.java	(revision 29879)
++++ src/main/java/hudson/scm/SubversionSCM.java	(working copy)
+@@ -740,6 +740,12 @@
+                             svnuc.doCheckout(l.getSVNURL(), local.getCanonicalFile(), SVNRevision.HEAD, getRevision(l), SVNDepth.INFINITY, true);
+                         } catch (SVNException e) {
+                             e.printStackTrace(listener.error("Failed to check out "+l.remote));
++                            pos.close();
++                            try {
++                                sct.join(); // wait for all data to be piped.
++                            } catch (InterruptedException ie) {
++                                throw new IOException2("interrupted",ie);
++                            }
+                             return null;
+                         }
+                     }

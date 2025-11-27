@@ -1,0 +1,70 @@
+Index: trunk/hudson/main/core/src/main/java/hudson/matrix/LinkedLogRotator.java
+===================================================================
+--- trunk/hudson/main/core/src/main/java/hudson/matrix/LinkedLogRotator.java	(revision 33066)
++++ trunk/hudson/main/core/src/main/java/hudson/matrix/LinkedLogRotator.java	(working copy)
+@@ -28,6 +28,11 @@
+ 
+ import java.io.IOException;
+ 
++
++import static java.util.logging.Level.FINER;
++
++import java.util.logging.Logger;
++
+ /**
+  * {@link LogRotator} for {@link MatrixConfiguration},
+  * which discards the builds if and only if it's discarded
+@@ -40,21 +45,38 @@
+  * @author Kohsuke Kawaguchi
+  */
+ final class LinkedLogRotator extends LogRotator {
++    /**
++     * @deprecated
++     *      Use {@link #LinkedLogRotator(int, int)}
++     */
+     LinkedLogRotator() {
+         super(-1,-1);
+     }
++    LinkedLogRotator(int artifactDaysToKeep, int artifactNumToKeep) {
++        super(-1,-1, artifactDaysToKeep, artifactNumToKeep);
++    }
+ 
+     @Override
+     public void perform(Job _job) throws IOException, InterruptedException {
+         // copy it to the array because we'll be deleting builds as we go.
+         MatrixConfiguration job = (MatrixConfiguration) _job;
++        /* let superclass handle clearing artifacts if defined. */
++        super.perform(_job);
+ 
+         for( MatrixRun r : job.getBuilds().toArray(new MatrixRun[0]) ) {
+             if(job.getParent().getBuildByNumber(r.getNumber())==null)
++            {
++                LOGGER.log(FINER,r.getFullDisplayName()+" is GC-ed because it's the parent build is non existant.");
+                 r.delete();
++            }
+         }
+ 
+         if(!job.isActiveConfiguration() && job.getLastBuild()==null)
++        {
++            LOGGER.log(FINER,job.getFullDisplayName()+" is deleted as not active and no builds left.");
+             job.delete();
++        }
++            
+     }
++    private static final Logger LOGGER = Logger.getLogger(LogRotator.class.getName());
+ }
+Index: trunk/hudson/main/core/src/main/java/hudson/matrix/MatrixConfiguration.java
+===================================================================
+--- trunk/hudson/main/core/src/main/java/hudson/matrix/MatrixConfiguration.java	(revision 33066)
++++ trunk/hudson/main/core/src/main/java/hudson/matrix/MatrixConfiguration.java	(working copy)
+@@ -240,7 +240,9 @@
+ 
+     @Override
+     public LogRotator getLogRotator() {
+-        return new LinkedLogRotator();
++        int archivedaystokeep = getParent().getLogRotator().getArtifactDaysToKeep();
++        int archivenumbertokeep = getParent().getLogRotator().getArtifactNumToKeep();
++        return new LinkedLogRotator(archivedaystokeep, archivenumbertokeep);
+     }
+ 
+     @Override

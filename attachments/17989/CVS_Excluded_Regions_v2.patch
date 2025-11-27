@@ -1,0 +1,172 @@
+Index: main/core/src/main/resources/hudson/scm/CVSSCM/config.jelly
+===================================================================
+--- main/core/src/main/resources/hudson/scm/CVSSCM/config.jelly	(revision 10415)
++++ main/core/src/main/resources/hudson/scm/CVSSCM/config.jelly	Tue Jun 24 08:45:07 BST 2008
+@@ -28,5 +28,8 @@
+       <f:checkbox name="cvs.canUseUpdate" checked="${h.defaultToTrue(scm.canUseUpdate)}"/>
+     </f:entry>
+     <t:listScmBrowsers name="cvs.browser" />
++    <f:entry title="${%Excluded Regions}" help="/help/_cvs/excludedRegions.html">
++	   <f:textarea name="cvs.excludedRegions" value="${scm.excludedRegions}" checkUrl="'${rootURL}/scm/CVSSCM/excludeRegionsCheck?value='+escape(this.value)"/>
++	 </f:entry>
+   </f:advanced>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>
+Index: main/core/src/main/java/hudson/scm/CVSSCM.java
+===================================================================
+--- main/core/src/main/java/hudson/scm/CVSSCM.java	(revision 10415)
++++ main/core/src/main/java/hudson/scm/CVSSCM.java	Tue Jun 24 10:33:25 BST 2008
+@@ -8,6 +8,7 @@
+ import hudson.Util;
+ import static hudson.Util.fixEmpty;
+ import static hudson.Util.fixNull;
++import static hudson.Util.fixEmptyAndTrim;
+ import hudson.model.AbstractBuild;
+ import hudson.model.AbstractProject;
+ import hudson.model.BuildListener;
+@@ -71,6 +72,7 @@
+ import java.util.concurrent.ExecutionException;
+ import java.util.regex.Matcher;
+ import java.util.regex.Pattern;
++import java.util.regex.PatternSyntaxException;
+ 
+ import net.sf.json.JSONObject;
+ 
+@@ -118,10 +120,12 @@
+ 
+     private boolean isTag;
+ 
++	 private String excludedRegions;
++
+     /**
+      * @stapler-constructor
+      */
+-    public CVSSCM(String cvsroot, String module,String branch,String cvsRsh,boolean canUseUpdate, boolean legacy, boolean isTag) {
++    public CVSSCM(String cvsroot, String module,String branch,String cvsRsh,boolean canUseUpdate, boolean legacy, boolean isTag, String excludedRegions) {
+         if(fixNull(branch).equals("HEAD"))
+             branch = null;
+ 
+@@ -132,6 +136,7 @@
+         this.canUseUpdate = canUseUpdate;
+         this.flatten = !legacy && getAllModulesNormalized().length==1;
+         this.isTag = isTag;
++	     this.excludedRegions = excludedRegions;
+     }
+ 
+     @Override
+@@ -197,6 +202,32 @@
+         return module;
+     }
+ 
++	 public String getExcludedRegions() {
++		  return excludedRegions;
++	 }
++
++	 public String[] getExcludedRegionsNormalized() {
++		  return excludedRegions == null ? null : excludedRegions.split("[\\r\\n]+");
++	 }
++
++	 private Pattern[] getExcludedRegionsPatterns() {
++		 String[] excludedRegions = getExcludedRegionsNormalized();
++		 if (excludedRegions != null)
++		 {
++			 Pattern[] patterns = new Pattern[excludedRegions.length];
++
++			 int i = 0;
++			 for (String excludedRegion : excludedRegions)
++			 {
++				 patterns[i++] = Pattern.compile(excludedRegion);
++			 }
++
++			 return patterns;
++		 }
++
++		 return null;
++	 }
++
+     /**
+      * List up all modules to check out.
+      */
+@@ -236,9 +267,45 @@
+ 
+         List<String> changedFiles = update(true, launcher, dir, listener, new Date());
+ 
+-        return changedFiles!=null && !changedFiles.isEmpty();
++	     if (changedFiles != null && !changedFiles.isEmpty())
++	     {
++		     Pattern[] patterns = getExcludedRegionsPatterns();
++
++		     if (patterns != null)
++		     {
++			     boolean areThereChanges = false;
++
++			     for (String changedFile : changedFiles)
++			     {
++				     boolean patternMatched = false;
++
++				     for (Pattern pattern : patterns)
++				     {
++					     if (pattern.matcher(changedFile).matches())
++					     {
++						     patternMatched = true;
++						     break;
+-    }
++					     }
++				     }
+ 
++				     if (!patternMatched)
++				     {
++					     areThereChanges = true;
++					     break;
++				     }
++			     }
++
++			     return areThereChanges;
++		     }
++
++		     // no excluded patterns so just return true as
++		     // changedFiles != null && !changedFiles.isEmpty() is true
++		     return true;
++	     }
++
++	     return false;
++    }
++
+     private void configureDate(ArgumentListBuilder cmd, Date date) { // #192
+         if(isTag)   return; // don't use the -D option.
+         DateFormat df = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL, Locale.US);
+@@ -1136,7 +1203,32 @@
+             }.process();
+         }
+ 
+-        /**
++	     /**
++         * Validates the excludeRegions Regex
++         */
++        public void doExcludeRegionsCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
++            new FormFieldValidator(req,rsp,false) {
++                protected void check() throws IOException, ServletException {
++                    String v = fixEmptyAndTrim(request.getParameter("value"));
++
++                    if(v != null) {
++	                    String[] regions = v.split("\\r\\n");
++	                    for (String region : regions) {
++		                    try {
++			                    Pattern.compile(region);
++		                    }
++		                    catch (PatternSyntaxException e)
++		                    {
++			                    error("Invalid regular expression. " + e.getMessage());
++		                    }
++	                    }
++                    }
++                    ok();
++                }
++            }.process();
++        }
++
++        /**
+          * Checks if the given pserver CVSROOT value exists in the pass file.
+          */
+         private boolean scanCvsPassFile(File passfile, String cvsroot) throws IOException {

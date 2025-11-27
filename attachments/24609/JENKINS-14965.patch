@@ -1,0 +1,85 @@
+Index: src/main/java/hudson/plugins/ec2/EC2Cloud.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/hudson/plugins/ec2/EC2Cloud.java	(revision f97c116b13dbf6b18e434f2b21ae0da839338810)
++++ src/main/java/hudson/plugins/ec2/EC2Cloud.java	(revision )
+@@ -23,6 +23,7 @@
+  */
+ package hudson.plugins.ec2;
+ 
++import com.amazonaws.services.ec2.model.Tag;
+ import hudson.model.Computer;
+ import hudson.model.Descriptor;
+ import hudson.model.Hudson;
+@@ -189,24 +190,34 @@
+     }
+ 
+     /**
+-     * Counts the number of instances in EC2 currently running that are using the specifed image.
++     * Counts the number of instances (started by jenkins) in EC2 currently running that are using the specifed image.
+      *
+      * @param ami If AMI is left null, then all instances are counted.
+      * <p>
+      * This includes those instances that may be started outside Hudson.
+      */
+     public int countCurrentEC2Slaves(String ami) throws AmazonClientException {
+-        int n=0;
++        int n = 0;
+         for (Reservation r : connect().describeInstances().getReservations()) {
+             for (Instance i : r.getInstances()) {
++                if (containsTag(i.getTags(), "JENKINS_CI_SLAVE")) {
+-                if (ami == null || ami.equals(i.getImageId())) {
+-                    InstanceStateName stateName = InstanceStateName.fromValue(i.getState().getName());
+-                    if (stateName == InstanceStateName.Pending || stateName == InstanceStateName.Running)
+-                        n++;
+-                }
+-            }
+-        }
++                    if (ami == null || ami.equals(i.getImageId())) {
++                        InstanceStateName stateName = InstanceStateName.fromValue(i.getState().getName());
++                        if (stateName == InstanceStateName.Pending || stateName == InstanceStateName.Running)
++                            n++;
++                    }
++                }
++            }
++        }
+         return n;
++    }
++
++    private boolean containsTag(List<Tag> tags, String tagName) {
++        for (Tag tag : tags)
++            if (tagName.equals(tag.getKey()))
++                return true;
++
++        return false;
+     }
+ 
+     /**
+Index: src/main/java/hudson/plugins/ec2/SlaveTemplate.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/hudson/plugins/ec2/SlaveTemplate.java	(revision f97c116b13dbf6b18e434f2b21ae0da839338810)
++++ src/main/java/hudson/plugins/ec2/SlaveTemplate.java	(revision )
+@@ -312,14 +312,16 @@
+             riRequest.setInstanceType(type.toString());
+             diFilters.add(new Filter("instance-type").withValues(type.toString()));
+ 
+-            HashSet<Tag> inst_tags = null;
++            HashSet<Tag> inst_tags = new HashSet<Tag>();
+             if (tags != null && !tags.isEmpty()) {
+-                inst_tags = new HashSet<Tag>();
+                 for(EC2Tag t : tags) {
+                     inst_tags.add(new Tag(t.getName(), t.getValue()));
+                     diFilters.add(new Filter("tag:"+t.getName()).withValues(t.getValue()));
+                 }
+             }
++
++            // special tag to keep track of our own instances
++            inst_tags.add(new Tag("JENKINS_CI_SLAVE", ""));
+             
+             DescribeInstancesRequest diRequest = new DescribeInstancesRequest();
+             diFilters.add(new Filter("instance-state-name").withValues(InstanceStateName.Stopped.toString(), 

@@ -1,0 +1,202 @@
+Index: dist/mindist.pom
+===================================================================
+--- dist/mindist.pom	(revision 29829)
++++ dist/mindist.pom	(working copy)
+@@ -21,6 +21,7 @@
+       <plugin>
+         <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+         <artifactId>maven-antrun-extended-plugin</artifactId>
++        <version>1.38</version>
+         <executions>
+           <execution>
+             <phase>package</phase>
+Index: dist/remote-control.pom
+===================================================================
+--- dist/remote-control.pom	(revision 29829)
++++ dist/remote-control.pom	(working copy)
+@@ -21,6 +21,7 @@
+       <plugin>
+         <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+         <artifactId>maven-antrun-extended-plugin</artifactId>
++        <version>1.38</version>
+         <executions>
+           <execution>
+             <phase>package</phase>
+Index: dist/package.sh
+===================================================================
+--- dist/package.sh	(revision 29851)
++++ dist/package.sh	(working copy)
+@@ -1,20 +1,25 @@
+ #!/bin/bash -ex
+ 
+ # incoming version of Selenium Grid
+-version=1.0.4
++version=1.0.5
+ # outgoing version of the packages in Maven
+-distVersion=1.0.4-hudson-1
++distVersion=1.0.5-hudson-1
+ 
+ rm -rf work || true
+ work=$PWD/work
+ 
+ # download and extract
+-for type in bin src; do
++for type in bin; do
+   [ -e selenium-grid-$version-$type.zip ] || wget -O selenium-grid-$version-$type.zip http://release.seleniumhq.org/selenium-grid/selenium-grid-$version-$type.zip
+   mkdir -p work/$type
+   unzip -q selenium-grid-$version-$type.zip -d work/$type
+ done
+ 
++mkdir -p work/src
++ln -s ../../../../selenium-grid/hub work/src/hub
++ln -s ../../../../selenium-grid/remote-control work/src/remote-control
++ln -s ../../../../selenium-grid/infrastructure work/src/infrastructure
++
+ # remove unused files
+ pushd work/bin/*
+   rm -rf doc examples vendor/testng*.jar lib/*-demo-*.jar sample-scripts
+Index: dist/hub.pom
+===================================================================
+--- dist/hub.pom	(revision 29829)
++++ dist/hub.pom	(working copy)
+@@ -21,6 +21,7 @@
+       <plugin>
+         <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+         <artifactId>maven-antrun-extended-plugin</artifactId>
++        <version>1.38</version>
+         <executions>
+           <execution>
+             <phase>package</phase>
+Index: src/test/java/hudson/plugins/selenium/SeleniumTest.java
+===================================================================
+--- src/test/java/hudson/plugins/selenium/SeleniumTest.java	(revision 29829)
++++ src/test/java/hudson/plugins/selenium/SeleniumTest.java	(working copy)
+@@ -21,7 +21,7 @@
+         Selenium browser;
+ 
+         browser = new DefaultSelenium("localhost",
+-            4444, "foo:*firefox /usr/lib/firefox-3.5.7/firefox", "http://www.google.com");
++            4444, "foo:*firefox /Applications/Firefox.app/Contents/MacOS/firefox-bin", "http://www.google.com");
+         browser.start();
+ 
+         try {
+Index: src/main/java/hudson/plugins/selenium/HudsonRemoteControlPool.java
+===================================================================
+--- src/main/java/hudson/plugins/selenium/HudsonRemoteControlPool.java	(revision 29829)
++++ src/main/java/hudson/plugins/selenium/HudsonRemoteControlPool.java	(working copy)
+@@ -34,6 +34,19 @@
+         return all.remove(rc);
+     }
+ 
++    public boolean isRegistered(RemoteControlProxy proxy) {
++        for (RemoteControlProxy rc : all) {
++            if (rc.equals(proxy)) {
++                return true;
++            }
++        }
++        return false;
++    }
++
++    public List<RemoteControlProxy> allRegisteredRemoteControls() {
++        return new ArrayList<RemoteControlProxy>(all);
++    }
++
+     public synchronized List<RemoteControlProxy> availableRemoteControls() {
+         List<RemoteControlProxy> r = new ArrayList<RemoteControlProxy>(all.size());
+         for (RemoteControlProxy rc : all)
+@@ -45,11 +58,28 @@
+     public synchronized List<RemoteControlProxy> reservedRemoteControls() {
+         List<RemoteControlProxy> r = new ArrayList<RemoteControlProxy>(all.size());
+         for (RemoteControlProxy rc : all)
+-            if(rc.concurrentSesssionCount() > 0)
++            if(rc.canHandleNewSession())
+                 r.add(rc);
+         return r;
+     }
+ 
++    public void unregisterAllUnresponsiveRemoteControls() {
++        for (RemoteControlProxy rc : all) {
++            if (rc.unreliable()) {
++                LOGGER.log(Level.WARNING, "Unregistering unreliable RC " + rc);
++                unregister(rc);
++            }
++        }
++    }
++
++    public void recycleAllSessionsIdleForTooLong(double maxIdleTimeInSeconds) {
++        final int maxIdleTimeInMilliseconds = (int) (maxIdleTimeInSeconds * 1000);
++        /*if (session.innactiveForMoreThan(maxIdleTimeInMilliseconds)) {
++            LOGGER.warn("Releasing session IDLE for more than " + maxIdleTimeInSeconds + " seconds: " + session);
++            releaseForSession(session.sessionId());
++        }*/
++    }
++
+     public synchronized RemoteControlProxy reserve(Environment env) {
+         String[] keys = env.name().split("&");
+         for (int i = 0; i < keys.length; i++)
+@@ -69,7 +99,7 @@
+                 if(all.isEmpty())
+                     throw new IllegalArgumentException("No RCs available");
+                 else
+-                    throw new IllegalArgumentException("No RC satisifies the label criteria: "+env.name()+" - "+all);
++                    throw new IllegalArgumentException("No RC satisfies the label criteria: "+env.name()+" - "+all);
+             }
+ 
+             try {
+@@ -107,5 +137,9 @@
+         sessions.remove(sessionId).unregisterSession();
+     }
+ 
++    public void updateSessionLastActiveAt(String sessionId) {
++        sessions.get(sessionId).registerNewSession();
++    }
++
+     private static final Logger LOGGER = Logger.getLogger(HudsonRemoteControlPool.class.getName());
+ }
+Index: pom.xml
+===================================================================
+--- pom.xml	(revision 29829)
++++ pom.xml	(working copy)
+@@ -59,9 +59,10 @@
+       <version>${selenium.version}</version>
+     </dependency>
+     <dependency>
+-      <groupId>org.openqa.selenium.server</groupId>
++      <groupId>org.seleniumhq.selenium.server</groupId>
+       <artifactId>selenium-server</artifactId>
+-      <version>1.0.1</version>
++      <version>1.0.3</version>
++      <type>pom</type>
+       <exclusions>
+         <exclusion>
+           <groupId>jetty</groupId>
+@@ -73,7 +74,7 @@
+     <dependency>
+       <groupId>org.seleniumhq.selenium.client-drivers</groupId>
+       <artifactId>selenium-java-client-driver</artifactId>
+-      <version>1.0-beta-2</version>
++      <version>1.0.2</version>
+       <scope>test</scope>
+       <exclusions>
+         <exclusion>
+@@ -89,6 +90,6 @@
+   </dependencies>
+ 
+   <properties>
+-    <selenium.version>1.0.4-hudson-1</selenium.version>
++    <selenium.version>1.0.5-hudson-1</selenium.version>
+   </properties>
+ </project>
+Index: test-client/pom.xml
+===================================================================
+--- test-client/pom.xml	(revision 29829)
++++ test-client/pom.xml	(working copy)
+@@ -17,7 +17,7 @@
+     <dependency>
+       <groupId>org.seleniumhq.selenium.client-drivers</groupId>
+       <artifactId>selenium-java-client-driver</artifactId>
+-      <version>1.0-beta-2</version>
++      <version>1.0.2</version>
+     </dependency>
+   </dependencies>
+   <repositories>

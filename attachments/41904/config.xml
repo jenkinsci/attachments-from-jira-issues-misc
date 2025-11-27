@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <actions/>
+    <description>THIS IS GENERATED JOB. Do not alter anything here. Cont job for Stream 2.6 test</description>
+    <keepDependencies>false</keepDependencies>
+    <properties>
+        <hudson.plugins.buildblocker.BuildBlockerProperty>
+            <useBuildBlocker>true</useBuildBlocker>
+            <blockingJobs>test2_stream_2.6_continuous_snapshots
+iovm_stream_2.6_continuous_snapshots
+test_stream_2.6_continuous_snapshots</blockingJobs>
+            <blockLevel>NODE</blockLevel>
+            <scanQueueFor>DISABLED</scanQueueFor>
+        </hudson.plugins.buildblocker.BuildBlockerProperty>
+        <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
+            <gitLabConnection>repository.com</gitLabConnection>
+        </com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
+        <hudson.model.ParametersDefinitionProperty>
+            <parameterDefinitions>
+                <hudson.model.ChoiceParameterDefinition>
+                    <choices class="java.util.Arrays$ArrayList">
+                        <a class="string-array">
+                            <string>clean deploy</string>
+                            <string>clean install</string>
+                        </a>
+                    </choices>
+                    <name>mavenGoals</name>
+                    <description>Maven goals executed on projects after checkout.</description>
+                </hudson.model.ChoiceParameterDefinition>
+                <hudson.model.BooleanParameterDefinition>
+                    <name>skipTests</name>
+                    <defaultValue>false</defaultValue>
+                    <description>Skip JUnit Tests</description>
+                </hudson.model.BooleanParameterDefinition>
+                <net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition>
+                    <name>branch</name>
+                    <selectedValue>DEFAULT</selectedValue>
+                    <type>PT_BRANCH</type>
+                    <quickFilterEnabled>true</quickFilterEnabled>
+                    <description>Branch to build</description>
+                    <sortMode>DESCENDING_SMART</sortMode>
+                    <defaultValue>origin/release2.6/develop</defaultValue>
+                </net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition>
+            </parameterDefinitions>
+        </hudson.model.ParametersDefinitionProperty>
+    </properties>
+    <canRoam>false</canRoam>
+    <disabled>false</disabled>
+    <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+    <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+    <triggers>
+        <com.dabsquared.gitlabjenkins.GitLabPushTrigger>
+            <spec/>
+            <triggerOnPush>true</triggerOnPush>
+            <triggerOnMergeRequest>false</triggerOnMergeRequest>
+            <triggerOpenMergeRequestOnPush>never</triggerOpenMergeRequestOnPush>
+            <ciSkip>true</ciSkip>
+            <setBuildDescription>true</setBuildDescription>
+            <addNoteOnMergeRequest>true</addNoteOnMergeRequest>
+            <addCiMessage>false</addCiMessage>
+            <addVoteOnMergeRequest>true</addVoteOnMergeRequest>
+            <includeBranchesSpec>release2.6/develop</includeBranchesSpec>
+            <excludeBranchesSpec/>
+            <acceptMergeRequestOnSuccess>false</acceptMergeRequestOnSuccess>
+            <branchFilterType>NameBasedFilter</branchFilterType>
+            <targetBranchRegex/>
+            <triggerOnNoteRequest>true</triggerOnNoteRequest>
+            <noteRegex>Jenkins please retry a build</noteRegex>
+            <skipWorkInProgressMergeRequest>true</skipWorkInProgressMergeRequest>
+        </com.dabsquared.gitlabjenkins.GitLabPushTrigger>
+    </triggers>
+    <concurrentBuild>false</concurrentBuild>
+    <builders>
+        <hudson.tasks.Maven>
+            <targets>${mavenGoals} </targets>
+            <mavenName>3.3.9</mavenName>
+            <jvmOptions>-DskipTests=${skipTests} -Xmx2048M</jvmOptions>
+            <pom>pom.xml</pom>
+            <usePrivateRepository>false</usePrivateRepository>
+            <injectBuildVariables>true</injectBuildVariables>
+        </hudson.tasks.Maven>
+    </builders>
+    <publishers>
+        <com.dabsquared.gitlabjenkins.publisher.GitLabCommitStatusPublisher>
+            <name>jenkins</name>
+        </com.dabsquared.gitlabjenkins.publisher.GitLabCommitStatusPublisher>
+        <hudson.tasks.junit.JUnitResultArchiver>
+            <testResults>**/target/surefire-reports/*.xml</testResults>
+            <keepLongStdio>false</keepLongStdio>
+            <testDataPublishers/>
+            <allowEmptyResults>true</allowEmptyResults>
+            <healthScaleFactor>1.0</healthScaleFactor>
+        </hudson.tasks.junit.JUnitResultArchiver>
+        <hudson.plugins.emailext.ExtendedEmailPublisher>
+            <recipientList>$DEFAULT_RECIPIENTS</recipientList>
+            <configuredTriggers>
+                <hudson.plugins.emailext.plugins.trigger.FailureTrigger>
+                    <email>
+                        <recipientList>michal.taborowski@igt.com</recipientList>
+                        <subject>[Jenkins] Job $JOB_NAME failure</subject>
+                        <body>${JELLY_SCRIPT,template="neos_html"}</body>
+                        <recipientProviders>
+                            <hudson.plugins.emailext.plugins.recipients.ListRecipientProvider/>
+                        </recipientProviders>
+                        <attachmentsPattern/>
+                        <attachBuildLog>false</attachBuildLog>
+                        <compressBuildLog>false</compressBuildLog>
+                        <replyTo>$PROJECT_DEFAULT_REPLYTO</replyTo>
+                        <contentType>text/html</contentType>
+                    </email>
+                </hudson.plugins.emailext.plugins.trigger.FailureTrigger>
+            </configuredTriggers>
+            <contentType>default</contentType>
+            <defaultSubject>$DEFAULT_SUBJECT</defaultSubject>
+            <defaultContent>$DEFAULT_CONTENT</defaultContent>
+            <attachmentsPattern/>
+            <presendScript>$DEFAULT_PRESEND_SCRIPT</presendScript>
+            <classpath/>
+            <attachBuildLog>false</attachBuildLog>
+            <compressBuildLog>false</compressBuildLog>
+            <replyTo>$DEFAULT_REPLYTO</replyTo>
+            <saveOutput>false</saveOutput>
+            <disabled>false</disabled>
+        </hudson.plugins.emailext.ExtendedEmailPublisher>
+    </publishers>
+    <buildWrappers>
+        <jenkins.plugins.nodejs.tools.NpmPackagesBuildWrapper>
+            <nodeJSInstallationName>NodeJS8.1.2</nodeJSInstallationName>
+        </jenkins.plugins.nodejs.tools.NpmPackagesBuildWrapper>
+        <hudson.plugins.ws__cleanup.PreBuildCleanup>
+            <patterns/>
+            <deleteDirs>false</deleteDirs>
+            <cleanupParameter/>
+            <externalDelete/>
+        </hudson.plugins.ws__cleanup.PreBuildCleanup>
+        <EnvInjectBuildWrapper>
+            <info>
+                <propertiesContent>ANDROID_HOME=/usr/local/android/android-sdk-linux
+FINSTALL_PATH=/usr/local/finstall</propertiesContent>
+                <loadFilesFromMaster>false</loadFilesFromMaster>
+            </info>
+        </EnvInjectBuildWrapper>
+    </buildWrappers>
+    <assignedNode>openretail</assignedNode>
+    <jdk>IBM JDK 1.8 SR3</jdk>
+    <logRotator>
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>10</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+    </logRotator>
+    <quietPeriod>15</quietPeriod>
+    <scm class="hudson.plugins.git.GitSCM">
+        <userRemoteConfigs>
+            <hudson.plugins.git.UserRemoteConfig>
+                <refspec>+refs/heads/release2.6/develop:refs/remotes/origin/release2.6/develop</refspec>
+                <url>git@repository.com:test/open-retail.git</url>
+            </hudson.plugins.git.UserRemoteConfig>
+        </userRemoteConfigs>
+        <branches>
+            <hudson.plugins.git.BranchSpec>
+                <name>${branch}</name>
+            </hudson.plugins.git.BranchSpec>
+        </branches>
+        <configVersion>2</configVersion>
+        <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+        <gitTool>Default</gitTool>
+        <extensions>
+            <hudson.plugins.git.extensions.impl.LocalBranch>
+                <localBranch>release2.6/develop</localBranch>
+            </hudson.plugins.git.extensions.impl.LocalBranch>
+            <hudson.plugins.git.extensions.impl.WipeWorkspace/>
+            <hudson.plugins.git.extensions.impl.SubmoduleOption>
+                <disableSubmodules>false</disableSubmodules>
+                <recursiveSubmodules>false</recursiveSubmodules>
+                <trackingSubmodules>false</trackingSubmodules>
+                <reference/>
+                <timeout>30</timeout>
+                <parentCredentials>false</parentCredentials>
+            </hudson.plugins.git.extensions.impl.SubmoduleOption>
+            <hudson.plugins.git.extensions.impl.CloneOption>
+                <noTags>true</noTags>
+                <timeout>30</timeout>
+                <shallow>true</shallow>
+            </hudson.plugins.git.extensions.impl.CloneOption>
+        </extensions>
+    </scm>
+</project>

@@ -1,0 +1,236 @@
+### Eclipse Workspace Patch 1.0
+#P hudson-core
+Index: src/main/java/hudson/model/Item.java
+===================================================================
+--- src/main/java/hudson/model/Item.java	(revision 17217)
++++ src/main/java/hudson/model/Item.java	(working copy)
+@@ -190,6 +190,7 @@
+     public static final Permission CREATE = new Permission(PERMISSIONS,"Create", Permission.CREATE);
+     public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Permission.DELETE);
+     public static final Permission CONFIGURE = new Permission(PERMISSIONS,"Configure", Permission.CONFIGURE);
++    public static final Permission READ = new Permission(PERMISSIONS,"Read", Permission.READ);
+     public static final Permission BUILD = new Permission(PERMISSIONS, "Build", Messages._AbstractProject_BuildPermission_Description(),  Permission.UPDATE);
+     public static final Permission WORKSPACE = new Permission(PERMISSIONS, "Workspace", Messages._AbstractProject_WorkspacePermission_Description(), Permission.READ);
+ }
+Index: src/main/resources/lib/hudson/queue.jelly
+===================================================================
+--- src/main/resources/lib/hudson/queue.jelly	(revision 17217)
++++ src/main/resources/lib/hudson/queue.jelly	(working copy)
+@@ -58,10 +58,17 @@
+           <tr>
+             <td class="pane" width="100%" tooltip="${item.why}" style="white-space: normal;">
+               <j:set var="stuck" value="${item.isStuck()}" />
++              <j:choose>
++              <j:when test="${h.hasPermission(item.task,item.task.READ)}">
+               <a href="${rootURL}/${item.task.url}" style="${stuck?'color:#ef2929':null}">
+                 ${item.task.fullDisplayName}
+                 <j:if test="${stuck}"> (${%appears to be stuck})</j:if>
+               </a>
++              </j:when>
++              <j:otherwise>
++              <span>${%Unknown Task}</span>
++              </j:otherwise>
++              </j:choose>
+             </td>
+             <td class="pane" width="16" align="center" valign="middle">
+               <j:if test="${item.hasCancelPermission()}">
+Index: src/main/resources/lib/hudson/project/upstream-downstream.jelly
+===================================================================
+--- src/main/resources/lib/hudson/project/upstream-downstream.jelly	(revision 17217)
++++ src/main/resources/lib/hudson/project/upstream-downstream.jelly	(working copy)
+@@ -42,10 +42,12 @@
+     <h2>${%Upstream Projects}</h2>
+     <ul style="list-style-type: none;">
+       <j:forEach var="item" items="${upstream}">
++      <j:if test="${h.hasPermission(item,item.READ)}">
+         <li>
+           <t:jobLink job="${item}"/>
+           <local:relationship lhs="${item}" rhs="${it}"/>
+         </li>
++        </j:if>
+       </j:forEach>
+     </ul>
+   </j:if>
+@@ -54,10 +56,12 @@
+     <h2>${%Downstream Projects}</h2>
+     <ul style="list-style-type: none;">
+       <j:forEach var="item" items="${downstream}">
++        <j:if test="${h.hasPermission(item,item.READ)}">
+         <li>
+           <t:jobLink job="${item}"/>
+           <local:relationship lhs="${it}" rhs="${item}"/>
+         </li>
++        </j:if>
+       </j:forEach>
+     </ul>
+   </j:if>
+Index: src/main/java/hudson/WebAppMain.java
+===================================================================
+--- src/main/java/hudson/WebAppMain.java	(revision 17217)
++++ src/main/java/hudson/WebAppMain.java	(working copy)
+@@ -27,6 +27,7 @@
+ import com.thoughtworks.xstream.core.JVM;
+ import hudson.model.Hudson;
+ import hudson.model.User;
++import hudson.security.ACL;
+ import hudson.triggers.SafeTimerTask;
+ import hudson.triggers.Trigger;
+ import hudson.util.HudsonIsLoading;
+@@ -43,6 +44,7 @@
+ import org.jvnet.localizer.LocaleProvider;
+ import org.kohsuke.stapler.Stapler;
+ import org.kohsuke.stapler.StaplerRequest;
++import org.acegisecurity.context.SecurityContextHolder;
+ import org.kohsuke.stapler.jelly.JellyFacet;
+ import org.apache.tools.ant.types.FileSet;
+ 
+@@ -198,7 +200,10 @@
+                         // can be served quickly
+                         Trigger.timer.schedule(new SafeTimerTask() {
+                             public void doRun() {
++                            	//this thread is initializing hudson. it should have full permission
++                            	SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+                                 User.getUnknown().getBuilds();
++                                SecurityContextHolder.clearContext();
+                             }
+                         }, 1000*10);
+                     } catch (Error e) {
+Index: src/main/java/hudson/triggers/Trigger.java
+===================================================================
+--- src/main/java/hudson/triggers/Trigger.java	(revision 17217)
++++ src/main/java/hudson/triggers/Trigger.java	(working copy)
+@@ -42,6 +42,7 @@
+ import hudson.model.TopLevelItemDescriptor;
+ import hudson.scheduler.CronTab;
+ import hudson.scheduler.CronTabList;
++import hudson.security.ACL;
+ import hudson.util.DoubleLaunchChecker;
+ 
+ import java.io.InvalidObjectException;
+@@ -58,6 +59,8 @@
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+ 
++import org.acegisecurity.context.SecurityContextHolder;
++
+ /**
+  * Triggers a {@link Build}.
+  *
+@@ -170,6 +173,9 @@
+         }
+ 
+         public void doRun() {
++        	//this is background system work. it should have full permission
++        	SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
++        	
+             while(new Date().getTime()-cal.getTimeInMillis()>1000) {
+                 LOGGER.fine("cron checking "+cal.getTime().toLocaleString());
+ 
+@@ -183,6 +189,7 @@
+ 
+                 cal.add(Calendar.MINUTE,1);
+             }
++            SecurityContextHolder.clearContext();
+         }
+     }
+ 
+Index: src/main/resources/lib/hudson/executors.jelly
+===================================================================
+--- src/main/resources/lib/hudson/executors.jelly	(revision 17217)
++++ src/main/resources/lib/hudson/executors.jelly	(working copy)
+@@ -95,8 +95,17 @@
+ 	          </j:when>
+ 	          <j:otherwise>
+ 	            <td class="pane">
+-	              <div nowrap="true">${%Building} <a href="${rootURL}/${e.currentExecutable.url}">${e.currentExecutable}</a></div>
+-                <t:buildProgressBar build="${e.currentExecutable}"/>
++	            <div nowrap="true">${%Building}
++	            <j:choose>
++	            <j:when test="${h.hasPermission(e.currentExecutable.parent,e.currentExecutable.parent.READ)}">
++	                <a href="${rootURL}/${e.currentExecutable.url}">${e.currentExecutable}</a>
++	                <t:buildProgressBar build="${e.currentExecutable}"/>
++	            </j:when>
++	            <j:otherwise>
++	            <span>${%Unknown Task}</span>
++	            </j:otherwise>
++	            </j:choose>
++	            </div>
+ 	            </td>
+ 	            <td class="pane" align="center" valign="middle">
+                 <j:if test="${e.hasStopPermission()}">
+Index: src/main/java/hudson/model/Hudson.java
+===================================================================
+--- src/main/java/hudson/model/Hudson.java	(revision 17217)
++++ src/main/java/hudson/model/Hudson.java	(working copy)
+@@ -470,6 +470,9 @@
+     private transient final LogRecorderManager log = new LogRecorderManager();
+ 
+     public Hudson(File root, ServletContext context) throws IOException {
++    	//as hudson is starting, grant this process full controll
++    	SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
++    	
+         this.root = root;
+         this.servletContext = context;
+         computeVersion(context);
+@@ -998,7 +1001,18 @@
+      */
+     @Exported(name="jobs")
+     public List<TopLevelItem> getItems() {
+-        return new ArrayList<TopLevelItem>(items.values());
++        List<TopLevelItem> viewableItems = new ArrayList<TopLevelItem>();
++        for (TopLevelItem item : items.values()) {
++            if (item instanceof AccessControlled) {
++            	if (((AccessControlled)item).hasPermission(Item.READ))
++            		viewableItems.add(item);
++            }
++            else {
++            	viewableItems.add(item);
++            }
++        }
++        
++        return viewableItems;
+     }
+ 
+     /**
+@@ -1017,7 +1031,7 @@
+      */
+     public <T> List<T> getItems(Class<T> type) {
+         List<T> r = new ArrayList<T>();
+-        for (TopLevelItem i : items.values())
++        for (TopLevelItem i : getItems())
+             if (type.isInstance(i))
+                  r.add(type.cast(i));
+         return r;
+@@ -1036,8 +1050,15 @@
+         while(!q.isEmpty()) {
+             ItemGroup<?> parent = q.pop();
+             for (Item i : parent.getItems()) {
+-                if(type.isInstance(i))
+-                    r.add(type.cast(i));
++                if(type.isInstance(i)) {
++                    if (i instanceof AccessControlled) {
++                    	if (((AccessControlled)i).hasPermission(Item.READ))
++                    		r.add(type.cast(i));
++                    }
++                    else {
++                    	r.add(type.cast(i));
++                    }
++                }
+                 if(i instanceof ItemGroup)
+                     q.push((ItemGroup)i);
+             }
+@@ -1646,7 +1667,13 @@
+      * Note that the look up is case-insensitive.
+      */
+     public TopLevelItem getItem(String name) {
+-        return items.get(name);
++    	TopLevelItem item = items.get(name);
++        if (item instanceof AccessControlled) {
++        	if (!((AccessControlled) item).hasPermission(Item.READ)) {
++        		return null;
++        	}
++        }
++        return item;
+     }
+ 
+     public File getRootDirFor(TopLevelItem child) {

@@ -1,0 +1,18 @@
+687c687
+< 	        for( AbstractBuild<?,?> b = build.getPreviousBuild(); null != b; b = b.getPreviousBuild() ) 
+---
+> 			while (null != previousBuild)
+690c690
+< 	        	File prevProjectDB = new File(build.getRootDir(), DerbyUtils.DERBY_DB_FOLDER);
+---
+> 				File prevProjectDB = new File(previousBuild.getRootDir(), DerbyUtils.DERBY_DB_FOLDER);
+693,694c693
+< 	            	Logger.debug("Found previous project state in build " + b.getNumber());
+< 	            	previousBuild = b;
+---
+> 					Logger.debug("Found previous project state in build " + previousBuild.getNumber());
+696a696,699
+> 				else
+> 				{
+> 					previousBuild = previousBuild.getPreviousBuild();
+> 				}

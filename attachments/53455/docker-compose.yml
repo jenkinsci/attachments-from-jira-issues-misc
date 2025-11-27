@@ -1,0 +1,17 @@
+version: '2.2'
+services:
+  master:
+    build:
+      context: .
+      dockerfile: master.Dockerfile
+    ports:
+      - '8080:8080'
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+  agent:
+    build:
+      context: .
+      dockerfile: agent.Dockerfile
+    image: agent
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'

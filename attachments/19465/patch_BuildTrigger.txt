@@ -1,0 +1,40 @@
+Index: BuildTrigger.java
+===================================================================
+--- BuildTrigger.java	(revision 31483)
++++ BuildTrigger.java	(working copy)
+@@ -2,6 +2,9 @@
+ 
+ import hudson.Extension;
+ import hudson.Launcher;
++import hudson.matrix.MatrixAggregatable;
++import hudson.matrix.MatrixAggregator;
++import hudson.matrix.MatrixBuild;
+ import hudson.model.AbstractBuild;
+ import hudson.model.AbstractProject;
+ import hudson.model.BuildListener;
+@@ -23,7 +26,7 @@
+ 
+ import org.kohsuke.stapler.StaplerRequest;
+ 
+-public class BuildTrigger extends Notifier implements DependecyDeclarer {
++public class BuildTrigger extends Notifier implements DependecyDeclarer, MatrixAggregatable {
+ 
+ 	private final List<BuildTriggerConfig> configs;
+ 
+@@ -77,6 +80,16 @@
+ 		return DependencyGraph.class.getClasses().length > 0;
+ 	}
+ 
++  public MatrixAggregator createAggregator(MatrixBuild build, Launcher launcher, BuildListener listener) {
++    return new MatrixAggregator(build, launcher, listener) {
++
++      @Override
++      public boolean endBuild() throws InterruptedException, IOException {
++        return hudson.tasks.BuildTrigger.execute(build, listener);
++      }
++    };
++  }
++	
+ 	@Extension
+ 	public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+ 

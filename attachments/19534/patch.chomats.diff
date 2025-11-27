@@ -1,0 +1,218 @@
+Index: src/test/java/SimpleTest.java
+===================================================================
+--- src/test/java/SimpleTest.java	(revision 32288)
++++ src/test/java/SimpleTest.java	(working copy)
+@@ -31,4 +31,28 @@
+         r.add(file);
+         System.out.println(r.getFailCount()+"/"+r.getTotalCount());
+     }
++    
++    public void test_param() throws Exception {
++        Report r = new Report(null);
++        File file = new File(getClass().getResource("parm_1.xml").toURI());
++        System.out.println(file.length());
++        r.add(file);
++        System.out.println(r.getFailCount()+"/"+r.getTotalCount());
++        assertEquals(0, r.getFailCount());
++        assertEquals(10, r.getTotalCount());
++    }
++    
++    public void test_param_less_id() throws Exception {
++        Report r = new Report(null);
++        File file = new File(getClass().getResource("parm_less_id.xml").toURI());
++        System.out.println(file.length());
++        r.add(file);
++        System.out.println(r.getFailCount()+"/"+r.getTotalCount());
++        assertEquals(0, r.getFailCount());
++        assertEquals(10, r.getTotalCount());
++    }
++    
++    public static void main(String[] args) throws Exception {
++		new SimpleTest().test2();
++	}
+ }
+Index: src/test/resources/parm_less_id.xml
+===================================================================
+--- src/test/resources/parm_less_id.xml	(revision 0)
++++ src/test/resources/parm_less_id.xml	(revision 0)
+@@ -0,0 +1,74 @@
++<?xml version="1.0" encoding="UTF-8" ?>
++<testsuite errors="0" failures="0" hostname="kasparov" name="fr.imag.adele.cadse.test.basictests.metrics.Metrics_Integer" tests="10" time="36.143" timestamp="2010-06-28T07:28:21">
++  <properties>
++    <property name="test.display" value=":10" />
++    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment" />
++    <property name="sun.boot.library.path" value="/opt/sun-jdk-1.6.0.20/jre/lib/amd64" />
++    <property name="java.vm.version" value="16.3-b01" />
++    <property name="java.vm.vendor" value="Sun Microsystems Inc." />
++    <property name="java.vendor.url" value="http://java.sun.com/" />
++    <property name="path.separator" value=":" />
++    <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM" />
++    <property name="file.encoding.pkg" value="sun.io" />
++    <property name="user.country" value="FR" />
++    <property name="sun.java.launcher" value="SUN_STANDARD" />
++    <property name="sun.os.patch.level" value="unknown" />
++    <property name="testPlatformPath" value="/home2/hudson/home/jobs/HandTest/workspace/handtest/target" />
++    <property name="java.vm.specification.name" value="Java Virtual Machine Specification" />
++    <property name="user.dir" value="/home2/hudson/home/jobs/HandTest/workspace" />
++    <property name="java.runtime.version" value="1.6.0_20-b02" />
++    <property name="java.awt.graphicsenv" value="sun.awt.X11GraphicsEnvironment" />
++    <property name="java.endorsed.dirs" value="/opt/sun-jdk-1.6.0.20/jre/lib/endorsed" />
++    <property name="os.arch" value="amd64" />
++    <property name="java.io.tmpdir" value="/tmp" />
++    <property name="line.separator" value="
++" />
++    <property name="java.vm.specification.vendor" value="Sun Microsystems Inc." />
++    <property name="os.name" value="Linux" />
++    <property name="classworlds.conf" value="/usr/share/maven-bin-2.2//bin/m2.conf" />
++    <property name="sun.jnu.encoding" value="UTF-8" />
++    <property name="java.library.path" value="/opt/sun-jdk-1.6.0.20/jre/lib/amd64/server:/opt/sun-jdk-1.6.0.20/jre/lib/amd64:/opt/sun-jdk-1.6.0.20/jre/../lib/amd64:/usr/java/packages/lib/amd64:/usr/lib64:/lib64:/lib:/usr/lib" />
++    <property name="java.specification.name" value="Java Platform API Specification" />
++    <property name="java.class.version" value="50.0" />
++    <property name="sun.management.compiler" value="HotSpot 64-Bit Server Compiler" />
++    <property name="testClass" value="fr.imag.adele.cadse.testplatform.tests_basictests.Metrics" />
++    <property name="test.junit.port" value="5597" />
++    <property name="os.version" value="2.6.31-gentoo-r6" />
++    <property name="user.home" value="/home2/hudson" />
++    <property name="user.timezone" value="Europe/Brussels" />
++    <property name="java.awt.printerjob" value="sun.print.PSPrinterJob" />
++    <property name="file.encoding" value="UTF-8" />
++    <property name="java.specification.version" value="1.6" />
++    <property name="java.class.path" value="/usr/share/maven-bin-2.2//boot/classworlds-1.1.jar" />
++    <property name="user.name" value="hudson" />
++    <property name="testPlatformPath.eclipse" value="/home2/hudson/home/jobs/HandTest/workspace/platform-test-galileo/eclipse" />
++    <property name="java.vm.specification.version" value="1.0" />
++    <property name="java.home" value="/opt/sun-jdk-1.6.0.20/jre" />
++    <property name="sun.arch.data.model" value="64" />
++    <property name="user.language" value="fr" />
++    <property name="java.specification.vendor" value="Sun Microsystems Inc." />
++    <property name="java.vm.info" value="mixed mode" />
++    <property name="java.version" value="1.6.0_20" />
++    <property name="securerandom.source" value="file:/dev/./urandom" />
++    <property name="java.ext.dirs" value="/opt/sun-jdk-1.6.0.20/jre/lib/ext:/usr/java/packages/lib/ext" />
++    <property name="sun.boot.class.path" value="/opt/sun-jdk-1.6.0.20/jre/lib/resources.jar:/opt/sun-jdk-1.6.0.20/jre/lib/rt.jar:/opt/sun-jdk-1.6.0.20/jre/lib/sunrsasign.jar:/opt/sun-jdk-1.6.0.20/jre/lib/jsse.jar:/opt/sun-jdk-1.6.0.20/jre/lib/jce.jar:/opt/sun-jdk-1.6.0.20/jre/lib/charsets.jar:/opt/sun-jdk-1.6.0.20/jre/classes" />
++    <property name="java.vendor" value="Sun Microsystems Inc." />
++    <property name="maven.home" value="/usr/share/maven-bin-2.2" />
++    <property name="file.separator" value="/" />
++    <property name="testPlatformPath.report" value="/home2/hudson/home/jobs/HandTest/workspace/handtest/target/test-reports" />
++    <property name="java.vendor.url.bug" value="http://java.sun.com/cgi-bin/bugreport.cgi" />
++    <property name="sun.io.unicode.encoding" value="UnicodeLittle" />
++    <property name="sun.cpu.endian" value="little" />
++    <property name="sun.cpu.isalist" value="" />
++  </properties>
++  <testcase classname="fr.imag.adele.cadse.test.basictests.metrics.Metrics_Integer" name="testRunner[0]" time="0.817" />
++  <testcase classname="fr.imag.adele.cadse.test.basictests.metrics.Metrics_Integer" name="testRunner[1]" time="1.466" />
++  <testcase classname="fr.imag.adele.cadse.test.basictests.metrics.Metrics_Integer" name="testRunner[2]" time="1.114" />
++  <testcase classname="fr.imag.adele.cadse.test.basictests.metrics.Metrics_Integer" name="testRunner[3]" time="1.261" />
++  <testcase classname="fr.imag.adele.cadse.test.basictests.metrics.Metrics_Integer" name="testRunner[4]" time="1.033" />
++  <testcase classname="fr.imag.adele.cadse.test.basictests.metrics.Metrics_Integer" name="testRunner[5]" time="1.02" />
++  <testcase classname="fr.imag.adele.cadse.test.basictests.metrics.Metrics_Integer" name="testRunner[6]" time="1.23" />
++  <testcase classname="fr.imag.adele.cadse.test.basictests.metrics.Metrics_Integer" name="testRunner[7]" time="1.096" />
++  <testcase classname="fr.imag.adele.cadse.test.basictests.metrics.Metrics_Integer" name="testRunner[8]" time="1.056" />
++  <testcase classname="fr.imag.adele.cadse.test.basictests.metrics.Metrics_Integer" name="testRunner[9]" time="1.303" />
++</testsuite>
+Index: src/test/resources/parm_1.xml
+===================================================================
+--- src/test/resources/parm_1.xml	(revision 0)
++++ src/test/resources/parm_1.xml	(revision 0)
+@@ -0,0 +1,74 @@
++<?xml version="1.0" encoding="UTF-8" ?>
++<testsuite errors="0" failures="0" hostname="kasparov" name="fr.imag.adele.cadse.test.basictests.metrics.Metrics_Integer" tests="10" time="36.143" timestamp="2010-06-28T07:28:21">
++  <properties>
++    <property name="test.display" value=":10" />
++    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment" />
++    <property name="sun.boot.library.path" value="/opt/sun-jdk-1.6.0.20/jre/lib/amd64" />
++    <property name="java.vm.version" value="16.3-b01" />
++    <property name="java.vm.vendor" value="Sun Microsystems Inc." />
++    <property name="java.vendor.url" value="http://java.sun.com/" />
++    <property name="path.separator" value=":" />
++    <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM" />
++    <property name="file.encoding.pkg" value="sun.io" />
++    <property name="user.country" value="FR" />
++    <property name="sun.java.launcher" value="SUN_STANDARD" />
++    <property name="sun.os.patch.level" value="unknown" />
++    <property name="testPlatformPath" value="/home2/hudson/home/jobs/HandTest/workspace/handtest/target" />
++    <property name="java.vm.specification.name" value="Java Virtual Machine Specification" />
++    <property name="user.dir" value="/home2/hudson/home/jobs/HandTest/workspace" />
++    <property name="java.runtime.version" value="1.6.0_20-b02" />
++    <property name="java.awt.graphicsenv" value="sun.awt.X11GraphicsEnvironment" />
++    <property name="java.endorsed.dirs" value="/opt/sun-jdk-1.6.0.20/jre/lib/endorsed" />
++    <property name="os.arch" value="amd64" />
++    <property name="java.io.tmpdir" value="/tmp" />
++    <property name="line.separator" value="
++" />
++    <property name="java.vm.specification.vendor" value="Sun Microsystems Inc." />
++    <property name="os.name" value="Linux" />
++    <property name="classworlds.conf" value="/usr/share/maven-bin-2.2//bin/m2.conf" />
++    <property name="sun.jnu.encoding" value="UTF-8" />
++    <property name="java.library.path" value="/opt/sun-jdk-1.6.0.20/jre/lib/amd64/server:/opt/sun-jdk-1.6.0.20/jre/lib/amd64:/opt/sun-jdk-1.6.0.20/jre/../lib/amd64:/usr/java/packages/lib/amd64:/usr/lib64:/lib64:/lib:/usr/lib" />
++    <property name="java.specification.name" value="Java Platform API Specification" />
++    <property name="java.class.version" value="50.0" />
++    <property name="sun.management.compiler" value="HotSpot 64-Bit Server Compiler" />
++    <property name="testClass" value="fr.imag.adele.cadse.testplatform.tests_basictests.Metrics" />
++    <property name="test.junit.port" value="5597" />
++    <property name="os.version" value="2.6.31-gentoo-r6" />
++    <property name="user.home" value="/home2/hudson" />
++    <property name="user.timezone" value="Europe/Brussels" />
++    <property name="java.awt.printerjob" value="sun.print.PSPrinterJob" />
++    <property name="file.encoding" value="UTF-8" />
++    <property name="java.specification.version" value="1.6" />
++    <property name="java.class.path" value="/usr/share/maven-bin-2.2//boot/classworlds-1.1.jar" />
++    <property name="user.name" value="hudson" />
++    <property name="testPlatformPath.eclipse" value="/home2/hudson/home/jobs/HandTest/workspace/platform-test-galileo/eclipse" />
++    <property name="java.vm.specification.version" value="1.0" />
++    <property name="java.home" value="/opt/sun-jdk-1.6.0.20/jre" />
++    <property name="sun.arch.data.model" value="64" />
++    <property name="user.language" value="fr" />
++    <property name="java.specification.vendor" value="Sun Microsystems Inc." />
++    <property name="java.vm.info" value="mixed mode" />
++    <property name="java.version" value="1.6.0_20" />
++    <property name="securerandom.source" value="file:/dev/./urandom" />
++    <property name="java.ext.dirs" value="/opt/sun-jdk-1.6.0.20/jre/lib/ext:/usr/java/packages/lib/ext" />
++    <property name="sun.boot.class.path" value="/opt/sun-jdk-1.6.0.20/jre/lib/resources.jar:/opt/sun-jdk-1.6.0.20/jre/lib/rt.jar:/opt/sun-jdk-1.6.0.20/jre/lib/sunrsasign.jar:/opt/sun-jdk-1.6.0.20/jre/lib/jsse.jar:/opt/sun-jdk-1.6.0.20/jre/lib/jce.jar:/opt/sun-jdk-1.6.0.20/jre/lib/charsets.jar:/opt/sun-jdk-1.6.0.20/jre/classes" />
++    <property name="java.vendor" value="Sun Microsystems Inc." />
++    <property name="maven.home" value="/usr/share/maven-bin-2.2" />
++    <property name="file.separator" value="/" />
++    <property name="testPlatformPath.report" value="/home2/hudson/home/jobs/HandTest/workspace/handtest/target/test-reports" />
++    <property name="java.vendor.url.bug" value="http://java.sun.com/cgi-bin/bugreport.cgi" />
++    <property name="sun.io.unicode.encoding" value="UnicodeLittle" />
++    <property name="sun.cpu.endian" value="little" />
++    <property name="sun.cpu.isalist" value="" />
++  </properties>
++  <testcase classname="fr.imag.adele.cadse.test.basictests.metrics.Metrics_Integer" id="testRunner[0]" name="testRunner[0]" time="0.817" />
++  <testcase classname="fr.imag.adele.cadse.test.basictests.metrics.Metrics_Integer" id="testRunner[1]" name="testRunner[1]" time="1.466" />
++  <testcase classname="fr.imag.adele.cadse.test.basictests.metrics.Metrics_Integer" id="testRunner[2]" name="testRunner[2]" time="1.114" />
++  <testcase classname="fr.imag.adele.cadse.test.basictests.metrics.Metrics_Integer" id="testRunner[3]" name="testRunner[3]" time="1.261" />
++  <testcase classname="fr.imag.adele.cadse.test.basictests.metrics.Metrics_Integer" id="testRunner[4]" name="testRunner[4]" time="1.033" />
++  <testcase classname="fr.imag.adele.cadse.test.basictests.metrics.Metrics_Integer" id="testRunner[5]" name="testRunner[5]" time="1.02" />
++  <testcase classname="fr.imag.adele.cadse.test.basictests.metrics.Metrics_Integer" id="testRunner[6]" name="testRunner[6]" time="1.23" />
++  <testcase classname="fr.imag.adele.cadse.test.basictests.metrics.Metrics_Integer" id="testRunner[7]" name="testRunner[7]" time="1.096" />
++  <testcase classname="fr.imag.adele.cadse.test.basictests.metrics.Metrics_Integer" id="testRunner[8]" name="testRunner[8]" time="1.056" />
++  <testcase classname="fr.imag.adele.cadse.test.basictests.metrics.Metrics_Integer" id="testRunner[9]" name="testRunner[9]" time="1.303" />
++</testsuite>
+Index: src/main/java/hudson/plugins/javatest_report/TestObject.java
+===================================================================
+--- src/main/java/hudson/plugins/javatest_report/TestObject.java	(revision 32288)
++++ src/main/java/hudson/plugins/javatest_report/TestObject.java	(working copy)
+@@ -55,7 +55,7 @@
+      */
+     private String description;
+ 
+-    private Status status;
++    private Status status = Status.PASS;
+ 
+     /**
+      * Optional message that complements status.
+Index: src/main/java/hudson/plugins/javatest_report/TestCollection.java
+===================================================================
+--- src/main/java/hudson/plugins/javatest_report/TestCollection.java	(revision 32288)
++++ src/main/java/hudson/plugins/javatest_report/TestCollection.java	(working copy)
+@@ -81,6 +81,9 @@
+      * For Digester.
+      */
+     public void add(C t) {
++    	if (t.getId() == null) {
++    		t.setId(t.getName());
++    	}
+         tests.put(t.getId(),t);
+         if(t.getStatus() == Status.SKIP)
+             skippedTests.put(t.getId(),t);

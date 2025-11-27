@@ -1,0 +1,44 @@
+Index: hudson/main/core/src/main/java/hudson/model/OneOffExecutor.java
+===================================================================
+--- hudson/main/core/src/main/java/hudson/model/OneOffExecutor.java	(revision 23569)
++++ hudson/main/core/src/main/java/hudson/model/OneOffExecutor.java	(working copy)
+@@ -34,10 +34,15 @@
+  */
+ public class OneOffExecutor extends Executor {
+     private Queue.Item item;
++    private boolean ready = false;
+ 
+     public OneOffExecutor(Computer owner, Queue.Item item) {
+         super(owner,-1);
+-        this.item = item;
++        synchronized (this) {
++            this.item = item;
++            ready = true;
++            notifyAll();
++        }
+     }
+ 
+     @Override
+@@ -54,9 +59,22 @@
+         return r;
+     }
+ 
++    private void waitReady() {
++        synchronized (this) {
++            while (!ready) {
++                try {
++                    wait();
++                } catch (InterruptedException e) {
++                    throw new RuntimeException(e);
++                }
++            }
++        }
++    }
++    
+     @Override
+     public void run() {
+         try {
++            waitReady();
+             super.run();
+         } finally {
+             owner.remove(this);

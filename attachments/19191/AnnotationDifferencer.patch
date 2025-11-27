@@ -1,0 +1,13 @@
+Index: plugins/analysis-core/src/main/java/hudson/plugins/analysis/core/AnnotationDifferencer.java
+===================================================================
+--- plugins/analysis-core/src/main/java/hudson/plugins/analysis/core/AnnotationDifferencer.java	(Revision 28050)
++++ plugins/analysis-core/src/main/java/hudson/plugins/analysis/core/AnnotationDifferencer.java	(Arbeitskopie)
+@@ -41,7 +41,7 @@
+     private static Set<FileAnnotation> difference(
+             final Collection<FileAnnotation> target, final Collection<FileAnnotation> other) {
+         Set<FileAnnotation> difference = new HashSet<FileAnnotation>(target);
+-        difference.removeAll(other);
++        difference.removeAll(new HashSet<FileAnnotation>(other));
+         return difference;
+     }
+ 

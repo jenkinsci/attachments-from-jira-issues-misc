@@ -1,0 +1,144 @@
+#!groovy
+echo '---START---'
+
+
+@NonCPS
+def getFeatures() {
+    // convert split string array to simple list to work around CPS & security issues
+    def features = []
+    for (f in "${FEATURES}".split(','))
+        features.add(f)
+    features
+}
+
+@NonCPS
+def getRuns() {
+    // convert split string array to simple list to work around CPS & security issues
+    def runs = []
+    for (r in "${RUNS}".split(','))
+        runs.add(r)
+    runs
+}
+
+
+timestamps {
+try {
+    node {
+        deleteDir()
+        readConfig("${ENV}")
+        email_to = getEmailConfig()
+    }
+
+    def testList = []
+    def testJobs = [:]
+    def testRuns = [:]
+    print "Before: parallel testRuns for-loop"
+    for (run in getRuns()) {
+        for (feature in getFeatures()) {
+            print "Loop: run=${run}, testFeature=${feature}"
+            def testFeature = feature
+            def featureCfg = getFeatureConfig(testFeature)
+            def runCfg = getRunConfig(featureCfg, run, "${RUNSUITE}")
+            if (runCfg) {
+                def testBed = getTestBed(runCfg)
+                def groupFile = getGroupFile(testFeature, runCfg, "${TESTTYPE}")
+                def envFile = getEnvFile(testFeature, runCfg)
+                def vmID = getVMID(featureCfg)
+                def imagePrefix = getImagePrefix(runCfg)
+                def emails = getFeatureEmails(featureCfg).join(',')
+                def testName = "${testBed}-${testFeature}"
+                testList.add([testName, testFeature, testBed, imagePrefix])
+                testRuns[testName] = {
+                    print "for-loop: testRuns[${testName}]"
+                    try{
+                    lock(resource:"TESTBED_${testBed}") {
+                        print "stage(${testName})"
+                        try{
+                        stage(testName) {
+                            def projectName = testFeature
+                            // Smoke/Sanity tests are executed by platform, except for the internal Test case.
+                            if (['SMOKE','SANITY'].contains("${TESTTYPE}" as String) && testFeature != 'Test') {
+                                projectName = imagePrefix
+                            }
+                            print "for-loop: testRuns[${testName}]: stage(${testName}): projectName=${projectName}"
+                            def job = build job: getJobName(projectName), 
+                                        parameters: [string(name: 'TESTBED', value: "${testBed}"),
+                                            string(name: 'BRANCHNAME', value: "${BRANCHNAME}"), 
+                                            string(name: 'OSBRANCH', value: "${OSBRANCH}"),
+                                            string(name: 'BRANCH_POINT', value: "${BRANCH_POINT}"),
+                                            string(name: 'VERSION', value: "${VERSION}"),
+                                            string(name: 'BUILD', value: "${BUILD}"),
+                                            string(name: 'LABEL', value: "${LABEL}"),
+                                            string(name: 'MODEL', value: "${imagePrefix}"),
+                                            string(name: 'TESTTYPE', value: "${TESTTYPE}"),
+                                            string(name: 'GROUPFILE', value: "${groupFile}"),
+                                            string(name: 'ENVFILE', value: "${envFile}"),
+                                            string(name: 'VMID', value: "${vmID}"),
+                                            string(name: 'EMAILS', value: "${emails}"),
+                                            string(name: 'ORIOLE_TASK', value: "${ORIOLE_TASK}"),
+                                            string(name: 'OPTS', value: "${OPTS}"),
+                                            string(name: 'TRIGGER', value: "${BUILD_TAG}"),
+                                            string(name: 'EXTRA', value: getExtra(testBed))],
+                                        propagate: false
+                            print "for-loop: testRuns[${testName}]: stage(${testName}): testJobs[${testName}]=job"
+                            try {
+                            testJobs[testName] = job
+                            }
+                            catch (Exception err){
+                                print "catch exception for: testJobs[${testName}]=job"
+                                print "Exception=${err}"
+                                print err.getStackTrace()
+                                print "throw exception!"
+                                throw err
+                            }
+                            echo "${job.fullProjectName} - ${job.result}"
+                        }
+                        }
+                        catch (Exception err){
+                            print "catch exception for: stage(${testName})"
+                            print "Exception=${err}"
+                            print err.getStackTrace()
+                            print "throw exception!"
+                            throw err
+                        }
+                    }
+                    }
+                    catch (Exception err){
+                        print "catch exception for: lock(resource:TESTBED_${testBed})"
+                        print "Exception=${err}"
+                        print err.getStackTrace()
+                        print "throw exception!"
+                        throw err
+                    }
+                }
+            }
+        }
+    }
+
+    print "Before: parallel testRuns=${testRuns} size=${testRuns.size()}"
+    try{
+    parallel testRuns
+    }
+    catch (Exception err) {
+        print "catch exception for: parallel testRuns"
+        print "Exception=${err}"
+        print err.getStackTrace()
+        print "throw exception!"
+        throw err
+    }
+    print "After: parallel testRuns"
+
+
+} 
+finally {
+    node {
+        // always send an email notification
+        def result = currentBuild.result ? currentBuild.result : 'FAILURE'
+        def to = ['xxx']
+        emailext body: email_body, mimeType: 'text/html', recipientProviders: [[$class: 'RequesterRecipientProvider']], 
+            subject: subject, to: to.join(',')
+    }
+}
+
+echo '---END---'
+} // timestamps

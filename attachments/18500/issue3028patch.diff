@@ -1,0 +1,93 @@
+Index: main/core/src/main/java/hudson/matrix/MatrixBuild.java
+===================================================================
+--- main/core/src/main/java/hudson/matrix/MatrixBuild.java	(revision 19770)
++++ main/core/src/main/java/hudson/matrix/MatrixBuild.java	(working copy)
+@@ -180,21 +180,32 @@
+                     return Result.FAILURE;
+ 
+             try {
+-                for(MatrixConfiguration c : activeConfigurations) {
+-                    logger.println(Messages.MatrixBuild_Triggering(c.getDisplayName()));
+-                    ParametersAction parameters = getAction(ParametersAction.class);
+-                    if (parameters != null) {
+-                    	c.scheduleBuild(parameters, new UpstreamCause(MatrixBuild.this));
+-                    } else {
+-                    	c.scheduleBuild(new UpstreamCause(MatrixBuild.this));
++                if(!p.isLocked())
++                    for(MatrixConfiguration c : activeConfigurations) {
++                        logger.println(Messages.MatrixBuild_Triggering(c.getDisplayName()));
++                        ParametersAction parameters = getAction(ParametersAction.class);
++                        if (parameters != null) {
++                        	c.scheduleBuild(parameters, new UpstreamCause(MatrixBuild.this));
++                        } else {
++                        	c.scheduleBuild(new UpstreamCause(MatrixBuild.this));
++                        }
+                     }
+-                }
+ 
+                 // this occupies an executor unnecessarily.
+                 // it would be nice if this can be placed in a temproary executor.
+ 
+                 Result r = Result.SUCCESS;
+                 for (MatrixConfiguration c : activeConfigurations) {
++                    if(p.isLocked()) {
++                        logger.println(Messages.MatrixBuild_Triggering(c.getDisplayName()));
++                        ParametersAction parameters = getAction(ParametersAction.class);
++                        if (parameters != null) {
++                        	c.scheduleBuild(parameters, new UpstreamCause(MatrixBuild.this));
++                        } else {
++                        	c.scheduleBuild(new UpstreamCause(MatrixBuild.this));
++                        }
++
++                    }
+                     String whyInQueue = "";
+                     long startTime = System.currentTimeMillis();
+ 
+Index: main/core/src/main/java/hudson/matrix/MatrixProject.java
+===================================================================
+--- main/core/src/main/java/hudson/matrix/MatrixProject.java	(revision 19770)
++++ main/core/src/main/java/hudson/matrix/MatrixProject.java	(working copy)
+@@ -130,7 +130,16 @@
+      */
+     @CopyOnWrite
+     private transient /*final*/ Set<MatrixConfiguration> activeConfigurations = new LinkedHashSet<MatrixConfiguration>();
++    private boolean locked;
+ 
++    public boolean isLocked() {
++        return locked;
++    }
++
++    public void setLocked(boolean locked) {
++        this.locked = locked;
++    }
++
+     public MatrixProject(String name) {
+         super(Hudson.getInstance(), name);
+     }
+@@ -512,6 +521,7 @@
+ 
+         AxisList newAxes = new AxisList();
+ 
++        locked = req.getParameter("locked")!=null;
+         // parse user axes
+         if(req.getParameter("hasAxes")!=null) {
+             newAxes.addAll(req.bindParametersToList(Axis.class,"axis."));
+Index: main/core/src/main/resources/hudson/matrix/MatrixProject/configure-entries.jelly
+===================================================================
+--- main/core/src/main/resources/hudson/matrix/MatrixProject/configure-entries.jelly	(revision 19770)
++++ main/core/src/main/resources/hudson/matrix/MatrixProject/configure-entries.jelly	(working copy)
+@@ -104,6 +104,8 @@
+           </table>
+         </f:repeatable>
+       </f:entry>
++      <f:optionalBlock name="locked" title="${%Run build sequentially}" checked="${it.locked}"
++                   help="/help/matrix/lock.html" />
+     </f:optionalBlock>
+     
+     <f:optionalBlock name="hasCombinationFilter" title="${%Combination Filter}" checked="${!empty(it.combinationFilter)}"
+Index: main/war/resources/help/matrix/lock.html
+===================================================================
+--- main/war/resources/help/matrix/lock.html	(revision 0)
++++ main/war/resources/help/matrix/lock.html	(revision 0)
+@@ -0,0 +1 @@
++<div>When this option is set, different build configurations run sequentially</div>

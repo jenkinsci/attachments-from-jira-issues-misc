@@ -1,0 +1,39 @@
+Index: maven-plugin/src/main/java/hudson/maven/reporters/MavenAggregatedArtifactRecord.java
+===================================================================
+--- maven-plugin/src/main/java/hudson/maven/reporters/MavenAggregatedArtifactRecord.java	(revision 32223)
++++ maven-plugin/src/main/java/hudson/maven/reporters/MavenAggregatedArtifactRecord.java	(working copy)
+@@ -67,16 +67,28 @@
+         return null;
+     }
+ 
+-    public void deploy(MavenEmbedder embedder, ArtifactRepository deploymentRepository, TaskListener listener) throws MavenEmbedderException, IOException, ComponentLookupException, ArtifactDeploymentException {
+-        if(debug)
++    public void deploy(MavenEmbedder embedder, ArtifactRepository deploymentRepository, TaskListener listener) throws MavenEmbedderException,
++                                                                                                                      IOException,
++                                                                                                                      ComponentLookupException,
++                                                                                                                      ArtifactDeploymentException {
++        if (debug) {
+             listener.getLogger().println("Redeploying artifacts of "+parent+" timestamp="+parent.getTimestamp());
++        }
+ 
+         for (MavenBuild build : parent.getModuleLastBuilds().values()) {
+-            MavenArtifactRecord mar = build.getAction(MavenArtifactRecord.class);
+-            if(mar!=null) {
+-                if(debug)
++            List<MavenArtifactRecord> mars = build.getActions(MavenArtifactRecord.class);
++            if (mars != null) {
++                if(debug) {
+                     listener.getLogger().println("Deploying module: "+build+" timestamp="+build.getTimestamp());
+-                mar.deploy(embedder,deploymentRepository,listener);
++                }
++
++                for (MavenArtifactRecord mar : mars) {
++                    if (mar != null) {
++                        mar.deploy(embedder,
++                                   deploymentRepository,
++                                   listener);
++                    }
++                }
+             }
+         }
+     }

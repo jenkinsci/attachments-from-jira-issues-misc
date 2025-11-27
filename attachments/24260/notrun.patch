@@ -1,0 +1,369 @@
+From 80ed8789164c7438ba6f9a6422f6ce02caca3a5e Mon Sep 17 00:00:00 2001
+From: Andrew Sim
+Date: Tue, 27 Aug 2013 08:03:26 +0200
+Subject: [PATCH 1/2] Added a failure switch for - not-run
+
+---
+ .../plugins/testlink/AbstractTestLinkBuilder.java  | 13 ++++++++++++-
+ .../hudson/plugins/testlink/TestLinkBuilder.java   |  6 +++---
+ .../plugins/testlink/TestLinkBuilder/config.jelly  |  9 ++++++---
+ .../testlink/TestLinkBuilder/config.properties     |  1 +
+ .../testlink/TestLinkBuilder/config_es.properties  |  1 +
+ .../testlink/TestLinkBuilder/config_pt.properties  |  1 +
+ .../plugins/testlink/TestTestLinkBuilder.java      | 22 ++++++++++++----------
+ 7 files changed, 36 insertions(+), 17 deletions(-)
+
+diff --git a/src/main/java/hudson/plugins/testlink/AbstractTestLinkBuilder.java b/src/main/java/hudson/plugins/testlink/AbstractTestLinkBuilder.java
+index f808cdc..b985380 100644
+--- a/src/main/java/hudson/plugins/testlink/AbstractTestLinkBuilder.java
++++ b/src/main/java/hudson/plugins/testlink/AbstractTestLinkBuilder.java
+@@ -105,6 +105,11 @@ public class AbstractTestLinkBuilder extends Builder {
+ 	protected final List<BuildStep> singleBuildSteps;
+ 	
+ 	/**
++	 * Create failure if any of the tests are set as not-run
++	 */
++	protected final Boolean failOnNotRun;
++	
++	/**
+ 	 * List of build steps that are executed before iterating all test cases.
+ 	 */
+ 	protected final List<BuildStep> beforeIteratingAllTestCasesBuildSteps;
+@@ -195,7 +200,8 @@ public class AbstractTestLinkBuilder extends Builder {
+ 		Boolean transactional, 
+ 		Boolean failedTestsMarkBuildAsFailure, 
+ 		Boolean failIfNoResults, 
+-		List<ResultSeeker> resultSeekers
++		List<ResultSeeker> resultSeekers,
++		Boolean failOnNotRun
+ 	) {
+ 		super();
+ 		this.testLinkName = testLinkName;
+@@ -215,6 +221,7 @@ public class AbstractTestLinkBuilder extends Builder {
+ 		this.failedTestsMarkBuildAsFailure = failedTestsMarkBuildAsFailure;
+ 		this.failIfNoResults = failIfNoResults;
+ 		this.resultSeekers = resultSeekers;
++		this.failOnNotRun = failOnNotRun;
+ 	}
+ 	
+ 	public String getTestLinkName()
+@@ -277,6 +284,10 @@ public class AbstractTestLinkBuilder extends Builder {
+ 		return this.singleBuildSteps;
+ 	}
+ 	
++	public Boolean getFailOnNotRun() {
++		return failOnNotRun;
++	}
++	
+ 	public List<BuildStep> getBeforeIteratingAllTestCasesBuildSteps()
+ 	{
+ 		return beforeIteratingAllTestCasesBuildSteps;
+diff --git a/src/main/java/hudson/plugins/testlink/TestLinkBuilder.java b/src/main/java/hudson/plugins/testlink/TestLinkBuilder.java
+index 2220fa7..8bfbb14 100644
+--- a/src/main/java/hudson/plugins/testlink/TestLinkBuilder.java
++++ b/src/main/java/hudson/plugins/testlink/TestLinkBuilder.java
+@@ -86,13 +86,13 @@ public class TestLinkBuilder extends AbstractTestLinkBuilder {
+ 			List<BuildStep> iterativeBuildSteps,
+ 			List<BuildStep> afterIteratingAllTestCasesBuildSteps,
+ 			Boolean transactional, Boolean failedTestsMarkBuildAsFailure,
+-			Boolean failIfNoResults, List<ResultSeeker> resultSeekers) {
++			Boolean failIfNoResults, List<ResultSeeker> resultSeekers, Boolean failOnNotRun) {
+ 		super(testLinkName, testProjectName, testPlanName, buildName,
+ 				customFields, executionStatusNotRun, executionStatusPassed,
+ 				executionStatusFailed, executionStatusBlocked, singleBuildSteps,
+ 				beforeIteratingAllTestCasesBuildSteps, iterativeBuildSteps,
+ 				afterIteratingAllTestCasesBuildSteps, transactional,
+-				failedTestsMarkBuildAsFailure, failIfNoResults, resultSeekers);
++				failedTestsMarkBuildAsFailure, failIfNoResults, resultSeekers, failOnNotRun);
+ 	}
+ 
+ 	/**
+@@ -209,7 +209,7 @@ public class TestLinkBuilder extends AbstractTestLinkBuilder {
+ 		if(report.getTestsTotal() <= 0 && this.getFailIfNoResults() == Boolean.TRUE) {
+ 			listener.getLogger().println("No test results found. Setting the build result as FAILURE.");
+ 			build.setResult(Result.FAILURE);
+-		} else if (report.getFailed() > 0) {
++		} else if (report.getFailed() > 0 || (getFailOnNotRun() && report.getNotRun() > 0)) {
+ 			if (this.failedTestsMarkBuildAsFailure != null && this.failedTestsMarkBuildAsFailure) {
+ 				build.setResult(Result.FAILURE);
+ 			} else {
+diff --git a/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config.jelly b/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config.jelly
+index 28f5ff5..8a0e556 100644
+--- a/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config.jelly
++++ b/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config.jelly
+@@ -30,13 +30,17 @@
+   </f:entry>
+   
+   <f:advanced>
+-  <f:section title="${%Execution Status}">
+-
++  
+   <f:entry title="${%Not Run}" help="${rootURL}/../plugin/testlink/help-executionStatus.html">
+       <f:checkbox name="TestLinkBuilder.executionStatusNotRun" value="${instance.executionStatusNotRun}" 
+       checked="${instance.executionStatusNotRun}" />
+   </f:entry>
+   
++  <f:entry title="${%Fail on not Run}" help="${rootURL}/../plugin/testlink/help-executionStatus.html">
++      <f:checkbox name="TestLinkBuilder.failOnNotRun" value="${instance.failOnNotRun}" 
++      checked="${instance.failOnNotRun}" />
++  </f:entry>
++  
+   <f:entry title="${%Passed}" help="${rootURL}/../plugin/testlink/help-executionStatus.html">
+       <f:checkbox name="TestLinkBuilder.executionStatusPassed" value="${instance.executionStatusPassed}" 
+       checked="${instance.executionStatusPassed}" />
+@@ -51,7 +55,6 @@
+       <f:checkbox name="TestLinkBuilder.executionStatusBlocked" value="${instance.executionStatusBlocked}" 
+       checked="${instance.executionStatusBlocked}" />
+   </f:entry>
+-  </f:section>
+   </f:advanced>
+       
+     <f:block><p><strong>Test Execution</strong></p></f:block>
+diff --git a/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config.properties b/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config.properties
+index 4120fcf..3b42bba 100644
+--- a/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config.properties
++++ b/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config.properties
+@@ -6,6 +6,7 @@ Custom\ Fields=Custom Fields
+ Key\ Custom\ Field=Key Custom Field
+ Execution\ Status=Execution Status
+ Not\ Run=Not Run
++Fail\ on\ not\ Run=Fail if not-run
+ Passed=Passed
+ Failed=Failed
+ Blocked=Blocked
+diff --git a/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config_es.properties b/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config_es.properties
+index d952d3b..13c20f8 100644
+--- a/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config_es.properties
++++ b/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config_es.properties
+@@ -6,6 +6,7 @@ Custom\ Fields=Campos personalizados
+ Key\ Custom\ Field=Campo customizado chave para testes automatizados do TestLink
+ Execution\ Status=Execution Status
+ Not\ Run=No Ejecutado
++Fail\ on\ not\ Run=Fail if not-run
+ Passed=Pasado
+ Failed=Fallado
+ Blocked=Bloqueado
+diff --git a/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config_pt.properties b/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config_pt.properties
+index 1e1cf9a..059289d 100644
+--- a/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config_pt.properties
++++ b/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config_pt.properties
+@@ -7,6 +7,7 @@ Key\ Custom\ Field=Campo customizado chave para testes automatizados do TestLink
+ Single\ Test\ Build\ Steps=Build Steps únicos
+ Execution\ Status=Execution Status
+ Not\ Run=Não Executado
++Fail\ on\ not\ Run=Fail if not-run
+ Passed=Passou
+ Failed=Com Falha
+ Blocked=Bloqueado
+diff --git a/src/test/java/hudson/plugins/testlink/TestTestLinkBuilder.java b/src/test/java/hudson/plugins/testlink/TestTestLinkBuilder.java
+index ecede13..3fc0df1 100644
+--- a/src/test/java/hudson/plugins/testlink/TestTestLinkBuilder.java
++++ b/src/test/java/hudson/plugins/testlink/TestTestLinkBuilder.java
+@@ -77,7 +77,8 @@ extends HudsonTestCase
+ 				Boolean.FALSE, 
+ 				Boolean.FALSE,  
+ 				Boolean.FALSE, 
+-				null);
++				null,
++				Boolean.FALSE);
+ 	}
+ 	
+ 	/**
+@@ -102,7 +103,7 @@ extends HudsonTestCase
+ 	
+ 	public void testNull()
+ 	{
+-		builder = new TestLinkBuilder(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null );
++		builder = new TestLinkBuilder(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+ 		
+ 		assertNotNull( builder );
+ 		
+@@ -157,7 +158,8 @@ extends HudsonTestCase
+ 			Boolean.FALSE, 
+ 			Boolean.FALSE,  
+ 			Boolean.FALSE, 
+-			null);
++			null,
++			Boolean.FALSE);
+ 		
+ 		assertNotNull( hudson );
+ 		//FreeStyleProject project = new FreeStyleProject(hudson, "No project");
+@@ -189,7 +191,7 @@ extends HudsonTestCase
+ 
+ 	@Test
+ 	public void getExecutionStatusesShouldReturnAllWhenAllAreFalse() {
+-		builder = new TestLinkBuilder(null, null, null, null, null, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, null, null, null, null, null, null, null, null );
++		builder = new TestLinkBuilder(null, null, null, null, null, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, null, null, null, null, null, null, null, null,Boolean.FALSE );
+ 		Set<ExecutionStatus> statuses = builder.getExecutionStatuses();
+ 		assertThat(statuses, hasSize(4));
+ 		assertThat(
+@@ -200,7 +202,7 @@ extends HudsonTestCase
+ 	
+ 	@Test
+ 	public void getExecutionStatusesShouldReturnAllWhenAllAreNull() {
+-		builder = new TestLinkBuilder(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null );
++		builder = new TestLinkBuilder(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,Boolean.FALSE);
+ 		Set<ExecutionStatus> statuses = builder.getExecutionStatuses();
+ 		assertThat(statuses, hasSize(4));
+ 		assertThat(
+@@ -211,7 +213,7 @@ extends HudsonTestCase
+ 	
+ 	@Test
+ 	public void getExecutionStatusesShouldReturnSomeWhenSomeAreTrue() {
+-		builder = new TestLinkBuilder(null, null, null, null, null, Boolean.TRUE, Boolean.FALSE, Boolean.TRUE, Boolean.FALSE, null, null, null, null, null, null, null, null );
++		builder = new TestLinkBuilder(null, null, null, null, null, Boolean.TRUE, Boolean.FALSE, Boolean.TRUE, Boolean.FALSE, null, null, null, null, null, null, null, null,Boolean.FALSE);
+ 		Set<ExecutionStatus> statuses = builder.getExecutionStatuses();
+ 		assertThat(statuses, hasSize(2));
+ 		assertThat(
+@@ -221,7 +223,7 @@ extends HudsonTestCase
+ 	
+ 	@Test
+ 	public void getExecutionStatusesShouldOneSomeWhenNotRunIsTrue() {
+-		builder = new TestLinkBuilder(null, null, null, null, null, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, null, null, null, null, null, null, null, null );
++		builder = new TestLinkBuilder(null, null, null, null, null, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, null, null, null, null, null, null, null, null,Boolean.FALSE );
+ 		Set<ExecutionStatus> statuses = builder.getExecutionStatuses();
+ 		assertThat(statuses, hasSize(1));
+ 		assertThat(
+@@ -231,7 +233,7 @@ extends HudsonTestCase
+ 	
+ 	@Test
+ 	public void getExecutionStatusesShouldOneSomeWhenPassedIsTrue() {
+-		builder = new TestLinkBuilder(null, null, null, null, null, Boolean.FALSE, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, null, null, null, null, null, null, null, null );
++		builder = new TestLinkBuilder(null, null, null, null, null, Boolean.FALSE, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, null, null, null, null, null, null, null, null,Boolean.FALSE );
+ 		Set<ExecutionStatus> statuses = builder.getExecutionStatuses();
+ 		assertThat(statuses, hasSize(1));
+ 		assertThat(
+@@ -241,7 +243,7 @@ extends HudsonTestCase
+ 	
+ 	@Test
+ 	public void getExecutionStatusesShouldOneSomeWhenFailedIsTrue() {
+-		builder = new TestLinkBuilder(null, null, null, null, null, Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, Boolean.FALSE, null, null, null, null, null, null, null, null );
++		builder = new TestLinkBuilder(null, null, null, null, null, Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, Boolean.FALSE, null, null, null, null, null, null, null, null,Boolean.FALSE );
+ 		Set<ExecutionStatus> statuses = builder.getExecutionStatuses();
+ 		assertThat(statuses, hasSize(1));
+ 		assertThat(
+@@ -251,7 +253,7 @@ extends HudsonTestCase
+ 	
+ 	@Test
+ 	public void getExecutionStatusesShouldOneSomeWhenBlockedIsTrue() {
+-		builder = new TestLinkBuilder(null, null, null, null, null, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, null, null, null, null, null, null, null, null );
++		builder = new TestLinkBuilder(null, null, null, null, null, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, null, null, null, null, null, null, null, null,Boolean.FALSE );
+ 		Set<ExecutionStatus> statuses = builder.getExecutionStatuses();
+ 		assertThat(statuses, hasSize(1));
+ 		assertThat(
+-- 
+1.8.1.2
+
+
+From 121cb7e8211a998ddd07008e308c9dedc6bf1dc4 Mon Sep 17 00:00:00 2001
+From: Andrew Sim
+Date: Tue, 27 Aug 2013 09:08:59 +0200
+Subject: [PATCH 2/2] Failure if not run fix
+
+---
+ src/main/java/hudson/plugins/testlink/TestLinkBuilder.java   |  4 +++-
+ .../hudson/plugins/testlink/TestLinkBuilder/config.jelly     | 12 ++++++------
+ .../plugins/testlink/TestLinkBuilder/config.properties       |  2 +-
+ .../plugins/testlink/TestLinkBuilder/config_es.properties    |  2 +-
+ .../plugins/testlink/TestLinkBuilder/config_pt.properties    |  2 +-
+ 5 files changed, 12 insertions(+), 10 deletions(-)
+
+diff --git a/src/main/java/hudson/plugins/testlink/TestLinkBuilder.java b/src/main/java/hudson/plugins/testlink/TestLinkBuilder.java
+index 8bfbb14..2efdbae 100644
+--- a/src/main/java/hudson/plugins/testlink/TestLinkBuilder.java
++++ b/src/main/java/hudson/plugins/testlink/TestLinkBuilder.java
+@@ -209,12 +209,14 @@ public class TestLinkBuilder extends AbstractTestLinkBuilder {
+ 		if(report.getTestsTotal() <= 0 && this.getFailIfNoResults() == Boolean.TRUE) {
+ 			listener.getLogger().println("No test results found. Setting the build result as FAILURE.");
+ 			build.setResult(Result.FAILURE);
+-		} else if (report.getFailed() > 0 || (getFailOnNotRun() && report.getNotRun() > 0)) {
++		} else if (report.getFailed() > 0) {
+ 			if (this.failedTestsMarkBuildAsFailure != null && this.failedTestsMarkBuildAsFailure) {
+ 				build.setResult(Result.FAILURE);
+ 			} else {
+ 				build.setResult(Result.UNSTABLE);
+ 			}
++		} else if(getFailOnNotRun() && report.getNotRun() > 0) {
++			build.setResult(Result.FAILURE);
+ 		}
+ 
+ 		LOGGER.log(Level.INFO, "TestLink builder finished");
+diff --git a/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config.jelly b/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config.jelly
+index 8a0e556..39718f6 100644
+--- a/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config.jelly
++++ b/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config.jelly
+@@ -36,11 +36,6 @@
+       checked="${instance.executionStatusNotRun}" />
+   </f:entry>
+   
+-  <f:entry title="${%Fail on not Run}" help="${rootURL}/../plugin/testlink/help-executionStatus.html">
+-      <f:checkbox name="TestLinkBuilder.failOnNotRun" value="${instance.failOnNotRun}" 
+-      checked="${instance.failOnNotRun}" />
+-  </f:entry>
+-  
+   <f:entry title="${%Passed}" help="${rootURL}/../plugin/testlink/help-executionStatus.html">
+       <f:checkbox name="TestLinkBuilder.executionStatusPassed" value="${instance.executionStatusPassed}" 
+       checked="${instance.executionStatusPassed}" />
+@@ -88,6 +83,11 @@
+           <f:checkbox name="TestLinkBuilder.transactional" value="${instance.transactional}" checked="${instance.transactional}" />
+       </f:entry>
+       
++      <f:entry title="${%Fail on not Run}" help="${rootURL}/../plugin/testlink/help-executionStatus.html">
++	      <f:checkbox name="TestLinkBuilder.failOnNotRun" value="${instance.failOnNotRun}" 
++	      checked="${instance.failOnNotRun}" />
++  	  </f:entry>
++      
+       <f:entry title="${%Failed tests mark build as failure}" help="${rootURL}/../plugin/testlink/help-failedTestsMarkBuildAsFailure.html">
+           <f:checkbox name="TestLinkBuilder.failedTestsMarkBuildAsFailure" value="${instance.failedTestsMarkBuildAsFailure}" checked="${instance.failedTestsMarkBuildAsFailure}" />
+       </f:entry>
+@@ -95,7 +95,7 @@
+       <f:entry title="${%Fail the build if no test results are present}" help="${rootURL}/../plugin/testlink/help-failIfNoResults.html">
+           <f:checkbox name="TestLinkBuilder.failIfNoResults" value="${instance.failIfNoResults}" checked="${instance.failIfNoResults}" />
+       </f:entry>
+-   
++         
+     </f:advanced>
+ 
+     <f:block><p><strong>Result Seeking Strategy</strong></p></f:block>
+diff --git a/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config.properties b/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config.properties
+index 3b42bba..d81e5e5 100644
+--- a/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config.properties
++++ b/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config.properties
+@@ -6,7 +6,7 @@ Custom\ Fields=Custom Fields
+ Key\ Custom\ Field=Key Custom Field
+ Execution\ Status=Execution Status
+ Not\ Run=Not Run
+-Fail\ on\ not\ Run=Fail if not-run
++Fail\ on\ not\ Run=Not Run tests mark build as failure
+ Passed=Passed
+ Failed=Failed
+ Blocked=Blocked
+diff --git a/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config_es.properties b/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config_es.properties
+index 13c20f8..71b9ab2 100644
+--- a/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config_es.properties
++++ b/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config_es.properties
+@@ -6,7 +6,7 @@ Custom\ Fields=Campos personalizados
+ Key\ Custom\ Field=Campo customizado chave para testes automatizados do TestLink
+ Execution\ Status=Execution Status
+ Not\ Run=No Ejecutado
+-Fail\ on\ not\ Run=Fail if not-run
++Fail\ on\ not\ Run=Not Run tests mark build as failure
+ Passed=Pasado
+ Failed=Fallado
+ Blocked=Bloqueado
+diff --git a/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config_pt.properties b/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config_pt.properties
+index 059289d..c428d3e 100644
+--- a/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config_pt.properties
++++ b/src/main/resources/hudson/plugins/testlink/TestLinkBuilder/config_pt.properties
+@@ -7,7 +7,7 @@ Key\ Custom\ Field=Campo customizado chave para testes automatizados do TestLink
+ Single\ Test\ Build\ Steps=Build Steps únicos
+ Execution\ Status=Execution Status
+ Not\ Run=Não Executado
+-Fail\ on\ not\ Run=Fail if not-run
++Fail\ on\ not\ Run=Not Run tests mark build as failure
+ Passed=Passou
+ Failed=Com Falha
+ Blocked=Bloqueado
+-- 
+1.8.1.2
+

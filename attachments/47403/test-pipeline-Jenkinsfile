@@ -1,0 +1,220 @@
+#!/usr/bin/env groovy
+@Library('pipeline-library')_
+import com.itextpdf.ColorCodings
+import com.itextpdf.GeneralVariables
+import com.itextpdf.GeneralFunctions
+
+def generalFunctions = new GeneralFunctions()
+
+node('master') {
+    try {
+        def runningBuild = generalFunctions.getRunningBuild("${env.JOB_NAME}", "${params.BRANCHNAME}")
+        if (runningBuild!="") {
+            error "${runningBuild} already running for branch '${params.BRANCHNAME}'!"
+        } else {
+            def mergeBranchname=generalFunctions.getMergeBranchName("${params.BRANCHNAME}")
+            stage ("initialize") {
+                currentBuild.description = "${params.BRANCHNAME}"
+                cleanWs()
+                println "workspace: ${WORKSPACE}"
+            }
+            dotnetPresent = false
+            def existingBranchRepoArray = []
+            GeneralVariables.repoArray.each { repo ->
+                stage(repo.name) {
+                    if (generalFunctions.branchExists(repo.urljava, params.BRANCHNAME)) {
+                        existingBranchRepoArray.add(repo)
+                        ansiColor('xterm') {println "${ColorCodings.GREENBOLD}Branch '${params.BRANCHNAME}' exists in ${repo.name}' > triggering build for the branch${ColorCodings.NC}"}
+                        def runDotnet = "${DOTNET}".toBoolean() && ("${repo.urldotnet}" != "")
+                        dotnetPresent = dotnetPresent || runDotnet
+                        if ("${repo.runbuild}".toBoolean() || runDotnet) {
+                            // (re)create merge branch for java and delete merge branch for .NET if requested
+                            def initiateMergeBuild = build job: 'initiate-merge', parameters: [
+                                [$class: 'StringParameterValue', name: 'URL', value: "${repo.urljava}"],
+                                [$class: 'StringParameterValue', name: 'BRANCHNAME', value: "${BRANCHNAME}"],
+                                [$class: 'StringParameterValue', name: 'MERGE_BRANCHNAME', value: "${mergeBranchname}"],
+                                [$class: 'StringParameterValue', name: 'DOTNETURL', value: "${repo.urldotnet}"],
+                                [$class: 'BooleanParameterValue', name: 'DEL_DOTNET', value: "${params.DEL_DOTNET}"]
+                            ]
+                        }
+                        if ("${repo.runbuild}".toBoolean()) {
+                            // trigger Java build job
+                            def javaBuild = build job: 'build-java', parameters: [
+                                [$class: 'StringParameterValue', name: 'URL', value: "${repo.urljava}"],
+                                [$class: 'StringParameterValue', name: 'BRANCHNAME', value: "${mergeBranchname}"],
+                                [$class: 'StringParameterValue', name: 'PIPELINE', value: 'iText-test-pipeline']
+                            ]
+                            copyArtifacts(projectName: 'build-java', selector: specific(javaBuild.getNumber().toString()));
+                            archiveArtifacts artifacts: '.repository/com/itextpdf/**/*.*'
+                        }
+                        if (runDotnet) {
+                            // trigger autoport job
+                            // - creates merge branch for .NET if it does not exist
+                            // - if merge branch for .NET exists, rebases or recreates if rebase fails
+                            def autoportBuild = build job: 'autoport-java', parameters: [
+                                [$class: 'StringParameterValue', name: 'JAVAURL', value: "${repo.urljava}"],
+                                [$class: 'StringParameterValue', name: 'DOTNETURL', value: "${repo.urldotnet}"],
+                                [$class: 'StringParameterValue', name: 'SHARPENURL', value: "${GeneralVariables.urlsharpen}"],
+                                [$class: 'StringParameterValue', name: 'BRANCHNAME', value: "${mergeBranchname}"],
+                                [$class: 'StringParameterValue', name: 'XTRABRANCHNAME', value: "${BRANCHNAME}"]
+                            ]
+                            if ("${repo.runbuild}".toBoolean()) {
+                                // trigger .NET build job
+                                def dotnetBuild = build job: 'build-dotnet', parameters: [
+                                    [$class: 'StringParameterValue', name: 'URL', value: "${repo.urldotnet}"],
+                                    [$class: 'StringParameterValue', name: 'BRANCHNAME', value: "${mergeBranchname}"],
+                                    [$class: 'StringParameterValue', name: 'PIPELINE', value: 'iText-test-pipeline']
+                                ]
+                                copyArtifacts(projectName: 'build-dotnet', selector: specific(dotnetBuild.getNumber().toString()));
+                                archiveArtifacts artifacts: '*.*'
+                            }
+                        }
+                    }
+                }
+            }
+            stage('evaluation') {
+                if (existingBranchRepoArray.size() == 0) {
+                    error("'${params.BRANCHNAME}' does not exist in any of the processed repositories....")
+                } else {
+                    // store the processed repositories in a file
+                    def str=existingBranchRepoArray.inspect().replace("'","\\'")
+                    sh ("#!/bin/bash\necho ${str} > processedRepos")
+                    archiveArtifacts artifacts: 'processedRepos'
+                }
+            }
+            stage('functionaltesting') {
+                def win = false
+                def linux = false
+                def osx = false
+                def branchTests = 'develop'
+                if (params.TESTPLATFORM.contains('Win')) {win = true}
+                if (params.TESTPLATFORM.contains('Linux')) {linux = true}
+                if (params.TESTPLATFORM.contains('OsX')) {osx = true}
+                if (generalFunctions.branchExists(GeneralVariables.fTests.urljava, mergeBranchname)) {branchTests = mergeBranchname}
+
+                def tests = [:]
+
+                if (win) {
+                    tests["javaOnWin"] = {
+                        stage("javaOnWin") {
+                            javaOnWinBuild = build job: 'run-functional-tests-java', propagate: false, parameters: [
+                                [$class: 'StringParameterValue', name: 'BRANCHNAME', value: branchTests],
+                                [$class: 'StringParameterValue', name: 'PLATFORM', value: 'windows'],
+                                [$class: 'StringParameterValue', name: 'CODEBASEBRANCH', value: mergeBranchname],
+                                [$class: 'StringParameterValue', name: 'PIPELINE', value: 'iText-test-pipeline']
+                            ]
+                            copyArtifacts(projectName: 'run-functional-tests-java', selector: specific(javaOnWinBuild.getNumber().toString()), target: 'javaOnWin');
+                            junit 'javaOnWin/**/surefire-reports/*.xml'
+                            // change tag from Jira issue of Regression Set to what environment the results are from
+                            contentReplace(
+                                configs: [
+                                    fileContentReplaceConfig(
+                                        configs: [
+                                            fileContentReplaceItemConfig(
+                                                search: '@QA-1238',
+                                                replace: '@Regression-javaOnWin',
+                                                matchCount: 0)
+                                        ],
+                                    fileEncoding: 'UTF-8',
+                                    filePath: 'javaOnWin/target/cucumber.json')
+                                ]
+                            )
+                            archiveArtifacts artifacts: 'javaOnWin/target/cucumber.json'
+                            if (javaOnWinBuild.getResult() == "FAILURE") {
+                                error("Running the functional tests for Java on Windows fails")
+                            }
+                        }
+                    }
+                    if (dotnetPresent) {
+                        tests["dotnetOnWin"] = {
+                            stage("dotnetOnWin") {
+                                def dotnetOnWinBuild = build job: 'run-functional-tests-dotnet', propagate: false, parameters: [
+                                    [$class: 'StringParameterValue', name: 'BRANCHNAME', value: branchTests],
+                                    [$class: 'StringParameterValue', name: 'PLATFORM', value: 'windows'],
+                                    [$class: 'StringParameterValue', name: 'CODEBASEBRANCH', value: mergeBranchname],
+                                    [$class: 'StringParameterValue', name: 'PIPELINE', value: 'iText-test-pipeline']
+                                ]
+                                copyArtifacts(projectName: 'run-functional-tests-dotnet', selector: specific(dotnetOnWinBuild.getNumber().toString()), target: 'dotnetOnWin');
+                                nunit testResultsPattern: 'dotnetOnWin/FunctionalTestResult.xml'
+                                nunit testResultsPattern: 'dotnetOnWin/CucumberTestResult.xml'
+                                if (dotnetOnWinBuild.getResult() == "FAILURE") {
+                                    error("Running the functional tests for .NET on Windows fails")
+                                }
+                            }
+                        }
+                    }
+                }
+                if (linux) {
+                    tests["javaOnLinux"] = {
+                        stage("javaOnLinux") {
+                            def javaOnLinuxBuild = build job: 'run-functional-tests-java', propagate: false, parameters: [
+                                [$class: 'StringParameterValue', name: 'BRANCHNAME', value: branchTests],
+                                [$class: 'StringParameterValue', name: 'PLATFORM', value: 'linux'],
+                                [$class: 'StringParameterValue', name: 'CODEBASEBRANCH', value: mergeBranchname],
+                                [$class: 'StringParameterValue', name: 'PIPELINE', value: 'iText-test-pipeline']
+                            ]
+                            copyArtifacts(projectName: 'run-functional-tests-java', selector: specific(javaOnLinuxBuild.getNumber().toString()), target: 'javaOnLinux');
+                            junit 'javaOnLinux/**/surefire-reports/*.xml'
+                            contentReplace(
+                                configs: [
+                                    fileContentReplaceConfig(
+                                        configs: [
+                                            fileContentReplaceItemConfig(
+                                                search: '@QA-1238',
+                                                replace: '@Regression-javaOnLinux',
+                                                matchCount: 0)
+                                        ],
+                                    fileEncoding: 'UTF-8',
+                                    filePath: 'javaOnLinux/target/cucumber.json')
+                                ]
+                            )
+                            archiveArtifacts artifacts: 'javaOnLinux/target/cucumber.json'
+                            if (javaOnLinuxBuild.getResult() == "FAILURE") {
+                                error("Running the functional tests for Java on Linux fails")
+                            }
+                        }
+                    }
+                    if (dotnetPresent) {
+                        tests["dotnetOnLinux"] = {
+                            stage("dotnetOnLinux") {
+                                println "Not implemented yet"
+                            }
+                        }
+                    }
+                }
+                if (osx) {
+                    tests["javaOnOsx"] = {
+                        stage("javaOnOsx") {
+                            println "No OsX machine available - skipping"
+                        }
+                    }
+                    if (dotnetPresent) {
+                        tests["dotnetOnOsx"] = {
+                            stage("dotnetOnOsx") {
+                                println "No OsX machine available - skipping"
+                            }
+                        }
+                    }
+                }
+
+                parallel tests
+                cucumber fileIncludePattern: '**/cucumber.json', jsonReportDirectory: '', sortingMethod: 'ALPHABETICAL'
+            }
+        }
+    } catch (Exception err) {
+        ansiColor('xterm') {println "${ColorCodings.REDBOLD}ERROR: ${err.message}${ColorCodings.NC}"}
+
+        if (currentBuild.rawBuild.getActions(jenkins.model.InterruptedBuildAction.class).isEmpty()) {
+            currentBuild.result = 'FAILURE'
+        } else {
+            currentBuild.result = 'ABORTED'
+        }
+    } finally {
+
+        emailext body: "${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} on branch ${params.BRANCHNAME} \n More info at: ${env.BUILD_URL}",
+            recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],
+            subject: "Jenkins Build ${currentBuild.currentResult}: Job ${env.JOB_NAME}"
+        cleanWs()
+    }
+}
+

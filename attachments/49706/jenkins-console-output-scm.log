@@ -1,0 +1,51 @@
+Started by GitLab push by DOMINIQUE TRONCHE
+Lightweight checkout support not available, falling back to full checkout.
+Checking out git ssh://git@<url-project>.git into /var/jenkins_home/workspace/docker-test@script to read Jenkinsfile
+using credential jenkins-ssh-key
+ > git rev-parse --is-inside-work-tree # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url ssh://git@<url-project>.git # timeout=10
+Fetching upstream changes from ssh://git@<url-project>.git
+ > git --version # timeout=10
+using GIT_SSH to set credentials Jenkins ssh key for gitlab
+ > git fetch --tags --force --progress ssh://git@<url-project>.git +refs/tags/*:refs/remotes/origin/tags/* # timeout=10
+ > git rev-parse refs/tags/JENKINS-55987^{commit} # timeout=10
+ > git branch -a -v --no-abbrev --contains 9f8cb2b2e263e4977b6e28f56e3a466e635213f4 # timeout=10
+Checking out Revision 9f8cb2b2e263e4977b6e28f56e3a466e635213f4 (origin/tags/JENKINS-55987)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 9f8cb2b2e263e4977b6e28f56e3a466e635213f4 # timeout=10
+Commit message: "JENKINS-55987 debug"
+First time build. Skipping changelog.
+Running in Durability level: MAX_SURVIVABILITY
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/jenkins_home/workspace/docker-test
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Declarative: Checkout SCM)
+[Pipeline] checkout
+using credential jenkins-ssh-key
+ > git rev-parse --is-inside-work-tree # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url ssh://git@<url-project>.git # timeout=10
+Fetching upstream changes from ssh://git@<url-project>.git
+ > git --version # timeout=10
+using GIT_SSH to set credentials Jenkins ssh key for gitlab
+ > git fetch --tags --force --progress ssh://git@<url-project>.git +refs/tags/*:refs/remotes/origin/tags/* # timeout=10
+ > git rev-parse refs/tags/JENKINS-55987^{commit} # timeout=10
+ > git branch -a -v --no-abbrev --contains 9f8cb2b2e263e4977b6e28f56e3a466e635213f4 # timeout=10
+Checking out Revision 9f8cb2b2e263e4977b6e28f56e3a466e635213f4 (origin/tags/JENKINS-55987)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 9f8cb2b2e263e4977b6e28f56e3a466e635213f4 # timeout=10
+Commit message: "JENKINS-55987 debug"
+
+[...]
+
+Stage "Push tag image" skipped due to when conditional
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline

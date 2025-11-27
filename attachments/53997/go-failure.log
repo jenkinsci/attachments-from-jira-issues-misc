@@ -1,0 +1,129 @@
+[Pipeline] Start of Pipeline
+[Pipeline] podTemplate
+[Pipeline] {
+[Pipeline] node
+Created Pod: kubernetes default/test-k8s-8-bl4nv-zqcmb-5vrvm
+[Normal][default/test-k8s-8-bl4nv-zqcmb-5vrvm][Scheduled] Successfully assigned default/test-k8s-8-bl4nv-zqcmb-5vrvm to xxxxxxxx
+[Normal][default/test-k8s-8-bl4nv-zqcmb-5vrvm][Pulled] Container image "maven:3.3.9-jdk-8-alpine" already present on machine
+[Normal][default/test-k8s-8-bl4nv-zqcmb-5vrvm][Created] Created container maven
+[Normal][default/test-k8s-8-bl4nv-zqcmb-5vrvm][Started] Started container maven
+[Normal][default/test-k8s-8-bl4nv-zqcmb-5vrvm][Pulled] Container image "golang:1.8.0" already present on machine
+[Normal][default/test-k8s-8-bl4nv-zqcmb-5vrvm][Created] Created container golang
+[Normal][default/test-k8s-8-bl4nv-zqcmb-5vrvm][Started] Started container golang
+[Normal][default/test-k8s-8-bl4nv-zqcmb-5vrvm][Pulled] Container image "jenkins/inbound-agent:4.3-4" already present on machine
+[Normal][default/test-k8s-8-bl4nv-zqcmb-5vrvm][Created] Created container jnlp
+[Normal][default/test-k8s-8-bl4nv-zqcmb-5vrvm][Started] Started container jnlp
+Still waiting to schedule task
+‘test-k8s-8-bl4nv-zqcmb-5vrvm’ is offline
+Agent test-k8s-8-bl4nv-zqcmb-5vrvm is provisioned from template Test-K8s_8-bl4nv-zqcmb
+---
+apiVersion: "v1"
+kind: "Pod"
+metadata:
+  annotations:
+    buildUrl: "http://10.xxx.xxx.xx:xxxx/job/Test-K8s/8/"
+    runUrl: "job/Test-K8s/8/"
+  labels:
+    jenkins: "slave"
+    jenkins/label-digest: "db2f4dcca07326de9419860de0d984671d0263cf"
+    jenkins/label: "Test-K8s_8-bl4nv"
+  name: "test-k8s-8-bl4nv-zqcmb-5vrvm"
+spec:
+  containers:
+  - args:
+    - "9999999"
+    command:
+    - "sleep"
+    image: "maven:3.3.9-jdk-8-alpine"
+    name: "maven"
+    volumeMounts:
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+  - args:
+    - "9999999"
+    command:
+    - "sleep"
+    image: "golang:1.8.0"
+    name: "golang"
+    volumeMounts:
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+  - env:
+    - name: "JENKINS_SECRET"
+      value: "********"
+    - name: "JENKINS_TUNNEL"
+      value: "10.xxx.xxx.xx:xxxxx"
+    - name: "JENKINS_AGENT_NAME"
+      value: "test-k8s-8-bl4nv-zqcmb-5vrvm"
+    - name: "JENKINS_NAME"
+      value: "test-k8s-8-bl4nv-zqcmb-5vrvm"
+    - name: "JENKINS_AGENT_WORKDIR"
+      value: "/home/jenkins/agent"
+    - name: "JENKINS_URL"
+      value: "http://10.xxx.xxx.xx:xxxxx/"
+    image: "jenkins/inbound-agent:4.3-4"
+    name: "jnlp"
+    resources:
+      limits: {}
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+    volumeMounts:
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+  nodeSelector:
+    kubernetes.io/os: "linux"
+  restartPolicy: "Never"
+  volumes:
+  - emptyDir:
+      medium: ""
+    name: "workspace-volume"
+
+Running on test-k8s-8-bl4nv-zqcmb-5vrvm in /home/jenkins/agent/workspace/Test-K8s
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Build a Golang project)
+[Pipeline] git
+The recommended git tool is: NONE
+No credentials specified
+Cloning the remote Git repository
+Cloning repository https://github.com/terraform-providers/terraform-provider-aws.git
+ > git init /home/jenkins/agent/workspace/Test-K8s # timeout=10
+Fetching upstream changes from https://github.com/terraform-providers/terraform-provider-aws.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.20.1'
+ > git fetch --tags --force --progress -- https://github.com/terraform-providers/terraform-provider-aws.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+Avoid second fetch
+Checking out Revision bc48c2178fff1c5b1b142481069e45fcb5870bd5 (refs/remotes/origin/master)
+ > git config remote.origin.url https://github.com/terraform-providers/terraform-provider-aws.git # timeout=10
+ > git config --add remote.origin.fetch +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/master^{commit} # timeout=10
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f bc48c2178fff1c5b1b142481069e45fcb5870bd5 # timeout=10
+ > git branch -a -v --no-abbrev # timeout=10
+ > git checkout -b master bc48c2178fff1c5b1b142481069e45fcb5870bd5 # timeout=10
+Commit message: "Merge pull request #15081 from jrobison-sb/dont-use-dot-local-example"
+First time build. Skipping changelog.
+[Pipeline] container
+[Pipeline] {
+[Pipeline] sh
++ mkdir -p /go/src/github.com/terraform-providers
++ pwd
++ ln -s /go /go/src/github.com/terraform-providers/terraform-provider-aws
++ cd /go/src/github.com/terraform-providers/terraform-provider-aws
++ make build
+make: *** No rule to make target 'build'.  Stop.
+[Pipeline] }
+[Pipeline] // container
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // podTemplate
+[Pipeline] End of Pipeline
+ERROR: script returned exit code 2
+Finished: FAILURE

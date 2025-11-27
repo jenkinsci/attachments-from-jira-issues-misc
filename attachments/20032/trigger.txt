@@ -1,0 +1,55 @@
+# SCRIPT NAME: rm_empty_branch.pl
+# DESCRIPTION: This trigger is to be run on uncheckout, rmver and rmbranch.
+#              It'll look to see if the branch is empty, and if so, remove it.                             
+#
+###############################################################################
+
+$SNAP = "$ENV{'CLEARCASE_SNAPSHOT_PN'}";
+$OP = "$ENV{'CLEARCASE_OP_KIND'}";
+$PNAME = "$ENV{'CLEARCASE_PN'}";
+
+if ($OP eq uncheckout) {
+  $TEMP_ID = "$ENV{'CLEARCASE_ID_STR'}";
+
+  @PARTS = split (/[\\\/]/, $TEMP_ID); 
+
+  $ZERO_TEST = $PARTS[$#PARTS];
+
+  if ($ZERO_TEST != 0) {
+    # This is not the place holder so the branch must not be empty.
+    # Do not remove the branch.
+    exit (0);
+  }
+}
+
+$TEMP_ID = "$ENV{'CLEARCASE_XPN'}";
+$I = rindex ($TEMP_ID, "\\");
+
+$BRANCH_DIR = substr( $TEMP_ID, 0, $I );
+
+@VERSION_NAMES = `cleartool ls "$BRANCH_DIR"`;
+
+# There are either checked-out versions of the file or other branches created
+# off of this branch or labeled versions.
+if ($#VERSION_NAMES != 1) {
+   exit 0;
+} else {
+
+   $MAIN_TEST = "$ENV{'CLEARCASE_ID_STR'}";
+   @PARTS = split (/[\\\/]/, $TEMP_ID); 
+   $MAIN_TEST = $PARTS[$#PARTS-1];
+
+   if ($MAIN_TEST eq "main") {
+     # Don't attempt to delete /main branch. 
+     exit (0);
+   } else {
+     # Delete the empty parent branch.
+     $comment="\"Automatic removal of empty branch via trigger...\"";
+     system("cleartool rmbranch -force -c $comment \"$BRANCH_DIR\"");
+
+     # If it's a snapshot view, update the element
+     system("cleartool update \"$PNAME\"") if( $SNAP );
+     exit (0);
+   }
+}
+exit (1);

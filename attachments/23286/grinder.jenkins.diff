@@ -1,0 +1,172 @@
+diff --git a/pom.xml b/pom.xml
+index 9943f39..17be980 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -1,9 +1,9 @@
+ <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <parent>
+-    <groupId>org.jvnet.hudson.plugins</groupId>
++    <groupId>org.jenkins-ci.plugins</groupId>
+     <artifactId>plugin</artifactId>
+-    <version>1.319</version>
++    <version>1.484</version>
+     <relativePath>../pom.xml</relativePath>
+   </parent>
+ 
+diff --git a/src/main/java/hudson/plugins/grinder/AbstractGrinderAction.java b/src/main/java/hudson/plugins/grinder/AbstractGrinderAction.java
+index 776b94d..ba34d8a 100644
+--- a/src/main/java/hudson/plugins/grinder/AbstractGrinderAction.java
++++ b/src/main/java/hudson/plugins/grinder/AbstractGrinderAction.java
+@@ -25,7 +25,10 @@ public class AbstractGrinderAction implements Action {
+       return GrinderPlugin.URL;
+    }
+ 
+-   protected boolean shouldReloadGraph(StaplerRequest request, StaplerResponse response, Run build) throws IOException {
++   protected boolean shouldReloadGraph(StaplerRequest request, StaplerResponse response, Run build, String graphMode) throws IOException {
++      if ("always".equals(graphMode)) {
++          return true;
++      }
+       return !request.checkIfModified(build.getTimestamp(), response);
+    }
+ }
+diff --git a/src/main/java/hudson/plugins/grinder/GrinderBuildAction.java b/src/main/java/hudson/plugins/grinder/GrinderBuildAction.java
+index 72c91cc..f0168c9 100644
+--- a/src/main/java/hudson/plugins/grinder/GrinderBuildAction.java
++++ b/src/main/java/hudson/plugins/grinder/GrinderBuildAction.java
+@@ -33,9 +33,11 @@ public class GrinderBuildAction extends AbstractGrinderAction {
+    private final AbstractBuild<?, ?> build;
+    private Test totals;
+    private List<Test> tests;
++   private String graphMode;
+ 
+-   public GrinderBuildAction(AbstractBuild<?, ?> build, InputStream is, PrintStream logger) {
++   public GrinderBuildAction(AbstractBuild<?, ?> build, InputStream is, PrintStream logger, String graphMode) {
+       this.build = build;
++      this.graphMode = graphMode;
+       ResultReader rs = new ResultReader(is, logger);
+       totals = rs.getTotals();
+       tests = rs.getTests();
+@@ -54,10 +56,14 @@ public class GrinderBuildAction extends AbstractGrinderAction {
+       return tests;
+    }
+ 
++   public String getGraphMode() {
++      return graphMode;
++   }
++
+    public void doTestGraph(StaplerRequest request, StaplerResponse response)
+       throws IOException {
+ 
+-      if (shouldReloadGraph(request, response, build)) {
++      if (shouldReloadGraph(request, response, build, graphMode)) {
+          ChartUtil.generateGraph(request, response, createTestGraph(), 800, 400);
+       }
+    }
+diff --git a/src/main/java/hudson/plugins/grinder/GrinderProjectAction.java b/src/main/java/hudson/plugins/grinder/GrinderProjectAction.java
+index 508d08b..031451a 100644
+--- a/src/main/java/hudson/plugins/grinder/GrinderProjectAction.java
++++ b/src/main/java/hudson/plugins/grinder/GrinderProjectAction.java
+@@ -1,12 +1,15 @@
+ package hudson.plugins.grinder;
+ 
+ import hudson.model.AbstractBuild;
++import hudson.model.Descriptor;
+ import hudson.model.Project;
+ import hudson.model.Result;
++import hudson.tasks.Publisher;
+ import hudson.util.ChartUtil;
+ import hudson.util.ChartUtil.NumberOnlyBuildLabel;
+ import hudson.util.ColorPalette;
+ import hudson.util.DataSetBuilder;
++import hudson.util.DescribableList;
+ import hudson.util.ShiftedCategoryAxis;
+ import org.jfree.chart.ChartFactory;
+ import org.jfree.chart.JFreeChart;
+@@ -44,6 +47,16 @@ public class GrinderProjectAction extends AbstractGrinderAction {
+       return project.getBuildByNumber(number).getAction(GrinderBuildAction.class);
+    }
+ 
++   public GrinderPublisher getGrinderPublisher() {
++      DescribableList<Publisher, Descriptor<Publisher>> publishers = project.getPublishersList();
++      for (Publisher publisher : publishers) {
++          if (publisher instanceof GrinderPublisher) {
++              return (GrinderPublisher)publisher;
++          }
++      }
++      return null;
++   }
++
+    public void doMeanTimeGraph(StaplerRequest request, StaplerResponse response)
+       throws IOException {
+ 
+@@ -132,6 +145,8 @@ public class GrinderProjectAction extends AbstractGrinderAction {
+    }
+ 
+    private boolean shouldReloadGraph(StaplerRequest request, StaplerResponse response) throws IOException {
+-      return shouldReloadGraph(request, response, project.getLastSuccessfulBuild());
++      GrinderPublisher publisher = getGrinderPublisher();
++      String graphMode = publisher == null ? null : publisher.getGraphMode();
++      return shouldReloadGraph(request, response, project.getLastSuccessfulBuild(), graphMode);
+    }
+ }
+diff --git a/src/main/java/hudson/plugins/grinder/GrinderPublisher.java b/src/main/java/hudson/plugins/grinder/GrinderPublisher.java
+index e28da6c..8462a79 100644
+--- a/src/main/java/hudson/plugins/grinder/GrinderPublisher.java
++++ b/src/main/java/hudson/plugins/grinder/GrinderPublisher.java
+@@ -21,16 +21,22 @@ import java.io.PrintStream;
+ public class GrinderPublisher extends Recorder {
+ 
+    private String name;
++   private String graphMode;
+ 
+    @DataBoundConstructor
+-   public GrinderPublisher(String name) {
++   public GrinderPublisher(String name, String graphMode) {
+       this.name = name;
++      this.graphMode = graphMode;
+    }
+ 
+    public String getName() {
+       return name;
+    }
+ 
++   public String getGraphMode() {
++      return graphMode;
++   }
++
+    @Override
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
+       throws InterruptedException, IOException {
+@@ -40,7 +46,7 @@ public class GrinderPublisher extends Recorder {
+       if (build.getWorkspace().child(name).exists()) {
+          InputStream is = build.getWorkspace().child(name).read();
+          try {
+-            build.addAction(new GrinderBuildAction(build, is, logger));
++            build.addAction(new GrinderBuildAction(build, is, logger, graphMode));
+          } catch (GrinderParseException gpe) {
+             logger.println("Grinder report failed!");
+             build.setResult(Result.FAILURE);
+diff --git a/src/main/resources/hudson/plugins/grinder/GrinderPublisher/config.jelly b/src/main/resources/hudson/plugins/grinder/GrinderPublisher/config.jelly
+index b01ccf1..10db247 100644
+--- a/src/main/resources/hudson/plugins/grinder/GrinderPublisher/config.jelly
++++ b/src/main/resources/hudson/plugins/grinder/GrinderPublisher/config.jelly
+@@ -5,5 +5,15 @@
+       When submitted, it will be passed to the corresponding constructor parameter.
+     -->
+     <f:textbox field="name" />
+-	</f:entry>
+-</j:jelly>
+\ No newline at end of file
++  </f:entry>
++  <!--
++    Creates a drop-down menu that controls whether graphs should be reloaded
++    on all builds or by default only on builds that were modified.
++  -->
++  <f:entry name="graphMode" title="Choose Graph Reload Mode" field="graphMode">
++    <select name="graphMode">
++      <option value="always">Always</option>
++      <option value="ifModified">If Modified</option>
++    </select>
++  </f:entry>
++</j:jelly>

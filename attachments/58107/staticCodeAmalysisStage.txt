@@ -1,0 +1,55 @@
+stage('Static code analysis') {
+            when { expression {return yaml.products."${params.PRODUCT_KEY}".containsKey('sonar')} }
+            environment{
+                SONAR_PROPS_FILE = "${productSonar.file}"
+                SONAR_PROJET_BASEDIR = "${productSonar.basedir}"
+            }
+            steps {
+			 		  
+			  echo "SonarQube Scan"
+              
+			  script {
+                proj_key = "${params.CO_BRANCH}".replaceAll("/", "-")
+                sh "echo -e sonar.projectBaseDir=${env.SONAR_PROJET_BASEDIR} >> ${env.SONAR_PROPS_FILE}"
+                sh "echo -e sonar.projectVersion=${yaml.version}-${env.BUILD_NUMBER} >> ${env.SONAR_PROPS_FILE}"
+                sh "echo -e sonar.links.ci=${env.JOB_URL} >> ${env.SONAR_PROPS_FILE}"
+				
+				def addition = sub_product ? "-${sub_product}" : ""
+				//sh "echo -e sonar.projectKey=${yaml.group}-${yaml.product}${addition}>> ${env.SONAR_PROPS_FILE}"
+				sh "echo -e sonar.projectKey=${yaml.group}-${yaml.product}>> ${env.SONAR_PROPS_FILE}"
+                sh "echo -e sonar.buildString=${yaml.group}-${yaml.version}-${env.BUILD_NUMBER}>> ${env.SONAR_PROPS_FILE}"
+				sh "echo -e sonar.branch.name=${params.CO_BRANCH}>> ${env.SONAR_PROPS_FILE}"
+
+                //for Jacoco and JUnit scanner
+                sh "echo -e sonar.coverage.jacoco.xmlReportPaths=${env.SONAR_PROJET_BASEDIR}am/NMS/build/reports/jacoco.xml,${yaml.products.am.path}/am/NMS/src/restapi/build/reports/jacoco/test/jacocoTestReport.xml>> ${env.SONAR_PROPS_FILE}"
+                sh "echo -e sonar.junit.reportPaths=${env.SONAR_PROJET_BASEDIR}am/NMS/build/test-results/test,${env.SONAR_PROJET_BASEDIR}am/NMS/src/restapi/build/test-results/test>> ${env.SONAR_PROPS_FILE}"
+                sh "echo -e sonar.inclusions=**/*.java>> ${env.SONAR_PROPS_FILE}"
+                sh "echo -e sonar.java.libraries=${env.SONAR_PROJET_BASEDIR}am/NMS/lib/**/*.jar>> ${env.SONAR_PROPS_FILE}"
+                sh "echo -e sonar.sources=${env.SONAR_PROJET_BASEDIR}am/NMS/src>> ${env.SONAR_PROPS_FILE}"
+                sh "echo -e sonar.language=java>> ${env.SONAR_PROPS_FILE}"
+                sh "echo -e sonar.java.source=1.8>> ${env.SONAR_PROPS_FILE}"
+
+                SONAR_HOME = tool 'SonarQube';
+                // for debug
+                echo "sonar home is: ${env.SONAR_HOME}"
+                echo "sonar  is: ${SONAR_HOME}"
+    			withSonarQubeEnv('SonarQube') {
+
+                    sh """
+                        curl -s4o /var/tmp/ca.crt http://artifactory.rdlab.local:80/artifactory/Devops-generic-libs-local/sonar/ca.crt
+                        set +e
+                        keytool -list -keystore ${SONAR_HOME}/jre/lib/security/cacerts -storepass changeit | grep -q mykey
+                        if [ \$? -ne 0 ]; then keytool -import -noprompt -trustcacerts -file /var/tmp/ca.crt -keystore ${SONAR_HOME}/jre/lib/security/cacerts -storepass changeit; fi
+                        set -e
+                        ${SONAR_HOME}/bin/sonar-scanner -Dproject.settings=${env.SONAR_PROPS_FILE}
+                    """
+
+					sh "echo Copy ${env.SONAR_PROJET_BASEDIR}/.scannerwork to workspace ${env.WORKSPACE}"
+                    sh "cp -r ${env.SONAR_PROJET_BASEDIR}/.scannerwork ${env.WORKSPACE}/."
+    			}
+               
+                sh "echo Archive report-task.txt"
+                archiveArtifacts artifacts: '.scannerwork/report-task.txt', fingerprint: true
+              }
+            }
+        }

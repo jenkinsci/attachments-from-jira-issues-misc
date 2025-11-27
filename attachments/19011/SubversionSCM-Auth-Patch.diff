@@ -1,0 +1,32 @@
+Index: SubversionSCM.java
+===================================================================
+--- SubversionSCM.java	(revision 25498)
++++ SubversionSCM.java	(working copy)
+@@ -1392,15 +1392,17 @@
+          */
+         private static final class SslClientCertificateCredential extends Credential {
+             private final String password; // scrambled by base64
++            private File certFile; // scrambled by base64
+ 
+             public SslClientCertificateCredential(File certificate, String password) {
+                 this.password = Scrambler.scramble(password);
++		this.certFile = certificate;
+             }
+ 
+             @Override
+             public SVNAuthentication createSVNAuthentication(String kind) {
+                 if(kind.equals(ISVNAuthenticationManager.SSL))
+-                    return new SVNSSLAuthentication(null,Scrambler.descramble(password),false);
++                    return new SVNSSLAuthentication(certFile,Scrambler.descramble(password),false);
+                 else
+                     return null; // unexpected authentication type
+             }
+@@ -1657,7 +1659,7 @@
+                                 logWriter.println("Passing user name " + username + " and password you entered to SSH");
+                                 cred = new PasswordCredential(username, password);
+                             } else {
+-                                logWriter.println("Attempting a public key authentication with username " + username);
++                                logWriter.println("Amanda is Attempting a public key authentication with username " + username);
+                                 cred = new SshPublicKeyCredential(username, password, keyFile);
+                             }
+                         }

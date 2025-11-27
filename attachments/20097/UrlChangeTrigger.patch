@@ -1,0 +1,32 @@
+Index: UrlChangeTrigger.java
+===================================================================
+--- UrlChangeTrigger.java	(revision 37422)
++++ UrlChangeTrigger.java	(working copy)
+@@ -15,6 +15,7 @@
+ import java.io.IOException;
+ import java.net.MalformedURLException;
+ import java.net.URL;
++import java.net.URLConnection;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+ 
+@@ -30,6 +31,7 @@
+ public class UrlChangeTrigger extends Trigger<BuildableItem> {
+ 
+     URL url;
++    public static final int timeoutInMs = 30000;
+ 
+     public UrlChangeTrigger(String url) throws MalformedURLException {
+         this(new URL(url));
+@@ -60,7 +62,10 @@
+     public void run() {
+         try {
+             LOGGER.log(Level.FINER, "Testing the file {0}", url);
+-            String currentMd5 = Util.getDigestOf(url.openStream());
++            URLConnection urlConnection = url.openConnection();
++            urlConnection.setConnectTimeout(timeoutInMs);
++            urlConnection.setReadTimeout(timeoutInMs);
++            String currentMd5 = Util.getDigestOf(urlConnection.getInputStream());
+ 
+             String oldMd5;
+             File file = getFingerprintFile();

@@ -1,0 +1,71 @@
+Started by user test
+Checking out git git@gitlab.pcc.intra:ext-kolespe1/citest.git into C:\Users\ext-kolespe1.DOX\.jenkins\workspace\Build@script to read Jenkinsfile
+No credentials specified
+ > C:/_dev/soft/git/bin/git.exe rev-parse --is-inside-work-tree # timeout=10
+Fetching changes from the remote Git repository
+ > C:/_dev/soft/git/bin/git.exe config remote.origin.url git@gitlab.pcc.intra:ext-kolespe1/citest.git # timeout=10
+Fetching upstream changes from git@gitlab.pcc.intra:ext-kolespe1/citest.git
+ > C:/_dev/soft/git/bin/git.exe --version # timeout=10
+ > C:/_dev/soft/git/bin/git.exe fetch --tags --force --progress git@gitlab.pcc.intra:ext-kolespe1/citest.git +refs/heads/*:refs/remotes/origin/*
+Seen branch in repository origin/1_integration
+Seen branch in repository origin/1_release
+Seen branch in repository origin/master
+Seen branch in repository origin/merge_1_test
+Seen branch in repository origin/merge_test
+Seen 5 remote branches
+ > C:/_dev/soft/git/bin/git.exe show-ref --tags -d # timeout=10
+Checking out Revision a487d775943bc781fc0425601a15cb7445c67c6a (origin/1_integration)
+ > C:/_dev/soft/git/bin/git.exe config core.sparsecheckout # timeout=10
+ > C:/_dev/soft/git/bin/git.exe checkout -f a487d775943bc781fc0425601a15cb7445c67c6a
+Commit message: "Merge commit 'c6a97c82bc579beba5a35e2e89223dcf753bf205' into HEAD"
+ > C:/_dev/soft/git/bin/git.exe rev-list --no-walk a487d775943bc781fc0425601a15cb7445c67c6a # timeout=10
+Running in Durability level: MAX_SURVIVABILITY
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in C:\Users\ext-kolespe1.DOX\.jenkins\workspace\Build
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (checkout)
+[Pipeline] checkout
+No credentials specified
+ > C:/_dev/soft/git/bin/git.exe rev-parse --is-inside-work-tree # timeout=10
+Fetching changes from the remote Git repository
+ > C:/_dev/soft/git/bin/git.exe config remote.origin.url git@gitlab.pcc.intra:ext-kolespe1/citest.git # timeout=10
+Fetching upstream changes from git@gitlab.pcc.intra:ext-kolespe1/citest.git
+ > C:/_dev/soft/git/bin/git.exe --version # timeout=10
+ > C:/_dev/soft/git/bin/git.exe fetch --tags --force --progress git@gitlab.pcc.intra:ext-kolespe1/citest.git +refs/heads/*:refs/remotes/origin/*
+Seen branch in repository origin/1_integration
+Seen branch in repository origin/1_release
+Seen branch in repository origin/master
+Seen branch in repository origin/merge_1_test
+Seen branch in repository origin/merge_test
+Seen 5 remote branches
+ > C:/_dev/soft/git/bin/git.exe show-ref --tags -d # timeout=10
+Checking out Revision a487d775943bc781fc0425601a15cb7445c67c6a (origin/1_integration)
+ > C:/_dev/soft/git/bin/git.exe config core.sparsecheckout # timeout=10
+ > C:/_dev/soft/git/bin/git.exe checkout -f a487d775943bc781fc0425601a15cb7445c67c6a
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+hudson.plugins.git.GitException: Command "C:/_dev/soft/git/bin/git.exe checkout -f a487d775943bc781fc0425601a15cb7445c67c6a" returned status code 128:
+stdout: 
+stderr: fatal: reference is not a tree: a487d775943bc781fc0425601a15cb7445c67c6a
+
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandIn(CliGitAPIImpl.java:2042)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.access$900(CliGitAPIImpl.java:72)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl$9.execute(CliGitAPIImpl.java:2341)
+Caused: hudson.plugins.git.GitException: Could not checkout a487d775943bc781fc0425601a15cb7445c67c6a
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl$9.execute(CliGitAPIImpl.java:2365)
+	at hudson.plugins.git.GitSCM.checkout(GitSCM.java:1242)
+	at org.jenkinsci.plugins.workflow.steps.scm.SCMStep.checkout(SCMStep.java:120)
+	at org.jenkinsci.plugins.workflow.steps.scm.SCMStep$StepExecutionImpl.run(SCMStep.java:90)
+	at org.jenkinsci.plugins.workflow.steps.scm.SCMStep$StepExecutionImpl.run(SCMStep.java:77)
+	at org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution.lambda$start$0(SynchronousNonBlockingStepExecution.java:47)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+Finished: FAILURE

@@ -1,0 +1,56 @@
+Index: src/main/java/hudson/plugins/cobertura/CoberturaPublisher.java
+===================================================================
+--- src/main/java/hudson/plugins/cobertura/CoberturaPublisher.java	(revision 31160)
++++ src/main/java/hudson/plugins/cobertura/CoberturaPublisher.java	(working copy)
+@@ -32,6 +32,7 @@
+ 
+     private final String coberturaReportFile;
+     private final boolean onlyStable;
++    private final boolean failOnNoReport;
+     
+     private CoverageTarget healthyTarget;
+     private CoverageTarget unhealthyTarget;
+@@ -43,12 +44,13 @@
+      * @stapler-constructor
+      */
+     @DataBoundConstructor 
+-    public CoberturaPublisher(String coberturaReportFile, boolean onlyStable) {
++    public CoberturaPublisher(String coberturaReportFile, boolean onlyStable, boolean failOnNoReport) {
+         this.coberturaReportFile = coberturaReportFile;
+         this.onlyStable = onlyStable;
+         this.healthyTarget = new CoverageTarget();
+         this.unhealthyTarget = new CoverageTarget();
+         this.failingTarget = new CoverageTarget();
++        this.failOnNoReport = failOnNoReport;
+     }
+ 
+     /**
+@@ -239,7 +241,10 @@
+             + "  Did you enter a pattern relative to the correct directory?"
+             + "  Did you generate the XML report(s) for Cobertura?";
+             listener.getLogger().println(msg);
+-            build.setResult(Result.FAILURE);
++            if (failOnNoReport) {
++            	listener.getLogger().println("Setting build to FAILURE due to missing reports!");
++            	build.setResult(Result.FAILURE);
++            }
+             return true;
+         }
+ 
+Index: src/main/resources/hudson/plugins/cobertura/CoberturaPublisher/config.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/cobertura/CoberturaPublisher/config.jelly	(revision 31160)
++++ src/main/resources/hudson/plugins/cobertura/CoberturaPublisher/config.jelly	(working copy)
+@@ -7,7 +7,11 @@
+     <f:entry title="${%Consider only stable builds}"
+              description="${%only.stable.builds.description}" >
+        <f:checkbox name="cobertura.onlyStable" checked="${instance.onlyStable}" />                                                                                        
+-    </f:entry>      
++    </f:entry>
++	<f:entry title="${%Fail build if no reports are generated}"
++             description="${%This setting sets the build to failure if no report is generated}" >
++       <f:checkbox name="cobertura.failOnNoReport" checked="${instance.failOnNoReport}" />                                                                                        
++    </f:entry>
+     <f:entry title="${%Coverage Metric Targets}"
+              description="${%metric.targets.description(rootURL)}">
+         <f:repeatable var="inst" varStatus="instStatus" items="${descriptor.getTargets(instance)}">

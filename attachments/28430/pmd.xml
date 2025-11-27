@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd-cpd>
+   <duplication lines="25" tokens="263">
+      <file line="230"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="293"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <codefragment><![CDATA[    manager->updateVideoAdaptationSet(id, updTimescale, updSegmentTempl, updInitTempl);
+    manager->writeToDisk(FILE_NAME);
+
+    CPPUNIT_ASSERT(doc.LoadFile(FILE_NAME) == tinyxml2::XML_SUCCESS);
+
+    CPPUNIT_ASSERT((xmlRoot = (const tinyxml2::XMLElement*)doc.FirstChildElement("MPD")) != NULL);
+
+    CPPUNIT_ASSERT((xmlElement = (const tinyxml2::XMLElement*)xmlRoot->FirstChildElement("Period")) != NULL);
+    CPPUNIT_ASSERT((xmlElement = (const tinyxml2::XMLElement*)xmlElement->FirstChildElement("AdaptationSet")) != NULL);
+    CPPUNIT_ASSERT((attrib = (const tinyxml2::XMLAttribute *)xmlElement->FindAttribute("id")) != NULL);
+    CPPUNIT_ASSERT(attrib->Value() == id);
+
+    CPPUNIT_ASSERT((xmlElement = (const tinyxml2::XMLElement*)xmlElement->FirstChildElement("SegmentTemplate")) != NULL);
+
+    CPPUNIT_ASSERT((attrib = (const tinyxml2::XMLAttribute *)xmlElement->FindAttribute("timescale")) != NULL);
+    CPPUNIT_ASSERT(attrib->IntValue() == updTimescale);
+
+    CPPUNIT_ASSERT((attrib = (const tinyxml2::XMLAttribute *)xmlElement->FindAttribute("media")) != NULL);
+    CPPUNIT_ASSERT(attrib->Value() == updSegmentTempl);
+
+    CPPUNIT_ASSERT((attrib = (const tinyxml2::XMLAttribute *)xmlElement->FindAttribute("initialization")) != NULL);
+    CPPUNIT_ASSERT(attrib->Value() == updInitTempl);
+}
+
+void MpdManagerTest::updateAudioAdaptationSet()]]></codefragment>
+   </duplication>
+   <duplication lines="26" tokens="261">
+      <file line="205"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="268"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <codefragment><![CDATA[    manager->updateVideoAdaptationSet(id, timescale, segmentTempl, initTempl);
+    manager->writeToDisk(FILE_NAME);
+
+    CPPUNIT_ASSERT(doc.LoadFile(FILE_NAME) == tinyxml2::XML_SUCCESS);
+
+    CPPUNIT_ASSERT((xmlRoot = (const tinyxml2::XMLElement*)doc.FirstChildElement("MPD")) != NULL);
+
+    CPPUNIT_ASSERT((xmlElement = (const tinyxml2::XMLElement*)xmlRoot->FirstChildElement("Period")) != NULL);
+    CPPUNIT_ASSERT((xmlElement = (const tinyxml2::XMLElement*)xmlElement->FirstChildElement("AdaptationSet")) != NULL);
+    CPPUNIT_ASSERT((attrib = (const tinyxml2::XMLAttribute *)xmlElement->FindAttribute("id")) != NULL);
+    CPPUNIT_ASSERT(attrib->Value() == id);
+
+    CPPUNIT_ASSERT((xmlElement = (const tinyxml2::XMLElement*)xmlElement->FirstChildElement("SegmentTemplate")) != NULL);
+
+    CPPUNIT_ASSERT((attrib = (const tinyxml2::XMLAttribute *)xmlElement->FindAttribute("timescale")) != NULL);
+    CPPUNIT_ASSERT(attrib->IntValue() == timescale);
+
+    CPPUNIT_ASSERT((attrib = (const tinyxml2::XMLAttribute *)xmlElement->FindAttribute("media")) != NULL);
+    CPPUNIT_ASSERT(attrib->Value() == segmentTempl);
+
+    CPPUNIT_ASSERT((attrib = (const tinyxml2::XMLAttribute *)xmlElement->FindAttribute("initialization")) != NULL);
+    CPPUNIT_ASSERT(attrib->Value() == initTempl);
+
+    //UPDATE
+
+    manager->updateVideoAdaptationSet(id, updTimescale, updSegmentTempl, updInitTempl);]]></codefragment>
+   </duplication>
+   <duplication lines="16" tokens="180">
+      <file line="205"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="230"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="268"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="293"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <codefragment><![CDATA[    manager->updateVideoAdaptationSet(id, timescale, segmentTempl, initTempl);
+    manager->writeToDisk(FILE_NAME);
+
+    CPPUNIT_ASSERT(doc.LoadFile(FILE_NAME) == tinyxml2::XML_SUCCESS);
+
+    CPPUNIT_ASSERT((xmlRoot = (const tinyxml2::XMLElement*)doc.FirstChildElement("MPD")) != NULL);
+
+    CPPUNIT_ASSERT((xmlElement = (const tinyxml2::XMLElement*)xmlRoot->FirstChildElement("Period")) != NULL);
+    CPPUNIT_ASSERT((xmlElement = (const tinyxml2::XMLElement*)xmlElement->FirstChildElement("AdaptationSet")) != NULL);
+    CPPUNIT_ASSERT((attrib = (const tinyxml2::XMLAttribute *)xmlElement->FindAttribute("id")) != NULL);
+    CPPUNIT_ASSERT(attrib->Value() == id);
+
+    CPPUNIT_ASSERT((xmlElement = (const tinyxml2::XMLElement*)xmlElement->FirstChildElement("SegmentTemplate")) != NULL);
+
+    CPPUNIT_ASSERT((attrib = (const tinyxml2::XMLAttribute *)xmlElement->FindAttribute("timescale")) != NULL);
+    CPPUNIT_ASSERT(attrib->IntValue() == timescale);]]></codefragment>
+   </duplication>
+   <duplication lines="24" tokens="171">
+      <file line="302"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/src/MpdManager.cpp"/>
+      <file line="398"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/src/MpdManager.cpp"/>
+      <codefragment><![CDATA[    adaptSet->SetAttribute("subsegmentStartsWithSAP", subsegmentStartsWithSAP);
+
+    segmentTemplate = doc.NewElement("SegmentTemplate");
+    segmentTemplate->SetAttribute("timescale", timescale);
+    segmentTemplate->SetAttribute("media", segTemplate.c_str());
+    segmentTemplate->SetAttribute("initialization", initTemplate.c_str());
+
+    segmentTimeline = doc.NewElement("SegmentTimeline");
+
+    for (auto ts : timestamps) {
+        s = doc.NewElement("S");
+        s->SetAttribute("t", ts.first);
+        s->SetAttribute("d", ts.second);
+        segmentTimeline->InsertEndChild(s);
+    }
+
+    segmentTemplate->InsertEndChild(segmentTimeline);
+    adaptSet->InsertEndChild(segmentTemplate);
+
+    for (auto r : representations) {
+        repr = doc.NewElement("Representation");
+        repr->SetAttribute("id", r.first.c_str());
+        repr->SetAttribute("codecs", r.second->getCodec().c_str());
+        repr->SetAttribute("width", r.second->getWidth());]]></codefragment>
+   </duplication>
+   <duplication lines="27" tokens="154">
+      <file line="143"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/DashAudioSegmenterTest.cpp"/>
+      <file line="144"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/DashVideoSegmenterTest.cpp"/>
+      <codefragment><![CDATA[    ifstream outputDataFile("testData/DashAudioSegmenterTest_init_model.m4a", ios::in|ios::binary|ios::ate);
+    
+    if (!inputDataFile.is_open() || !outputDataFile.is_open()) {
+        CPPUNIT_FAIL("Error opening test files. Check paths\n");
+        return;
+    }
+
+    inputDataSize = inputDataFile.tellg();
+    inputData = new unsigned char[inputDataSize];
+    inputDataFile.seekg (0, ios::beg);
+    inputDataFile.read((char*)inputData, inputDataSize);
+
+    outputDataSize = outputDataFile.tellg();
+    outputData = new unsigned char[outputDataSize];
+    outputDataFile.seekg (0, ios::beg);
+    outputDataFile.read((char *)outputData, outputDataSize);
+
+    if (!inputData || !outputData) {
+        CPPUNIT_FAIL("Error filling buffers from files");
+        return;
+    }
+
+    inputDataFile.close();
+    outputDataFile.close();
+}
+
+void generateInitTestSuite::tearDown()]]></codefragment>
+   </duplication>
+   <duplication lines="15" tokens="152">
+      <file line="205"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="230"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="268"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="293"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="332"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <codefragment><![CDATA[    manager->updateVideoAdaptationSet(id, timescale, segmentTempl, initTempl);
+    manager->writeToDisk(FILE_NAME);
+
+    CPPUNIT_ASSERT(doc.LoadFile(FILE_NAME) == tinyxml2::XML_SUCCESS);
+
+    CPPUNIT_ASSERT((xmlRoot = (const tinyxml2::XMLElement*)doc.FirstChildElement("MPD")) != NULL);
+
+    CPPUNIT_ASSERT((xmlElement = (const tinyxml2::XMLElement*)xmlRoot->FirstChildElement("Period")) != NULL);
+    CPPUNIT_ASSERT((xmlElement = (const tinyxml2::XMLElement*)xmlElement->FirstChildElement("AdaptationSet")) != NULL);
+    CPPUNIT_ASSERT((attrib = (const tinyxml2::XMLAttribute *)xmlElement->FindAttribute("id")) != NULL);
+    CPPUNIT_ASSERT(attrib->Value() == id);
+
+    CPPUNIT_ASSERT((xmlElement = (const tinyxml2::XMLElement*)xmlElement->FirstChildElement("SegmentTemplate")) != NULL);
+
+    CPPUNIT_ASSERT((attrib = (const tinyxml2::XMLAttribute *)xmlElement->FindAttribute("timescale")) != NULL);]]></codefragment>
+   </duplication>
+   <duplication lines="13" tokens="146">
+      <file line="375"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="418"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <codefragment><![CDATA[            representationHeight, representationBandwidth, representationFps);
+    manager->writeToDisk(FILE_NAME);
+
+    CPPUNIT_ASSERT(doc.LoadFile(FILE_NAME) == tinyxml2::XML_SUCCESS);
+
+    CPPUNIT_ASSERT((xmlRoot = (const tinyxml2::XMLElement*)doc.FirstChildElement("MPD")) != NULL);
+
+    CPPUNIT_ASSERT((xmlElement = (const tinyxml2::XMLElement*)xmlRoot->FirstChildElement("Period")) != NULL);
+    CPPUNIT_ASSERT((xmlElement = (const tinyxml2::XMLElement*)xmlElement->FirstChildElement("AdaptationSet")) != NULL);
+    CPPUNIT_ASSERT((attrib = (const tinyxml2::XMLAttribute *)xmlElement->FindAttribute("id")) != NULL);
+    CPPUNIT_ASSERT(attrib->Value() == id);
+
+    CPPUNIT_ASSERT((attrib = (const tinyxml2::XMLAttribute *)xmlElement->FindAttribute("frameRate")) != NULL);]]></codefragment>
+   </duplication>
+   <duplication lines="13" tokens="142">
+      <file line="205"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="230"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="268"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="293"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="332"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="464"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <codefragment><![CDATA[    manager->updateVideoAdaptationSet(id, timescale, segmentTempl, initTempl);
+    manager->writeToDisk(FILE_NAME);
+
+    CPPUNIT_ASSERT(doc.LoadFile(FILE_NAME) == tinyxml2::XML_SUCCESS);
+
+    CPPUNIT_ASSERT((xmlRoot = (const tinyxml2::XMLElement*)doc.FirstChildElement("MPD")) != NULL);
+
+    CPPUNIT_ASSERT((xmlElement = (const tinyxml2::XMLElement*)xmlRoot->FirstChildElement("Period")) != NULL);
+    CPPUNIT_ASSERT((xmlElement = (const tinyxml2::XMLElement*)xmlElement->FirstChildElement("AdaptationSet")) != NULL);
+    CPPUNIT_ASSERT((attrib = (const tinyxml2::XMLAttribute *)xmlElement->FindAttribute("id")) != NULL);
+    CPPUNIT_ASSERT(attrib->Value() == id);
+
+    CPPUNIT_ASSERT((xmlElement = (const tinyxml2::XMLElement*)xmlElement->FirstChildElement("SegmentTemplate")) != NULL);]]></codefragment>
+   </duplication>
+   <duplication lines="13" tokens="132">
+      <file line="630"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="747"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <codefragment><![CDATA[    CPPUNIT_ASSERT(nAttribs == 8);
+
+    CPPUNIT_ASSERT((segmentTemplate = (const tinyxml2::XMLElement*)adaptSet->FirstChildElement("SegmentTemplate")) != NULL);
+
+    CPPUNIT_ASSERT(((const tinyxml2::XMLElement*)segmentTemplate)->FindAttribute("timescale") != NULL);
+    CPPUNIT_ASSERT(((const tinyxml2::XMLElement*)segmentTemplate)->FindAttribute("media") != NULL);
+    CPPUNIT_ASSERT(((const tinyxml2::XMLElement*)segmentTemplate)->FindAttribute("initialization") != NULL);
+
+    CPPUNIT_ASSERT(((const tinyxml2::XMLElement*)segmentTemplate)->FirstChildElement("SegmentTimeline") != NULL);
+    CPPUNIT_ASSERT(((const tinyxml2::XMLElement*)adaptSet)->FirstChildElement("Representation") == NULL);
+}
+
+void VideoAdaptationSetTest::updateVideoRepresentationTest()]]></codefragment>
+   </duplication>
+   <duplication lines="13" tokens="129">
+      <file line="205"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="230"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="268"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="293"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="332"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="375"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="418"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="464"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <codefragment><![CDATA[    manager->updateVideoAdaptationSet(id, timescale, segmentTempl, initTempl);
+    manager->writeToDisk(FILE_NAME);
+
+    CPPUNIT_ASSERT(doc.LoadFile(FILE_NAME) == tinyxml2::XML_SUCCESS);
+
+    CPPUNIT_ASSERT((xmlRoot = (const tinyxml2::XMLElement*)doc.FirstChildElement("MPD")) != NULL);
+
+    CPPUNIT_ASSERT((xmlElement = (const tinyxml2::XMLElement*)xmlRoot->FirstChildElement("Period")) != NULL);
+    CPPUNIT_ASSERT((xmlElement = (const tinyxml2::XMLElement*)xmlElement->FirstChildElement("AdaptationSet")) != NULL);
+    CPPUNIT_ASSERT((attrib = (const tinyxml2::XMLAttribute *)xmlElement->FindAttribute("id")) != NULL);
+    CPPUNIT_ASSERT(attrib->Value() == id);
+
+    CPPUNIT_ASSERT((xmlElement = (const tinyxml2::XMLElement*)xmlElement->FirstChildElement("SegmentTemplate")) != NULL);]]></codefragment>
+   </duplication>
+   <duplication lines="12" tokens="122">
+      <file line="619"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="732"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <codefragment><![CDATA[    CPPUNIT_ASSERT(((const tinyxml2::XMLElement*)adaptSet)->FindAttribute("frameRate") != NULL);
+    CPPUNIT_ASSERT(((const tinyxml2::XMLElement*)adaptSet)->FindAttribute("segmentAlignment") != NULL);
+    CPPUNIT_ASSERT(((const tinyxml2::XMLElement*)adaptSet)->FindAttribute("startWithSAP") != NULL);
+    CPPUNIT_ASSERT(((const tinyxml2::XMLElement*)adaptSet)->FindAttribute("subsegmentAlignment") != NULL);
+    CPPUNIT_ASSERT(((const tinyxml2::XMLElement*)adaptSet)->FindAttribute("subsegmentStartsWithSAP") != NULL);
+
+    attrib = adaptSet->FirstAttribute();
+    for (nAttribs = 0 ; attrib ; nAttribs++) {
+        attrib = attrib->Next();
+    }
+
+    CPPUNIT_ASSERT(nAttribs == 8);]]></codefragment>
+   </duplication>
+   <duplication lines="16" tokens="118">
+      <file line="664"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="780"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <codefragment><![CDATA[            representationBandwidth, representationFps);
+
+    as->toMpd(doc, adaptSet);
+    repElem = adaptSet->FirstChildElement(representationName.c_str());
+
+    CPPUNIT_ASSERT(repElem != NULL);
+
+    attrib = ((const tinyxml2::XMLElement*)repElem)->FindAttribute("id");
+    CPPUNIT_ASSERT(attrib != NULL);
+    CPPUNIT_ASSERT(attrib->Value() == representationId);
+
+    attrib = ((const tinyxml2::XMLElement*)repElem)->FindAttribute("codecs");
+    CPPUNIT_ASSERT(attrib != NULL);
+    CPPUNIT_ASSERT(attrib->Value() == representationCodec);
+
+    attrib = ((const tinyxml2::XMLElement*)repElem)->FindAttribute("width");]]></codefragment>
+   </duplication>
+   <duplication lines="12" tokens="112">
+      <file line="392"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="474"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <codefragment><![CDATA[    CPPUNIT_ASSERT(attrib->IntValue() == representationHeight);
+
+    CPPUNIT_ASSERT((xmlElement = (const tinyxml2::XMLElement*)xmlElement->FirstChildElement("Representation")) != NULL);
+    attrib = ((const tinyxml2::XMLElement*)xmlElement)->FindAttribute("id");
+    CPPUNIT_ASSERT(attrib != NULL);
+    CPPUNIT_ASSERT(attrib->Value() == representationId);
+
+    attrib = ((const tinyxml2::XMLElement*)xmlElement)->FindAttribute("codecs");
+    CPPUNIT_ASSERT(attrib != NULL);
+    CPPUNIT_ASSERT(attrib->Value() == representationCodec);
+
+    attrib = ((const tinyxml2::XMLElement*)xmlElement)->FindAttribute("width");]]></codefragment>
+   </duplication>
+   <duplication lines="8" tokens="108">
+      <file line="388"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <file line="428"
+            path="/var/lib/jenkins/workspace/i2DASH/segmenter/test/MpdManagerTest.cpp"/>
+      <codefragment><![CDATA[    CPPUNIT_ASSERT(attrib->IntValue() == representationFps);
+    CPPUNIT_ASSERT((attrib = (const tinyxml2::XMLAttribute *)xmlElement->FindAttribute("maxWidth")) != NULL);
+    CPPUNIT_ASSERT(attrib->IntValue() == representationWidth);
+    CPPUNIT_ASSERT((attrib = (const tinyxml2::XMLAttribute *)xmlElement->FindAttribute("maxHeight")) != NULL);
+    CPPUNIT_ASSERT(attrib->IntValue() == representationHeight);
+
+    CPPUNIT_ASSERT((xmlElement = (const tinyxml2::XMLElement*)xmlElement->FirstChildElement("Representation")) != NULL);
+    attrib = ((const tinyxml2::XMLElement*)xmlElement)->FindAttribute("id");]]></codefragment>
+   </duplication>
+</pmd-cpd>

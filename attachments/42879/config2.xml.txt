@@ -1,0 +1,46 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.buildblocker.BuildBlockerProperty plugin="build-blocker-plugin@1.7.3">
+      <useBuildBlocker>false</useBuildBlocker>
+      <blockLevel>GLOBAL</blockLevel>
+      <scanQueueFor>DISABLED</scanQueueFor>
+      <blockingJobs></blockingJobs>
+    </hudson.plugins.buildblocker.BuildBlockerProperty>
+    <com.chikli.hudson.plugin.naginator.NaginatorOptOutProperty plugin="naginator@1.17.2">
+      <optOut>false</optOut>
+    </com.chikli.hudson.plugin.naginator.NaginatorOptOutProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.28">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <jdk>(System)</jdk>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <com.nirima.jenkins.plugins.docker.builder.DockerBuilderControl plugin="docker-plugin@1.1.4">
+      <option class="com.nirima.jenkins.plugins.docker.builder.DockerBuilderControlOptionProvisionAndStart">
+        <cloudName>docker</cloudName>
+        <templateId>someimagelocation/maven:1</templateId>
+      </option>
+    </com.nirima.jenkins.plugins.docker.builder.DockerBuilderControl>
+    <hudson.tasks.Shell>
+      <command>echo &quot;Testing Start\Stop container...&quot;</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <com.nirima.jenkins.plugins.docker.publisher.DockerPublisherControl plugin="docker-plugin@1.1.4">
+      <remove>true</remove>
+    </com.nirima.jenkins.plugins.docker.publisher.DockerPublisherControl>
+  </publishers>
+  <buildWrappers/>
+</project>

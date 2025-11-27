@@ -1,0 +1,193 @@
+Index: pom.xml
+===================================================================
+--- pom.xml	(revision 32589)
++++ pom.xml	(working copy)
+@@ -12,7 +12,7 @@
+ 	<parent>
+ 		<groupId>org.jvnet.hudson.plugins</groupId>
+ 		<artifactId>plugin</artifactId>
+-		<version>1.363</version>
++		<version>1.366</version>
+ 	</parent>
+ 
+ 	<developers>
+Index: src/main/java/org/jvnet/hudson/plugins/m2release/M2ReleaseBuildWrapper.java
+===================================================================
+--- src/main/java/org/jvnet/hudson/plugins/m2release/M2ReleaseBuildWrapper.java	(revision 32400)
++++ src/main/java/org/jvnet/hudson/plugins/m2release/M2ReleaseBuildWrapper.java	(working copy)
+@@ -39,6 +39,7 @@
+ import hudson.model.Hudson;
+ import hudson.model.Item;
+ import hudson.security.Permission;
++import hudson.tasks.BuildStep;
+ import hudson.tasks.BuildWrapper;
+ import hudson.tasks.BuildWrapperDescriptor;
+ import hudson.tasks.Builder;
+@@ -47,6 +48,8 @@
+ import java.io.IOException;
+ import java.net.MalformedURLException;
+ import java.net.URL;
++import java.util.ArrayList;
++import java.util.List;
+ import java.util.Map;
+ 
+ import javax.servlet.ServletException;
+@@ -91,18 +94,23 @@
+ 	public boolean                        selectCustomScmCommentPrefix = DescriptorImpl.DEFAULT_SELECT_CUSTOM_SCM_COMMENT_PREFIX;
+ 	public boolean                        selectAppendHudsonUsername   = DescriptorImpl.DEFAULT_SELECT_APPEND_HUDSON_USERNAME;
+ 	
++	private List<Builder>                 preBuildSteps       = new ArrayList<Builder>();
++    private List<Builder>                 postBuildSteps      = new ArrayList<Builder>();
++	
+ 	@DataBoundConstructor
+-	public M2ReleaseBuildWrapper(String releaseGoals, String defaultVersioningMode, boolean selectCustomScmCommentPrefix, boolean selectAppendHudsonUsername) {
++	public M2ReleaseBuildWrapper(String releaseGoals, String defaultVersioningMode, boolean selectCustomScmCommentPrefix, boolean selectAppendHudsonUsername, List<Builder> preBuildSteps, List<Builder> postBuildSteps) {
+ 		super();
+ 		this.releaseGoals = releaseGoals;
+ 		this.defaultVersioningMode = defaultVersioningMode;
+ 		this.selectCustomScmCommentPrefix = selectCustomScmCommentPrefix;
+ 		this.selectAppendHudsonUsername = selectAppendHudsonUsername;
++		this.preBuildSteps = preBuildSteps;
++        this.postBuildSteps = postBuildSteps;
+ 	}
+ 
+ 
+ 	@Override
+-	public Environment setUp(AbstractBuild build, Launcher launcher, final BuildListener listener)
++	public Environment setUp(AbstractBuild build, final Launcher launcher, final BuildListener listener)
+ 	                                                                                              throws IOException,
+ 	                                                                                              InterruptedException {
+ 		final String originalGoals;
+@@ -160,6 +168,10 @@
+ 			
+ 		}
+ 		
++		if (!executeBuildSteps(preBuildSteps, build, launcher, listener)) {
++            throw new IOException("Could not execute pre-build steps");
++        }
++		
+ 		return new Environment() {
+ 
+ 			@Override
+@@ -180,13 +192,17 @@
+ 				String version = null;
+ 				synchronized (mmSet) {
+ 					mmSet.setGoals(originalGoals);
+-					// get a local variable so we don't have to synchronise on mmSet any more than we have to.
++					// get a local variable so we don't have to synchronize on mmSet any more than we have to.
+ 					localcloseStage = closeNexusStage;
+ 					version = getReleaseVersion(mmSet.getRootModule());
+ 					versions = null;
+ 				}
+ 
+-				if (localcloseStage) {
++				// execute post release steps - we do this before closing nexus staging repo
++                // this way additional artifacts could be added to the repo.
++                retVal = executeBuildSteps(postBuildSteps, bld, launcher, lstnr);
++
++                if (retVal && localcloseStage) {
+ 					StageClient client = new StageClient(new URL(getDescriptor().getNexusURL()), getDescriptor().getNexusUser(), getDescriptor().getNexusPassword()); 
+ 					try {
+ 						MavenModule rootModule = mmSet.getRootModule();
+@@ -211,7 +227,44 @@
+ 			}
+ 		};
+ 	}
++	
++    /**
++     * Executes the passed build steps
++     * @param buildSteps the steps to be executed
++     * @param build the current build
++     * @param launcher the launcher
++     * @param listener the listener
++     * @return <code>true</code> if the build should continue
++     * @throws InterruptedException
++     * @throws IOException
++     */
++    private boolean executeBuildSteps(List<Builder> buildSteps, AbstractBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
++        boolean shouldContinue = true;
++
++        // execute prebuild steps, stop processing if indicated
++        if (buildSteps != null) {
++            for (BuildStep buildStep : buildSteps) {
++
++                if (!shouldContinue) {
++                    break;
++                }
++
++                shouldContinue = buildStep.prebuild(build, listener);
++            }
++
++            // execute build step, stop processing if indicated
++            for (BuildStep buildStep : buildSteps) {
++
++                if (!shouldContinue) {
++                    break;
++                }
++
++                shouldContinue = buildStep.perform(build, launcher, listener);
++            }
++        }
+ 
++        return shouldContinue;
++    }	
+ 
+ 	void enableRelease() {
+ 		doRelease = true;
+@@ -289,6 +342,22 @@
+ 	public void setHudsonUserName(String hudsonUserName) {
+ 		this.hudsonUserName = hudsonUserName;
+ 	}
++	
++    public void setPostBuildSteps(List<Builder> postBuildSteps) {
++        this.postBuildSteps = postBuildSteps;
++    }
++
++    public void setPreBuildSteps(List<Builder> preBuildSteps) {
++        this.preBuildSteps = preBuildSteps;
++    }
++
++    public List<Builder> getPostBuildSteps() {
++        return postBuildSteps;
++    }
++
++    public List<Builder> getPreBuildSteps() {
++        return preBuildSteps;
++    }	
+ 
+ 	private String generateVersionString(int buildNumber) {
+ 		// -Dproject.rel.org.mycompany.group.project=version ....
+Index: src/main/resources/org/jvnet/hudson/plugins/m2release/M2ReleaseBuildWrapper/config.jelly
+===================================================================
+--- src/main/resources/org/jvnet/hudson/plugins/m2release/M2ReleaseBuildWrapper/config.jelly	(revision 32289)
++++ src/main/resources/org/jvnet/hudson/plugins/m2release/M2ReleaseBuildWrapper/config.jelly	(working copy)
+@@ -26,4 +26,29 @@
+ 	<f:entry title="Preselect append Hudson username" help="/plugin/m2release/help-projectConfig-selectAppendHudsonUsername.html">
+ 		<f:checkbox name="selectAppendHudsonUsername" checked="${h.defaulted(instance.selectAppendHudsonUsername,descriptor.DEFAULT_SELECT_APPEND_HUDSON_USERNAME)}"/>
+ 	</f:entry>
++	
++    <f:block>
++        <div style="padding-left: 2em">
++            <fieldset style="margin-bottom:1em">
++                <table width="100%">
++                    <f:section title="${%Steps to run before mvn release build}">
++                        <f:nested>
++                            <f:hetero-list name="preBuildSteps" hasHeader="true"
++                                           descriptors="${h.getBuilderDescriptors(it)}"
++                                           items="${instance.preBuildSteps}"
++                                           addCaption="${%Add pre-release-build step}"/>
++                        </f:nested>
++                    </f:section>
++                    <f:section title="${%Steps to run after mvn release build}">
++                        <f:nested>
++                            <f:hetero-list name="postBuildSteps" hasHeader="true"
++                                           descriptors="${h.getBuilderDescriptors(it)}"
++                                           items="${instance.postBuildSteps}"
++                                           addCaption="${%Add post-release-build step}"/>
++                        </f:nested>
++                    </f:section>
++                </table>
++            </fieldset>
++        </div>
++    </f:block>
+ </j:jelly>

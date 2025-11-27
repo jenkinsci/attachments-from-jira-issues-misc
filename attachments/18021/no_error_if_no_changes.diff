@@ -1,0 +1,17 @@
+Index: src/main/java/hudson/plugins/perforce/PerforceSCM.java
+===================================================================
+RCS file: /cvs/hudson/hudson/plugins/perforce/src/main/java/hudson/plugins/perforce/PerforceSCM.java,v
+retrieving revision 1.10
+diff -u -r1.10 PerforceSCM.java
+--- src/main/java/hudson/plugins/perforce/PerforceSCM.java	22 Oct 2007 18:59:16 -0000	1.10
++++ src/main/java/hudson/plugins/perforce/PerforceSCM.java	23 Oct 2007 03:55:47 -0000
+@@ -193,8 +193,7 @@
+ 				PerforceChangeLogSet.saveToChangeLog(new FileOutputStream(changelogFile), changes);
+ 			} else if(!forceSync) {
+ 				listener.getLogger().println("No changes since last build.");
+-				createEmptyChangeLog(changelogFile, listener, "changelog");
+-				return false;
++				return createEmptyChangeLog(changelogFile, listener, "changelog");
+ 			}
+ 						
+ 			// 7. Now we can actually do the sync process...

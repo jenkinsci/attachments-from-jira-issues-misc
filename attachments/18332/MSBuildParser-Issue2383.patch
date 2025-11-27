@@ -1,0 +1,66 @@
+Index: src/main/java/hudson/plugins/warnings/parser/MsBuildParser.java
+===================================================================
+--- src/main/java/hudson/plugins/warnings/parser/MsBuildParser.java	(revision 12233)
++++ src/main/java/hudson/plugins/warnings/parser/MsBuildParser.java	(working copy)
+@@ -13,7 +13,7 @@
+     /** Warning type of this parser. */
+     static final String WARNING_TYPE = "MSBuild";
+     /** Pattern of MSBuild compiler warnings. */
+-    private static final String MS_BUILD_WARNING_PATTERN = "(.*)\\((\\d*).*\\)\\s*:\\s*(warning|error)\\s*([^:]*):\\s*(.*)";
++    private static final String MS_BUILD_WARNING_PATTERN = "(.*)\\((\\d*).*\\)\\s*:\\s*(warning|error|Warning|Error)\\s*([^:]*):\\s*(.*)";
+ 
+     /**
+      * Creates a new instance of <code>MsBuildParser</code>.
+Index: src/test/java/hudson/plugins/warnings/parser/MsBuildParserTest.java
+===================================================================
+--- src/test/java/hudson/plugins/warnings/parser/MsBuildParserTest.java	(revision 12233)
++++ src/test/java/hudson/plugins/warnings/parser/MsBuildParserTest.java	(working copy)
+@@ -5,6 +5,7 @@
+ import hudson.plugins.warnings.util.model.Priority;
+ 
+ import java.io.IOException;
++import java.io.StringBufferInputStream;
+ import java.util.Collection;
+ import java.util.Iterator;
+ 
+@@ -52,5 +53,40 @@
+                 "MediaPortal.cs",
+                 MsBuildParser.WARNING_TYPE, "CS0162", Priority.NORMAL);
+     }
++
++    /**
++     * MSBuildParser should also detect keywords 'Warning' and 'Error', as they are
++     * produced by the .NET-2.0 compiler of VS2005
++     *
++     * @throws IOException
++     *
++     * @see <a href="https://hudson.dev.java.net/issues/show_bug.cgi?id=2383">Issue 2383</a>
++     */
++    @Test
++    public void shouldDetectKeywordsInRegexCaseInsensitive() throws IOException {
++        StringBuilder testData = new StringBuilder();
++        testData.append("Src\\Parser\\CSharp\\cs.ATG (2242,17):  Warning CS0168: The variable 'type' is declared but never used");
++        testData.append("\r\n");
++        testData.append("C:\\Src\\Parser\\CSharp\\file.cs (10): Error XXX: An error occurred");
++
++        Collection<FileAnnotation> warnings = new MsBuildParser().parse(new StringBufferInputStream(testData.toString()));
++
++        assertEquals("Wrong number of warnings detected.", 2, warnings.size());
++
++        Iterator<FileAnnotation> iterator = warnings.iterator();
++        FileAnnotation annotation = iterator.next();
++        checkWarning(annotation,
++                2242,
++                "The variable 'type' is declared but never used",
++                "Src/Parser/CSharp/cs.ATG",
++                MsBuildParser.WARNING_TYPE, "CS0168", Priority.NORMAL);
++        annotation = iterator.next();
++        checkWarning(annotation,
++                10,
++                "An error occurred",
++                "C:/Src/Parser/CSharp/file.cs",
++                MsBuildParser.WARNING_TYPE, "XXX", Priority.HIGH);
++
++    }
+ }
+ 

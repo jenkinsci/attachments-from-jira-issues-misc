@@ -1,0 +1,20 @@
+Index: src/main/java/hudson/plugins/performance/GraphConfigurationDetail.java
+===================================================================
+--- src/main/java/hudson/plugins/performance/GraphConfigurationDetail.java	(revision 33042)
++++ src/main/java/hudson/plugins/performance/GraphConfigurationDetail.java	(working copy)
+@@ -61,6 +61,15 @@
+ 	public GraphConfigurationDetail(final AbstractProject<?, ?> project, final String pluginName,
+ 			final StaplerRequest request) {
+ 
++		// First check for URL values
++		String buildCount = request.getParameter("buildCount");
++		if (buildCount != null) {
++			setBuildCount (Integer.parseInt(buildCount));
++			setConfigType(GraphConfigurationDetail.BUILD_CONFIG);
++			return;
++		}
++
++		// If not found, check cookie
+ 		String value = createCookieHandler(pluginName).getValue(request.getCookies());
+ 		List<Integer> initializationListResult = initializeFrom(value);
+ 		if (!initializationListResult.isEmpty()) {

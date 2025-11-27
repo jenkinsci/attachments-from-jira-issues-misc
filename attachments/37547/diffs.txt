@@ -1,0 +1,63 @@
+diff --git a/Jenkinsfile b/Jenkinsfile
+index 1b9af4ab..a312b895 100644
+--- a/Jenkinsfile
++++ b/Jenkinsfile
+@@ -9,9 +9,17 @@ pipeline {
+     stage('Initialization') {
+       steps {
+         script {
+-          def initialize = load('jenkins/pipeline/initialize.groovy')
+-          initialize()
++          echo 'about to load'
++          def initialize = load('jenkins/pipeline/initialize.groovy');
++          echo 'about to initialize'
++          try {
++            initialize();
++          } catch (err) {
++            echo "Caught: ${err}"
+           }
++          echo 'done initializing'
++        }
++        sh 'cp ~jenkins/secrets/cap_repo.sh "$WORKSPACE"'
+ 
+       }
+     }
+@@ -20,6 +28,7 @@ pipeline {
+         sh '''          set allexport
+           timeout=nolimit
+           cap_build_branch=$BRANCH_NAME
++          # source cap_repo.sh
+           env | sort -f
+           # ~/.rvm/bin/rvm . do jenkins/build/_cap-basebox-construction'''
+       }
+diff --git a/jenkins/pipeline/initialize.groovy b/jenkins/pipeline/initialize.groovy
+index 6c0b752a..4fbd7405 100644
+--- a/jenkins/pipeline/initialize.groovy
++++ b/jenkins/pipeline/initialize.groovy
+@@ -22,6 +22,7 @@ def call() {
+     env.cap_dist_dashb = userInput.cap_dist_dashb
+     env.branch_type = userInput.branch_type
+ 
++    // this is here because no form of checkbox input appears to work properly
+     uploaderList = []
+     if ( userInput.upload_artifact         ) uploaderList += 'artifact'
+     if ( userInput.upload_vsphere          ) uploaderList += 'vsphere'
+@@ -30,15 +31,6 @@ def call() {
+     if ( userInput.upload_amazon_eu_west_1 ) uploaderList += 'amazon-eu-west-1'
+ 
+     env.uploaders = uploaderList.join(',')
+-
+-  //cap repo creds from a known file
+-  creds = ['/bin/bash','-c','''
+-source $JENKINS_HOME/secrets/cap_repo.sh
+-echo $CAP_REPO_USER
+-echo $CAP_REPO_PASS
+-'''].execute().text.tokenize()
+-  env.CAP_REPO_USER = creds[0]
+-  env.CAP_REPO_PASS = creds[1]
+ }
+ 
+-return this;
+\ No newline at end of file
++return this
+\ No newline at end of file

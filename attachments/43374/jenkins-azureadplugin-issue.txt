@@ -1,0 +1,162 @@
+Exception             : System.ArgumentException: No account found in the 
+                        context. Please login using Login-AzureRMAccount.
+                           at Microsoft.Azure.Commands.Common.Authentication.Fa
+                        ctories.AuthenticationFactory.GetServiceClientCredentia
+                        ls(IAzureContext context, String targetEndpoint) in D:\
+                        workspace\powershell-sign\src\Common\Commands.Common.Au
+                        thentication\Factories\AuthenticationFactory.cs:line 
+                        215
+                           at Microsoft.Azure.Commands.Common.Authentication.Fa
+                        ctories.ClientFactory.CreateArmClient[TClient](IAzureCo
+                        ntext context, String endpoint) in D:\workspace\powersh
+                        ell-sign\src\Common\Commands.Common.Authentication\Fact
+                        ories\ClientFactory.cs:line 58
+                           at Microsoft.Azure.Commands.Compute.ComputeClient..c
+                        tor(IAzureContext context) in D:\workspace\powershell-s
+                        ign\src\ResourceManager\Compute\Stack\Commands.Compute\
+                        Common\ComputeClient.cs:line 32
+                           at Microsoft.Azure.Commands.Compute.ComputeClientBas
+                        eCmdlet.get_ComputeClient() in D:\workspace\powershell-
+                        sign\src\ResourceManager\Compute\Stack\Commands.Compute
+                        \Common\ComputeClientBaseCmdlet.cs:line 37
+                           at Microsoft.Azure.Commands.Compute.VirtualMachineBa
+                        seCmdlet.get_VirtualMachineClient() in D:\workspace\pow
+                        ershell-sign\src\ResourceManager\Compute\Stack\Commands
+                        .Compute\VirtualMachine\VirtualMachineBaseCmdlet.cs:lin
+                        e 35
+                           at Microsoft.Azure.Commands.Compute.GetAzureVMComman
+                        d.<ExecuteCmdlet>b__20_0() in D:\workspace\powershell-s
+                        ign\src\ResourceManager\Compute\Stack\Commands.Compute\
+                        VirtualMachine\Operation\GetAzureVMCommand.cs:line 108
+                           at Microsoft.Azure.Commands.Compute.ComputeClientBas
+                        eCmdlet.ExecuteClientAction(Action action) in D:\worksp
+                        ace\powershell-sign\src\ResourceManager\Compute\Stack\C
+                        ommands.Compute\Common\ComputeClientBaseCmdlet.cs:line 
+                        60
+                           at Microsoft.WindowsAzure.Commands.Utilities.Common.
+                        AzurePSCmdlet.ProcessRecord() in D:\workspace\powershel
+                        l-sign\src\Common\Commands.Common\AzurePSCmdlet.cs:line
+                         639
+TargetObject          : 
+CategoryInfo          : CloseError: (:) [Get-AzureRmVM], ArgumentException
+FullyQualifiedErrorId : Microsoft.Azure.Commands.Compute.GetAzureVMCommand
+ErrorDetails          : 
+InvocationInfo        : System.Management.Automation.InvocationInfo
+ScriptStackTrace      : at ROK-Auth, C:\AzureStackMigration\psauth.ps1: line 
+                        342
+                        at <ScriptBlock>, C:\AzureStackMigration\psauth.ps1: 
+                        line 439
+PipelineIterationInfo : {0, 1, 0}
+writeErrorStream      : True
+PSMessageDetails      : 
+Exception             : Microsoft.IdentityModel.Clients.ActiveDirectory.AdalSer
+                        viceException: Service returned error. Check 
+                        InnerException for more details ---> 
+                        System.Net.WebException: Unable to connect to the 
+                        remote server ---> System.Net.Sockets.SocketException: 
+                        A connection attempt failed because the connected 
+                        party did not properly respond after a period of time, 
+                        or established connection failed because connected 
+                        host has failed to respond 104.41.216.16:443
+                           at System.Net.Sockets.Socket.DoConnect(EndPoint 
+                        endPointSnapshot, SocketAddress socketAddress)
+                           at 
+                        System.Net.ServicePoint.ConnectSocketInternal(Boolean 
+                        connectFailure, Socket s4, Socket s6, Socket& socket, 
+                        IPAddress& address, ConnectSocketState state, 
+                        IAsyncResult asyncResult, Exception& exception)
+                           --- End of inner exception stack trace ---
+                           at System.Net.HttpWebRequest.GetRequestStream(Transp
+                        ortContext& context)
+                           at System.Net.HttpWebRequest.GetRequestStream()
+                           at Microsoft.IdentityModel.Clients.ActiveDirectory.H
+                        ttpWebRequestWrapper.<GetRequestStreamSyncOrAsync>d__8.
+                        MoveNext()
+                        --- End of stack trace from previous location where 
+                        exception was thrown ---
+                           at System.Runtime.CompilerServices.TaskAwaiter.Throw
+                        ForNonSuccess(Task task)
+                           at System.Runtime.CompilerServices.TaskAwaiter.Handl
+                        eNonSuccessAndDebuggerNotification(Task task)
+                           at Microsoft.IdentityModel.Clients.ActiveDirectory.H
+                        ttpWebRequestWrapper.<GetResponseSyncOrAsync>d__2.MoveN
+                        ext()
+                        --- End of stack trace from previous location where 
+                        exception was thrown ---
+                           at System.Runtime.CompilerServices.TaskAwaiter.Throw
+                        ForNonSuccess(Task task)
+                           at System.Runtime.CompilerServices.TaskAwaiter.Handl
+                        eNonSuccessAndDebuggerNotification(Task task)
+                           at Microsoft.IdentityModel.Clients.ActiveDirectory.H
+                        ttpHelper.<SendPostRequestAndDeserializeJsonResponseAsy
+                        nc>d__0`1.MoveNext()
+                           --- End of inner exception stack trace ---
+                           at Microsoft.IdentityModel.Clients.ActiveDirectory.A
+                        uthenticationContext.RunAsyncTask[T](Task`1 task)
+                           at Microsoft.Azure.Commands.Common.Authentication.Se
+                        rvicePrincipalTokenProvider.GetAccessToken(AdalConfigur
+                        ation config, String promptBehavior, Action`1 
+                        promptAction, String userId, SecureString password, 
+                        String credentialType) in D:\workspace\powershell-sign\
+                        src\Common\Commands.Common.Authentication\Authenticatio
+                        n\ServicePrincipalTokenProvider.cs:line 40
+                           at Microsoft.Azure.Commands.Common.Authentication.Fa
+                        ctories.AuthenticationFactory.Authenticate(IAzureAccoun
+                        t account, IAzureEnvironment environment, String 
+                        tenant, SecureString password, String promptBehavior, 
+                        Action`1 promptAction, IAzureTokenCache tokenCache, 
+                        String resourceId) in D:\workspace\powershell-sign\src\
+                        Common\Commands.Common.Authentication\Factories\Authent
+                        icationFactory.cs:line 67
+                           at Microsoft.Azure.Commands.ResourceManager.Common.R
+                        MProfileClient.AcquireAccessToken(IAzureAccount 
+                        account, IAzureEnvironment environment, String 
+                        tenantId, SecureString password, String 
+                        promptBehavior, Action`1 promptAction) in D:\workspace\
+                        powershell-sign\src\ResourceManager\Profile\Commands.Pr
+                        ofile\Models\RMProfileClient.cs:line 443
+                           at Microsoft.Azure.Commands.ResourceManager.Common.R
+                        MProfileClient.Login(IAzureAccount account, 
+                        IAzureEnvironment environment, String tenantId, String 
+                        subscriptionId, String subscriptionName, SecureString 
+                        password, Action`1 promptAction, String name) in D:\wor
+                        kspace\powershell-sign\src\ResourceManager\Profile\Comm
+                        ands.Profile\Models\RMProfileClient.cs:line 112
+                           at Microsoft.Azure.Commands.Profile.AddAzureRMAccoun
+                        tCommand.<>c__DisplayClass60_0.<ExecuteCmdlet>b__0(Azur
+                        eRmProfile localProfile, RMProfileClient 
+                        profileClient, String name) in D:\workspace\powershell-
+                        sign\src\ResourceManager\Profile\Commands.Profile\Accou
+                        nt\AddAzureRmAccount.cs:line 215
+                           at Microsoft.Azure.Commands.Profile.Common.AzureCont
+                        extModificationCmdlet.ModifyContext(Action`2 
+                        contextAction) in D:\workspace\powershell-sign\src\Reso
+                        urceManager\Profile\Commands.Profile\Common\AzureContex
+                        tModificationCmdlet.cs:line 46
+                           at Microsoft.Azure.Commands.Profile.AddAzureRMAccoun
+                        tCommand.SetContextWithOverwritePrompt(Action`3 
+                        setContextAction) in D:\workspace\powershell-sign\src\R
+                        esourceManager\Profile\Commands.Profile\Account\AddAzur
+                        eRmAccount.cs:line 249
+                           at Microsoft.Azure.Commands.Profile.AddAzureRMAccoun
+                        tCommand.ExecuteCmdlet() in D:\workspace\powershell-sig
+                        n\src\ResourceManager\Profile\Commands.Profile\Account\
+                        AddAzureRmAccount.cs:line 226
+                           at Microsoft.WindowsAzure.Commands.Utilities.Common.
+                        AzurePSCmdlet.ProcessRecord() in D:\workspace\powershel
+                        l-sign\src\Common\Commands.Common\AzurePSCmdlet.cs:line
+                         639
+                               ErrorCode: service_returned_error
+                               StatusCode: 501
+TargetObject          : 
+CategoryInfo          : CloseError: (:) [Add-AzureRmAccount], 
+                        AdalServiceException
+FullyQualifiedErrorId : Microsoft.Azure.Commands.Profile.AddAzureRMAccountComma
+                        nd
+ErrorDetails          : 
+InvocationInfo        : System.Management.Automation.InvocationInfo
+ScriptStackTrace      : at ROK-Auth, C:\AzureStackMigration\psauth.ps1: line 
+                        336
+                        at <ScriptBlock>, C:\AzureStackMigration\psauth.ps1: 
+                        line 439
+PipelineIterationInfo : {0, 1}

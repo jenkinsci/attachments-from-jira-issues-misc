@@ -1,0 +1,133 @@
+Index: core/src/main/java/hudson/model/AbstractBuild.java
+===================================================================
+--- core/src/main/java/hudson/model/AbstractBuild.java	(revision 24591)
++++ core/src/main/java/hudson/model/AbstractBuild.java	(working copy)
+@@ -474,7 +474,7 @@
+             return l;
+         }
+ 
+-        private void checkout(BuildListener listener) throws Exception {
++        protected void checkout(BuildListener listener) throws Exception {
+             try {
+                 for (int retryCount=project.getScmCheckoutRetryCount(); ; retryCount--) {
+                     // for historical reasons, null in the scm field means CVS, so we need to explicitly set this to something
+Index: core/src/main/java/hudson/matrix/MatrixRun.java
+===================================================================
+--- core/src/main/java/hudson/matrix/MatrixRun.java	(revision 24591)
++++ core/src/main/java/hudson/matrix/MatrixRun.java	(working copy)
+@@ -28,6 +28,8 @@
+ import hudson.slaves.WorkspaceList.Lease;
+ import static hudson.matrix.MatrixConfiguration.useShortWorkspaceName;
+ import hudson.model.Build;
++import hudson.model.BuildListener;
++import hudson.model.Hudson;
+ import hudson.model.Node;
+ import org.kohsuke.stapler.Ancestor;
+ import org.kohsuke.stapler.Stapler;
+@@ -140,5 +142,40 @@
+             else
+                 return wsl.allocate(ws.child(getParent().getCombination().toString('/','/')));
+         }
++
++        @Override
++        protected void checkout(BuildListener listener) throws Exception {
++            
++            if(getParent().getParent().isUseSameScmCheckout()){
++                //Are we using slaves
++                if (!Hudson.getInstance().getNodes().isEmpty()){
++                    Node node = getCurrentNode();
++                    
++                    if (node.getNodeName().equals(getParentBuild().getBuiltOnStr())){
++                        FilePath workspace = getWorkspace();
++                        workspace.mkdirs();
++                        listener.getLogger().println("useSameScmCheckout is selected, skipping SCM checkout");
++                    } else {
++                        // We are on a different node than the Matrixbuild (first) checkout...
++                        // Copy the files or check out on this node?
++                        // This can run on several executors on the node at the same time,
++                        // so a checkout/copy for each executor/Matrix run/ball might not be a good idea.
++                        // A pre node checkout/copy might be better?
++
++                        // For now just throw an exception
++                        listener.getLogger().println("Different node than checkout, aborting");
++                        throw new RunnerAbortedException();
++//                        super.checkout(listener);
++                    }
++                } else {
++                    // No slaves only master
++                    FilePath workspace = getWorkspace();
++                    workspace.mkdirs();
++                    listener.getLogger().println("useSameScmCheckout is selected, skipping SCM checkout");
++                }
++            }
++            else
++                super.checkout(listener);
++        }
+     }
+ }
+Index: core/src/main/java/hudson/matrix/MatrixProject.java
+===================================================================
+--- core/src/main/java/hudson/matrix/MatrixProject.java	(revision 24591)
++++ core/src/main/java/hudson/matrix/MatrixProject.java	(working copy)
+@@ -137,6 +137,11 @@
+     private transient /*final*/ Set<MatrixConfiguration> activeConfigurations = new LinkedHashSet<MatrixConfiguration>();
+ 
+     private boolean runSequentially;
++
++    /**
++     * Share SCM checkout for all matrix entries
++     */
++    private boolean useSameScmCheckout;
+     
+     /**
+      * Filter to select a number of combinations to build first
+@@ -175,6 +180,14 @@
+         return runSequentially;
+     }
+ 
++    /**
++     * If true, {@link MatrixRun}s will skip the SCM checkout and just go to the build step.
++     * 
++     */
++    public boolean isUseSameScmCheckout() {
++        return useSameScmCheckout;
++    }
++
+     public void setRunSequentially(boolean runSequentially) throws IOException {
+         this.runSequentially = runSequentially;
+         save();
+@@ -604,6 +617,7 @@
+         JSONObject json = req.getSubmittedForm();
+ 
+         runSequentially = json.has("runSequentially");
++        useSameScmCheckout = json.has("useSameScmCheckout");
+ 
+         buildWrappers.rebuild(req, json, BuildWrappers.getFor(this));
+         builders.rebuildHetero(req, json, Builder.all(), "builder");
+Index: core/src/main/resources/hudson/matrix/MatrixProject/help-useSameScmCheckout.html
+===================================================================
+--- core/src/main/resources/hudson/matrix/MatrixProject/help-useSameScmCheckout.html	(revision 0)
++++ core/src/main/resources/hudson/matrix/MatrixProject/help-useSameScmCheckout.html	(revision 0)
+@@ -0,0 +1,8 @@
++<div>
++    With this option checked, Hudson will not do a checkout from the SCM system 
++    for each build. 
++    This can be usefull if your configuration can build concurrent from the same
++    source, and it saves the time of the SCM-checkout.<br />
++    NB: The feature currently only works if a job is constranied to one node with
++    several executors, otherwise an exception will be thrown and the build will fail.
++</div>
+\ No newline at end of file
+Index: core/src/main/resources/hudson/matrix/MatrixProject/configure-entries.jelly
+===================================================================
+--- core/src/main/resources/hudson/matrix/MatrixProject/configure-entries.jelly	(revision 24591)
++++ core/src/main/resources/hudson/matrix/MatrixProject/configure-entries.jelly	(working copy)
+@@ -108,6 +108,8 @@
+     
+     <f:optionalBlock field="runSequentially" title="${%Run each configuration sequentially}"/>
+ 
++    <f:optionalBlock field="useSameScmCheckout" title="${%Use same SCM checkout for all builds}"/>
++
+     <f:optionalBlock name="hasCombinationFilter" title="${%Combination Filter}" checked="${!empty(it.combinationFilter)}"
+         help="/help/matrix/combinationfilter.html">
+ 	    <f:entry title="${%Filter}">

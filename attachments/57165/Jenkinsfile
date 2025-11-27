@@ -1,0 +1,97 @@
+pipeline {
+	agent {
+		label 'fidji'
+	}
+
+	options {
+		parallelsAlwaysFailFast()
+		disableConcurrentBuilds()
+		buildDiscarder(logRotator(numToKeepStr: '3'))
+	}
+
+	parameters {
+    	string(name: 'INSTALL_DIR', defaultValue: '${WORKSPACE}/arc36_test', description: 'Chain installation directory')
+		string(name: 'SYSTEM', defaultValue: 'ARC36', description: 'System name')
+		string(name: 'RUNID', defaultValue: 'op', description: 'Run ID')
+    	string(name: 'MODE_OPR', defaultValue: 'yes', description: 'Mode')
+		string(name: 'CHAIN_TMP_DIR', defaultValue: '/utmp/smer/clavierm/$SYSTEM/$RUNID', description: 'Chain tmp dir')
+		string(name: 'LOGIN_FTP', defaultValue: '/home/smer/clavierm/login_ftp', description: 'ftp credentials file')
+		string(name: 'CALC_HOME', defaultValue: '/home/ext/mr/clavierm', description: 'Models installation dir on remote')
+	}
+
+	environment {
+		SVN_CHAIN = 'https://svn.mercator-ocean.fr/svnroot/mo/PIL/CHAIN_LAUNCH_SYSTEM/branches/chain_ARCAN36/chain' 
+	}
+		
+	stages {
+		stage('Checkout and build') {
+			parallel {
+				stage('On fidji') {
+					stages {
+						stage('Checkout chain') {
+							steps {
+								checkout([$class: 'SubversionSCM',
+				          		additionalCredentials: [],
+				          		excludedCommitMessages: '',
+				          		excludedRegions: '',
+				          		excludedRevprop: '',
+				          		excludedUsers: '',
+				          		filterChangelog: false,
+				          		ignoreDirPropChanges: false,
+				          		includedRegions: '',
+				          		locations: [[credentialsId: 'svn-robot',
+				                       depthOption: 'infinity',
+				                       ignoreExternalsOption: true,
+				                       local: "chain/$SYSTEM",
+				                       remote: "$SVN_CHAIN"]],
+				          		workspaceUpdater: [$class: 'UpdateUpdater']])
+							}
+						}
+						
+						stage('Install chain') {
+							steps {
+								sh """
+									cd chain
+									./install_chain.sh ARC36 op $INSTALL_DIR -w /utmp/`id -gn`/`id -un` -f -c -a --phy --asm_phy --above PSY4V3R1 op
+									cd $INSTALL_DIR
+									echo "Visual inspection of installation :"
+									ls -R | grep ':\$' | sed -e 's/:\$//' -e 's/[^-][^\\/]*\\//──/g' -e 's/─/├/' -e '\$s/├/└/'
+				    			"""
+							}
+						}
+				
+						stage('Configure chain') {
+							steps {
+								sh """
+									cd $INSTALL_DIR/chain/$SYSTEM/$RUNID/scripts
+									
+									sed -i -e "s,^DIR_FRONT_VERSION=.*,DIR_FRONT_VERSION=$INSTALL_DIR/chain/$SYSTEM/$RUNID," environment.sh
+									sed -i -e "s,^DIR_FRONT_TMP=.*,DIR_FRONT_TMP=$CHAIN_TMP_DIR," environment.sh
+				    			    sed -i -e "s,^DIR_CALCU_HOME=.*,DIR_CALCU_HOME=$CALC_HOME," environment.sh
+				    			    sed -i -e "s,^RUNID=.*,RUNID=$RUNID," environment.sh
+				    			    sed -i -e "s,^DIR_FRONT_LOGIN=.*,DIR_FRONT_LOGIN=$LOGIN_FTP," environment.sh
+				    			    sed -i -e "s,^FLAG_MODE_OPR=.*,FLAG_MODE_OPR=$MODE_OPR," environment.sh    			
+				    			"""
+							}
+						} 
+					}
+				}
+				stage('On Belenos') {
+					stages {
+						stage('Install and compile models') {
+							steps {
+								ansiColor('xterm') {
+									ansiblePlaybook(
+									inventory: './models/ansible_hosts',
+									playbook: './models/belenos_pbk.yml',
+									credentialsId: 'clavierm-belenos',
+									colorized: true)
+								}
+						 	}
+				    	}
+					}
+				}
+			}
+		}
+	}
+}

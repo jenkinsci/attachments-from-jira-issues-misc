@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@1.13">
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.25">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@1.13">
+    <script>node {
+    docker.image(&apos;buildpack-deps:latest&apos;).inside {
+        writeFile file:&apos;test.py&apos;, text:&quot;&quot;&quot;
+from os import fork, getpid
+from time import sleep
+
+pid = fork()
+if pid == 0:
+  with open(&apos;pidfile&apos;, &apos;w&apos;) as f:
+    f.write(&quot;%d&quot;%getpid())
+  pid2 = fork()
+  if pid2 == 0:
+    sleep(1)
+else:
+    sleep(3)
+sleep(1)
+&quot;&quot;&quot;
+        sh &apos;exec /usr/bin/python test.py&apos;
+        sh &apos;ps -ef&apos;
+        sh &apos;PID=$(cat pidfile); while kill -0 $PID; do echo &quot;Waiting for $PID to exit&quot;; sleep 1; done&apos;
+    }
+}</script>
+    <sandbox>false</sandbox>
+  </definition>
+  <triggers/>
+</flow-definition>

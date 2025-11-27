@@ -1,0 +1,237 @@
+Running from: /usr/share/jenkins/jenkins.war
+webroot: EnvVars.masterEnvVars.get("JENKINS_HOME")
+
+2021-05-18 08:57:53.077+0000 [id=1]	INFO	org.eclipse.jetty.util.log.Log#initialized: Logging initialized @494ms to org.eclipse.jetty.util.log.JavaUtilLog
+2021-05-18 08:57:53.153+0000 [id=1]	INFO	winstone.Logger#logInternal: Beginning extraction from war file
+2021-05-18 08:57:53.178+0000 [id=1]	WARNING	o.e.j.s.handler.ContextHandler#setContextPath: Empty contextPath
+
+2021-05-18 08:57:53.245+0000 [id=1]	INFO	org.eclipse.jetty.server.Server#doStart: jetty-9.4.39.v20210325; built: 2021-03-25T14:42:11.471Z; git: 9fc7ca5a922f2a37b84ec9dbc26a5168cee7e667; jvm 11.0.11+9
+2021-05-18 08:57:53.511+0000 [id=1]	INFO	o.e.j.w.StandardDescriptorProcessor#visitServlet: NO JSP Support for /, did not find org.eclipse.jetty.jsp.JettyJspServlet
+2021-05-18 08:57:53.543+0000 [id=1]	INFO	o.e.j.s.s.DefaultSessionIdManager#doStart: DefaultSessionIdManager workerName=node0
+2021-05-18 08:57:53.543+0000 [id=1]	INFO	o.e.j.s.s.DefaultSessionIdManager#doStart: No SessionScavenger set, using defaults
+2021-05-18 08:57:53.544+0000 [id=1]	INFO	o.e.j.server.session.HouseKeeper#startScavenging: node0 Scavenging every 660000ms
+2021-05-18 08:57:54.002+0000 [id=1]	INFO	hudson.WebAppMain#contextInitialized: Jenkins home directory: /var/jenkins_home found at: EnvVars.masterEnvVars.get("JENKINS_HOME")
+2021-05-18 08:57:54.178+0000 [id=1]	INFO	o.e.j.s.handler.ContextHandler#doStart: Started w.@7a356a0d{Jenkins v2.277.4,/,file:///var/jenkins_home/war/,AVAILABLE}{/var/jenkins_home/war}
+2021-05-18 08:57:54.212+0000 [id=1]	INFO	o.e.j.server.AbstractConnector#doStart: Started ServerConnector@1ff4931d{HTTP/1.1, (http/1.1)}{0.0.0.0:8080}
+2021-05-18 08:57:54.213+0000 [id=1]	INFO	org.eclipse.jetty.server.Server#doStart: Started @1630ms
+2021-05-18 08:57:54.221+0000 [id=24]	INFO	winstone.Logger#logInternal: Winstone Servlet Engine running: controlPort=disabled
+2021-05-18 08:57:54.559+0000 [id=32]	INFO	jenkins.InitReactorRunner$1#onAttained: Started initialization
+2021-05-18 08:57:54.763+0000 [id=19]	WARNING	h.i.i.InstallUncaughtExceptionHandler#handleException: Caught unhandled exception with ID 37153bb9-fbd5-4cd6-9845-5093f1b3186a
+java.lang.AssertionError: class hudson.security.csrf.DefaultCrumbIssuer is missing its descriptor
+	at jenkins.model.Jenkins.getDescriptorOrDie(Jenkins.java:1599)
+	at hudson.security.csrf.CrumbIssuer.getDescriptor(CrumbIssuer.java:152)
+	at hudson.security.csrf.CrumbFilter.doFilter(CrumbFilter.java:131)
+	at org.eclipse.jetty.servlet.FilterHolder.doFilter(FilterHolder.java:193)
+	at org.eclipse.jetty.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1601)
+	at hudson.security.HudsonFilter.doFilter(HudsonFilter.java:166)
+	at org.eclipse.jetty.servlet.FilterHolder.doFilter(FilterHolder.java:193)
+	at org.eclipse.jetty.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1601)
+	at org.kohsuke.stapler.compression.CompressionFilter.doFilter(CompressionFilter.java:51)
+	at org.eclipse.jetty.servlet.FilterHolder.doFilter(FilterHolder.java:193)
+	at org.eclipse.jetty.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1601)
+	at hudson.util.CharacterEncodingFilter.doFilter(CharacterEncodingFilter.java:82)
+	at org.eclipse.jetty.servlet.FilterHolder.doFilter(FilterHolder.java:193)
+	at org.eclipse.jetty.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1601)
+	at org.kohsuke.stapler.DiagnosticThreadNameFilter.doFilter(DiagnosticThreadNameFilter.java:30)
+	at org.eclipse.jetty.servlet.FilterHolder.doFilter(FilterHolder.java:193)
+	at org.eclipse.jetty.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1601)
+	at jenkins.security.SuspiciousRequestFilter.doFilter(SuspiciousRequestFilter.java:36)
+	at org.eclipse.jetty.servlet.FilterHolder.doFilter(FilterHolder.java:193)
+	at org.eclipse.jetty.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1601)
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:548)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:143)
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:578)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:127)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:235)
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:1624)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:233)
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1435)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:188)
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:501)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:1594)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:186)
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1350)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:141)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:127)
+	at org.eclipse.jetty.server.Server.handle(Server.java:516)
+	at org.eclipse.jetty.server.HttpChannel.lambda$handle$1(HttpChannel.java:388)
+	at org.eclipse.jetty.server.HttpChannel.dispatch(HttpChannel.java:633)
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:380)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:279)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:311)
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:105)
+	at org.eclipse.jetty.io.ChannelEndPoint$1.run(ChannelEndPoint.java:104)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:882)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1036)
+	at java.base/java.lang.Thread.run(Thread.java:829)
+2021-05-18 08:57:54.763+0000 [id=16]	WARNING	h.i.i.InstallUncaughtExceptionHandler#handleException: Caught unhandled exception with ID 355af126-2269-4ce1-8b29-e54f5db1465c
+java.lang.AssertionError: class hudson.security.csrf.DefaultCrumbIssuer is missing its descriptor
+	at jenkins.model.Jenkins.getDescriptorOrDie(Jenkins.java:1599)
+	at hudson.security.csrf.CrumbIssuer.getDescriptor(CrumbIssuer.java:152)
+	at hudson.security.csrf.CrumbFilter.doFilter(CrumbFilter.java:131)
+	at org.eclipse.jetty.servlet.FilterHolder.doFilter(FilterHolder.java:193)
+	at org.eclipse.jetty.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1601)
+	at hudson.security.HudsonFilter.doFilter(HudsonFilter.java:166)
+	at org.eclipse.jetty.servlet.FilterHolder.doFilter(FilterHolder.java:193)
+	at org.eclipse.jetty.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1601)
+	at org.kohsuke.stapler.compression.CompressionFilter.doFilter(CompressionFilter.java:51)
+	at org.eclipse.jetty.servlet.FilterHolder.doFilter(FilterHolder.java:193)
+	at org.eclipse.jetty.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1601)
+	at hudson.util.CharacterEncodingFilter.doFilter(CharacterEncodingFilter.java:82)
+	at org.eclipse.jetty.servlet.FilterHolder.doFilter(FilterHolder.java:193)
+	at org.eclipse.jetty.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1601)
+	at org.kohsuke.stapler.DiagnosticThreadNameFilter.doFilter(DiagnosticThreadNameFilter.java:30)
+	at org.eclipse.jetty.servlet.FilterHolder.doFilter(FilterHolder.java:193)
+	at org.eclipse.jetty.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1601)
+	at jenkins.security.SuspiciousRequestFilter.doFilter(SuspiciousRequestFilter.java:36)
+	at org.eclipse.jetty.servlet.FilterHolder.doFilter(FilterHolder.java:193)
+	at org.eclipse.jetty.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1601)
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:548)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:143)
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:578)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:127)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:235)
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:1624)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:233)
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1435)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:188)
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:501)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:1594)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:186)
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1350)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:141)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:127)
+	at org.eclipse.jetty.server.Server.handle(Server.java:516)
+	at org.eclipse.jetty.server.HttpChannel.lambda$handle$1(HttpChannel.java:388)
+	at org.eclipse.jetty.server.HttpChannel.dispatch(HttpChannel.java:633)
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:380)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:279)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:311)
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:105)
+	at org.eclipse.jetty.io.ChannelEndPoint$1.run(ChannelEndPoint.java:104)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:882)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1036)
+	at java.base/java.lang.Thread.run(Thread.java:829)
+2021-05-18 08:57:54.825+0000 [id=36]	INFO	jenkins.InitReactorRunner$1#onAttained: Listed all plugins
+WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.google.inject.internal.cglib.core.$ReflectUtils$2 (file:/var/jenkins_home/war/WEB-INF/lib/guice-4.0.jar) to method java.lang.ClassLoader.defineClass(java.lang.String,byte[],int,int,java.security.ProtectionDomain)
+WARNING: Please consider reporting this to the maintainers of com.google.inject.internal.cglib.core.$ReflectUtils$2
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+2021-05-18 08:57:58.858+0000 [id=33]	INFO	jenkins.InitReactorRunner$1#onAttained: Prepared all plugins
+2021-05-18 08:57:59.911+0000 [id=37]	INFO	jenkins.InitReactorRunner$1#onAttained: Started all plugins
+2021-05-18 08:57:59.936+0000 [id=32]	INFO	jenkins.InitReactorRunner$1#onAttained: Augmented all extensions
+2021-05-18 08:58:00.001+0000 [id=32]	INFO	jenkins.InitReactorRunner$1#onAttained: System config loaded
+2021-05-18 08:58:00.001+0000 [id=32]	INFO	jenkins.InitReactorRunner$1#onAttained: System config adapted
+2021-05-18 08:58:00.002+0000 [id=32]	INFO	jenkins.InitReactorRunner$1#onAttained: Loaded all jobs
+2021-05-18 08:58:00.003+0000 [id=35]	INFO	jenkins.InitReactorRunner$1#onAttained: Configuration for all jobs updated
+2021-05-18 08:58:00.064+0000 [id=51]	INFO	hudson.model.AsyncPeriodicWork#lambda$doRun$0: Started Download metadata
+2021-05-18 08:58:00.069+0000 [id=51]	INFO	hudson.model.AsyncPeriodicWork#lambda$doRun$0: Finished Download metadata. 3 ms
+2021-05-18 08:58:00.111+0000 [id=33]	INFO	jenkins.InitReactorRunner$1#onAttained: Completed initialization
+2021-05-18 08:58:00.220+0000 [id=23]	INFO	hudson.WebAppMain$3#run: Jenkins is fully up and running
+2021-05-18 08:58:04.533+0000 [id=17]	WARNING	hudson.security.csrf.CrumbFilter#doFilter: Found invalid crumb d69941a835d05ec254b8eabdd05f4108952ada317ad05b0b442b0675f76e75de. If you are calling this URL with a script, please use the API Token instead. More information: https://jenkins.io/redirect/crumb-cannot-be-used-for-script
+2021-05-18 08:58:04.533+0000 [id=17]	WARNING	hudson.security.csrf.CrumbFilter#doFilter: No valid crumb was included in request for /ajaxExecutors by admin. Returning 403.
+2021-05-18 08:58:04.825+0000 [id=18]	WARNING	hudson.security.csrf.CrumbFilter#doFilter: Found invalid crumb d69941a835d05ec254b8eabdd05f4108952ada317ad05b0b442b0675f76e75de. If you are calling this URL with a script, please use the API Token instead. More information: https://jenkins.io/redirect/crumb-cannot-be-used-for-script
+2021-05-18 08:58:04.825+0000 [id=18]	WARNING	hudson.security.csrf.CrumbFilter#doFilter: No valid crumb was included in request for /ajaxBuildQueue by admin. Returning 403.
+
+
+
+2021-05-18 08:58:09.521+0000 [id=17]	WARNING	hudson.security.csrf.CrumbFilter#doFilter: Found invalid crumb d69941a835d05ec254b8eabdd05f4108952ada317ad05b0b442b0675f76e75de. If you are calling this URL with a script, please use the API Token instead. More information: https://jenkins.io/redirect/crumb-cannot-be-used-for-script
+2021-05-18 08:58:09.521+0000 [id=17]	WARNING	hudson.security.csrf.CrumbFilter#doFilter: No valid crumb was included in request for /ajaxExecutors by admin. Returning 403.
+2021-05-18 08:58:09.814+0000 [id=14]	WARNING	hudson.security.csrf.CrumbFilter#doFilter: Found invalid crumb d69941a835d05ec254b8eabdd05f4108952ada317ad05b0b442b0675f76e75de. If you are calling this URL with a script, please use the API Token instead. More information: https://jenkins.io/redirect/crumb-cannot-be-used-for-script
+2021-05-18 08:58:09.815+0000 [id=14]	WARNING	hudson.security.csrf.CrumbFilter#doFilter: No valid crumb was included in request for /ajaxBuildQueue by admin. Returning 403.
+
+
+
+
+
+
+
+
+
+
+
+
+2021-05-18 09:00:44.564+0000 [id=76]	INFO	o.j.p.workflow.job.WorkflowRun#finish: Test #1 completed: FAILURE
+2021-05-18 09:02:37.682+0000 [id=128]	INFO	o.j.p.workflow.job.WorkflowRun#finish: Test #2 completed: FAILURE
+2021-05-18 09:03:36.381+0000 [id=16]	WARNING	hudson.security.csrf.CrumbFilter#doFilter: Found invalid crumb 256dbb87de3636e5c25a7b12a658eb2e5e4b5feddca2fe7720c62ccb0b94152f. If you are calling this URL with a script, please use the API Token instead. More information: https://jenkins.io/redirect/crumb-cannot-be-used-for-script
+2021-05-18 09:03:36.382+0000 [id=16]	WARNING	hudson.security.csrf.CrumbFilter#doFilter: No valid crumb was included in request for /ajaxExecutors by admin. Returning 403.
+2021-05-18 09:03:36.407+0000 [id=12]	WARNING	hudson.security.csrf.CrumbFilter#doFilter: Found invalid crumb 256dbb87de3636e5c25a7b12a658eb2e5e4b5feddca2fe7720c62ccb0b94152f. If you are calling this URL with a script, please use the API Token instead. More information: https://jenkins.io/redirect/crumb-cannot-be-used-for-script
+2021-05-18 09:03:36.407+0000 [id=12]	WARNING	hudson.security.csrf.CrumbFilter#doFilter: No valid crumb was included in request for /ajaxBuildQueue by admin. Returning 403.
+2021-05-18 09:04:21.579+0000 [id=16]	INFO	hudson.PluginManager#install: Starting installation of a batch of 1 plugins plus their dependencies
+2021-05-18 09:04:21.580+0000 [id=16]	INFO	hudson.model.UpdateSite$Plugin#deploy: Adding dependent install of mercurial for plugin bitbucket
+2021-05-18 09:04:22.456+0000 [id=147]	INFO	h.model.UpdateCenter$DownloadJob#run: Starting the installation of mercurial on behalf of admin
+2021-05-18 09:04:27.694+0000 [id=147]	INFO	h.m.UpdateCenter$UpdateCenterConfiguration#download: Downloading mercurial
+2021-05-18 09:04:29.977+0000 [id=147]	INFO	h.model.UpdateCenter$DownloadJob#run: Installation successful: mercurial
+2021-05-18 09:04:29.977+0000 [id=147]	INFO	h.model.UpdateCenter$DownloadJob#run: Starting the installation of bitbucket on behalf of admin
+2021-05-18 09:04:31.963+0000 [id=147]	INFO	h.m.UpdateCenter$UpdateCenterConfiguration#download: Downloading bitbucket
+2021-05-18 09:04:31.989+0000 [id=147]	INFO	h.model.UpdateCenter$DownloadJob#run: Installation successful: bitbucket
+2021-05-18 09:04:31.989+0000 [id=147]	INFO	h.m.UpdateCenter$CompleteBatchJob#run: Completing installing of plugin batch…
+2021-05-18 09:04:32.182+0000 [id=156]	INFO	jenkins.InitReactorRunner$1#onAttained: Started initialization
+2021-05-18 09:04:32.183+0000 [id=161]	INFO	jenkins.InitReactorRunner$1#onAttained: Listed all plugins
+2021-05-18 09:04:32.185+0000 [id=163]	INFO	jenkins.InitReactorRunner$1#onAttained: Prepared all plugins
+2021-05-18 09:04:32.185+0000 [id=159]	INFO	jenkins.InitReactorRunner$1#onAttained: Started all plugins
+2021-05-18 09:04:32.185+0000 [id=159]	INFO	jenkins.InitReactorRunner$1#onAttained: Augmented all extensions
+2021-05-18 09:04:32.185+0000 [id=159]	INFO	jenkins.InitReactorRunner$1#onAttained: System config loaded
+2021-05-18 09:04:32.185+0000 [id=159]	INFO	jenkins.InitReactorRunner$1#onAttained: System config adapted
+2021-05-18 09:04:32.185+0000 [id=159]	INFO	jenkins.InitReactorRunner$1#onAttained: Loaded all jobs
+2021-05-18 09:04:32.186+0000 [id=159]	INFO	jenkins.InitReactorRunner$1#onAttained: Configuration for all jobs updated
+2021-05-18 09:04:32.186+0000 [id=159]	INFO	jenkins.InitReactorRunner$1#onAttained: Completed initialization
+2021-05-18 09:04:32.186+0000 [id=147]	INFO	h.m.UpdateCenter$CompleteBatchJob#run: Completed installation of 2 plugins in 10 sec
+2021-05-18 09:05:19.176+0000 [id=165]	INFO	o.j.p.workflow.job.WorkflowRun#finish: Test #3 completed: FAILURE
+
+
+
+2021-05-18 09:05:35.675+0000 [id=18]	INFO	hudson.model.UpdateCenter#doSafeRestart: Scheduling Jenkins reboot
+2021-05-18 09:05:35.678+0000 [id=185]	INFO	jenkins.model.Jenkins$23#run: Restart in 10 seconds
+2021-05-18 09:05:45.679+0000 [id=185]	INFO	jenkins.model.Jenkins$23#run: Restarting VM as requested by admin
+2021-05-18 09:05:45.679+0000 [id=185]	INFO	jenkins.model.Jenkins#cleanUp: Stopping Jenkins
+2021-05-18 09:05:45.685+0000 [id=185]	INFO	jenkins.model.Jenkins$18#onAttained: Started termination
+2021-05-18 09:05:45.694+0000 [id=185]	INFO	jenkins.model.Jenkins$18#onAttained: Completed termination
+2021-05-18 09:05:45.694+0000 [id=185]	INFO	jenkins.model.Jenkins#_cleanUpDisconnectComputers: Starting node disconnection
+2021-05-18 09:05:45.783+0000 [id=185]	INFO	jenkins.model.Jenkins#_cleanUpShutdownPluginManager: Stopping plugin manager
+2021-05-18 09:05:45.786+0000 [id=185]	INFO	jenkins.model.Jenkins#_cleanUpPersistQueue: Persisting build queue
+2021-05-18 09:05:45.806+0000 [id=185]	INFO	jenkins.model.Jenkins#_cleanUpAwaitDisconnects: Waiting for node disconnection completion
+2021-05-18 09:05:45.806+0000 [id=185]	INFO	jenkins.model.Jenkins#cleanUp: Jenkins stopped
+2021-05-18 09:05:46.412+0000 [id=13]	WARNING	h.s.HttpSessionContextIntegrationFilter2#hasInvalidSessionSeed: Encountered IllegalStateException trying to get a user. System init may not have completed yet. Invalidating user session.
+Running from: /usr/share/jenkins/jenkins.war
+webroot: EnvVars.masterEnvVars.get("JENKINS_HOME")
+2021-05-18 09:05:47.742+0000 [id=1]	INFO	org.eclipse.jetty.util.log.Log#initialized: Logging initialized @482ms to org.eclipse.jetty.util.log.JavaUtilLog
+2021-05-18 09:05:47.823+0000 [id=1]	INFO	winstone.Logger#logInternal: Beginning extraction from war file
+2021-05-18 09:05:47.845+0000 [id=1]	WARNING	o.e.j.s.handler.ContextHandler#setContextPath: Empty contextPath
+2021-05-18 09:05:47.903+0000 [id=1]	INFO	org.eclipse.jetty.server.Server#doStart: jetty-9.4.39.v20210325; built: 2021-03-25T14:42:11.471Z; git: 9fc7ca5a922f2a37b84ec9dbc26a5168cee7e667; jvm 11.0.11+9
+2021-05-18 09:05:48.171+0000 [id=1]	INFO	o.e.j.w.StandardDescriptorProcessor#visitServlet: NO JSP Support for /, did not find org.eclipse.jetty.jsp.JettyJspServlet
+2021-05-18 09:05:48.205+0000 [id=1]	INFO	o.e.j.s.s.DefaultSessionIdManager#doStart: DefaultSessionIdManager workerName=node0
+2021-05-18 09:05:48.205+0000 [id=1]	INFO	o.e.j.s.s.DefaultSessionIdManager#doStart: No SessionScavenger set, using defaults
+2021-05-18 09:05:48.207+0000 [id=1]	INFO	o.e.j.server.session.HouseKeeper#startScavenging: node0 Scavenging every 660000ms
+2021-05-18 09:05:48.633+0000 [id=1]	INFO	hudson.WebAppMain#contextInitialized: Jenkins home directory: /var/jenkins_home found at: EnvVars.masterEnvVars.get("JENKINS_HOME")
+2021-05-18 09:05:48.768+0000 [id=1]	INFO	o.e.j.s.handler.ContextHandler#doStart: Started w.@1f651cd8{Jenkins v2.277.4,/,file:///var/jenkins_home/war/,AVAILABLE}{/var/jenkins_home/war}
+2021-05-18 09:05:48.790+0000 [id=1]	INFO	o.e.j.server.AbstractConnector#doStart: Started ServerConnector@247bddad{HTTP/1.1, (http/1.1)}{0.0.0.0:8080}
+2021-05-18 09:05:48.790+0000 [id=1]	INFO	org.eclipse.jetty.server.Server#doStart: Started @1532ms
+2021-05-18 09:05:48.791+0000 [id=24]	INFO	winstone.Logger#logInternal: Winstone Servlet Engine running: controlPort=disabled
+2021-05-18 09:05:49.082+0000 [id=30]	INFO	jenkins.InitReactorRunner$1#onAttained: Started initialization
+2021-05-18 09:05:49.294+0000 [id=32]	INFO	jenkins.InitReactorRunner$1#onAttained: Listed all plugins
+WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.google.inject.internal.cglib.core.$ReflectUtils$2 (file:/var/jenkins_home/war/WEB-INF/lib/guice-4.0.jar) to method java.lang.ClassLoader.defineClass(java.lang.String,byte[],int,int,java.security.ProtectionDomain)
+WARNING: Please consider reporting this to the maintainers of com.google.inject.internal.cglib.core.$ReflectUtils$2
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+2021-05-18 09:05:53.041+0000 [id=35]	INFO	jenkins.InitReactorRunner$1#onAttained: Prepared all plugins
+2021-05-18 09:05:53.059+0000 [id=30]	INFO	jenkins.InitReactorRunner$1#onAttained: Started all plugins
+2021-05-18 09:05:54.170+0000 [id=32]	INFO	jenkins.InitReactorRunner$1#onAttained: Augmented all extensions
+2021-05-18 09:05:54.215+0000 [id=33]	INFO	jenkins.InitReactorRunner$1#onAttained: System config loaded
+2021-05-18 09:05:54.216+0000 [id=33]	INFO	jenkins.InitReactorRunner$1#onAttained: System config adapted
+2021-05-18 09:05:54.272+0000 [id=30]	INFO	jenkins.InitReactorRunner$1#onAttained: Loaded all jobs
+2021-05-18 09:05:54.273+0000 [id=34]	INFO	jenkins.InitReactorRunner$1#onAttained: Configuration for all jobs updated
+2021-05-18 09:05:54.328+0000 [id=49]	INFO	hudson.model.AsyncPeriodicWork#lambda$doRun$0: Started Download metadata
+2021-05-18 09:05:54.336+0000 [id=49]	INFO	hudson.model.AsyncPeriodicWork#lambda$doRun$0: Finished Download metadata. 2 ms
+2021-05-18 09:05:54.374+0000 [id=31]	INFO	jenkins.InitReactorRunner$1#onAttained: Completed initialization
+2021-05-18 09:05:54.458+0000 [id=23]	INFO	hudson.WebAppMain$3#run: Jenkins is fully up and running
+2021-05-18 09:06:02.627+0000 [id=18]	WARNING	hudson.security.csrf.CrumbFilter#doFilter: Found invalid crumb 20e5fcac5628c106d59bd3be1977b8037e6a374a3c1a03a7b854b18ab2609eb4. If you are calling this URL with a script, please use the API Token instead. More information: https://jenkins.io/redirect/crumb-cannot-be-used-for-script
+2021-05-18 09:06:02.631+0000 [id=18]	WARNING	hudson.security.csrf.CrumbFilter#doFilter: No valid crumb was included in request for /job/Test/contextMenu by admin. Returning 403.
+2021-05-18 09:06:20.745+0000 [id=53]	INFO	o.j.p.workflow.job.WorkflowRun#finish: Test #4 completed: SUCCESS
+2021-05-18 09:10:18.979+0000 [id=17]	INFO	c.c.j.p.BitbucketPayloadProcessor#processPayload: Processing new Webhooks payload
+2021-05-18 09:10:18.980+0000 [id=17]	INFO	c.c.j.p.BitbucketPayloadProcessor#processWebhookPayload: Received commit hook notification for {"scm":"git","website":null,"uuid":"{054a6983-62cd-4c08-88fb-98992c88d4c5}","links":{"self":{"href":"https://api.bitbucket.org/2.0/repositories/dummy/testsatheesh"},"html":{"href":"https://bitbucket.org/dummy/testsatheesh"},"avatar":{"href":"https://bytebucket.org/ravatar/%7B054a6983-62cd-4c08-88fb-98992c88d4c5%7D?ts=default"}},"project":{"links":{"self":{"href":"https://api.bitbucket.org/2.0/workspaces/dummy/projects/ELY"},"html":{"href":"https://bitbucket.org/dummy/workspace/projects/ELY"},"avatar":{"href":"https://bitbucket.org/account/user/dummy/projects/ELY/avatar/32?ts=1590846607"}},"type":"project","name":"dummy","key":"ELY","uuid":"{0b44f006-94a7-4d36-8e6b-a7eed6abbd82}"},"full_name":"dummy/testsatheesh","owner":{"username":"dummy","display_name":"dummy","type":"team","uuid":"{947a72b9-9379-4ab3-bdeb-01d1b994735f}","links":{"self":{"href":"https://api.bitbucket.org/2.0/teams/%7B947a72b9-9379-4ab3-bdeb-01d1b994735f%7D"},"html":{"href":"https://bitbucket.org/%7B947a72b9-9379-4ab3-bdeb-01d1b994735f%7D/"},"avatar":{"href":"https://bitbucket.org/account/dummy/avatar/"}}},"workspace":{"slug":"dummy","type":"workspace","name":"dummy","links":{"self":{"href":"https://api.bitbucket.org/2.0/workspaces/dummy"},"html":{"href":"https://bitbucket.org/dummy/"},"avatar":{"href":"https://bitbucket.org/workspaces/dummy/avatar/?ts=1591876430"}},"uuid":"{947a72b9-9379-4ab3-bdeb-01d1b994735f}"},"type":"repository","is_private":true,"name":"TestSatheesh"}
+2021-05-18 09:10:18.988+0000 [id=17]	INFO	c.c.j.plugins.BitbucketJobProbe#triggerMatchingJobs: Triggering BitBucket job Test
+2021-05-18 09:10:21.854+0000 [id=153]	INFO	c.c.j.plugins.BitBucketTrigger$1#run: SCM changes detected in Test. Triggering  #5
+2021-05-18 09:10:35.376+0000 [id=153]	INFO	o.j.p.workflow.job.WorkflowRun#finish: Test #5 completed: SUCCESS

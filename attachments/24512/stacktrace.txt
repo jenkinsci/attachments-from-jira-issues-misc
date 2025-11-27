@@ -1,0 +1,96 @@
+Oct 15, 2013 2:01:57 PM jenkins.InitReactorRunner$1 onTaskFailed
+SEVERE: Failed Loading job Test env inject
+hudson.util.IOException2: Unable to read C:\Users\John\.jenkins\jobs\Test env inject\config.xml
+        at hudson.XmlFile.read(XmlFile.java:147)
+        at hudson.model.Items.load(Items.java:220)
+        at jenkins.model.Jenkins$17.run(Jenkins.java:2554)
+        at org.jvnet.hudson.reactor.TaskGraphBuilder$TaskImpl.run(TaskGraphBuilder.java:146)
+        at org.jvnet.hudson.reactor.Reactor.runTask(Reactor.java:259)
+        at jenkins.model.Jenkins$7.runTask(Jenkins.java:888)
+        at org.jvnet.hudson.reactor.Reactor$2.run(Reactor.java:187)
+        at org.jvnet.hudson.reactor.Reactor$Node.run(Reactor.java:94)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1110)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:603)
+        at java.lang.Thread.run(Thread.java:722)
+Caused by: com.thoughtworks.xstream.converters.ConversionException: org.jenkinsci.plugins.sharedobjects.SharedObjectJobProperty : org.jenkinsci.plugins.sharedobjects.SharedObjectJobProperty
+---- Debugging information ----
+message             : org.jenkinsci.plugins.sharedobjects.SharedObjectJobProperty
+cause-exception     : com.thoughtworks.xstream.mapper.CannotResolveClassException
+cause-message       : org.jenkinsci.plugins.sharedobjects.SharedObjectJobProperty
+class               : [Lorg.jenkinsci.plugins.envinject.model.EnvInjectJobPropertyContributor;
+required-type       : [Lorg.jenkinsci.plugins.envinject.model.EnvInjectJobPropertyContributor;
+converter-type      : com.thoughtworks.xstream.converters.collections.ArrayConverter
+path                : /project/properties/EnvInjectJobProperty/contributors/org.jenkinsci.plugins.sharedobjects.SharedObjectJobProperty
+line number         : 28
+class[1]            : org.jenkinsci.plugins.envinject.EnvInjectJobProperty
+converter-type[1]   : hudson.util.RobustReflectionConverter
+class[2]            : hudson.util.CopyOnWriteList
+converter-type[2]   : hudson.util.XStream2$AssociatedConverterImpl
+class[3]            : hudson.model.FreeStyleProject
+version             : null
+-------------------------------
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:79)
+        at com.thoughtworks.xstream.core.AbstractReferenceUnmarshaller.convert(AbstractReferenceUnmarshaller.java:65)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:66)
+        at hudson.util.RobustReflectionConverter.unmarshalField(RobustReflectionConverter.java:333)
+        at hudson.util.RobustReflectionConverter.doUnmarshal(RobustReflectionConverter.java:275)
+        at hudson.util.RobustReflectionConverter.unmarshal(RobustReflectionConverter.java:222)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:72)
+        at com.thoughtworks.xstream.core.AbstractReferenceUnmarshaller.convert(AbstractReferenceUnmarshaller.java:65)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:66)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:50)
+        at com.thoughtworks.xstream.converters.collections.AbstractCollectionConverter.readItem(AbstractCollectionConverter.java:71)
+        at hudson.util.CopyOnWriteList$ConverterImpl.unmarshal(CopyOnWriteList.java:193)
+        at hudson.util.CopyOnWriteList$ConverterImpl.unmarshal(CopyOnWriteList.java:172)
+        at hudson.util.XStream2$AssociatedConverterImpl.unmarshal(XStream2.java:337)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:72)
+        at com.thoughtworks.xstream.core.AbstractReferenceUnmarshaller.convert(AbstractReferenceUnmarshaller.java:65)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:66)
+        at hudson.util.RobustReflectionConverter.unmarshalField(RobustReflectionConverter.java:333)
+        at hudson.util.RobustReflectionConverter.doUnmarshal(RobustReflectionConverter.java:275)
+        at hudson.util.RobustReflectionConverter.unmarshal(RobustReflectionConverter.java:222)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:72)
+        at com.thoughtworks.xstream.core.AbstractReferenceUnmarshaller.convert(AbstractReferenceUnmarshaller.java:65)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:66)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convertAnother(TreeUnmarshaller.java:50)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.start(TreeUnmarshaller.java:134)
+        at com.thoughtworks.xstream.core.AbstractTreeMarshallingStrategy.unmarshal(AbstractTreeMarshallingStrategy.java:32)
+        at com.thoughtworks.xstream.XStream.unmarshal(XStream.java:1061)
+        at hudson.util.XStream2.unmarshal(XStream2.java:109)
+        at com.thoughtworks.xstream.XStream.unmarshal(XStream.java:1045)
+        at com.thoughtworks.xstream.XStream.fromXML(XStream.java:925)
+        at hudson.XmlFile.read(XmlFile.java:143)
+        ... 10 more
+Caused by: com.thoughtworks.xstream.mapper.CannotResolveClassException: org.jenkinsci.plugins.sharedobjects.SharedObjectJobProperty
+        at com.thoughtworks.xstream.mapper.DefaultMapper.realClass(DefaultMapper.java:56)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+        at com.thoughtworks.xstream.mapper.DynamicProxyMapper.realClass(DynamicProxyMapper.java:55)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+        at com.thoughtworks.xstream.mapper.PackageAliasingMapper.realClass(PackageAliasingMapper.java:88)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+        at com.thoughtworks.xstream.mapper.ClassAliasingMapper.realClass(ClassAliasingMapper.java:79)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+        at com.thoughtworks.xstream.mapper.ArrayMapper.realClass(ArrayMapper.java:74)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+        at hudson.util.XStream2$CompatibilityMapper.realClass(XStream2.java:255)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+        at hudson.util.xstream.MapperDelegate.realClass(MapperDelegate.java:43)
+        at com.thoughtworks.xstream.mapper.MapperWrapper.realClass(MapperWrapper.java:30)
+        at com.thoughtworks.xstream.mapper.CachingMapper.realClass(CachingMapper.java:49)
+        at com.thoughtworks.xstream.core.util.HierarchicalStreams.readClassType(HierarchicalStreams.java:29)
+        at com.thoughtworks.xstream.converters.collections.AbstractCollectionConverter.readItem(AbstractCollectionConverter.java:70)
+        at com.thoughtworks.xstream.converters.collections.ArrayConverter.unmarshal(ArrayConverter.java:55)
+        at com.thoughtworks.xstream.core.TreeUnmarshaller.convert(TreeUnmarshaller.java:72)
+        ... 40 more

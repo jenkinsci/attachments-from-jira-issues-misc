@@ -1,0 +1,39 @@
+01 Copying the source file 'trunk/testfile.py' from the workspace to the build folder '/var/lib/jenkins/jobs/pylint_ciapp/builds/2013-09-20_11-06-20/workspace-files/938002a9.tmp' on the Jenkins master failed.
+02 Seems that the path is relative, however an absolute path is required when copying the sources.
+03 Is the file 'testfile.py' contained more than once in your workspace?
+04 Is the file 'trunk/testfile.py' a valid filename?
+05 If you are building on a slave: please check if the file is accessible under '$JENKINS_HOME/[job-name]/trunk/testfile.py'
+06 If you are building on the master: please check if the file is accessible under '$JENKINS_HOME/[job-name]/workspace/trunk/testfile.py'
+07 hudson.util.IOException2: remote file operation failed: trunk/testfile.py at hudson.remoting.Channel@df75932:ourslave
+08   at hudson.FilePath.act(FilePath.java:835)
+09   at hudson.FilePath.act(FilePath.java:821)
+10   at hudson.FilePath.copyTo(FilePath.java:1591)
+11   at hudson.plugins.analysis.core.HealthAwareRecorder.copyFilesWithAnnotationsToBuildFolder(HealthAwareRecorder.java:399)
+12   at hudson.plugins.warnings.WarningsPublisher.perform(WarningsPublisher.java:334)
+13   at hudson.plugins.analysis.core.HealthAwareRecorder.perform(HealthAwareRecorder.java:334)
+14   at hudson.tasks.BuildStepMonitor$1.perform(BuildStepMonitor.java:19)
+15   at hudson.model.AbstractBuild$AbstractRunner.perform(AbstractBuild.java:710)
+16   at hudson.model.AbstractBuild$AbstractRunner.performAllBuildSteps(AbstractBuild.java:685)
+17   at hudson.model.Build$RunnerImpl.post2(Build.java:162)
+18   at hudson.model.AbstractBuild$AbstractRunner.post(AbstractBuild.java:632)
+19   at hudson.model.Run.run(Run.java:1463)
+20   at hudson.model.FreeStyleBuild.run(FreeStyleBuild.java:46)
+21   at hudson.model.ResourceController.execute(ResourceController.java:88)
+22   at hudson.model.Executor.run(Executor.java:239)
+23 Caused by: java.io.FileNotFoundException: trunk/testfile.py (No such file or directory)
+24   at java.io.FileInputStream.open(Native Method)
+25   at java.io.FileInputStream.<init>(FileInputStream.java:138)
+26   at hudson.FilePath$33.invoke(FilePath.java:1596)
+27   at hudson.FilePath$33.invoke(FilePath.java:1591)
+28   at hudson.FilePath$FileCallableWrapper.call(FilePath.java:2193)
+29   at hudson.remoting.UserRequest.perform(UserRequest.java:118)
+30   at hudson.remoting.UserRequest.perform(UserRequest.java:48)
+31   at hudson.remoting.Request$2.run(Request.java:326)
+32   at hudson.remoting.InterceptingExecutorService$1.call(InterceptingExecutorService.java:72)
+33   at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:334)
+34   at java.util.concurrent.FutureTask.run(FutureTask.java:166)
+35   at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+36   at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+37   at java.lang.Thread.run(Thread.java:722)
+
+http://ulphycimaster.sapo.nsn-rdnet.net:8080/view/pylint/job/pylint_ciapp/ws/trunk/testfile.py/*view*/ WORKS

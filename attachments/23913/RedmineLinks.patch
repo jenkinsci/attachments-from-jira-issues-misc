@@ -1,0 +1,45 @@
+--- redmine-plugin-master\redmine-plugin-master\src\main\java\hudson\plugins\redmine\RedmineRepositoryBrowser.java	Wed Jul 10 15:23:44 2013
++++ RedmineRepositoryBrowser.java	Wed Jul 10 15:37:14 2013
+@@ -27,6 +27,7 @@
+     public RedmineRepositoryBrowser() {
+     }
+ 	
++	// http://host/redmine/projects/<projectname>/repository/revisions/<revision>/diff/<path>
+ 	@Override
+ 	public URL getDiffLink(Path path) throws IOException {
+ 		if(path.getEditType()!= EditType.EDIT) {
+@@ -37,23 +38,26 @@
+         String filePath = getFilePath(path.getLogEntry(), path.getValue());
+         
+         int revision = path.getLogEntry().getRevision();
+-        return new URL(baseUrl, "repositories/diff/" + projectName + filePath + "?rev=" + revision);
++        return new URL(baseUrl, "projects/" + projectName + "/repository/revisions/" + revision + "/diff" + filePath);
+ 	}
+ 
++	//http://host/redmine/projects/<projectname>/repository/entry/<path>
+ 	@Override
+ 	public URL getFileLink(Path path) throws IOException {
+ 		URL baseUrl = getRedmineURL(path.getLogEntry());
+ 		String projectName = getProject(path.getLogEntry());
+ 		String filePath = getFilePath(path.getLogEntry(), path.getValue());
+         
+-        return baseUrl == null ? null : new URL(baseUrl, "repositories/entry/" + projectName + filePath);
++        return baseUrl == null ? null : new URL(baseUrl, "projects/" + projectName + "/repository/entry" + filePath);
+ 	}
+ 
++	
++	// http://host/redmine/projects/<projectname>/repository/revisions/<revision>
+ 	@Override
+ 	public URL getChangeSetLink(LogEntry changeSet) throws IOException {
+ 		URL baseUrl = getRedmineURL(changeSet);
+ 		String projectName = getProject(changeSet);
+-        return baseUrl == null ? null : new URL(baseUrl, "repositories/revision/" + projectName + "/" + changeSet.getRevision());
++        return baseUrl == null ? null : new URL(baseUrl, "projects/" + projectName + "/repository/revisions/" + changeSet.getRevision());
+ 	}
+ 
+ 	@Override
+@@ -118,3 +122,4 @@
+         }
+     }
+ }
++

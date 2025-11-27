@@ -1,0 +1,226 @@
+From f3ca0383fa28cb102344b529508fefcd11d77977 Mon Sep 17 00:00:00 2001
+From: alopez <angellopezcima@aurigae.com>
+Date: Thu, 11 Dec 2014 11:27:52 +0100
+Subject: [PATCH] Added preemptive authentication
+
+---
+ pom.xml                                                    |  2 +-
+ .../java/jenkins/plugins/http_request/HttpRequest.java     |  9 +++++++--
+ .../jenkins/plugins/http_request/auth/Authenticator.java   |  4 +++-
+ .../http_request/auth/BasicDigestAuthentication.java       | 14 +++++++++++++-
+ .../plugins/http_request/auth/FormAuthentication.java      |  8 ++++++--
+ .../jenkins/plugins/http_request/util/HttpClientUtil.java  |  9 ++++++---
+ 6 files changed, 36 insertions(+), 10 deletions(-)
+
+diff --git a/pom.xml b/pom.xml
+index a79e6fe..bb20362 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -8,7 +8,7 @@
+     </parent>
+     
+     <artifactId>http_request</artifactId>
+-    <version>1.8.6</version>
++    <version>1.8.6-vector-1</version>
+     <packaging>hpi</packaging>
+     <name>HTTP Request Plugin</name>
+     <url>http://wiki.jenkins-ci.org/display/JENKINS/HTTP+Request+Plugin</url>
+diff --git a/src/main/java/jenkins/plugins/http_request/HttpRequest.java b/src/main/java/jenkins/plugins/http_request/HttpRequest.java
+index d6d86ca..3f33304 100644
+--- a/src/main/java/jenkins/plugins/http_request/HttpRequest.java
++++ b/src/main/java/jenkins/plugins/http_request/HttpRequest.java
+@@ -19,9 +19,12 @@ import jenkins.plugins.http_request.util.HttpClientUtil;
+ import jenkins.plugins.http_request.util.NameValuePair;
+ import jenkins.plugins.http_request.util.RequestAction;
+ import net.sf.json.JSONObject;
++
+ import org.apache.http.HttpResponse;
+ import org.apache.http.client.methods.HttpRequestBase;
+ import org.apache.http.impl.client.SystemDefaultHttpClient;
++import org.apache.http.protocol.BasicHttpContext;
++import org.apache.http.protocol.HttpContext;
+ import org.kohsuke.stapler.DataBoundConstructor;
+ import org.kohsuke.stapler.QueryParameter;
+ import org.kohsuke.stapler.StaplerRequest;
+@@ -29,6 +32,7 @@ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ 
+ import javax.servlet.ServletException;
++
+ import java.io.IOException;
+ import java.io.PrintStream;
+ import java.net.URISyntaxException;
+@@ -97,6 +101,7 @@ public class HttpRequest extends Builder {
+         logger.println("HttpMode: " + mode);
+ 
+         final SystemDefaultHttpClient httpclient = new SystemDefaultHttpClient();
++        HttpContext context = new BasicHttpContext();
+ 
+         logger.println("Parameters: ");
+         final EnvVars envVars = build.getEnvironment(listener);
+@@ -117,13 +122,13 @@ public class HttpRequest extends Builder {
+             }
+ 
+             logger.println("Using authentication: " + auth.getKeyName());
+-            auth.authenticate(httpclient, method, logger);
++            auth.authenticate(httpclient, context, method, logger);
+         }
+ 	
+         boolean tmpLogResponseBody = logResponseBody != null
+         ? logResponseBody : getDescriptor().isDefaultLogResponseBody();	
+ 
+-        final HttpResponse execute = clientUtil.execute(httpclient, method, logger, tmpLogResponseBody);
++        final HttpResponse execute = clientUtil.execute(httpclient, context, method, logger, tmpLogResponseBody);
+ 
+         // use global configuration as default if it is unset for this job
+         boolean returnCodeRelevant = returnCodeBuildRelevant != null
+diff --git a/src/main/java/jenkins/plugins/http_request/auth/Authenticator.java b/src/main/java/jenkins/plugins/http_request/auth/Authenticator.java
+index 1222a80..979aef3 100644
+--- a/src/main/java/jenkins/plugins/http_request/auth/Authenticator.java
++++ b/src/main/java/jenkins/plugins/http_request/auth/Authenticator.java
+@@ -2,8 +2,10 @@ package jenkins.plugins.http_request.auth;
+ 
+ import java.io.IOException;
+ import java.io.PrintStream;
++
+ import org.apache.http.client.methods.HttpRequestBase;
+ import org.apache.http.impl.client.DefaultHttpClient;
++import org.apache.http.protocol.HttpContext;
+ 
+ /**
+  * @author Janario Oliveira
+@@ -12,6 +14,6 @@ public interface Authenticator {
+ 
+     String getKeyName();
+ 
+-    void authenticate(DefaultHttpClient client, HttpRequestBase requestBase,
++    void authenticate(DefaultHttpClient client, HttpContext context, HttpRequestBase requestBase,
+             PrintStream logger) throws IOException;
+ }
+diff --git a/src/main/java/jenkins/plugins/http_request/auth/BasicDigestAuthentication.java b/src/main/java/jenkins/plugins/http_request/auth/BasicDigestAuthentication.java
+index 16cbaad..7863988 100644
+--- a/src/main/java/jenkins/plugins/http_request/auth/BasicDigestAuthentication.java
++++ b/src/main/java/jenkins/plugins/http_request/auth/BasicDigestAuthentication.java
+@@ -4,13 +4,22 @@ import hudson.Extension;
+ import hudson.model.AbstractDescribableImpl;
+ import hudson.model.Descriptor;
+ import hudson.util.FormValidation;
++
+ import java.io.PrintStream;
++
+ import jenkins.model.Jenkins;
+ import jenkins.plugins.http_request.HttpRequest;
++
+ import org.apache.http.auth.AuthScope;
+ import org.apache.http.auth.UsernamePasswordCredentials;
++import org.apache.http.client.AuthCache;
+ import org.apache.http.client.methods.HttpRequestBase;
++import org.apache.http.client.protocol.ClientContext;
++import org.apache.http.client.utils.URIUtils;
++import org.apache.http.impl.auth.BasicScheme;
++import org.apache.http.impl.client.BasicAuthCache;
+ import org.apache.http.impl.client.DefaultHttpClient;
++import org.apache.http.protocol.HttpContext;
+ import org.kohsuke.stapler.DataBoundConstructor;
+ import org.kohsuke.stapler.QueryParameter;
+ 
+@@ -44,11 +53,14 @@ public class BasicDigestAuthentication extends AbstractDescribableImpl<BasicDige
+         return password;
+     }
+ 
+-    public void authenticate(DefaultHttpClient client,
++    public void authenticate(DefaultHttpClient client, HttpContext context,
+             HttpRequestBase requestBase, PrintStream logger) {
+         client.getCredentialsProvider().setCredentials(
+                 new AuthScope(requestBase.getURI().getHost(), requestBase.getURI().getPort()),
+                 new UsernamePasswordCredentials(userName, password));
++        AuthCache authCache = new BasicAuthCache();
++        authCache.put(URIUtils.extractHost(requestBase.getURI()), new BasicScheme());
++        context.setAttribute(ClientContext.AUTH_CACHE, authCache);
+     }
+ 
+     @Extension
+diff --git a/src/main/java/jenkins/plugins/http_request/auth/FormAuthentication.java b/src/main/java/jenkins/plugins/http_request/auth/FormAuthentication.java
+index f9c64e1..24ec4bf 100644
+--- a/src/main/java/jenkins/plugins/http_request/auth/FormAuthentication.java
++++ b/src/main/java/jenkins/plugins/http_request/auth/FormAuthentication.java
+@@ -4,18 +4,22 @@ import hudson.Extension;
+ import hudson.model.AbstractDescribableImpl;
+ import hudson.model.Descriptor;
+ import hudson.util.FormValidation;
++
+ import java.io.IOException;
+ import java.io.PrintStream;
+ import java.util.ArrayList;
+ import java.util.Collections;
+ import java.util.List;
++
+ import jenkins.model.Jenkins;
+ import jenkins.plugins.http_request.HttpRequest;
+ import jenkins.plugins.http_request.util.HttpClientUtil;
+ import jenkins.plugins.http_request.util.RequestAction;
++
+ import org.apache.http.HttpResponse;
+ import org.apache.http.client.methods.HttpRequestBase;
+ import org.apache.http.impl.client.DefaultHttpClient;
++import org.apache.http.protocol.HttpContext;
+ import org.kohsuke.stapler.DataBoundConstructor;
+ import org.kohsuke.stapler.QueryParameter;
+ 
+@@ -42,13 +46,13 @@ public class FormAuthentication extends AbstractDescribableImpl<FormAuthenticati
+         return Collections.unmodifiableList(actions);
+     }
+ 
+-    public void authenticate(DefaultHttpClient client,
++    public void authenticate(DefaultHttpClient client, HttpContext context,
+             HttpRequestBase requestBase, PrintStream logger) throws IOException {
+         final HttpClientUtil clientUtil = new HttpClientUtil();
+         for (RequestAction requestAction : actions) {
+             final HttpRequestBase method = clientUtil.createRequestBase(requestAction);
+ 
+-            final HttpResponse execute = clientUtil.execute(client, method, logger, true);
++            final HttpResponse execute = clientUtil.execute(client, context, method, logger, true);
+             //from 400(client error) to 599(server error)
+             if ((execute.getStatusLine().getStatusCode() >= 400
+                     && execute.getStatusLine().getStatusCode() <= 599)) {
+diff --git a/src/main/java/jenkins/plugins/http_request/util/HttpClientUtil.java b/src/main/java/jenkins/plugins/http_request/util/HttpClientUtil.java
+index a069a5b..4e57ef7 100644
+--- a/src/main/java/jenkins/plugins/http_request/util/HttpClientUtil.java
++++ b/src/main/java/jenkins/plugins/http_request/util/HttpClientUtil.java
+@@ -9,7 +9,9 @@ import java.net.URI;
+ import java.security.cert.CertificateException;
+ import java.security.cert.X509Certificate;
+ import java.util.List;
++
+ import jenkins.plugins.http_request.HttpMode;
++
+ import org.apache.http.HttpEntity;
+ import org.apache.http.HttpResponse;
+ import org.apache.http.client.entity.UrlEncodedFormEntity;
+@@ -23,6 +25,7 @@ import org.apache.http.conn.scheme.SchemeRegistry;
+ import org.apache.http.conn.ssl.SSLSocketFactory;
+ import org.apache.http.conn.ssl.TrustStrategy;
+ import org.apache.http.impl.client.DefaultHttpClient;
++import org.apache.http.protocol.HttpContext;
+ import org.apache.http.util.EntityUtils;
+ 
+ /**
+@@ -95,12 +98,12 @@ public class HttpClientUtil {
+         return httpDelete;
+     }
+ 
+-    public HttpResponse execute(DefaultHttpClient client, HttpRequestBase method,
+-            PrintStream logger, boolean logResponseBody) throws IOException {
++    public HttpResponse execute(DefaultHttpClient client, HttpContext context,
++            HttpRequestBase method, PrintStream logger, boolean logResponseBody) throws IOException {
+         doSecurity(client, method.getURI());
+ 
+         logger.println("Sending request to url: " + method.getURI());
+-        final HttpResponse execute = client.execute(method);
++        final HttpResponse execute = client.execute(method, context);
+         logger.println("Response Code: " + execute.getStatusLine());
+ 	if (logResponseBody){
+ 	    logger.println("Response: \n" + EntityUtils.toString(execute.getEntity()));
+-- 
+1.9.0.msysgit.0
+

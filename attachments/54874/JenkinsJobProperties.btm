@@ -1,0 +1,25 @@
+########################################################################
+#
+# Rule to trace size of DescribableList object
+#
+
+RULE DescribableList size trace
+CLASS hudson.model.Job
+METHOD doConfigSubmit(StaplerRequest, StaplerResponse)
+AT LINE 1324
+IF TRUE
+DO debug("*** t ["+$t.size()+"]")
+ENDRULE
+
+########################################################################
+#
+# Rule to trace jsonProperties null condition trace
+#
+
+RULE jsonProperties null condition trace
+CLASS hudson.model.Job
+METHOD doConfigSubmit(StaplerRequest, StaplerResponse)
+AT LINE 1324
+IF null == $jsonProperties
+DO debug("*** request payload of JSON Properties has been unmarshalled. The jsonProperties reference is null !!!!")
+ENDRULE

@@ -1,0 +1,143 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-build plugin="workflow-job@2.25">
+  <actions>
+    <hudson.model.CauseAction>
+      <causeBag class="linked-hash-map">
+        <entry>
+          <hudson.triggers.SCMTrigger_-SCMTriggerCause/>
+          <int>1</int>
+        </entry>
+      </causeBag>
+    </hudson.model.CauseAction>
+    <hudson.triggers.SCMTrigger_-BuildAction/>
+    <org.jenkinsci.plugins.workflow.libs.LibrariesAction plugin="workflow-cps-global-lib@2.12">
+      <libraries/>
+    </org.jenkinsci.plugins.workflow.libs.LibrariesAction>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.ExecutionModelAction plugin="pipeline-model-definition@1.3.2">
+      <stagesUUID>bae92f72-b37f-483d-af0f-9cc54141abd0</stagesUUID>
+      <stagesList>
+        <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStages plugin="pipeline-model-api@1.3.2">
+          <stages>
+            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStage>
+              <name>Get Sources</name>
+              <branches>
+                <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTBranch>
+                  <name>default</name>
+                  <steps>
+                    <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTScriptBlock>
+                      <name>script</name>
+                      <args class="org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTNamedArgumentList">
+                        <arguments class="linked-hash-map">
+                          <entry>
+                            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                              <key>scriptBlock</key>
+                            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                              <value class="string">p4sync charset: &apos;none&apos;, credential: &apos;JenkinsMaster&apos;, populate: autoClean(delete: true, modtime: true, parallel: [enable: false, minbytes: &apos;1024&apos;, minfiles: &apos;1&apos;, threads: &apos;4&apos;], pin: &apos;&apos;, quiet: false, replace: true, tidy: false), source: depotSource(&apos;&apos;&apos;//depot/weird_multibranch/...&apos;&apos;&apos;)</value>
+                            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                          </entry>
+                        </arguments>
+                      </args>
+                    </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTScriptBlock>
+                  </steps>
+                </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTBranch>
+              </branches>
+              <parallelContent/>
+            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStage>
+            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStage>
+              <name>Invoke Builds</name>
+              <branches>
+                <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTBranch>
+                  <name>default</name>
+                  <steps>
+                    <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStep>
+                      <name>println</name>
+                      <args class="org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTSingleArgument">
+                        <value class="org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue$ConstantValue">
+                          <value class="string">fffffg</value>
+                        </value>
+                      </args>
+                    </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStep>
+                  </steps>
+                </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTBranch>
+              </branches>
+              <parallelContent/>
+            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStage>
+          </stages>
+          <uuid>bae92f72-b37f-483d-af0f-9cc54141abd0</uuid>
+        </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStages>
+      </stagesList>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.ExecutionModelAction>
+    <jenkins.model.InterruptedBuildAction>
+      <causes class="com.google.common.collect.ImmutableList">
+        <jenkins.model.CauseOfInterruption_-UserInterruption>
+          <user>anonymous</user>
+        </jenkins.model.CauseOfInterruption_-UserInterruption>
+      </causes>
+    </jenkins.model.InterruptedBuildAction>
+  </actions>
+  <queueId>165291</queueId>
+  <timestamp>1565875075900</timestamp>
+  <startTime>1565875075905</startTime>
+  <result>ABORTED</result>
+  <duration>5078</duration>
+  <charset>UTF-8</charset>
+  <keepLog>false</keepLog>
+  <execution class="org.jenkinsci.plugins.workflow.cps.CpsFlowExecution">
+    <result>ABORTED</result>
+    <script>pipeline {
+ agent {
+  label &apos;docker-slave&apos;
+ }
+ stages {
+  stage(&quot;Get Sources&quot;) {
+   steps {
+    script {
+       //p4sync charset: &apos;none&apos;, credential: &apos;JenkinsMaster&apos;, populate: autoClean(delete: true, modtime: true, parallel: [enable: false, minbytes: &apos;1024&apos;, minfiles: &apos;1&apos;, threads: &apos;4&apos;], pin: &apos;&apos;, quiet: false, replace: true, tidy: false), source: depotSource(&apos;&apos;&apos;//depot/test/...&apos;&apos;&apos;)
+       p4sync charset: &apos;none&apos;, credential: &apos;JenkinsMaster&apos;, populate: autoClean(delete: true, modtime: true, parallel: [enable: false, minbytes: &apos;1024&apos;, minfiles: &apos;1&apos;, threads: &apos;4&apos;], pin: &apos;&apos;, quiet: false, replace: true, tidy: false), source: depotSource(&apos;&apos;&apos;//depot/weird_multibranch/...&apos;&apos;&apos;)
+       //p4sync charset: &apos;none&apos;, credential: &apos;JenkinsMaster&apos;, populate: forceClean(have: false, parallel: [enable: false, minbytes: &apos;1024&apos;, minfiles: &apos;1&apos;, threads: &apos;4&apos;], pin: &apos;&apos;, quiet: false), source: depotSource(&apos;&apos;&apos;//depot/weird_multibranch/...&apos;&apos;&apos;)
+       }
+    }
+   }
+   stage(&quot;Invoke Builds&quot;) {
+    steps {
+       println &quot;fffffg&quot;
+       //script {currentBuild.result = &apos;ABORTED&apos;}
+       //error(&apos;Stopping early…&apos;)
+    }
+   }
+  }
+ }</script>
+    <loadedScripts class="map"/>
+    <durabilityHint>MAX_SURVIVABILITY</durabilityHint>
+    <timings class="map">
+      <entry>
+        <string>flowNode</string>
+        <long>1002375604</long>
+      </entry>
+      <entry>
+        <string>classLoad</string>
+        <long>91584777</long>
+      </entry>
+      <entry>
+        <string>run</string>
+        <long>935116923</long>
+      </entry>
+      <entry>
+        <string>parse</string>
+        <long>37392737</long>
+      </entry>
+      <entry>
+        <string>saveProgram</string>
+        <long>37559177</long>
+      </entry>
+    </timings>
+    <sandbox>true</sandbox>
+    <iota>20</iota>
+    <head>1:20</head>
+    <done>true</done>
+    <resumeBlocked>false</resumeBlocked>
+  </execution>
+  <completed>true</completed>
+  <checkouts class="hudson.util.PersistedList"/>
+</flow-build>

@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.9">
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers/>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.24">
+    <script>node (&quot;windows&quot;) {
+    withMaven(maven:&quot;maven-3.3.9&quot;, globalMavenSettingsConfig: &apos;my-global-maven-settings&apos;, mavenSettingsConfig: &apos;my-maven-settings&apos;) {
+        // writeFile file: &apos;.archive-jenkins-maven-event-spy-logs&apos;, text: &apos;&apos;
+        git &quot;https://github.com/cyrille-leclerc/my-spring-boot-app.git&quot;
+        bat &quot;mvn clean install&quot;
+    }
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+</flow-definition>

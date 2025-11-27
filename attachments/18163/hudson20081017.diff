@@ -1,0 +1,523 @@
+Index: mavenbridge/src/org/netbeans/modules/hudson/maven/HudsonProviderImpl.java
+===================================================================
+--- mavenbridge/src/org/netbeans/modules/hudson/maven/HudsonProviderImpl.java	(revision 12633)
++++ mavenbridge/src/org/netbeans/modules/hudson/maven/HudsonProviderImpl.java	(working copy)
+@@ -69,6 +69,9 @@
+             if (index > 0) {
+                 url = url.substring(index + "/job/".length());
+             }
++            if (url.endsWith("/")) {
++                url = url.substring(0, url.length() - 1);
++            }
+             return url;
+         }
+         return "";
+Index: main/src/org/netbeans/modules/hudson/impl/HudsonInstanceProperties.java
+===================================================================
+--- main/src/org/netbeans/modules/hudson/impl/HudsonInstanceProperties.java	(revision 12633)
++++ main/src/org/netbeans/modules/hudson/impl/HudsonInstanceProperties.java	(working copy)
+@@ -42,7 +42,7 @@
+     
+     private Sheet.Set set;
+     
+-    private final List<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
++    protected final List<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
+     
+     public HudsonInstanceProperties(String name, String url) {
+         this(name, url, "0");
+Index: main/src/org/netbeans/modules/hudson/impl/HudsonInstanceImpl.java
+===================================================================
+--- main/src/org/netbeans/modules/hudson/impl/HudsonInstanceImpl.java	(revision 12633)
++++ main/src/org/netbeans/modules/hudson/impl/HudsonInstanceImpl.java	(working copy)
+@@ -25,6 +25,8 @@
+ import java.util.Arrays;
+ import java.util.Collection;
+ import java.util.Collections;
++import java.util.List;
++import java.util.Map;
+ import java.util.concurrent.Semaphore;
+ import javax.swing.SwingUtilities;
+ import org.netbeans.api.progress.ProgressHandle;
+@@ -33,7 +35,6 @@
+ import org.netbeans.modules.hudson.api.HudsonChangeListener;
+ import org.netbeans.modules.hudson.api.HudsonInstance;
+ import org.netbeans.modules.hudson.api.HudsonJob;
+-import org.netbeans.modules.hudson.api.HudsonJob;
+ import org.netbeans.modules.hudson.api.HudsonJob.Color;
+ import org.netbeans.modules.hudson.api.HudsonVersion;
+ import org.netbeans.modules.hudson.api.HudsonView;
+@@ -141,6 +142,33 @@
+     public boolean isPersisted() {
+         return !(properties instanceof ProjectHIP);
+     }
++
++    public void makePersistent() {
++        if (isPersisted()) {
++            return;
++        }
++        String name = (String) properties.get(HudsonInstanceProperties.HUDSON_INSTANCE_NAME);
++        String url = (String) properties.get(HudsonInstanceProperties.HUDSON_INSTANCE_URL);
++        String sync = (String) properties.get(HudsonInstanceProperties.HUDSON_INSTANCE_SYNC);
++
++        HudsonInstanceProperties newProps = new HudsonInstanceProperties(name, url, sync);
++        //just in case there are also other properties.
++        for (Map.Entry<Object, Object> ent : properties.entrySet()) {
++            newProps.put(ent.getKey(), ent.getValue());
++        }
++        
++        //reassign listeners
++        List<PropertyChangeListener> list = ((ProjectHIP)properties).getCurrentListeners();
++        for (PropertyChangeListener listener : list) {
++            newProps.addPropertyChangeListener(listener);
++            properties.removePropertyChangeListener(listener);
++        }
++        properties = newProps;
++
++        //will this make the propes to get persisted reliably?
++        properties.put(HudsonInstanceProperties.HUDSON_INSTANCE_URL, url);
++        fireContentChanges();
++    }
+     
+     /**
+      *
+@@ -218,6 +246,22 @@
+     public synchronized Collection<HudsonJob> getJobs() {
+         return jobs;
+     }
++
++    public synchronized Collection<HudsonJob> getPreferredJobs() {
++        Collection<HudsonJob> prefs = new ArrayList<HudsonJob>();
++        Collection<HudsonJob> all = getJobs();
++        String prop = getProperties().getProperty(HudsonInstanceProperties.HUDSON_INSTANCE_PREF_JOBS);
++        if (prop != null && prop.trim().length() > 0) {
++            String[] ids = prop.trim().split("\\|");
++            List<String> idsList = Arrays.asList(ids);
++            for (HudsonJob jb : all) {
++                if (idsList.contains(jb.getName())) {
++                    prefs.add(jb);
++                }
++            }
++        }
++        return prefs;
++    }
+     
+     public synchronized Collection<HudsonView> getViews() {
+         return views;
+@@ -329,6 +373,7 @@
+     public int compareTo(HudsonInstance o) {
+         return getName().compareTo(o.getName());
+     }
++
+     
+     private class Synchronization implements Runnable {
+         
+Index: main/src/org/netbeans/modules/hudson/impl/ProjectHIP.java
+===================================================================
+--- main/src/org/netbeans/modules/hudson/impl/ProjectHIP.java	(revision 12633)
++++ main/src/org/netbeans/modules/hudson/impl/ProjectHIP.java	(working copy)
+@@ -19,11 +19,14 @@
+ 
+ package org.netbeans.modules.hudson.impl;
+ 
++import java.beans.PropertyChangeListener;
+ import java.io.IOException;
+ import java.io.InputStream;
+ import java.io.OutputStream;
++import java.util.ArrayList;
+ import java.util.HashSet;
+ import java.util.InvalidPropertiesFormatException;
++import java.util.List;
+ import java.util.Set;
+ import org.netbeans.api.project.Project;
+ import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
+@@ -47,13 +50,16 @@
+         if (p != null) {
+             setProperty(HUDSON_INSTANCE_URL, p.getServerUrl());
+             setProperty(HUDSON_INSTANCE_NAME, p.getName());
++            setPreferedJobs();
+         }
++        //TODO listen on changes from the provider and refire them as changed properties.
+     }
+ 
+     public void removeProvider(Project prov) {
+         synchronized (providers) {
+             providers.remove(prov);
+         }
++        setPreferedJobs();
+     }
+ 
+     public Set<Project> getProviders() {
+@@ -87,5 +93,26 @@
+     public synchronized void storeToXML(OutputStream os, String comment, String encoding) throws IOException {
+     }
+ 
++    public List<PropertyChangeListener> getCurrentListeners() {
++        List<PropertyChangeListener> lst = new ArrayList<PropertyChangeListener>();
++        synchronized (listeners) {
++            lst.addAll(listeners);
++        }
++        return lst;
++    }
+ 
++    private void setPreferedJobs() {
++        String list = "";
++        for (Project prj : getProviders()) {
++            ProjectHudsonProvider p = prj.getLookup().lookup(ProjectHudsonProvider.class);
++            if (p != null) {
++                String name = p.getJobName();
++                if (name != null && name.trim().length() > 0) {
++                    list = list + "|" + name.trim(); //NOI18N
++                }
++            }
++        }
++        put(HUDSON_INSTANCE_PREF_JOBS, list);
++        }
++
+ }
+Index: main/src/org/netbeans/modules/hudson/impl/HudsonManagerImpl.java
+===================================================================
+--- main/src/org/netbeans/modules/hudson/impl/HudsonManagerImpl.java	(revision 12633)
++++ main/src/org/netbeans/modules/hudson/impl/HudsonManagerImpl.java	(working copy)
+@@ -216,8 +216,8 @@
+         }
+         Repository repository = Lookup.getDefault().lookup(Repository.class);
+         FileObject directory = repository.getDefaultFileSystem().findResource(DIR_INSTANCES);
+-        
+-        String fileName = instance.getName().replace(" ", "_").toLowerCase() + ".xml";
++
++        String fileName = getFileName(instance.getName());
+         try {
+             FileObject file = directory.getFileObject(fileName);
+             
+@@ -230,12 +230,22 @@
+             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+         }
+     }
++
++    private String getFileName(String name) {
++        // sort of defend against names like http://deadlock.netbeans.org/hudson
++        String fileName = name.replace(" ", "_");
++        fileName = fileName.replace(":", "_");
++        fileName = fileName.replace("/", "_");
++        fileName = fileName.replace(".", "_");
++        fileName = fileName.toLowerCase() + ".xml";
++        return fileName;
++    }
+     
+     private void removeInstanceFile(HudsonInstanceImpl instance) {
+         Repository repository = Lookup.getDefault().lookup(Repository.class);
+         FileObject directory = repository.getDefaultFileSystem().findResource(DIR_INSTANCES);
+         
+-        String fileName = instance.getName().replace(" ", "_").toLowerCase() + ".xml";
++        String fileName = getFileName(instance.getName());
+         
+         try {
+             FileObject file = directory.getFileObject(fileName);
+@@ -311,7 +321,7 @@
+                     }
+                 } else if (prov == null && exists) {
+                     HudsonInstanceImpl remove = projectInstances.remove(project);
+-                    if (remove != null) {
++                    if (remove != null && !remove.isPersisted()) {
+                         ProjectHIP props = (ProjectHIP)remove.getProperties();
+                         props.removeProvider(project);
+                         if (props.getProviders().isEmpty()) {
+@@ -324,7 +334,7 @@
+             newprjs.removeAll(Arrays.asList(prjs));
+             for (Project project : newprjs) {
+                 HudsonInstanceImpl remove = projectInstances.remove(project);
+-                if (remove != null) {
++                if (remove != null && !remove.isPersisted()) {
+                     ProjectHIP props = (ProjectHIP)remove.getProperties();
+                     props.removeProvider(project);
+                     if (props.getProviders().isEmpty()) {
+Index: main/src/org/netbeans/modules/hudson/api/HudsonInstance.java
+===================================================================
+--- main/src/org/netbeans/modules/hudson/api/HudsonInstance.java	(revision 12633)
++++ main/src/org/netbeans/modules/hudson/api/HudsonInstance.java	(working copy)
+@@ -62,6 +62,13 @@
+      * @return collection of all jobs
+      */
+     public Collection<HudsonJob> getJobs();
++
++    /**
++     * Returns preferred, watched Hudson jobs from registered instance
++     *
++     * @return collection of all jobs
++     */
++    public Collection<HudsonJob> getPreferredJobs();
+     
+     /**
+      * Returns all Hudson views from registered instance
+Index: main/src/org/netbeans/modules/hudson/constants/HudsonInstanceConstants.java
+===================================================================
+--- main/src/org/netbeans/modules/hudson/constants/HudsonInstanceConstants.java	(revision 12633)
++++ main/src/org/netbeans/modules/hudson/constants/HudsonInstanceConstants.java	(working copy)
+@@ -1,10 +1,20 @@
+ /*
+- * HudsonInstanceConstants.java
++ * The contents of this file are subject to the terms of the Common Development
++ * and Distribution License (the License). You may not use this file except in
++ * compliance with the License.
+  *
+- * Created on May 6, 2007, 4:38:44 PM
++ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
++ * or http://www.netbeans.org/cddl.txt.
+  *
+- * To change this template, choose Tools | Template Manager
+- * and open the template in the editor.
++ * When distributing Covered Code, include this CDDL Header Notice in each file
++ * and include the License file at http://www.netbeans.org/cddl.txt.
++ * If applicable, add the following below the CDDL Header, with the fields
++ * enclosed by brackets [] replaced by your own identifying information:
++ * "Portions Copyrighted [year] [name of copyright owner]"
++ *
++ * The Original Software is NetBeans. The Initial Developer of the Original
++ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
++ * Microsystems, Inc. All Rights Reserved.
+  */
+ 
+ package org.netbeans.modules.hudson.constants;
+@@ -20,4 +30,9 @@
+     public static final String HUDSON_INSTANCE_URL = "hudson_url";
+     
+     public static final String HUDSON_INSTANCE_SYNC = "hudson_sync_time";
++
++    /**
++     * preferred jobs for the instance, list of job names, separated by |
++     */
++    public static final String HUDSON_INSTANCE_PREF_JOBS = "hudson_pref_jobs";
+ }
+Index: main/src/org/netbeans/modules/hudson/ui/notification/HudsonNotificationController.java
+===================================================================
+--- main/src/org/netbeans/modules/hudson/ui/notification/HudsonNotificationController.java	(revision 12633)
++++ main/src/org/netbeans/modules/hudson/ui/notification/HudsonNotificationController.java	(working copy)
+@@ -97,8 +97,12 @@
+             
+             boolean exists = false;
+             boolean passed = false;
++            Collection<HudsonJob> instjobs = hudsonInstance.getPreferredJobs();
++            if (instjobs == null || instjobs.size() == 0) {
++                instjobs = hudsonInstance.getJobs();
++            }
+             
+-            for (HudsonJob j : hudsonInstance.getJobs()) {
++            for (HudsonJob j : instjobs) {
+                 if (j.getUrl().equals(job.getUrl())) {
+                     exists = true;
+                     
+Index: main/src/org/netbeans/modules/hudson/ui/wizard/InstanceWizardIterator.java
+===================================================================
+--- main/src/org/netbeans/modules/hudson/ui/wizard/InstanceWizardIterator.java	(revision 12633)
++++ main/src/org/netbeans/modules/hudson/ui/wizard/InstanceWizardIterator.java	(working copy)
+@@ -47,7 +47,7 @@
+     
+     private InstancePropertiesPanel propertiesPanel = new InstancePropertiesPanel();
+     
+-    private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
++    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+     
+     /**
+      * Initialize panels representing individual wizard's steps and sets
+Index: main/src/org/netbeans/modules/hudson/ui/actions/Bundle.properties
+===================================================================
+--- main/src/org/netbeans/modules/hudson/ui/actions/Bundle.properties	(revision 12633)
++++ main/src/org/netbeans/modules/hudson/ui/actions/Bundle.properties	(working copy)
+@@ -18,6 +18,7 @@
+ LBL_Add_Instance=&Add Hudson Instance...
+ ACSD_Add_Instance=Add Hudson instance wizard
+ LBL_Remove_Instance=&Remove
++LBL_Persist_Instance=&Persist
+ 
+ LBL_StartJobAction=&Start Job
+ 
+Index: main/src/org/netbeans/modules/hudson/ui/actions/PersistInstanceAction.java
+===================================================================
+--- main/src/org/netbeans/modules/hudson/ui/actions/PersistInstanceAction.java	(revision 0)
++++ main/src/org/netbeans/modules/hudson/ui/actions/PersistInstanceAction.java	(revision 0)
+@@ -0,0 +1,68 @@
++/*
++ * The contents of this file are subject to the terms of the Common Development
++ * and Distribution License (the License). You may not use this file except in
++ * compliance with the License.
++ *
++ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
++ * or http://www.netbeans.org/cddl.txt.
++ *
++ * When distributing Covered Code, include this CDDL Header Notice in each file
++ * and include the License file at http://www.netbeans.org/cddl.txt.
++ * If applicable, add the following below the CDDL Header, with the fields
++ * enclosed by brackets [] replaced by your own identifying information:
++ * "Portions Copyrighted [year] [name of copyright owner]"
++ *
++ * The Original Software is NetBeans. The Initial Developer of the Original
++ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
++ * Microsystems, Inc. All Rights Reserved.
++ */
++
++package org.netbeans.modules.hudson.ui.actions;
++
++import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
++import org.openide.nodes.Node;
++import org.openide.util.HelpCtx;
++import org.openide.util.NbBundle;
++import org.openide.util.actions.NodeAction;
++
++/**
++ * persist project based instance action.
++ *
++ * @author Milos Kleint
++ */
++public class PersistInstanceAction extends NodeAction {
++    
++    protected void performAction(Node[] nodes) {
++        for (Node node : nodes) {
++            HudsonInstanceImpl instance = node.getLookup().lookup(HudsonInstanceImpl.class);
++            
++            if (null == instance)
++                continue;
++            instance.makePersistent();
++        }
++    }
++    
++    protected boolean enable(Node[] nodes) {
++        for (Node node : nodes) {
++            HudsonInstanceImpl instance = node.getLookup().lookup(HudsonInstanceImpl.class);
++            
++            if (null != instance && !instance.isPersisted())
++                return true;
++        }
++        
++        return false;
++    }
++    
++    public String getName() {
++        return NbBundle.getMessage(PersistInstanceAction.class, "LBL_Persist_Instance");
++    }
++    
++    public HelpCtx getHelpCtx() {
++        return HelpCtx.DEFAULT_HELP;
++    }
++    
++    @Override
++    public boolean asynchronous() {
++        return false;
++    }
++}
+\ No newline at end of file
+Index: main/src/org/netbeans/modules/hudson/ui/nodes/HudsonInstanceNode.java
+===================================================================
+--- main/src/org/netbeans/modules/hudson/ui/nodes/HudsonInstanceNode.java	(revision 12633)
++++ main/src/org/netbeans/modules/hudson/ui/nodes/HudsonInstanceNode.java	(working copy)
+@@ -31,8 +31,10 @@
+ import org.netbeans.modules.hudson.api.HudsonVersion;
+ import org.netbeans.modules.hudson.api.HudsonView;
+ import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
++import org.netbeans.modules.hudson.impl.HudsonJobImpl;
+ import org.netbeans.modules.hudson.impl.HudsonViewImpl;
+ import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
++import org.netbeans.modules.hudson.ui.actions.PersistInstanceAction;
+ import org.netbeans.modules.hudson.ui.actions.RemoveInstanceAction;
+ import org.netbeans.modules.hudson.ui.actions.SynchronizeAction;
+ import org.netbeans.modules.hudson.util.Utilities;
+@@ -102,19 +104,23 @@
+                 NbBundle.getMessage(HudsonInstanceNode.class, "MSG_WrongVersion",
+                 HudsonVersion.SUPPORTED_VERSION) + "</font>") : " <font color=\"#A40000\">" +
+                 NbBundle.getMessage(HudsonInstanceNode.class, "MSG_Disconnected") + "</font>") +
+-                (!pers ? "<i>" : "") + "(Project based)" + (!pers ? "</i>" : "");
++                (!pers ? "<i>(from open project)" : "");
+     }
+     
+     @Override
+     public Action[] getActions(boolean context) {
+-        return new Action[] {
+-            SystemAction.get(SynchronizeAction.class),
+-            SystemAction.get(OpenUrlAction.class),
+-            null,
+-            SystemAction.get(RemoveInstanceAction.class),
+-            null,
+-            SystemAction.get(PropertiesAction.class)
+-        };
++        List<Action> actions = new ArrayList<Action>();
++        actions.add(SystemAction.get(SynchronizeAction.class));
++        actions.add(SystemAction.get(OpenUrlAction.class));
++        actions.add(null);
++        if (!instance.isPersisted()) {
++            actions.add(SystemAction.get(PersistInstanceAction.class));
++        } else {
++            actions.add(SystemAction.get(RemoveInstanceAction.class));
++        }
++        actions.add(null);
++        actions.add(SystemAction.get(PropertiesAction.class));
++        return actions.toArray(new Action[0]);
+     }
+     
+     @Override
+@@ -130,7 +136,7 @@
+     
+     private synchronized void refreshState() {
+         // Save html name
+-        String oldHtmlName = getHtmlDisplayName();
++        String oldHtmlName = "";
+         
+         alive = instance.isConnected();
+         version = Utilities.isSupportedVersion(instance.getVersion());
+@@ -147,7 +153,7 @@
+     
+     private synchronized void refreshContent() {
+         // Get HTML Display Name
+-        String oldHtmlName = getHtmlDisplayName();
++        String oldHtmlName = null;
+         
+         // Clear flags
+         warn = false;
+@@ -165,7 +171,6 @@
+             if (warn && run)
+                 break; // it's not necessary to continue
+         }
+-        
+         // Fire changes if any
+         fireDisplayNameChange(oldHtmlName, getHtmlDisplayName());
+     }
+@@ -203,10 +208,16 @@
+         
+         private void refreshKeys() {
+             List<Node> l = new ArrayList<Node>();
+-            
+-            // Add queue node
++
++            Collection<HudsonJob> prefs = instance.getPreferredJobs();
++            if (prefs != null && prefs.size() > 0) {
++                for (HudsonJob jb : prefs) {
++                    l.add(HudsonNodesFactory.getDefault().getHudsonJobNode(this, (HudsonJobImpl)jb));
++                }
++            }
++
+             l.add(queue);
+-            
++
+             for (Node n : getKeys())
+                 l.add(n);
+             
+Index: nbproject/platform.properties
+===================================================================
+--- nbproject/platform.properties	(revision 12633)
++++ nbproject/platform.properties	(working copy)
+@@ -1 +1,16 @@
+-nbplatform.active=NetBeans_IDE_6.1
++enabled.clusters=\
++    apisupport,\
++    enterprise,\
++    gsf,\
++    harness,\
++    hudson,\
++    ide,\
++    java,\
++    maven,\
++    nb,\
++    platform,\
++    profiler,\
++    webcommon,\
++    websvccommon,\
++    xml
++nbplatform.active=default

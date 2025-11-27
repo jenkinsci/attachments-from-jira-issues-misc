@@ -1,0 +1,37 @@
+Index: src/main/java/hudson/plugins/cobertura/CoberturaBuildAction.java
+===================================================================
+--- src/main/java/hudson/plugins/cobertura/CoberturaBuildAction.java	(revision 17029)
++++ src/main/java/hudson/plugins/cobertura/CoberturaBuildAction.java	(working copy)
+@@ -96,10 +96,12 @@
+ 			for (Map.Entry<CoverageMetric, Integer> e : scores.entrySet()) {
+ 		                minKey = e.getKey();
+ 		        }
+-            		localizedDescription = Messages._CoberturaBuildAction_description(result.get(minKey).getPercentage(),result.get(minKey).toString(),minKey.getName());
+-		        health = new HealthReport(minValue, localizedDescription);
+-            		return health;
+-
++			if(minKey != null) {
++            		    localizedDescription = Messages._CoberturaBuildAction_description(result.get(minKey).getPercentage(),result.get(minKey).toString(),minKey.getName());
++            		    health = new HealthReport(minValue, localizedDescription);
++            		    return health;
++			}
++			return null;
+ 		}
+ 		
+ 	}else{
+Index: src/main/java/hudson/plugins/cobertura/CoberturaPublisher.java
+===================================================================
+--- src/main/java/hudson/plugins/cobertura/CoberturaPublisher.java	(revision 17029)
++++ src/main/java/hudson/plugins/cobertura/CoberturaPublisher.java	(working copy)
+@@ -200,8 +200,9 @@
+      */
+     @Override
+     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+-        if (!Result.SUCCESS.equals(build.getResult())) {
+-            listener.getLogger().println("Skipping Cobertura coverage report as build was not successful...");
++        Result threshold = onlyStable ? Result.SUCCESS : Result.UNSTABLE;
++        if(build.getResult().isWorseThan(threshold)) {
++            listener.getLogger().println("Skipping Cobertura coverage report as build was not " + threshold.toString() + " or better ...");
+             return true;
+         }
+         listener.getLogger().println("Publishing Cobertura coverage report...");

@@ -1,0 +1,21 @@
+Index: src/main/java/hudson/plugins/parameterizedtrigger/BuildTrigger.java
+===================================================================
+--- src/main/java/hudson/plugins/parameterizedtrigger/BuildTrigger.java	(revision 35560)
++++ src/main/java/hudson/plugins/parameterizedtrigger/BuildTrigger.java	(working copy)
+@@ -76,12 +76,15 @@
+ 	}
+ 
+ 	private boolean canDeclare(AbstractProject owner) {
++                String ownerClassName = owner.getClass().getName();
+ 		// Inner class added in Hudson 1.341
+ 		return DependencyGraph.class.getClasses().length > 0
+                         // See HUDSON-6274 -- currently Maven projects call scheduleProject
+                         // directly, so would not get parameters from DependencyGraph.
+                         // Remove this condition when HUDSON-6274 is implemented.
+-                        && !owner.getClass().getName().equals("hudson.maven.MavenModuleSet");
++                        && !ownerClassName.equals("hudson.maven.MavenModuleSet")
++                        // See HUDSON-5679 -- dependency graph is also not used when triggered from a promotion
++                        && !ownerClassName.equals("hudson.plugins.promoted_builds.PromotionProcess");
+ 	}
+ 
+ 	public MatrixAggregator createAggregator(MatrixBuild build, Launcher launcher, BuildListener listener) {

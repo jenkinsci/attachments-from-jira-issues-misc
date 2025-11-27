@@ -1,0 +1,166 @@
+pipeline {
+   agent none
+
+   options {
+      // Do not automatically checkout the SCM on every stage.
+      // Instead, to save time, stash/unstash between stages.
+      skipDefaultCheckout()
+
+      // Append time stamp to the console output.
+      timestamps()
+
+      buildDiscarder(logRotator(numToKeepStr: '3'))
+
+      // Disable concurrent builds on any individual branch. This does not preclude
+      // concurrent builds among different branches of a multi-branch pipeline job.
+      disableConcurrentBuilds()
+   }
+
+   stages {
+      stage('Stash artifact') {
+         agent { label 'docker-enabled || cloud-docker-enabled' }
+         steps {
+            script {
+               deleteDir()
+               git url: 'https://github.com/llvm-mirror/llvm.git'
+               stash includes: '**', name: 'source'
+            }
+         }
+      }
+      
+      stage('Parallel Stages') {
+      parallel {
+          stage('stage 1') {
+               agent { label 'docker-enabled || cloud-docker-enabled' }
+             steps {
+                script {
+                   deleteDir()
+                   sleep time: 30, unit: 'SECONDS'
+                   unstash 'source'
+                }
+             }
+          }
+          stage('stage 2') {
+               agent { label 'docker-enabled || cloud-docker-enabled' }
+             steps {
+                script {
+                   deleteDir()
+                   sleep time: 30, unit: 'SECONDS'
+                   unstash 'source'
+                }
+             }
+          }
+          stage('stage 3') {
+               agent { label 'docker-enabled || cloud-docker-enabled' }
+             steps {
+                script {
+                   deleteDir()
+                   sleep time: 30, unit: 'SECONDS'
+                   unstash 'source'
+                }
+             }
+          }
+          stage('stage 4') {
+               agent { label 'docker-enabled || cloud-docker-enabled' }
+             steps {
+                script {
+                   deleteDir()
+                   sleep time: 30, unit: 'SECONDS'
+                   unstash 'source'
+                }
+             }
+          }
+          stage('stage 5') {
+               agent { label 'docker-enabled || cloud-docker-enabled' }
+             steps {
+                script {
+                   deleteDir()
+                   sleep time: 30, unit: 'SECONDS'
+                   unstash 'source'
+                }
+             }
+          }
+          stage('stage 6') {
+               agent { label 'docker-enabled || cloud-docker-enabled' }
+             steps {
+                script {
+                   deleteDir()
+                   sleep time: 30, unit: 'SECONDS'
+                   unstash 'source'
+                }
+             }
+          }
+          stage('stage 7') {
+               agent { label 'docker-enabled || cloud-docker-enabled' }
+             steps {
+                script {
+                   deleteDir()
+                   sleep time: 30, unit: 'SECONDS'
+                   unstash 'source'
+                }
+             }
+          }
+          stage('stage 8') {
+               agent { label 'docker-enabled || cloud-docker-enabled' }
+             steps {
+                script {
+                   deleteDir()
+                   sleep time: 30, unit: 'SECONDS'
+                   unstash 'source'
+                }
+             }
+          }
+          stage('stage 9') {
+               agent { label 'docker-enabled || cloud-docker-enabled' }
+             steps {
+                script {
+                   deleteDir()
+                   sleep time: 30, unit: 'SECONDS'
+                   unstash 'source'
+                }
+             }
+          }
+          stage('stage 10') {
+               agent { label 'docker-enabled || cloud-docker-enabled' }
+             steps {
+                script {
+                   deleteDir()
+                   sleep time: 30, unit: 'SECONDS'
+                   unstash 'source'
+                }
+             }
+          }
+          stage('stage 11') {
+               agent { label 'docker-enabled || cloud-docker-enabled' }
+             steps {
+                script {
+                   deleteDir()
+                   sleep time: 30, unit: 'SECONDS'
+                   unstash 'source'
+                }
+             }
+          }
+          stage('stage 12') {
+               agent { label 'docker-enabled || cloud-docker-enabled' }
+             steps {
+                script {
+                   deleteDir()
+                   sleep time: 30, unit: 'SECONDS'
+                   unstash 'source'
+                }
+             }
+          }
+          stage('stage 13') {
+               agent { label 'docker-enabled || cloud-docker-enabled' }
+             steps {
+                script {
+                   deleteDir()
+                   sleep time: 30, unit: 'SECONDS'
+                   unstash 'source'
+                }
+             }
+          }
+        }
+      }
+   }
+}

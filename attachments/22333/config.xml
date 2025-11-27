@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>&lt;div align=&quot;center&quot;&gt;&#xd;
+This project is a clone of the CIDEMO_UT_SCA_001_KlocworkLinux job&lt;br&gt;&#xd;
+It makes use of the Klocwork plug-in instead of the Warning plug-in</description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.SubversionSCM">
+    <locations>
+      <hudson.scm.SubversionSCM_-ModuleLocation>
+        <remote>svn://svnserver/repository</remote>
+      </hudson.scm.SubversionSCM_-ModuleLocation>
+    </locations>
+    <excludedRegions></excludedRegions>
+    <includedRegions></includedRegions>
+    <excludedUsers></excludedUsers>
+    <excludedRevprop></excludedRevprop>
+    <excludedCommitMessages></excludedCommitMessages>
+    <workspaceUpdater class="hudson.scm.subversion.UpdateUpdater"/>
+  </scm>
+  <assignedNode>10.195.0.150</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector"/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>rm -f klocwork_result.xml
+cd repository
+rm -f kwinject.out
+wget http://10.195.0.150/hudson/job/CIDEMO_UT_SCA_001_KlocworkWin/lastSuccessfulBuild/artifact/repository/kwinject.out -O kwinject.out
+dos2unix kwinject.out
+cd ${WORKSPACE}
+
+CompileLinux=&quot;${WORKSPACE}/repository/&quot;
+CompileLinux2=&quot;${WORKSPACE}/repository&quot;
+JLinux=&quot;-J/usr/local/include;-J/usr/include/linux;-J/usr/lib/gcc/i586-suse-linux/4.6/include;-J/usr/include&quot;
+
+sed -i &quot;s@D:\\\Hudson\\\workspace\\\CIDEMO_UT_SCA_001_KlocworkWin\\\repository\\\@$CompileLinux@g&quot; ${WORKSPACE}/repository/kwinject.out
+sed -i &quot;s@D:\\\Hudson\\\workspace\\\CIDEMO_UT_SCA_001_KlocworkWin\\\repository@$CompileLinux2@g&quot; ${WORKSPACE}/repository/kwinject.out
+sed -i &quot;s@-J.*\$@$JLinux@g&quot; ${WORKSPACE}/repository/kwinject.out
+sed -i &quot;s/\\\/\\//g;&quot; ${WORKSPACE}/repository/kwinject.out</command>
+    </hudson.tasks.Shell>
+    <com.thalesgroup.hudson.plugins.klocwork.KloBuilder>
+      <projectName>projet_test2</projectName>
+      <kloName>Master_Klocwork</kloName>
+      <buildUsing>1</buildUsing>
+      <compilerBinaryBuild>true</compilerBinaryBuild>
+      <kwBinaryBuild>true</kwBinaryBuild>
+      <kloOptions/>
+      <kwCommand>${WORKSPACE}/repository/kwinject.out</kwCommand>
+    </com.thalesgroup.hudson.plugins.klocwork.KloBuilder>
+    <hudson.tasks.Shell>
+      <command>sed -i &quot;s@svnserver@10\.195\.0\.150@g&quot; ${WORKSPACE}/klocwork_result.xml
+
+mv ${WORKSPACE}/repository/kwinject.out ${WORKSPACE}/kloTables/${BUILD_ID}
+cp ${WORKSPACE}/klocwork_result.xml ${WORKSPACE}/kloTables/${BUILD_ID}
+tar cvfz outputKW_${BUILD_NUMBER}_${BUILD_ID}.tar.gz -C ${WORKSPACE}/kloTables ${BUILD_ID}</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>outputKW_${BUILD_NUMBER}_${BUILD_ID}.tar.gz</artifacts>
+      <latestOnly>false</latestOnly>
+    </hudson.tasks.ArtifactArchiver>
+  </publishers>
+  <buildWrappers/>
+</project>

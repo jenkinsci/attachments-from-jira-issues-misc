@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Run the project basic_check. If successful the basic_check label will be updated.</description>
+  <logRotator class="hudson.tasks.LogRotator">
+    <daysToKeep>5</daysToKeep>
+    <numToKeep>-1</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="org.jenkinsci.plugins.p4.PerforceScm" plugin="p4@1.0.16">
+    <credential>411bb423-066e-4805-b2c1-393ce2a26760</credential>
+    <workspace class="org.jenkinsci.plugins.p4.workspace.StreamWorkspaceImpl">
+      <charset>none</charset>
+      <streamName>//project/main</streamName>
+      <format>jenkins-${NODE_NAME}-${JOB_NAME}</format>
+    </workspace>
+    <populate class="org.jenkinsci.plugins.p4.populate.AutoCleanImpl">
+      <have>true</have>
+      <force>false</force>
+      <pin></pin>
+      <replace>true</replace>
+      <delete>true</delete>
+    </populate>
+  </scm>
+  <assignedNode>yeti</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers>
+    <hudson.triggers.SCMTrigger>
+      <spec>H/15 * * * *</spec>
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#!/bin/bash
+
+set -e
+source /tools/barefoot/etc/barefoot.bashrc
+source project.bashrc
+basic_check --clean --nolint
+
+</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <org.jenkinsci.plugins.p4.tagging.TagNotifier plugin="p4@1.0.16">
+      <rawLabelName>basic_check</rawLabelName>
+      <rawLabelDesc>Jenkins simple basic_check post-build label.</rawLabelDesc>
+      <onlyOnSuccess>true</onlyOnSuccess>
+    </org.jenkinsci.plugins.p4.tagging.TagNotifier>
+    <hudson.tasks.Mailer plugin="mailer@1.11">
+      <recipients>XXXX@barefootnetworks.com</recipients>
+      <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>false</sendToIndividuals>
+    </hudson.tasks.Mailer>
+  </publishers>
+  <buildWrappers/>
+</project>

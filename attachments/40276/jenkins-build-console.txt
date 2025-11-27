@@ -1,0 +1,62 @@
+Started by user Piotr Morgwai Kotarbinski
+Building on master in workspace /var/lib/jenkins/workspace/tfs-test
+ > git rev-parse --is-inside-work-tree # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.tfs.url https://2cs.visualstudio.com/_git/Morgwai-Test-Agile # timeout=10
+Fetching upstream changes from https://2cs.visualstudio.com/_git/Morgwai-Test-Agile
+ > git --version # timeout=10
+using GIT_ASKPASS to set credentials tfs token
+ > git fetch --tags --progress https://2cs.visualstudio.com/_git/Morgwai-Test-Agile +refs/heads/*:refs/remotes/tfs/* +refs/pull/*:refs/remotes/tfs-pull/*
+ > git rev-parse null^{commit} # timeout=10
+FATAL: Command "git rev-parse null^{commit}" returned status code 128:
+stdout: null^{commit}
+
+stderr: fatal: ambiguous argument 'null^{commit}': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+
+hudson.plugins.git.GitException: Command "git rev-parse null^{commit}" returned status code 128:
+stdout: null^{commit}
+
+stderr: fatal: ambiguous argument 'null^{commit}': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandIn(CliGitAPIImpl.java:1970)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandIn(CliGitAPIImpl.java:1938)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandIn(CliGitAPIImpl.java:1934)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommand(CliGitAPIImpl.java:1572)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommand(CliGitAPIImpl.java:1584)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.revParse(CliGitAPIImpl.java:769)
+	at hudson.plugins.git.GitAPI.revParse(GitAPI.java:316)
+	at hudson.plugins.git.RevisionParameterAction.toRevision(RevisionParameterAction.java:98)
+	at hudson.plugins.git.GitSCM.determineRevisionToBuild(GitSCM.java:1007)
+	at hudson.plugins.git.GitSCM.checkout(GitSCM.java:1124)
+	at hudson.scm.SCM.checkout(SCM.java:495)
+	at hudson.model.AbstractProject.checkout(AbstractProject.java:1212)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.defaultCheckout(AbstractBuild.java:566)
+	at jenkins.scm.SCMCheckoutStrategy.checkout(SCMCheckoutStrategy.java:86)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.run(AbstractBuild.java:491)
+	at hudson.model.Run.execute(Run.java:1737)
+	at hudson.model.FreeStyleBuild.run(FreeStyleBuild.java:43)
+	at hudson.model.ResourceController.execute(ResourceController.java:97)
+	at hudson.model.Executor.run(Executor.java:421)
+ERROR: Error while trying to update completion status in TFS/Team Services
+java.lang.NullPointerException
+	at hudson.plugins.tfs.util.UriHelper.join(UriHelper.java:229)
+	at hudson.plugins.tfs.util.UriHelper.join(UriHelper.java:196)
+	at hudson.plugins.tfs.util.TeamRestClient.addCommitStatus(TeamRestClient.java:223)
+	at hudson.plugins.tfs.util.TeamStatus.createFromRun(TeamStatus.java:74)
+	at hudson.plugins.tfs.TeamCompletedStatusPostBuildAction.perform(TeamCompletedStatusPostBuildAction.java:47)
+	at hudson.plugins.tfs.TeamCompletedStatusPostBuildAction.perform(TeamCompletedStatusPostBuildAction.java:41)
+	at hudson.tasks.BuildStepCompatibilityLayer.perform(BuildStepCompatibilityLayer.java:81)
+	at hudson.tasks.BuildStepMonitor$1.perform(BuildStepMonitor.java:20)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.perform(AbstractBuild.java:736)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.performAllBuildSteps(AbstractBuild.java:682)
+	at hudson.model.Build$BuildExecution.post2(Build.java:186)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.post(AbstractBuild.java:627)
+	at hudson.model.Run.execute(Run.java:1762)
+	at hudson.model.FreeStyleBuild.run(FreeStyleBuild.java:43)
+	at hudson.model.ResourceController.execute(ResourceController.java:97)
+	at hudson.model.Executor.run(Executor.java:421)
+Finished: FAILURE

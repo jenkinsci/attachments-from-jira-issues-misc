@@ -1,0 +1,99 @@
+properties([
+        parameters([
+                [
+                        $class     : 'ChoiceParameter',
+                        choiceType : 'PT_SINGLE_SELECT',
+                        name       : 'releaseBranch',
+                        description: 'Choose branch name*',
+                        script     : [
+                                $class: 'GroovyScript',
+                                script: [
+                                    classpath: [],
+                                    sandbox: true,
+                                    script: """
+                                    return [
+                                    "main",
+                                    "brancha",
+                                    "branchb"
+                                    ]
+                                    """
+                                ]
+                        ]
+                ],
+                [
+                        $class              : 'CascadeChoiceParameter',
+                        choiceType          : 'PT_SINGLE_SELECT',
+                        name                : 'releaseNumber',
+                        description         : 'Put the release number*',
+                        referencedParameters: 'releaseBranch',
+                        script              : [
+                                $class        : 'GroovyScript',
+                                fallbackScript: [
+                                        classpath: [],
+                                        sandbox  : false,
+                                        script   : "return ['Could not get releaseBranch param']"
+                                ],
+                                script        : [
+                                        classpath: [],
+                                        sandbox  : false,
+                                        script   : """
+                                           if (!releaseBranch.isEmpty()) {
+                                                return [
+                                                        releaseBranch + "-v1",
+                                                        releaseBranch + "-v2",
+                                                        releaseBranch + "-v3"
+                                                ]
+                                           }
+                                           return []     
+                                        """
+                                ]
+                        ]
+                ],
+                [
+                        $class              : 'CascadeChoiceParameter',
+                        choiceType          : 'PT_SINGLE_SELECT',
+                        name                : 'serviceName',
+                        referencedParameters: 'releaseBranch, releaseNumber',
+                        description         : 'Choose service name*',
+                        script              : [
+                                $class        : 'GroovyScript',
+                                fallbackScript: [
+                                        classpath: [],
+                                        sandbox  : false,
+                                        script   : "return ['Could not get either releaseBranch or releaseNumber param(s)']"
+                                ],
+                                script        : [
+                                        classpath: [],
+                                        sandbox  : false,
+                                        script   : """
+                                           if (!(releaseBranch.isEmpty() || releaseNumber.isEmpty())) { 
+                                                return [
+                                                        releaseBranch + "/" + releaseNumber + "/test",
+                                                        releaseBranch + "/" + releaseNumber + "/staging"
+                                                ]
+                                           }
+                                           return []     
+                                        """
+                                ]
+                        ]
+                ]
+        ])
+])
+
+pipeline {
+    agent any
+
+    options {
+        buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '6', daysToKeepStr: '', numToKeepStr: '6')
+    }
+
+    stages {
+        stage('Deploy on DEV') {
+            steps {
+                script {
+                    sh 'echo Hello'
+                }
+            }
+        }
+    }
+}

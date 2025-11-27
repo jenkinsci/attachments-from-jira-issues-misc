@@ -1,0 +1,21 @@
+ .../java/hudson/plugins/cobertura/renderers/SourceCodePainter.java | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/src/main/java/hudson/plugins/cobertura/renderers/SourceCodePainter.java b/src/main/java/hudson/plugins/cobertura/renderers/SourceCodePainter.java
+index 0e6e0d0..4ed0783 100644
+--- a/src/main/java/hudson/plugins/cobertura/renderers/SourceCodePainter.java
++++ b/src/main/java/hudson/plugins/cobertura/renderers/SourceCodePainter.java
+@@ -144,7 +144,12 @@ public class SourceCodePainter implements FilePath.FileCallable<Boolean>, Serial
+             }
+             if (source.isFile()) {
+                 try {
+-                    paintSourceCode(source, entry.getValue(), destination.child(entry.getKey()));
++                    String key = entry.getKey();
++                    if (key.startsWith("\\") || key.startsWith("/")) {
++                        // we dont want to overwrite, so make it relative and inside our destination
++                        key = key.substring(1);
++                    }
++                    paintSourceCode(source, entry.getValue(), destination.child(key));
+                 } catch (IOException e) {
+                     // We made our best shot at generating painted source code,
+                     // but alas, we failed. Log the error and continue. We

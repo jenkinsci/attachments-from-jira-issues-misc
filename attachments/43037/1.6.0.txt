@@ -1,0 +1,42 @@
+ > git rev-parse --is-inside-work-tree # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://github.com/*** # timeout=10
+Cleaning workspace
+ > git rev-parse --verify HEAD # timeout=10
+Resetting working tree
+ > git reset --hard # timeout=10
+ERROR: Error fetching remote repo 'origin'
+hudson.plugins.git.GitException: Failed to fetch from https://github.com/***
+	at hudson.plugins.git.GitSCM.fetchFrom(GitSCM.java:888)
+	at hudson.plugins.git.GitSCM.retrieveChanges(GitSCM.java:1155)
+	at hudson.plugins.git.GitSCM.checkout(GitSCM.java:1186)
+	at org.jenkinsci.plugins.workflow.steps.scm.SCMStep.checkout(SCMStep.java:113)
+	at org.jenkinsci.plugins.workflow.steps.scm.SCMStep$StepExecutionImpl.run(SCMStep.java:85)
+	at org.jenkinsci.plugins.workflow.steps.scm.SCMStep$StepExecutionImpl.run(SCMStep.java:75)
+	at org.jenkinsci.plugins.workflow.steps.AbstractSynchronousNonBlockingStepExecution$1$1.call(AbstractSynchronousNonBlockingStepExecution.java:47)
+	at hudson.security.ACL.impersonate(ACL.java:290)
+	at org.jenkinsci.plugins.workflow.steps.AbstractSynchronousNonBlockingStepExecution$1.run(AbstractSynchronousNonBlockingStepExecution.java:44)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+Caused by: hudson.plugins.git.GitException: Command "git reset --hard" returned status code 128:
+stdout: 
+stderr: error: unable to create symlink Dependencies/FMOD/Low-Level/Linux-x86/libfmodL.so: Invalid argument
+error: unable to create symlink Dependencies/FMOD/Low-Level/Linux-x86/libfmodL.so.10: Invalid argument
+error: unable to create symlink Dependencies/FMOD/Low-Level/Linux-x86_64/libfmodL.so: Invalid argument
+error: unable to create symlink Dependencies/FMOD/Studio/Linux-x86_64/libfmodstudio.so.10: Invalid argument
+fatal: Could not reset index file to revision 'HEAD'.
+
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandIn(CliGitAPIImpl.java:2002)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandIn(CliGitAPIImpl.java:1970)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandIn(CliGitAPIImpl.java:1966)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommand(CliGitAPIImpl.java:1597)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.reset(CliGitAPIImpl.java:463)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.clean(CliGitAPIImpl.java:786)
+	at hudson.plugins.git.GitAPI.clean(GitAPI.java:311)
+	at hudson.plugins.git.extensions.impl.CleanBeforeCheckout.decorateFetchCommand(CleanBeforeCheckout.java:30)
+	at hudson.plugins.git.GitSCM.fetchFrom(GitSCM.java:884)
+	... 13 more
+Error fetching remote repo 'origin'

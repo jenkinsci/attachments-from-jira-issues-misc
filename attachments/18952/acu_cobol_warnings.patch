@@ -1,0 +1,145 @@
+Index: src/main/java/hudson/plugins/warnings/parser/AcuCobolParser.java
+===================================================================
+--- src/main/java/hudson/plugins/warnings/parser/AcuCobolParser.java	(revision 0)
++++ src/main/java/hudson/plugins/warnings/parser/AcuCobolParser.java	(revision 0)
+@@ -0,0 +1,38 @@
++package hudson.plugins.warnings.parser;
++
++import java.util.regex.Matcher;
++
++import org.apache.commons.lang.StringUtils;
++
++/**
++ * A parser for the javac compiler warnings.
++ *
++ * @author Ulli Hafner
++ */
++public class AcuCobolParser extends RegexpLineParser {
++    /** Warning type of this parser. */
++    static final String WARNING_TYPE = "AcuCobol Compiler";
++    /** Pattern of javac compiler warnings. */
++    private static final String ACUCOBOL_WARNING_PATTERN = "\\s*(\\[.*\\])?\\s*?(.*), line ([0-9]*): Warning: (.*)";
++
++    /**
++     * Creates a new instance of <code>JavacParser</code>.
++     */
++    public AcuCobolParser() {
++        super(ACUCOBOL_WARNING_PATTERN, WARNING_TYPE);
++    }
++
++    /**
++     * Creates a new annotation for the specified pattern.
++     *
++     * @param matcher the regular expression matcher
++     * @return a new annotation for the specified pattern
++     */
++    @Override
++    protected Warning createWarning(final Matcher matcher) {
++        String message = matcher.group(4);
++        String category = classifyIfEmpty(StringUtils.EMPTY, message);
++        return new Warning(matcher.group(2), getLineNumber(matcher.group(3)), WARNING_TYPE, category, message);
++    }
++}
++
+Index: src/main/java/hudson/plugins/warnings/parser/ParserRegistry.java
+===================================================================
+--- src/main/java/hudson/plugins/warnings/parser/ParserRegistry.java	(revision 24391)
++++ src/main/java/hudson/plugins/warnings/parser/ParserRegistry.java	(working copy)
+@@ -68,6 +68,7 @@
+         parsers.add(pclintParser);
+         parsers.add(new BuckminsterParser());
+         parsers.add(new TiCcsParser());
++        parsers.add(new AcuCobolParser());
+         return Collections.unmodifiableList(parsers);
+     }
+ 
+Index: src/test/java/hudson/plugins/warnings/parser/AcuCobolParserTest.java
+===================================================================
+--- src/test/java/hudson/plugins/warnings/parser/AcuCobolParserTest.java	(revision 0)
++++ src/test/java/hudson/plugins/warnings/parser/AcuCobolParserTest.java	(revision 0)
+@@ -0,0 +1,70 @@
++package hudson.plugins.warnings.parser;
++
++import static junit.framework.Assert.*;
++import hudson.plugins.analysis.util.model.FileAnnotation;
++import hudson.plugins.analysis.util.model.Priority;
++
++import java.io.IOException;
++import java.util.Collection;
++import java.util.Iterator;
++
++import org.apache.commons.lang.StringUtils;
++import org.junit.Test;
++
++/**
++ * Tests the class {@link JavacParser}.
++ */
++public class AcuCobolParserTest extends ParserTester {
++    /**
++     * Creates a new instance of {@link AcuCobolParserTest}.
++     */
++    public AcuCobolParserTest() {
++        super(AcuCobolParser.class);
++    }
++
++    /**
++     * Parses a file with two deprecation warnings.
++     *
++     * @throws IOException
++     *      if the file could not be read
++     */
++    @Test
++    public void parseFile() throws IOException {
++        Collection<FileAnnotation> warnings = new AcuCobolParser().parse(openFile());
++
++        assertEquals("Wrong number of warnings detected.", 4, warnings.size());
++
++        Iterator<FileAnnotation> iterator = warnings.iterator();
++        FileAnnotation annotation = iterator.next();
++        checkWarning(annotation,
++                39,
++                "Imperative statement required",
++                "COPY/zzz.CPY",
++                AcuCobolParser.WARNING_TYPE, StringUtils.EMPTY, Priority.NORMAL);
++        annotation = iterator.next();
++        checkWarning(annotation,
++                111,
++                "Don't run with knives",
++                "C:/Documents and Settings/xxxx/COB/bbb.COB",
++                AcuCobolParser.WARNING_TYPE, StringUtils.EMPTY, Priority.NORMAL);
++        annotation = iterator.next();
++        checkWarning(annotation,
++                115,
++                "Don't run with knives",
++                "C:/Documents and Settings/xxxx/COB/bbb.COB",
++                AcuCobolParser.WARNING_TYPE, StringUtils.EMPTY, Priority.NORMAL);
++        annotation = iterator.next();
++        checkWarning(annotation,
++                123,
++                "I'm a green banana",
++                "C:/Documents and Settings/xxxx/COB/ccc.COB",
++                AcuCobolParser.WARNING_TYPE, StringUtils.EMPTY, Priority.NORMAL);
++    }
++
++    /** {@inheritDoc} */
++    @Override
++    protected String getWarningsFile() {
++        return "acu.txt";
++    }
++}
++
+Index: src/test/resources/hudson/plugins/warnings/parser/acu.txt
+===================================================================
+--- src/test/resources/hudson/plugins/warnings/parser/acu.txt	(revision 0)
++++ src/test/resources/hudson/plugins/warnings/parser/acu.txt	(revision 0)
+@@ -0,0 +1,10 @@
++Compiling: C:\Documents and Settings\xxxx\GNT\aaa.GNT...
++   [ccbl] COPY\zzz.CPY, line 39: Warning: Imperative statement required
++Build failed (warning only): C:\Documents and Settings\xxxx\COB\aaa.COB
++Compiling: C:\Documents and Settings\xxxx\GNT\bbb.GNT...
++   [ccbl] C:\Documents and Settings\xxxx\COB\bbb.COB, line 111: Warning: Don't run with knives
++   [ccbl] C:\Documents and Settings\xxxx\COB\bbb.COB, line 115: Warning: Don't run with knives
++Build failed (warning only): C:\Documents and Settings\xxxx\COB\bbb.COB
++Compiling: C:\Documents and Settings\xxxx\GNT\ccc.GNT...
++   C:\Documents and Settings\xxxx\COB\ccc.COB, line 123: Warning: I'm a green banana
++

@@ -1,0 +1,97 @@
+import groovy.transform.Field
+
+@Field
+def JENKINS_UTIL
+@Field
+def final WORKING_DIR = 'qa'
+@Field
+def runUpdaterTests = false
+@Field
+def testResultsCount = ["total":0,"fail":0,"skip":0,"pass":0]
+
+def static final INSTALL_DIR =
+
+
+
+pipeline {
+    agent {
+        label 'vm'
+    }
+    environment {
+    }
+    options { timestamps() }
+
+    parameters {
+    }
+
+    stages {
+        stage('Run paralle') {
+            steps {
+                script {
+                    buildDescription
+
+                    def buildMap = [:]
+           
+
+                    if (params.sandbox == jenkinsUtil.NEWSANDBOX) {
+                        buildMap['lin'] = executionStages('vmLin', 'lin-si')
+                        buildMap['win-'] = executionStages('vmWIN', 'win-si')
+                        [
+                                'vm99', 'vm99LIN',
+                                'vm910', 'vm910LIN',
+                               
+                                'vm101', 'vm101LIN',
+                                'vm103', 'vm103LIN',
+                                'vm105', 'vm105LIN',
+                                'vm101A', 'vm101ALIN',
+                                'vm101AUA', 'vm101AULIN',
+                              
+                        ].each {
+                            def machineExtracted = it - ...
+                            def os = machineExtracted.replaceAll(/[0-9]/, '')
+                            def version = machineExtracted.replaceAll(/[^0-9]/, '')
+                            def branchLabel = "${os}-${version}"
+                            buildMap[branchLabel] = executionStages(it, branchLabel)
+                        }
+
+                    }
+                    parallel buildMap
+
+                }
+            }
+        }
+}
+def executionStages(def agentLabel, def branchLabel) {
+    return {
+        stage(branchLabel) {
+            node('mainNode') {
+                stage("Reset $agentLabel") {
+                   
+                        jenkinsUtil.checkVMStatus(agentLabel)
+                    
+                    Jenkins.instance.getNode(agentLabel).getComputer().disconnect(hudson.slaves.OfflineCause.create(hudson.model.Messages._Hudson_NodeBeingRemoved()))
+                    jenkinsUtil.resetMachine(agentLabel)
+					}
+                }
+            }
+
+
+            node(agentLabel) {
+                def migrationInstallDirName =
+                        runMigrationTests ? "asw${branchLabel.toString().split('-')[1]}" : null
+
+                stage("Install Cycle $branchLabel") {
+                    println("Branch we are using:$params.branchName")
+                    jenkinsUtil.checkoutQaProject(WORKING_DIR, "$params.branchName")
+                    dir(WORKING_DIR) {
+                        jenkinsUtil.makeExecutable('gradlew')
+                        try {
+                            jenkinsUtil.gradle('Install products',
+                                    ':Install ,InstallReport ',
+                                    props)
+                        } 
+                    }
+        }
+    }
+}
+

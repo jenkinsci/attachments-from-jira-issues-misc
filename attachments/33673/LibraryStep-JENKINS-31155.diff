@@ -1,0 +1,283 @@
+diff --git a/src/main/java/org/jenkinsci/plugins/workflow/libs/LibraryAdder.java b/src/main/java/org/jenkinsci/plugins/workflow/libs/LibraryAdder.java
+index 3d58028..c6788bf 100644
+--- a/src/main/java/org/jenkinsci/plugins/workflow/libs/LibraryAdder.java
++++ b/src/main/java/org/jenkinsci/plugins/workflow/libs/LibraryAdder.java
+@@ -118,7 +118,7 @@ import org.jenkinsci.plugins.workflow.steps.scm.SCMStep;
+         return additions;
+     }
+ 
+-    private static class CheckoutContext {
++    static class CheckoutContext {
+         final @Nonnull Node node;
+         final @Nonnull Computer computer;
+         final @Nonnull FilePath root;
+@@ -148,7 +148,7 @@ import org.jenkinsci.plugins.workflow.steps.scm.SCMStep;
+         }
+     }
+ 
+-    private static @Nonnull String[] parse(@Nonnull String identifier) {
++    static @Nonnull String[] parse(@Nonnull String identifier) {
+         int at = identifier.indexOf('@');
+         if (at == -1) {
+             return new String[] {identifier, null}; // pick up defaultVersion
+@@ -163,7 +163,7 @@ import org.jenkinsci.plugins.workflow.steps.scm.SCMStep;
+     }
+ 
+     /** Perform an SCM checkout and copy the relevant files. */
+-    private static List<URL> doAdd(@Nonnull String name, @Nonnull String version, @Nonnull SCMSource scm, boolean trusted, @Nonnull TaskListener listener, @Nonnull CheckoutContext checkoutContext, @Nonnull Run<?,?> run, @Nonnull CpsFlowExecution execution, @Nonnull Set<String> variables) throws Exception {
++    static List<URL> doAdd(@Nonnull String name, @Nonnull String version, @Nonnull SCMSource scm, boolean trusted, @Nonnull TaskListener listener, @Nonnull CheckoutContext checkoutContext, @Nonnull Run<?,?> run, @Nonnull CpsFlowExecution execution, @Nonnull Set<String> variables) throws Exception {
+         SCMRevision revision = scm.fetch(version, listener);
+         if (revision == null) {
+             throw new AbortException("No version " + version + " found for library " + name);
+diff --git a/src/main/java/org/jenkinsci/plugins/workflow/libs/LibraryStep.java b/src/main/java/org/jenkinsci/plugins/workflow/libs/LibraryStep.java
+new file mode 100644
+index 0000000..da76718
+--- /dev/null
++++ b/src/main/java/org/jenkinsci/plugins/workflow/libs/LibraryStep.java
+@@ -0,0 +1,155 @@
++/*
++ * The MIT License
++ *
++ * Copyright 2016 CloudBees, Inc.
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this software and associated documentation files (the "Software"), to deal
++ * in the Software without restriction, including without limitation the rights
++ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++ * copies of the Software, and to permit persons to whom the Software is
++ * furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++ * THE SOFTWARE.
++ */
++
++package org.jenkinsci.plugins.workflow.libs;
++
++import com.google.common.collect.ImmutableMap;
++import com.google.common.collect.Lists;
++import groovy.lang.GroovyClassLoader;
++import hudson.AbortException;
++import hudson.Extension;
++import hudson.ExtensionList;
++import hudson.model.Run;
++import hudson.model.TaskListener;
++import java.net.URL;
++import java.util.Collections;
++import java.util.Map;
++import javax.annotation.Nonnull;
++import javax.inject.Inject;
++import jenkins.scm.api.SCMSource;
++import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
++import org.jenkinsci.plugins.workflow.flow.FlowExecution;
++import org.jenkinsci.plugins.workflow.steps.AbstractStepDescriptorImpl;
++import org.jenkinsci.plugins.workflow.steps.AbstractStepImpl;
++import org.jenkinsci.plugins.workflow.steps.AbstractSynchronousNonBlockingStepExecution;
++import org.jenkinsci.plugins.workflow.steps.StepContextParameter;
++import org.kohsuke.stapler.DataBoundConstructor;
++import org.kohsuke.stapler.DataBoundSetter;
++
++/**
++ * Dynamically injects a library into the running build.
++ */
++public class LibraryStep extends AbstractStepImpl {
++
++    private final String identifier;
++    private SCMSource scm;
++
++    @DataBoundConstructor public LibraryStep(String identifier) {
++        this.identifier = identifier;
++    }
++
++    public String getIdentifier() {
++        return identifier;
++    }
++
++    public SCMSource getScm() {
++        return scm;
++    }
++
++    @DataBoundSetter public void setScm(SCMSource scm) {
++        this.scm = scm;
++    }
++
++    // TODO config.jelly
++
++    @Extension public static class DescriptorImpl extends AbstractStepDescriptorImpl {
++
++        public DescriptorImpl() {
++            super(Execution.class);
++        }
++
++        @Override public String getFunctionName() {
++            return "library";
++        }
++
++        @Override public String getDisplayName() {
++            return "Load a shared library on the fly";
++        }
++
++    }
++
++    public static class Execution extends AbstractSynchronousNonBlockingStepExecution<Map<String,Class<?>>> {
++
++        private static final long serialVersionUID = 1L;
++
++        @Inject private transient LibraryStep step;
++        @StepContextParameter private transient Run<?,?> run;
++        @StepContextParameter private transient TaskListener listener;
++
++        @Override protected Map<String,Class<?>> run() throws Exception {
++            String[] parsed = LibraryAdder.parse(step.identifier);
++            String name = parsed[0], version = parsed[1];
++            boolean trusted = false;
++            SCMSource scm = step.getScm();
++            if (scm == null) {
++                for (LibraryResolver resolver : ExtensionList.lookup(LibraryResolver.class)) {
++                    for (LibraryConfiguration cfg : resolver.forJob(run.getParent(), Collections.singletonMap(name, version))) {
++                        if (cfg.getName().equals(name)) {
++                            scm = cfg.getScm();
++                            trusted = resolver.isTrusted();
++                            version = cfg.defaultedVersion(version);
++                            break;
++                        }
++                    }
++                }
++                if (scm == null) {
++                    throw new AbortException("No library named " + name + " found");
++                }
++            } else if (version == null) {
++                throw new AbortException("Must specify a version for library " + name);
++            }
++            ClassLoader loader = add(run, (CpsFlowExecution) getContext().get(FlowExecution.class), name, version, scm, trusted, listener);
++            return ImmutableMap.of("pkg.Lib", loader.loadClass("pkg.Lib"), "pkg.App", loader.loadClass("pkg.App")); // TODO create dynamic proxy for packages
++        }
++
++    }
++
++    /**
++     * Adds a library dynamically.
++     * @param execution a running build
++     * @param name the desired library name
++     * @param version the version to check out
++     * @param scm the SCM source
++     * @param trusted whether this is trusted or not
++     */
++    private static ClassLoader add(@Nonnull Run<?,?> build, @Nonnull CpsFlowExecution execution, @Nonnull String name, @Nonnull String version, @Nonnull SCMSource scm, boolean trusted, TaskListener listener) throws Exception {
++        LibraryRecord record = new LibraryRecord(name, version, trusted);
++        LibrariesAction action = build.getAction(LibrariesAction.class);
++        if (action == null) {
++            action = new LibrariesAction(Lists.newArrayList(record));
++            build.addAction(action);
++        } else {
++            action.getLibraries().add(record);
++        }
++        LibraryAdder.CheckoutContext checkoutContext = LibraryAdder.CheckoutContext.forBuild(build, execution);
++        listener.getLogger().println("Loading library " + record.name + "@" + record.version);
++        GroovyClassLoader loader = (trusted ? execution.getTrustedShell() : execution.getShell()).getClassLoader();
++        for (URL u : LibraryAdder.doAdd(record.name, record.version, scm, record.trusted, listener, checkoutContext, build, execution, record.variables)) {
++            loader.addURL(u);
++        }
++        build.save(); // persist changes to LibrariesAction.libraries*.variables
++        return loader;
++    }
++
++}
+diff --git a/src/test/java/org/jenkinsci/plugins/workflow/libs/LibraryStepTest.java b/src/test/java/org/jenkinsci/plugins/workflow/libs/LibraryStepTest.java
+new file mode 100644
+index 0000000..6c20af1
+--- /dev/null
++++ b/src/test/java/org/jenkinsci/plugins/workflow/libs/LibraryStepTest.java
+@@ -0,0 +1,85 @@
++/*
++ * The MIT License
++ *
++ * Copyright 2016 CloudBees, Inc.
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this software and associated documentation files (the "Software"), to deal
++ * in the Software without restriction, including without limitation the rights
++ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++ * copies of the Software, and to permit persons to whom the Software is
++ * furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++ * THE SOFTWARE.
++ */
++
++package org.jenkinsci.plugins.workflow.libs;
++
++import java.util.Collections;
++import jenkins.plugins.git.GitSCMSource;
++import jenkins.plugins.git.GitSampleRepoRule;
++import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
++import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
++import org.jenkinsci.plugins.workflow.job.WorkflowJob;
++import org.jenkinsci.plugins.workflow.job.WorkflowRun;
++import org.junit.Test;
++import static org.junit.Assert.*;
++import org.junit.ClassRule;
++import org.junit.Rule;
++import org.jvnet.hudson.test.BuildWatcher;
++import org.jvnet.hudson.test.JenkinsRule;
++
++public class LibraryStepTest {
++
++    @ClassRule public static BuildWatcher buildWatcher = new BuildWatcher();
++    @Rule public JenkinsRule r = new JenkinsRule();
++    @Rule public GitSampleRepoRule sampleRepo = new GitSampleRepoRule();
++
++    @Test public void configRoundtrip() throws Exception {
++        fail("TODO");
++    }
++
++    @Test public void smokes() throws Exception {
++        sampleRepo.init();
++        sampleRepo.write("src/pkg/Lib.groovy", "package pkg; class Lib {static String stuff() {Constants.CONST}}");
++        sampleRepo.write("src/pkg/Constants.groovy", "package pkg; class Constants {static String CONST = 'constant'}");
++        sampleRepo.write("src/pkg/App.groovy", "package pkg; class App {def run() {Lib.stuff()}}");
++        sampleRepo.git("add", "src");
++        sampleRepo.git("commit", "--message=init");
++        GlobalLibraries.get().setLibraries(Collections.singletonList(
++            new LibraryConfiguration("stuff",
++                new GitSCMSource(null, sampleRepo.toString(), "", "*", "", true))));
++        WorkflowJob p = r.jenkins.createProject(WorkflowJob.class, "p");
++        p.setDefinition(new CpsFlowDefinition("echo(/using ${library('stuff@master')['pkg.Lib'].stuff()}/)", true));
++        WorkflowRun b = r.buildAndAssertSuccess(p);
++        r.assertLogContains("using constant", b);
++        LibrariesAction action = b.getAction(LibrariesAction.class);
++        assertNotNull(action);
++        assertEquals("[LibraryRecord{name=stuff, version=master, variables=[], trusted=true}]", action.getLibraries().toString());
++        // TODO should fix up common SCMSource implementations to use proper @DataBoundConstructor/@DataBoundSetter hygiene and add @Symbol
++        p.setDefinition(new CpsFlowDefinition("def lib = library identifier: 'otherstuff@master', scm: [$class: 'GitSCMSource', remote: '" + sampleRepo + "', credentialsId: '']\n" +
++            "echo(/using ${lib['pkg.App'].newInstance().run()}/)", true));
++        ScriptApproval.get().approveSignature("method java.lang.Class newInstance");
++        b = r.buildAndAssertSuccess(p);
++        r.assertLogContains("using constant", b);
++        action = b.getAction(LibrariesAction.class);
++        assertNotNull(action);
++        assertEquals("[LibraryRecord{name=otherstuff, version=master, variables=[], trusted=false}]", action.getLibraries().toString());
++    }
++
++    // TODO configRoundtrip test
++    // TODO duplicated library (@Library + library; library + library) should merely load existing library
++    // TODO use of variables
++    // TODO no matching library
++    // TODO replay
++
++}

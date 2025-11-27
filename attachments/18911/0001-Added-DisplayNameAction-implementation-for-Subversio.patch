@@ -1,0 +1,46 @@
+From 1044c7d0895543924a217132405c0da30a45de14 Mon Sep 17 00:00:00 2001
+From: Peter Collingbourne <peter@pcc.me.uk>
+Date: Wed, 18 Nov 2009 00:17:55 -0800
+Subject: [PATCH] Added DisplayNameAction implementation for Subversion
+
+---
+ src/main/java/hudson/scm/SubversionTagAction.java |   11 ++++++++++-
+ 1 files changed, 10 insertions(+), 1 deletions(-)
+
+diff --git a/src/main/java/hudson/scm/SubversionTagAction.java b/src/main/java/hudson/scm/SubversionTagAction.java
+index 02e182b..60592f0 100644
+--- a/src/main/java/hudson/scm/SubversionTagAction.java
++++ b/src/main/java/hudson/scm/SubversionTagAction.java
+@@ -25,6 +25,7 @@ package hudson.scm;
+ 
+ import hudson.model.AbstractBuild;
+ import hudson.model.Action;
++import hudson.model.DisplayNameAction;
+ import hudson.model.TaskListener;
+ import hudson.model.TaskThread;
+ import hudson.scm.subversion.Messages;
+@@ -58,7 +59,7 @@ import java.util.regex.Pattern;
+  * 
+  * @author Kohsuke Kawaguchi
+  */
+-public class SubversionTagAction extends AbstractScmTagAction {
++public class SubversionTagAction extends AbstractScmTagAction implements DisplayNameAction {
+ 
+     /**
+      * Map is from the repository URL to the URLs of tags.
+@@ -228,4 +229,12 @@ public class SubversionTagAction extends AbstractScmTagAction {
+            }
+         }
+     }
++
++    public String getDisplayNameText() {
++        if (tags.size() == 1) {
++            return "r" + tags.entrySet().iterator().next().getKey().revision;
++        }
++        return null;
++    }
++
+ }
+-- 
+1.6.3.3
+

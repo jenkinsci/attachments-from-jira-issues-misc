@@ -1,0 +1,34 @@
+Index: core/src/main/resources/hudson/security/GlobalMatrixAuthorizationStrategy/config.jelly
+===================================================================
+--- core/src/main/resources/hudson/security/GlobalMatrixAuthorizationStrategy/config.jelly	(revision 37092)
++++ core/src/main/resources/hudson/security/GlobalMatrixAuthorizationStrategy/config.jelly	(working copy)
+@@ -75,9 +75,7 @@
+         <j:forEach var="g" items="${groups}">
+           <j:forEach var="p" items="${g.permissions}">
+             <j:if test="${descriptor.showPermission(p)}">
+-              <th class="pane" tooltip="${p.description}">
+-                ${p.name}
+-              </th>
++              <th class="pane" tooltip="${p.description}"><div>${p.name}</div></th>
+             </j:if>
+           </j:forEach>
+         </j:forEach>
+Index: war/src/main/webapp/css/style.css
+===================================================================
+--- war/src/main/webapp/css/style.css	(revision 37092)
++++ war/src/main/webapp/css/style.css	(working copy)
+@@ -732,6 +732,14 @@
+   background-color: #e8eeee;
+ }
+ 
++/* ========================= global config ========================= */
++.global-matrix-authorization-strategy-table tr.caption-row th.pane div {
++  -webkit-transform: rotate(90deg);
++  -moz-transform: rotate(90deg);
++  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=1);
++  padding: 2.7em 0 !important;
++  margin: 0 -0.6em !important;
++}
+ 
+ /* ========================= repeatable elements ========================= */
+ 

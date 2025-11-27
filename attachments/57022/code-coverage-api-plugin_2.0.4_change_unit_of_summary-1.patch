@@ -1,0 +1,26 @@
+diff --git a/src/main/java/io/jenkins/plugins/coverage/model/CoverageBuildAction.java b/src/main/java/io/jenkins/plugins/coverage/model/CoverageBuildAction.java
+index f4799cb..dbb9438 100644
+--- a/src/main/java/io/jenkins/plugins/coverage/model/CoverageBuildAction.java
++++ b/src/main/java/io/jenkins/plugins/coverage/model/CoverageBuildAction.java
+@@ -156,7 +156,7 @@ public class CoverageBuildAction extends BuildAction<CoverageNode> implements He
+     // TODO: format percentage on the client side
+     public String getDelta(final CoverageMetric metric) {
+         if (hasDelta(metric)) {
+-            return String.format("%+.3f", delta.get(metric));
++            return String.format("%+.1f%%", delta.get(metric) * 100);
+         }
+         return "n/a";
+     }
+diff --git a/src/main/resources/io/jenkins/plugins/coverage/model/CoverageBuildAction/summary.jelly b/src/main/resources/io/jenkins/plugins/coverage/model/CoverageBuildAction/summary.jelly
+index 687f207..8eb8985 100644
+--- a/src/main/resources/io/jenkins/plugins/coverage/model/CoverageBuildAction/summary.jelly
++++ b/src/main/resources/io/jenkins/plugins/coverage/model/CoverageBuildAction/summary.jelly
+@@ -24,7 +24,7 @@
+                 <j:set var="color" value="#0a5f0e"/>
+               </j:otherwise>
+             </j:choose>
+-            <span style="color: ${color}">(${it.getDelta(metric)}%)</span>
++            <span style="color: ${color}">(${it.getDelta(metric)})</span>
+           </j:if>
+         </li>
+       </j:forEach>

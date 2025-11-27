@@ -1,0 +1,45 @@
+@Extension
+@SuppressWarnings({"rawtypes"})
+public class MyClass extends RunListener<AbstractBuild> {
+
+	public MyClass() {
+		super(AbstractBuild.class);
+	}
+
+	@Override
+	public void onStarted(AbstractBuild build, TaskListener listener) {
+		boolean failed = false; //For some versions that do not fail the first time.
+		PrintStream logger = listener.getLogger();
+
+		try {
+			/*
+			 *Check the build parameters against the database.
+			 *If they do not validate throw a MyCustomException to stop the build.
+			 *Note most logic is in helper methods so for example when a database
+			 *exception happens it is caught and then we throw the custom one.
+			*/
+		} catch (MyCustomException mce) {
+			//Here to break execution if something does not validation
+			failed = true; 
+			logger.println(mce.getMessage());
+			build.setResult(Result.FAILURE);
+			build.getExecutor().interrupt(Result.FAILURE);
+		} finally {
+			//For closing database connections and catching other versions that did not stop the first time.
+    
+			try {
+				connection.close();
+			} catch (SQLException e) {}
+			
+			//DO NOT REMOVE THIS!  Some jenkins will not stop the build without it.
+			//Ugly fix but it is the only way it will work.
+			if (!build.getExecutor().isInterrupted() && failed) {
+				logger.println("Failed because executor was not interrupted but the build failed.");
+				build.setResult(Result.FAILURE);
+				build.getExecutor().interrupt(Result.FAILURE);
+				String a = "FORCE KILL BUILD FOR OLDER VERSIONS";
+				Integer.parseInt(a); //Will throw NumberFormatException
+			}
+		}
+	}
+}

@@ -1,0 +1,270 @@
+Index: src/main/java/hudson/plugins/logparser/ParserRules.java
+===================================================================
+--- src/main/java/hudson/plugins/logparser/ParserRules.java	(revision 37111)
++++ src/main/java/hudson/plugins/logparser/ParserRules.java	(working copy)
+@@ -1,35 +1,35 @@
+ package hudson.plugins.logparser;
+ 
+ 
+-public class ParserRuleFile  {
++public class ParserRules  {
+ 
+ 	private String name = null;
+-	private String path = null;
++	private String rules = null;
+ 
+ 
+-	public ParserRuleFile(){
++	public ParserRules(){
+ 		// Empty constructor
+ 	}
+ 
+-	public ParserRuleFile(final String name , final String path){
++	public ParserRules(final String name , final String rules){
+ 		this.name = name;
+-		this.path = path;
++		this.rules = rules;
+ 	}
+ 	
+ 	public String getName () {
+ 		return name;
+ 	}
+ 
+-	public String getPath () {
+-		return path;
++	public String getRules () {
++		return rules;
+ 	}
+ 
+ 	public void setName (final String name) {
+ 		this.name = name;
+ 	}
+ 
+-	public void setPath (final String path) {
+-		this.path = path;
++	public void setRules (final String rules) {
++		this.rules = rules;
+ 	}
+ 
+ 	
+Index: src/main/java/hudson/plugins/logparser/LogParserParser.java
+===================================================================
+--- src/main/java/hudson/plugins/logparser/LogParserParser.java	(revision 37111)
++++ src/main/java/hudson/plugins/logparser/LogParserParser.java	(working copy)
+@@ -34,7 +34,7 @@
+ 	final private VirtualChannel channel;
+ 
+ 	
+-	public LogParserParser(final String parsingRulesPath, final VirtualChannel channel) throws FileNotFoundException , IOException {
++	public LogParserParser(final String parsingRules, final VirtualChannel channel) throws FileNotFoundException , IOException {
+ 		
+ 		// init logger
+ 		final Logger logger = Logger.getLogger(getClass().getName());
+@@ -44,7 +44,7 @@
+ 		statusCount.put(LogParserConsts.WARNING, 0);
+ 		statusCount.put(LogParserConsts.INFO, 0);
+ 
+-		this.parsingRulesArray = LogParserUtils.readParsingRules(parsingRulesPath);
++		this.parsingRulesArray = LogParserUtils.parseParsingRules(parsingRules);
+ 		
+ 		// This causes each regular expression to be compiled once for better performance
+ 		this.compiledPatternsPlusError = LogParserUtils.compilePatterns(this.parsingRulesArray,logger);
+Index: src/main/java/hudson/plugins/logparser/LogParserPublisher.java
+===================================================================
+--- src/main/java/hudson/plugins/logparser/LogParserPublisher.java	(revision 37111)
++++ src/main/java/hudson/plugins/logparser/LogParserPublisher.java	(working copy)
+@@ -27,12 +27,12 @@
+ public class LogParserPublisher extends Recorder implements Serializable {
+     
+ 	public final boolean failBuildOnError;
+-    public final String parsingRulesPath;
++    public final String parsingRules;
+ 
+     @DataBoundConstructor
+-    public LogParserPublisher(final boolean failBuildOnError, final String parsingRulesPath) {
++    public LogParserPublisher(final boolean failBuildOnError, final String parsingRules) {
+     	this.failBuildOnError = failBuildOnError;
+-    	this.parsingRulesPath =  parsingRulesPath;
++    	this.parsingRules =  parsingRules;
+    }
+ 
+     public boolean prebuild(final AbstractBuild<?,?> build, final BuildListener listener) {
+@@ -44,29 +44,16 @@
+     	LogParserResult result = new LogParserResult();
+     	try {
+     		
+-    		final File logParsingRulesFile = new File(this.parsingRulesPath);
+-    		if (logParsingRulesFile.isFile()) { 
+-    			
+-	        	// Create a parser with the parsing rules as configured : colors, regular expressions, etc.
+-	        	final LogParserParser parser = new LogParserParser(this.parsingRulesPath,launcher.getChannel());
+-	        	// Parse the build's log according to these rules and get the result 
+-	    		result = parser.parseLog(build);
++    	    // Create a parser with the parsing rules as configured : colors, regular expressions, etc.
++	        final LogParserParser parser = new LogParserParser(this.parsingRules,launcher.getChannel());
++	        // Parse the build's log according to these rules and get the result 
++	    	result = parser.parseLog(build);
+ 	        
+ 	    		
+-	    		// Mark build as failed if necessary
+-	    		if (this.failBuildOnError && result.getTotalErrors() > 0) {
+-	    			build.setResult(Result.FAILURE);
+-	    		}
+-    		} else {
+-    			// Parsing rules file cannot be found
+-    			// Write message to Hudson log and parsing result
+-    			final String errorMsg = LogParserConsts.CANNOT_PARSE+": Can't read parsing rules file:"+this.parsingRulesPath;
+-    			logger.log(Level.SEVERE,errorMsg);
+-    			result.setFailedToParseError(errorMsg);
+-
+-    		}
+-
+-    		
++	    	// Mark build as failed if necessary
++	    	if (this.failBuildOnError && result.getTotalErrors() > 0) {
++	    		build.setResult(Result.FAILURE);
++	    	}
+     	} catch (Exception e) {
+     		e.printStackTrace();
+     		// failure to parse should not fail the build - but should be handled as a serious error
+@@ -97,7 +84,7 @@
+     
+     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+         public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
+-        private volatile ParserRuleFile[] parsingRulesGlobal = new ParserRuleFile[0];
++        private volatile ParserRules[] parsingRulesGlobal = new ParserRules[0];
+ 
+         private DescriptorImpl() {
+             super(LogParserPublisher.class);
+@@ -116,14 +103,14 @@
+             return true;
+         }
+         
+-        public  ParserRuleFile[] getParsingRulesGlobal() {
++        public  ParserRules[] getParsingRulesGlobal() {
+         	return parsingRulesGlobal;
+         }
+ 
+ 		@Override
+ 		public boolean configure(final StaplerRequest req, final JSONObject json) throws FormException {
+-			parsingRulesGlobal = req.bindParametersToList(ParserRuleFile.class, "log-parser.")
+-				.toArray(new ParserRuleFile[0]);
++			parsingRulesGlobal = req.bindParametersToList(ParserRules.class, "log-parser.")
++				.toArray(new ParserRules[0]);
+ 			save();			
+ 	        return true;
+ 		}
+@@ -141,7 +128,7 @@
+ 	 * and displays the available choices of parsing rules which were configured in the global configurations
+ 	 * 
+ 	 */
+-	public ParserRuleFile[] getParserRuleChoices() {
++	public ParserRules[] getParserRuleChoices() {
+ 		// Get the descriptor which holds the global configurations and extract the available parsing rules from there 
+ 		return ((DescriptorImpl)this.getDescriptor()).getParsingRulesGlobal();
+ 	}
+Index: src/main/java/hudson/plugins/logparser/LogParserUtils.java
+===================================================================
+--- src/main/java/hudson/plugins/logparser/LogParserUtils.java	(revision 37111)
++++ src/main/java/hudson/plugins/logparser/LogParserUtils.java	(working copy)
+@@ -5,6 +5,7 @@
+ import java.io.FileReader;
+ import java.io.IOException;
+ import java.io.LineNumberReader;
++import java.io.StringReader;
+ import java.util.List;
+ import java.util.Locale;
+ import java.util.logging.Level;
+@@ -26,6 +27,18 @@
+ 		return result.toString().split("\n");
+ 	}
+ 
++	public static String[] parseParsingRules(final String parsingRules) throws IOException {
++	    final StringBuffer result = new StringBuffer("");
++	    final BufferedReader reader = new BufferedReader(new StringReader(parsingRules));
++	    String line = null;
++	    while ((line=reader.readLine()) != null) {
++	        result.append(line);
++            result.append('\n');
++	    }
++	    reader.close();
++	    return result.toString().split("\n");
++	}
++
+ 	
+     public static boolean skipParsingRule(final String parsingRule){
+     	boolean skip = false;
+Index: src/main/java/hudson/plugins/logparser/ParserRuleFile.java
+===================================================================
+--- src/main/java/hudson/plugins/logparser/ParserRuleFile.java	(revision 37111)
++++ src/main/java/hudson/plugins/logparser/ParserRuleFile.java	(working copy)
+@@ -1,37 +0,0 @@
+-package hudson.plugins.logparser;
+-
+-
+-public class ParserRuleFile  {
+-
+-	private String name = null;
+-	private String path = null;
+-
+-
+-	public ParserRuleFile(){
+-		// Empty constructor
+-	}
+-
+-	public ParserRuleFile(final String name , final String path){
+-		this.name = name;
+-		this.path = path;
+-	}
+-	
+-	public String getName () {
+-		return name;
+-	}
+-
+-	public String getPath () {
+-		return path;
+-	}
+-
+-	public void setName (final String name) {
+-		this.name = name;
+-	}
+-
+-	public void setPath (final String path) {
+-		this.path = path;
+-	}
+-
+-	
+-	
+-}
+Index: src/main/resources/hudson/plugins/logparser/LogParserPublisher/config.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/logparser/LogParserPublisher/config.jelly	(revision 37111)
++++ src/main/resources/hudson/plugins/logparser/LogParserPublisher/config.jelly	(working copy)
+@@ -5,11 +5,11 @@
+     		<f:checkbox name="log-parser.failBuildOnError" checked="${instance.failBuildOnError}"/>
+     	</f:entry>
+     	
+-   		<f:entry title="Select Parsing Rules" field="currentRulePath" help="/plugin/log-parser/parse_rule_choice.html">
+-        	<select name="log-parser.parsingRulesPath">
++   		<f:entry title="Select Parsing Rules" field="currentRule" help="/plugin/log-parser/parse_rule_choice.html">
++        	<select name="log-parser.parsingRules">
+         	
+ 	            <j:forEach var="i" items="${descriptor.parsingRulesGlobal}">
+-    	            <f:option selected="${i.path == instance.parsingRulesPath}" value="${i.path}">${i.name}</f:option>
++    	            <f:option selected="${i.rules == instance.parsingRules}" value="${i.rules}">${i.name}</f:option>
+                </j:forEach>
+ 			</select>
+         </f:entry>
+Index: src/main/resources/hudson/plugins/logparser/LogParserPublisher/global.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/logparser/LogParserPublisher/global.jelly	(revision 37111)
++++ src/main/resources/hudson/plugins/logparser/LogParserPublisher/global.jelly	(working copy)
+@@ -12,7 +12,7 @@
+           </f:entry>
+ 
+           <f:entry title="Parsing Rules File">
+-            <f:textbox name="log-parser.path" value="${rule.path}" />
++            <f:textarea name="log-parser.rules" value="${rule.rules}" />
+           </f:entry>
+           
+           <f:entry title="">

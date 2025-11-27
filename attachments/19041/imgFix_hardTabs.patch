@@ -1,0 +1,107 @@
+Index: DownstreamBuildViewAction.java
+===================================================================
+--- DownstreamBuildViewAction.java	(revision 26100)
++++ DownstreamBuildViewAction.java	(working copy)
+@@ -1,27 +1,8 @@
+-/**
+- * 
+- */
+ package org.jvnet.hudson.plugins;
+ 
+-import hudson.Extension;
+-import hudson.Extension;
+-import hudson.Launcher;
+ import hudson.model.*;
+-import hudson.model.listeners.RunListener;
+-import hudson.tasks.BuildStepMonitor;
+-import hudson.tasks.BuildStepDescriptor;
+ import hudson.tasks.BuildTrigger;
+-import hudson.tasks.Publisher;
+-import hudson.tasks.Recorder;
+-import hudson.matrix.MatrixAggregatable;
+-import hudson.matrix.MatrixAggregator;
+-import hudson.matrix.MatrixBuild;
+ 
+-import org.kohsuke.stapler.StaplerRequest;
+-import org.kohsuke.stapler.DataBoundConstructor;
+-
+-import java.util.logging.Logger;
+-import java.io.IOException;
+ import java.util.ArrayList;
+ import java.util.Iterator;
+ import java.util.List;
+@@ -38,9 +19,11 @@
+ 
+ 
+ 	private List<DownstreamBuilds> downstreamBuildList;
++	private String rootURL;
+ 
+ 	public DownstreamBuildViewAction(AbstractBuild<?, ?> build) {
+ 		super(build);
++		rootURL = Hudson.getInstance().getRootUrl();
+ 		BuildTrigger buildTrigger = build.getProject().getPublishersList()
+ 				.get(BuildTrigger.class);
+ 		if (buildTrigger != null) {
+@@ -63,7 +46,6 @@
+ 			downstreamBuild.setProjectUrl(project.getUrl());
+ 			downstreamBuild.setBuildNumber(Integer.toString(project
+ 					.getNextBuildNumber()));
+-			downstreamBuild.setRootURL(Hudson.getInstance().getRootUrl());
+ 			downstreamBuild.setDepth(depth);
+ 			if (!(parentChildSize.size() > depth))
+ 				parentChildSize.add(childs.size());
+@@ -84,8 +66,7 @@
+ 
+ 	public class DownstreamBuilds {
+ 
+-		private String projectName, projectUrl, buildNumber, imageUrl,
+-				rootURL, statusMessage;
++		private String projectName, projectUrl, buildNumber;
+ 		private List<DownstreamBuilds> childs;
+ 		private int depth, childNumber;
+ 
+@@ -142,10 +123,6 @@
+ 			return rootURL+"images/16x16/"+getIconName(r);
+ 		}
+ 
+-		public void setImageUrl(String imageUrl) {
+-			this.imageUrl = imageUrl;
+-		}
+-
+ 		public List<DownstreamBuilds> getChilds() {
+ 			return childs;
+ 		}
+@@ -155,18 +132,9 @@
+ 		}
+ 
+ 		public String getRootURL() {
+-			if(rootURL == null)
+-				return "";
+-			else if (rootURL.contains("job/"))
+-				return rootURL.substring(0,rootURL.indexOf("job/"));
+-			else 
+-				return rootURL;
++			return rootURL;
+ 		}
+ 
+-		public void setRootURL(String rootURL) {
+-			this.rootURL = rootURL;
+-		}
+-
+ 		public void setDepth(int depth) {
+ 			this.depth = depth;
+ 		}
+@@ -190,10 +158,10 @@
+ 				return r.getTimestamp().getTime().toString()+" - "+r.getResult().toString();
+ 		}
+ 
+-		public void setStatusMessage(String statusMessage) {
+-			this.statusMessage = statusMessage;
+-		}
++	}
+ 
++	public String getRootURL() {
++		return rootURL;
+ 	}
+ 
+ 	public List getDownstreamBuildList() {

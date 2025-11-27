@@ -1,0 +1,27 @@
+Seneste Mercurial Polling Log
+
+Started on Sep 8, 2017 1:04:13 PM
+[Archive] $ hg --config auth.jenkins.prefix=* --config ******** --config ******** --config "auth.jenkins.schemes=http https" pull --rev default
+ERROR: polling failed in D:\J\workspace\Domain\Archive on 
+java.io.IOException: Process working directory 'D:\J\workspace\Domain\Archive' doesn't exist!
+	at hudson.Proc$LocalProc.<init>(Proc.java:247)
+	at hudson.Proc$LocalProc.<init>(Proc.java:218)
+	at hudson.Launcher$LocalLauncher.launch(Launcher.java:930)
+	at hudson.Launcher$2.launch(Launcher.java:884)
+	at hudson.Launcher$ProcStarter.start(Launcher.java:450)
+	at hudson.plugins.mercurial.HgExe.joinWithPossibleTimeout(HgExe.java:238)
+	at hudson.plugins.mercurial.MercurialSCM.pull(MercurialSCM.java:503)
+	at hudson.plugins.mercurial.MercurialSCM.compareRemoteRevisionWith(MercurialSCM.java:431)
+Caused: java.io.IOException: Failed to compare with remote repository
+	at hudson.plugins.mercurial.MercurialSCM.compareRemoteRevisionWith(MercurialSCM.java:439)
+	at org.jenkinsci.plugins.workflow.job.WorkflowJob.poll(WorkflowJob.java:607)
+	at hudson.triggers.SCMTrigger$Runner.runPolling(SCMTrigger.java:594)
+	at hudson.triggers.SCMTrigger$Runner.run(SCMTrigger.java:640)
+	at hudson.util.SequentialExecutionQueue$QueueEntry.run(SequentialExecutionQueue.java:119)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at java.util.concurrent.FutureTask.run(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.lang.Thread.run(Unknown Source)
+Done. Took 42 ms
+No changes

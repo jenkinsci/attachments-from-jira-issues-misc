@@ -1,0 +1,38 @@
+From 88d3756679963a8b8e9dba0eaabe7eef9aa23442 Mon Sep 17 00:00:00 2001
+From: Andreas Bolka <a@bolka.at>
+Date: Wed, 22 Feb 2012 02:11:43 +0100
+Subject: [PATCH] Pre-select option matching default value for SVN "list tags"
+ parameters
+
+Signed-off-by: Andreas Bolka <a@bolka.at>
+---
+ .../index.jelly                                    |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/src/main/resources/hudson/scm/listtagsparameter/ListSubversionTagsParameterDefinition/index.jelly b/src/main/resources/hudson/scm/listtagsparameter/ListSubversionTagsParameterDefinition/index.jelly
+index efb84aa..53ab378 100644
+--- a/src/main/resources/hudson/scm/listtagsparameter/ListSubversionTagsParameterDefinition/index.jelly
++++ b/src/main/resources/hudson/scm/listtagsparameter/ListSubversionTagsParameterDefinition/index.jelly
+@@ -1,7 +1,7 @@
+ <!--
+   - The MIT License
+   -
+-  - Copyright (c) 2010, Manufacture Francaise des Pneumatiques Michelin, Romain Seguy
++  - Copyright (c) 2010, Manufacture Francaise des Pneumatiques Michelin, Romain Seguy, Andreas Bolka
+   -
+   - Permission is hereby granted, free of charge, to any person obtaining a copy
+   - of this software and associated documentation files (the "Software"), to deal
+@@ -46,7 +46,9 @@
+           <!-- everything is fine, we can display the drop-down list to the user -->
+           <select name="tag">
+             <j:forEach var="tag" items="${it.tags}">
+-              <f:option>${tag}</f:option>
++              <f:option selected="${tag.equals(it.defaultValue)}">
++                ${tag}
++              </f:option>
+             </j:forEach>
+           </select>
+         </j:otherwise>
+-- 
+1.7.8.3
+

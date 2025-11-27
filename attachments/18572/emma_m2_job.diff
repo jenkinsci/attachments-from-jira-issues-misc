@@ -1,0 +1,84 @@
+### Eclipse Workspace Patch 1.0
+#P emma
+Index: src/main/java/hudson/plugins/emma/EmmaProjectAction.java
+===================================================================
+--- src/main/java/hudson/plugins/emma/EmmaProjectAction.java	(revision 16853)
++++ src/main/java/hudson/plugins/emma/EmmaProjectAction.java	(working copy)
+@@ -1,8 +1,8 @@
+ package hudson.plugins.emma;
+ 
++import hudson.model.AbstractBuild;
++import hudson.model.AbstractProject;
+ import hudson.model.Action;
+-import hudson.model.Build;
+-import hudson.model.Project;
+ import hudson.model.Result;
+ import org.kohsuke.stapler.StaplerRequest;
+ import org.kohsuke.stapler.StaplerResponse;
+@@ -15,9 +15,9 @@
+  * @author Kohsuke Kawaguchi
+  */
+ public final class EmmaProjectAction implements Action {
+-    public final Project<?,?> project;
++    public final AbstractProject<?,?> project;
+ 
+-    public EmmaProjectAction(Project project) {
++    public EmmaProjectAction(AbstractProject project) {
+         this.project = project;
+     }
+ 
+@@ -37,7 +37,7 @@
+      * Gets the most recent {@link EmmaBuildAction} object.
+      */
+     public EmmaBuildAction getLastResult() {
+-        for( Build<?,?> b = project.getLastBuild(); b!=null; b=b.getPreviousBuild()) {
++        for( AbstractBuild<?,?> b = project.getLastBuild(); b!=null; b=b.getPreviousBuild()) {
+             if(b.getResult()== Result.FAILURE)
+                 continue;
+             EmmaBuildAction r = b.getAction(EmmaBuildAction.class);
+Index: src/main/java/hudson/plugins/emma/EmmaPublisher.java
+===================================================================
+--- src/main/java/hudson/plugins/emma/EmmaPublisher.java	(revision 16853)
++++ src/main/java/hudson/plugins/emma/EmmaPublisher.java	(working copy)
+@@ -11,6 +11,8 @@
+ import hudson.model.Result;
+ import hudson.tasks.BuildStepDescriptor;
+ import hudson.tasks.Publisher;
++import hudson.tasks.Recorder;
++
+ import org.kohsuke.stapler.StaplerRequest;
+ 
+ import java.io.File;
+@@ -24,7 +26,7 @@
+  *
+  * @author Kohsuke Kawaguchi
+  */
+-public class EmmaPublisher extends Publisher {
++public class EmmaPublisher extends Recorder {
+     /**
+      * Relative path to the Emma XML file inside the workspace.
+      */
+@@ -74,7 +76,7 @@
+         return true;
+     }
+ 
+-    public Action getProjectAction(Project project) {
++    public Action getProjectAction(AbstractProject<?, ?> project) {
+         return new EmmaProjectAction(project);
+     }
+ 
+@@ -85,11 +87,11 @@
+         return new File(build.getRootDir(), "emma.xml");
+     }
+ 
+-    public Descriptor<Publisher> getDescriptor() {
++    public BuildStepDescriptor<Publisher> getDescriptor() {
+         return DESCRIPTOR;
+     }
+ 
+-    public static final Descriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
++    public static final BuildStepDescriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
+ 
+     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+         public DescriptorImpl() {
+

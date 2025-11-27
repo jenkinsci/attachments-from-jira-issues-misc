@@ -1,0 +1,54 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'mvn-v3.6.0'
+        jdk 'jdk8'
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                echo 'Building......'
+                sh 'mvn clean package -DskipTests=True'
+            }
+
+        }
+        
+        stage ('Docker Build') {
+            steps {
+                // prepare docker build context
+                sh 'pwd'
+                sh 'ls -lrt'
+                
+                // Build and push image with Jenkins' docker-plugin
+                script {
+                    echo 'Start - Build and push image with Jenkins docker-plugin'
+                    withDockerServer([uri: "127.0.0.1:4243"]) {
+                        withDockerRegistry([credentialsId: 'docker-registry-sample-credentials', url: "https://registry-dev.apps.dev.example.io"]) {
+                            // we give the image the same version as the .war package
+                            def image = docker.build("registry-dev.apps.dev.example.io/springdemo-3", "--build-arg PACKAGE_VERSION=1.1 ./")
+                            image.push()
+                            echo 'Done pushing the image.'
+                        }
+                    }
+                }
+            }
+        }
+          
+          
+        stage ('Dev_Deployment') {
+            steps{
+                sh 'cat manifest.yml'
+                sh 'export CF_DOCKER_PASSWORD=sampleDockerPassword'
+                pushToCloudFoundry(
+                  target: 'https://api.sys.dev.example.io',
+                  credentialsId: 'pcfcreds',
+                  organization: 'pcforg',
+                  cloudSpace: 'pcfspace',
+                  manifestChoice: [manifestFile: 'manifest.yml']
+                )
+              }
+          }
+    }
+}

@@ -1,0 +1,390 @@
+? main/core/.settings
+? main/core/patch
+Index: extras/tester/src/test/java/hudson/model/SubversionPollingTest.java
+===================================================================
+RCS file: /cvs/hudson/hudson/extras/tester/src/test/java/hudson/model/SubversionPollingTest.java,v
+retrieving revision 1.1
+diff -u -r1.1 SubversionPollingTest.java
+--- extras/tester/src/test/java/hudson/model/SubversionPollingTest.java	7 Sep 2007 17:00:42 -0000	1.1
++++ extras/tester/src/test/java/hudson/model/SubversionPollingTest.java	11 Sep 2007 15:37:37 -0000
+@@ -1,5 +1,7 @@
+ package hudson.model;
+ 
++import hudson.DependencyRunner;
++import hudson.DependencyRunner.ProjectRunnable;
+ import hudson.tasks.BuildTrigger;
+ import hudson.triggers.SCMTrigger;
+ import hudson.triggers.Trigger;
+@@ -7,8 +9,8 @@
+ import java.io.File;
+ import java.io.FileOutputStream;
+ import java.io.OutputStream;
+-import java.lang.reflect.Method;
+ import java.util.Arrays;
++import java.util.GregorianCalendar;
+ import java.util.logging.Logger;
+ 
+ import org.apache.commons.io.IOUtils;
+@@ -21,25 +23,35 @@
+     private static final Logger LOGGER = Logger.getLogger(SubversionPollingTest.class.getName());
+ 
+     private static final String EVERY_SECOND = "* * * * *";
++    FreeStyleProject projectA, projectB, projectC;
++    File wcProjectA, wcProjectB;
+ 
+     @SuppressWarnings("unchecked")
+-    public void testSubversionPolling() throws Exception {
+-        FreeStyleProject projectA = (FreeStyleProject) hudson.createProject(FreeStyleProject.DESCRIPTOR, "projectFoo");
++    protected void createProjects() throws Exception {
++        projectA = (FreeStyleProject) hudson.createProject(FreeStyleProject.DESCRIPTOR, "projectFoo");
+         Trigger t1 = new SCMTrigger(EVERY_SECOND);
+         projectA.addTrigger(t1);
+         t1.start(projectA, false);
+-        File wcProjectA = createSubversionProject(projectA);
+-        FreeStyleProject projectB = (FreeStyleProject) hudson.createProject(FreeStyleProject.DESCRIPTOR, "projectBar");
++        wcProjectA = createSubversionProject(projectA);
++        projectB = (FreeStyleProject) hudson.createProject(FreeStyleProject.DESCRIPTOR, "projectBar");
++        projectC = (FreeStyleProject) hudson.createProject(FreeStyleProject.DESCRIPTOR, "projectAbc");
+         
+-        // Setup dependency between projects A and B
+-        projectA.addPublisher(new BuildTrigger(Arrays.asList(new AbstractProject[]{projectB}), null));
+-        hudson.rebuildDependencyGraph();
++        // Setup dependency between projects A and B and between A and C
++        projectA.addPublisher(new BuildTrigger(Arrays.asList(new AbstractProject[]{projectB, projectC}), null));
++        // And between B and C
++        projectB.addPublisher(new BuildTrigger(Arrays.asList(new AbstractProject[]{projectC}), null));
+ 
++        hudson.rebuildDependencyGraph();
+         Trigger t2 = new SCMTrigger(EVERY_SECOND);
+         projectB.addTrigger(t2);
+         t2.start(projectB, false);
+-        File wcProjectB = createSubversionProject(projectB);
++        wcProjectB = createSubversionProject(projectB);
+         setCommand(projectB, "sh -xe build.sh");
++    }
++
++    protected void buildProjects() throws Exception {
++        createProjects();
++
+         File build = new File(wcProjectB, "build.sh");
+         OutputStream out = new FileOutputStream(build);
+         IOUtils.write("exit 0", out);
+@@ -62,18 +74,34 @@
+         IOUtils.write("test -e ../../projectFoo/workspace/hello\n", out);
+         out.close();
+         exec("svn", "commit", "-m", "build", build.getPath());
++    }
++
++    int count = 0;
++    public void testDeps() throws Exception {
++        createProjects();
++        new DependencyRunner(new ProjectRunnable() {
++            public void run(AbstractProject p) {
++                if (count == 0)
++                    assertEquals(projectA, p);
++                else if (count == 1)
++                    assertEquals(projectB, p);
++                else if (count == 2)
++                    assertEquals(projectC, p);
++                count++;
++            }
++        }).run();
++        assertEquals(3, count);
++    }
++
++    public void testSubversionPolling() throws Exception {
++        buildProjects();
+ 
+-        // poll for changes manually
+-        Hudson inst = Hudson.getInstance();
+-        for (AbstractProject<?,?> p : inst.getAllItems(AbstractProject.class)) {
++        // poll for changes manually, this is a copy/paste of Trigger.Cron.run()
++        for (AbstractProject<?,?> p : hudson.getAllItems(AbstractProject.class)) {
+             for (Trigger t : p.getTriggers().values()) {
+-                LOGGER.fine("cron checking "+p.getName());
++                t.run();
+                 // Introduce a delay to make polling nearly-synchronous
+                 Thread.sleep(1000);
+-                // FIXME could we make Trigger.run() public?
+-                Method run = Trigger.class.getDeclaredMethod("run", new Class[0]);
+-                run.setAccessible(true);
+-                run.invoke(t, new Object[0]);
+             }
+         }
+ 
+@@ -81,10 +109,28 @@
+         waitForBuild(3, projectB);
+ 
+         assertSuccess(projectB.getBuildByNumber(1).getResult());
++        // projectBar has built before projectFoo
+         assertFailure(projectB.getBuildByNumber(2).getResult());
+         assertSuccess(projectB.getBuildByNumber(3).getResult());
+ 
+         assertSuccess(projectA.getBuildByNumber(1).getResult());
+         assertSuccess(projectA.getBuildByNumber(2).getResult());
+     }
++
++    public void testSynchronousSubversionPolling() throws Exception {
++        SCMTrigger.DESCRIPTOR.synchronousPolling = true;
++        SCMTrigger.DESCRIPTOR.setPollingThreadCount(1);
++        buildProjects();
++        
++        Trigger.checkTriggers(new GregorianCalendar());
++
++        waitForBuild(2, projectA);
++        waitForBuild(2, projectB);
++
++        assertSuccess(projectB.getBuildByNumber(1).getResult());
++        assertSuccess(projectB.getBuildByNumber(2).getResult());
++
++        assertSuccess(projectA.getBuildByNumber(1).getResult());
++        assertSuccess(projectA.getBuildByNumber(2).getResult());
++    }
+ }
+Index: main/core/src/main/java/hudson/DependencyRunner.java
+===================================================================
+RCS file: main/core/src/main/java/hudson/DependencyRunner.java
+diff -N main/core/src/main/java/hudson/DependencyRunner.java
+--- /dev/null	1 Jan 1970 00:00:00 -0000
++++ main/core/src/main/java/hudson/DependencyRunner.java	11 Sep 2007 15:37:37 -0000
+@@ -0,0 +1,55 @@
++package hudson;
++
++import hudson.model.AbstractProject;
++import hudson.model.Hudson;
++
++import java.util.ArrayList;
++import java.util.HashSet;
++import java.util.List;
++import java.util.Set;
++
++/**
++ * Runs a job on all projects in the order of dependencies
++ */
++public class DependencyRunner implements Runnable {
++	AbstractProject currentProject;
++
++	ProjectRunnable runnable;
++
++	List<AbstractProject> polledProjects = new ArrayList<AbstractProject>();
++
++	@SuppressWarnings("unchecked")
++	public DependencyRunner(ProjectRunnable runnable) {
++		this.runnable = runnable;
++	}
++
++	public void run() {
++		Set<AbstractProject> topLevelProjects = new HashSet<AbstractProject>();
++		// Get all top-level projects
++		for (AbstractProject p : Hudson.getInstance().getAllItems(
++				AbstractProject.class))
++			if (p.getUpstreamProjects().size() == 0)
++				topLevelProjects.add(p);
++		populate(topLevelProjects);
++		for (AbstractProject p : polledProjects)
++			runnable.run(p);
++	}
++
++	private void populate(Set<AbstractProject> projectList) {
++		for (AbstractProject p : projectList) {
++			if (polledProjects.contains(p))
++				// Project will be readded at the queue, so that we always use
++				// the longest path
++				polledProjects.remove(p);
++
++			polledProjects.add(p);
++
++			// Add all downstream dependencies
++			populate(new HashSet<AbstractProject>(p.getDownstreamProjects()));
++		}
++	}
++
++	public interface ProjectRunnable {
++		void run(AbstractProject p);
++	}
++}
+Index: main/core/src/main/java/hudson/triggers/SCMTrigger.java
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/java/hudson/triggers/SCMTrigger.java,v
+retrieving revision 1.20
+diff -u -r1.20 SCMTrigger.java
+--- main/core/src/main/java/hudson/triggers/SCMTrigger.java	10 Aug 2007 06:20:48 -0000	1.20
++++ main/core/src/main/java/hudson/triggers/SCMTrigger.java	11 Sep 2007 15:37:38 -0000
+@@ -4,6 +4,7 @@
+ import hudson.Util;
+ import hudson.model.AbstractProject;
+ import hudson.model.Action;
++import hudson.model.Hudson;
+ import hudson.model.Item;
+ import hudson.model.Project;
+ import hudson.model.SCMedItem;
+@@ -63,15 +64,20 @@
+         return super.readResolve();
+     }
+ 
+-    protected void run() {
++    public void run() {
+         if(pollingScheduled)
+             return; // noop
+         pollingScheduled = true;
+ 
+-        // schedule the polling.
+-        // even if we end up submitting this too many times, that's OK.
+-        // the real exclusion control happens inside Runner.
+-        DESCRIPTOR.getExecutor().submit(new Runner());
++        if (DESCRIPTOR.synchronousPolling) {
++            // Run the trigger directly without threading, as it's already taken care of by Trigger.Cron
++            new Runner().run();
++        } else {
++            // schedule the polling.
++            // even if we end up submitting this too many times, that's OK.
++            // the real exclusion control happens inside Runner.
++            DESCRIPTOR.getExecutor().submit(new Runner());
++        }
+     }
+ 
+     public Action getProjectAction() {
+@@ -98,6 +104,12 @@
+         transient volatile ExecutorService executor;
+ 
+         /**
++         * Whether the projects should be polled all in one go in the order of dependencies. The default behavior is
++         * that each project polls for changes independently.
++         */
++        public boolean synchronousPolling = false;
++
++        /**
+          * Jobs that are being polled. The value is useful for trouble-shooting.
+          */
+         final transient Set<SCMedItem> items = Collections.synchronizedSet(new HashSet<SCMedItem>());
+Index: main/core/src/main/java/hudson/triggers/TimerTrigger.java
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/java/hudson/triggers/TimerTrigger.java,v
+retrieving revision 1.4
+diff -u -r1.4 TimerTrigger.java
+--- main/core/src/main/java/hudson/triggers/TimerTrigger.java	8 Feb 2007 14:17:17 -0000	1.4
++++ main/core/src/main/java/hudson/triggers/TimerTrigger.java	11 Sep 2007 15:37:38 -0000
+@@ -1,17 +1,19 @@
+ package hudson.triggers;
+ 
+-import antlr.ANTLRException;
+ import static hudson.Util.fixNull;
+-import hudson.model.Descriptor;
+ import hudson.model.BuildableItem;
+ import hudson.model.Item;
+ import hudson.scheduler.CronTabList;
+ import hudson.util.FormFieldValidator;
++
++import java.io.IOException;
++
++import javax.servlet.ServletException;
++
+ import org.kohsuke.stapler.StaplerRequest;
+ import org.kohsuke.stapler.StaplerResponse;
+ 
+-import javax.servlet.ServletException;
+-import java.io.IOException;
++import antlr.ANTLRException;
+ 
+ /**
+  * {@link Trigger} that runs a job periodically.
+@@ -23,7 +25,7 @@
+         super(cronTabSpec);
+     }
+ 
+-    protected void run() {
++    public void run() {
+         job.scheduleBuild();
+     }
+ 
+Index: main/core/src/main/java/hudson/triggers/Trigger.java
+===================================================================
+RCS file: /cvs/hudson/hudson/main/core/src/main/java/hudson/triggers/Trigger.java,v
+retrieving revision 1.11
+diff -u -r1.11 Trigger.java
+--- main/core/src/main/java/hudson/triggers/Trigger.java	1 Aug 2007 17:05:30 -0000	1.11
++++ main/core/src/main/java/hudson/triggers/Trigger.java	11 Sep 2007 15:37:38 -0000
+@@ -1,7 +1,9 @@
+ package hudson.triggers;
+ 
+ import antlr.ANTLRException;
++import hudson.DependencyRunner;
+ import hudson.ExtensionPoint;
++import hudson.DependencyRunner.ProjectRunnable;
+ import hudson.model.AbstractProject;
+ import hudson.model.Action;
+ import hudson.model.Build;
+@@ -17,6 +19,7 @@
+ import java.io.InvalidObjectException;
+ import java.io.ObjectStreamException;
+ import java.util.Calendar;
++import java.util.Collection;
+ import java.util.Collections;
+ import java.util.GregorianCalendar;
+ import java.util.Timer;
+@@ -53,7 +56,7 @@
+      * This method is invoked when {@link #Trigger(String)} is used
+      * to create an instance, and the crontab matches the current time.
+      */
+-    protected void run() {}
++    public void run() {}
+ 
+     /**
+      * Called before a {@link Trigger} is removed.
+@@ -131,16 +134,7 @@
+             LOGGER.fine("cron checking "+cal.getTime().toLocaleString());
+ 
+             try {
+-                Hudson inst = Hudson.getInstance();
+-                for (AbstractProject<?,?> p : inst.getAllItems(AbstractProject.class)) {
+-                    for (Trigger t : p.getTriggers().values()) {
+-                        LOGGER.fine("cron checking "+p.getName());
+-                        if(t.tabs.check(cal)) {
+-                            LOGGER.fine("cron triggered "+p.getName());
+-                            t.run();
+-                        }
+-                    }
+-                }
++                checkTriggers(cal);
+             } catch (Throwable e) {
+                 LOGGER.log(Level.WARNING,"Cron thread throw an exception",e);
+                 // bug in the code. Don't let the thread die.
+@@ -150,6 +144,38 @@
+             cal.add(Calendar.MINUTE,1);
+         }
+     }
++    
++    public static void checkTriggers(final Calendar cal) {
++        Hudson inst = Hudson.getInstance();
++
++        if (SCMTrigger.DESCRIPTOR.synchronousPolling) {
++            // Process SCMTriggers in the order of dependencies. Note that the crontab spec expressed per-project is
++            // ignored, only the global setting is honored
++            // FIXME allow to set a global crontab spec
++            SCMTrigger.DESCRIPTOR.getExecutor().submit(new DependencyRunner(new ProjectRunnable() {
++                public void run(AbstractProject p) {
++                    for (Trigger t : (Collection<Trigger>) p.getTriggers().values()) {
++                        if (t instanceof SCMTrigger)
++                            t.run();
++                    }
++                }
++            }));
++        }
++
++        // Process all triggers, except SCMTriggers when synchronousPolling is set
++        for (AbstractProject<?,?> p : inst.getAllItems(AbstractProject.class)) {
++            for (Trigger t : p.getTriggers().values()) {
++                if (! (t instanceof SCMTrigger && SCMTrigger.DESCRIPTOR.synchronousPolling)) {
++	                LOGGER.fine("cron checking "+p.getName());
++
++	                if (t.tabs.check(cal)) {
++	                    LOGGER.fine("cron triggered "+p.getName());
++	                    t.run();
++	                }
++                }
++            }
++        }
++    }
+ 
+     private static final Logger LOGGER = Logger.getLogger(Trigger.class.getName());
+ 

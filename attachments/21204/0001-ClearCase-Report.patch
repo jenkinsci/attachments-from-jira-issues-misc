@@ -1,0 +1,263 @@
+From d99fb429320bc3446d70115b62cee5705040bf89 Mon Sep 17 00:00:00 2001
+From: unknown <bbonn@rnd-bbonn-d1.paychex.com>
+Date: Thu, 1 Dec 2011 15:15:11 -0500
+Subject: [PATCH] Rich's changes
+
+---
+ .../plugins/clearcase/ClearCaseReportAction.java   |   50 ++++++++++++++++++++
+ .../hudson/plugins/clearcase/ClearCaseSCM.java     |    2 +-
+ .../clearcase/action/SnapshotCheckoutAction.java   |   15 ++++++-
+ .../action/SnapshotCheckoutActionTest.java         |   26 ++++++-----
+ 4 files changed, 79 insertions(+), 14 deletions(-)
+
+diff --git a/src/main/java/hudson/plugins/clearcase/ClearCaseReportAction.java b/src/main/java/hudson/plugins/clearcase/ClearCaseReportAction.java
+index 07418a6..b0740da 100644
+--- a/src/main/java/hudson/plugins/clearcase/ClearCaseReportAction.java
++++ b/src/main/java/hudson/plugins/clearcase/ClearCaseReportAction.java
+@@ -4,6 +4,8 @@ import hudson.model.Action;
+ import hudson.model.AbstractBuild;
+ 
+ import java.util.List;
++import java.util.StringTokenizer;
++import java.io.FileInputStream;
+ 
+ public class ClearCaseReportAction implements Action {
+ 
+@@ -37,9 +39,57 @@ public class ClearCaseReportAction implements Action {
+ 
+     public String getConfigSpecHtml() {
+         String configSpecHtml = getCspec();
++		
++		//If a line in the config spec includes a file then open that file and display the contents in the clearcase report.
++		if (configSpecHtml.contains("include ")) {
++			
++			boolean hadAnInclude = true;
++			// Loop until you can go from the top of the config spec to the bottom without finding any includes. This is to handle
++			//  nested include statements
++			while (hadAnInclude) {
++				hadAnInclude = false;
++				StringTokenizer strtok = new StringTokenizer(configSpecHtml, "\n");
++				String newConfigSpecOutputNext = "";
++				
++				// Iterate over every line in the config spec
++				while(strtok.hasMoreTokens()) {
++					String nextLine = strtok.nextToken();
++					// If the line is an include then copy the file contents into the config spec html, otherwise keep the line as is.
++					if (nextLine.trim().startsWith("include ")) {
++						byte[] cspData = loadData(nextLine.substring("include ".length(), nextLine.length()).trim());
++						newConfigSpecOutputNext += new String(cspData);
++						hadAnInclude = true;
++					} else {
++						newConfigSpecOutputNext += nextLine + "\n";
++					}
++				}
++				configSpecHtml = newConfigSpecOutputNext;
++			}
++		}
++		// Fix the newlines to be html break lines.
+         configSpecHtml = configSpecHtml.replaceAll("\n", "<br/>");
+         return configSpecHtml;
+     }
++	
++	public byte[] loadData(String fileName) {
++		byte[] returnVal = null;
++		FileInputStream fis = null;
++		try {
++			fis = new FileInputStream(fileName);
++			returnVal = new byte[fis.available()];
++			fis.read(returnVal);
++			fis.close();
++		} catch (Exception e) {
++			e.printStackTrace();
++		} finally {
++			try {
++				fis.close();
++			} catch (Exception e) {
++				e.printStackTrace();
++			}
++		}
++		return returnVal;
++    }
+ 
+     public boolean isCspec() {
+         String cspec = getCspec();
+diff --git a/src/main/java/hudson/plugins/clearcase/ClearCaseSCM.java b/src/main/java/hudson/plugins/clearcase/ClearCaseSCM.java
+index de14fcf..599cddc 100644
+--- a/src/main/java/hudson/plugins/clearcase/ClearCaseSCM.java
++++ b/src/main/java/hudson/plugins/clearcase/ClearCaseSCM.java
+@@ -163,7 +163,7 @@ public class ClearCaseSCM extends AbstractClearCaseScm {
+             action = new DynamicCheckoutAction(createClearTool(variableResolver, launcher), effectiveConfigSpec, doNotUpdateConfigSpec, useTimeRule, isCreateDynView(),
+                     viewStorage, build);
+         } else {
+-            action = new SnapshotCheckoutAction(createClearTool(variableResolver, launcher),new ConfigSpec(effectiveConfigSpec, launcher.isUnix()), getViewPaths(variableResolver, build, launcher.getLauncher()),isUseUpdate(), getViewPath(variableResolver), viewStorage);
++            action = new SnapshotCheckoutAction(createClearTool(variableResolver, launcher),new ConfigSpec(effectiveConfigSpec, launcher.isUnix()), getViewPaths(variableResolver, build, launcher.getLauncher()),isUseUpdate(), getViewPath(variableResolver), viewStorage, build);
+         }
+         return action;
+     }
+diff --git a/src/main/java/hudson/plugins/clearcase/action/SnapshotCheckoutAction.java b/src/main/java/hudson/plugins/clearcase/action/SnapshotCheckoutAction.java
+index f288c48..4692108 100644
+--- a/src/main/java/hudson/plugins/clearcase/action/SnapshotCheckoutAction.java
++++ b/src/main/java/hudson/plugins/clearcase/action/SnapshotCheckoutAction.java
+@@ -26,6 +26,8 @@ package hudson.plugins.clearcase.action;
+ 
+ import hudson.FilePath;
+ import hudson.Launcher;
++import hudson.model.AbstractBuild;
++import hudson.plugins.clearcase.ClearCaseDataAction;
+ import hudson.plugins.clearcase.ClearTool;
+ import hudson.plugins.clearcase.ClearTool.SetcsOption;
+ import hudson.plugins.clearcase.ConfigSpec;
+@@ -41,10 +43,12 @@ import org.apache.commons.lang.ArrayUtils;
+ public class SnapshotCheckoutAction extends AbstractCheckoutAction {
+ 
+     private final ConfigSpec configSpec;
++	private AbstractBuild<?, ?> build;
+ 
+-    public SnapshotCheckoutAction(ClearTool cleartool, ConfigSpec configSpec, String[] loadRules, boolean useUpdate, String viewPath, ViewStorage viewStorage) {
++    public SnapshotCheckoutAction(ClearTool cleartool, ConfigSpec configSpec, String[] loadRules, boolean useUpdate, String viewPath, ViewStorage viewStorage, AbstractBuild<?, ?> build) {
+         super(cleartool, loadRules, useUpdate, viewPath, viewStorage);
+         this.configSpec = configSpec;
++		this.build = build;
+     }
+ 
+     public boolean checkout(Launcher launcher, FilePath workspace, String viewTag) throws IOException, InterruptedException {
+@@ -87,6 +91,15 @@ public class SnapshotCheckoutAction extends AbstractCheckoutAction {
+                 return false;
+             }
+         }
++		
++		if (build != null) {
++			// add config spec to dataAction
++			ClearCaseDataAction dataAction = build.getAction(ClearCaseDataAction.class);
++			if (dataAction != null) {
++				dataAction.setCspec(cleartool.catcs(viewTag).trim());
++			}
++		}
++		
+         return true;
+     }
+ 
+diff --git a/src/test/java/hudson/plugins/clearcase/action/SnapshotCheckoutActionTest.java b/src/test/java/hudson/plugins/clearcase/action/SnapshotCheckoutActionTest.java
+index fe4a4f1..faa91cc 100644
+--- a/src/test/java/hudson/plugins/clearcase/action/SnapshotCheckoutActionTest.java
++++ b/src/test/java/hudson/plugins/clearcase/action/SnapshotCheckoutActionTest.java
+@@ -28,6 +28,7 @@ import static org.junit.Assert.assertEquals;
+ import static org.mockito.Mockito.*;
+ import hudson.FilePath;
+ import hudson.Launcher;
++import hudson.model.AbstractBuild;
+ import hudson.model.BuildListener;
+ import hudson.plugins.clearcase.AbstractWorkspaceTest;
+ import hudson.plugins.clearcase.ClearTool;
+@@ -49,7 +50,8 @@ public class SnapshotCheckoutActionTest extends AbstractWorkspaceTest {
+     @Mock private BuildListener taskListener;
+     @Mock private ClearTool     cleartool;
+     @Mock private Launcher      launcher;
+-
++	@Mock private AbstractBuild<?, ?> abstractBuild;
++	
+     @Before
+     public void setUp() throws Exception {
+         createWorkspace();
+@@ -68,7 +70,7 @@ public class SnapshotCheckoutActionTest extends AbstractWorkspaceTest {
+         when(launcher.getListener()).thenReturn(taskListener);
+ 
+         AbstractCheckoutAction action = new SnapshotCheckoutAction(cleartool, new ConfigSpec("config\r\nspec", false), new String[] { "foo" }, false,
+-                "viewpath", null);
++                "viewpath", null, abstractBuild);
+         action.checkout(launcher, workspace, "viewname");
+ 
+         verify(cleartool).doesViewExist("viewname");
+@@ -86,7 +88,7 @@ public class SnapshotCheckoutActionTest extends AbstractWorkspaceTest {
+         when(launcher.isUnix()).thenReturn(Boolean.TRUE);
+         when(launcher.getListener()).thenReturn(taskListener);
+ 
+-        CheckOutAction action = new SnapshotCheckoutAction(cleartool, new ConfigSpec("config\r\nspec", true), new String[] { "foo" }, false, "viewpath", null);
++        CheckOutAction action = new SnapshotCheckoutAction(cleartool, new ConfigSpec("config\r\nspec", true), new String[] { "foo" }, false, "viewpath", null, abstractBuild);
+         action.checkout(launcher, workspace, "viewname");
+ 
+         verify(cleartool).doesViewExist("viewname");
+@@ -104,7 +106,7 @@ public class SnapshotCheckoutActionTest extends AbstractWorkspaceTest {
+         when(launcher.isUnix()).thenReturn(Boolean.TRUE);
+         when(launcher.getListener()).thenReturn(taskListener);
+ 
+-        CheckOutAction action = new SnapshotCheckoutAction(cleartool, new ConfigSpec("config\r\nspec", true), new String[] { "foo" }, false, "viewpath", null);
++        CheckOutAction action = new SnapshotCheckoutAction(cleartool, new ConfigSpec("config\r\nspec", true), new String[] { "foo" }, false, "viewpath", null, abstractBuild);
+         boolean checkoutResult = action.checkout(launcher, workspace, "viewname");
+ 
+         Assert.assertTrue("Build should succeed.", checkoutResult);
+@@ -126,7 +128,7 @@ public class SnapshotCheckoutActionTest extends AbstractWorkspaceTest {
+         when(launcher.isUnix()).thenReturn(Boolean.TRUE);
+         when(launcher.getListener()).thenReturn(taskListener);
+ 
+-        CheckOutAction action = new SnapshotCheckoutAction(cleartool, new ConfigSpec("config\r\nspec", true), new String[] { "foo" }, false, "viewpath", null);
++        CheckOutAction action = new SnapshotCheckoutAction(cleartool, new ConfigSpec("config\r\nspec", true), new String[] { "foo" }, false, "viewpath", null, abstractBuild);
+         boolean checkoutResult = action.checkout(launcher, workspace, "viewname");
+         List<FilePath> directories = workspace.listDirectories();
+         boolean foundRenamedDirectory = false;
+@@ -158,7 +160,7 @@ public class SnapshotCheckoutActionTest extends AbstractWorkspaceTest {
+         when(launcher.isUnix()).thenReturn(Boolean.TRUE);
+         when(launcher.getListener()).thenReturn(taskListener);
+ 
+-        CheckOutAction action = new SnapshotCheckoutAction(cleartool, new ConfigSpec("config\r\nspec", true), new String[] { "foo" }, false, "viewpath", null);
++        CheckOutAction action = new SnapshotCheckoutAction(cleartool, new ConfigSpec("config\r\nspec", true), new String[] { "foo" }, false, "viewpath", null, abstractBuild);
+         boolean checkoutResult = action.checkout(launcher, workspace, "viewname");
+         List<FilePath> directories = workspace.listDirectories();
+         boolean foundRenamedDirectory = false;
+@@ -189,7 +191,7 @@ public class SnapshotCheckoutActionTest extends AbstractWorkspaceTest {
+         when(launcher.isUnix()).thenReturn(Boolean.TRUE);
+         when(launcher.getListener()).thenReturn(taskListener);
+ 
+-        CheckOutAction action = new SnapshotCheckoutAction(cleartool, new ConfigSpec("configspec", true), new String[] { "foo" }, true, "viewpath", null);
++        CheckOutAction action = new SnapshotCheckoutAction(cleartool, new ConfigSpec("configspec", true), new String[] { "foo" }, true, "viewpath", null, abstractBuild);
+         action.checkout(launcher, workspace, "viewname");
+ 
+         verify(cleartool).doesViewExist("viewname");
+@@ -211,7 +213,7 @@ public class SnapshotCheckoutActionTest extends AbstractWorkspaceTest {
+         when(launcher.isUnix()).thenReturn(Boolean.TRUE);
+         when(launcher.getListener()).thenReturn(taskListener);
+ 
+-        CheckOutAction action = new SnapshotCheckoutAction(cleartool, new ConfigSpec("configspec", true), new String[] { "/foo" }, true, "viewpath", null);
++        CheckOutAction action = new SnapshotCheckoutAction(cleartool, new ConfigSpec("configspec", true), new String[] { "/foo" }, true, "viewpath", null, abstractBuild);
+         action.checkout(launcher, workspace, "viewname");
+ 
+         verify(cleartool).doesViewExist("viewname");
+@@ -230,7 +232,7 @@ public class SnapshotCheckoutActionTest extends AbstractWorkspaceTest {
+         when(launcher.isUnix()).thenReturn(Boolean.TRUE);
+         when(launcher.getListener()).thenReturn(taskListener);
+         
+-        CheckOutAction action = new SnapshotCheckoutAction(cleartool, new ConfigSpec("configspec", true), new String[] { "/foo" }, false, "viewpath", null);
++        CheckOutAction action = new SnapshotCheckoutAction(cleartool, new ConfigSpec("configspec", true), new String[] { "/foo" }, false, "viewpath", null, abstractBuild);
+         action.checkout(launcher, workspace, "viewname");
+         
+         verify(cleartool).doesViewExist("viewname");
+@@ -254,7 +256,7 @@ public class SnapshotCheckoutActionTest extends AbstractWorkspaceTest {
+         when(launcher.isUnix()).thenReturn(Boolean.TRUE);
+         when(launcher.getListener()).thenReturn(taskListener);
+ 
+-        CheckOutAction action = new SnapshotCheckoutAction(cleartool, new ConfigSpec("configspec", true), new String[] { "foo" }, true, "viewpath", null);
++        CheckOutAction action = new SnapshotCheckoutAction(cleartool, new ConfigSpec("configspec", true), new String[] { "foo" }, true, "viewpath", null, abstractBuild);
+         action.checkout(launcher, workspace, "viewname");
+         
+         verify(cleartool).doesViewExist("viewname");
+@@ -275,7 +277,7 @@ public class SnapshotCheckoutActionTest extends AbstractWorkspaceTest {
+         when(launcher.isUnix()).thenReturn(Boolean.TRUE);
+         when(launcher.getListener()).thenReturn(taskListener);
+         
+-        CheckOutAction action = new SnapshotCheckoutAction(cleartool, new ConfigSpec("configspec", true), new String[] { "/foo", "/bar" }, true, "viewpath", null);
++        CheckOutAction action = new SnapshotCheckoutAction(cleartool, new ConfigSpec("configspec", true), new String[] { "/foo", "/bar" }, true, "viewpath", null, abstractBuild);
+         action.checkout(launcher, workspace, "viewname");
+         
+         verify(cleartool).doesViewExist("viewname");
+@@ -296,7 +298,7 @@ public class SnapshotCheckoutActionTest extends AbstractWorkspaceTest {
+         when(launcher.isUnix()).thenReturn(Boolean.TRUE);
+         when(launcher.getListener()).thenReturn(taskListener);
+ 
+-        CheckOutAction action = new SnapshotCheckoutAction(cleartool, new ConfigSpec("configspec", true), new String[] { "bar" }, true, "viewpath", null);
++        CheckOutAction action = new SnapshotCheckoutAction(cleartool, new ConfigSpec("configspec", true), new String[] { "bar" }, true, "viewpath", null, abstractBuild);
+         action.checkout(launcher, workspace, "viewname");
+         
+         verify(cleartool).doesViewExist("viewname");
+-- 
+1.7.7.msysgit.1
+

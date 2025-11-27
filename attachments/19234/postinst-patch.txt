@@ -1,0 +1,15 @@
+--- postinst.orig	2010-02-27 03:49:02.000000000 +0100
++++ postinst	2010-03-10 11:29:25.000000000 +0100
+@@ -32,10 +32,10 @@
+ 	
+     	# Fix permissions on runtime directories/files.
+     	# change group/owner to hudson:adm - exclude jobs directory. See HUDSON-4047
+-    	find /var/lib/hudson -path "*jobs" -prune -o -exec chown hudson:adm {} +
++    	find /var/lib/hudson -path "*jobs" -prune -o ! -type l -exec chown hudson:adm {} +
+     	chown -R hudson:adm /var/run/hudson /var/log/hudson
+     	# change mode to 750 - exclude jobs and .ssh directories. See HUDSON-4047
+-    	find /var/lib/hudson -path "*jobs" -prune -o -path "*.ssh" -prune -o -exec chmod 750 {} +
++    	find /var/lib/hudson -path "*jobs" -prune -o -path "*.ssh" -prune -o ! -type l -exec chmod 750 {} +
+     	chmod -R 750 /var/run/hudson
+     	chmod 750 /var/log/hudson
+     ;;

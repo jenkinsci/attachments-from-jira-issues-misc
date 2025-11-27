@@ -1,0 +1,13 @@
+Index: main/test/src/test/java/hudson/scm/SubversionSCMTest.java
+===================================================================
+--- main/test/src/test/java/hudson/scm/SubversionSCMTest.java	(revision 12662)
++++ main/test/src/test/java/hudson/scm/SubversionSCMTest.java	(working copy)
+@@ -29,7 +29,7 @@
+         File svnRepo = new CopyExisting(getClass().getResource("/svn-repo.zip")).allocate();
+         FreeStyleProject p = createFreeStyleProject();
+         p.setScm(new SubversionSCM(
+-                new String[]{"file://"+svnRepo+"/trunk/a"},
++                new String[]{"file://" + svnRepo.toURI().getPath() + "trunk/a"},
+                 new String[]{null},
+                 true, null
+         ));

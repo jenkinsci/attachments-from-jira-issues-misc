@@ -1,0 +1,79 @@
+From 67c4a83152f2fa56cef2d6238c03ed5e9a3b3eb9 Mon Sep 17 00:00:00 2001
+From: maxk94 <maxkrause@maxkrause.de>
+Date: Wed, 16 Jul 2014 15:05:29 +0200
+Subject: [PATCH] [JENKINS-23575] Post-Build-Step "Publish Cppcheck results"
+ not available in job generator project
+
+---
+ pom.xml                                              | 20 +++++++++++++++++---
+ .../plugins/cppcheck/CppcheckPublisher.java          |  2 ++
+ 2 files changed, 19 insertions(+), 3 deletions(-)
+
+diff --git a/pom.xml b/pom.xml
+index 9aece02..f292f91 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -4,7 +4,7 @@
+     <parent>
+         <groupId>org.jenkins-ci.plugins</groupId>
+         <artifactId>plugin</artifactId>
+-        <version>1.447</version>
++        <version>1.573-SNAPSHOT</version>
+     </parent>
+ 
+     <artifactId>cppcheck</artifactId>
+@@ -58,6 +58,7 @@
+         <dependency>
+             <groupId>org.jenkins-ci.main</groupId>
+             <artifactId>maven-plugin</artifactId>
++			<version>2.3</version>
+         </dependency>
+ 
+         <dependency>
+@@ -112,8 +113,21 @@
+           <version>${dashboard.view.version}</version>
+           <optional>true</optional>
+         </dependency>
+-    </dependencies>
+-
++		
++		<dependency>
++          <groupId>org.jenkins-ci.plugins</groupId>
++          <artifactId>jobgenerator</artifactId>
++          <version>1.23-SNAPSHOT</version>
++        </dependency>
++		
++		<dependency>
++		  <groupId>org.jenkins-ci.plugins</groupId>
++		  <artifactId>matrix-project</artifactId>
++		  <version>1.3-SNAPSHOT</version>
++		</dependency>	
++	</dependencies>
++	
++		
+     <build>
+         <plugins>
+             <plugin>
+diff --git a/src/main/java/org/jenkinsci/plugins/cppcheck/CppcheckPublisher.java b/src/main/java/org/jenkinsci/plugins/cppcheck/CppcheckPublisher.java
+index f567d73..312a8f8 100644
+--- a/src/main/java/org/jenkinsci/plugins/cppcheck/CppcheckPublisher.java
++++ b/src/main/java/org/jenkinsci/plugins/cppcheck/CppcheckPublisher.java
+@@ -15,6 +15,7 @@ import hudson.tasks.BuildStepMonitor;
+ import hudson.tasks.Publisher;
+ import hudson.tasks.Recorder;
+ 
++import org.jenkinsci.plugins.jobgenerator.*;
+ import org.jenkinsci.plugins.cppcheck.config.CppcheckConfig;
+ import org.jenkinsci.plugins.cppcheck.config.CppcheckConfigGraph;
+ import org.jenkinsci.plugins.cppcheck.config.CppcheckConfigSeverityEvaluation;
+@@ -225,6 +226,7 @@ public class CppcheckPublisher extends Recorder {
+             return FreeStyleProject.class.isAssignableFrom(jobType)
+                     || MavenModuleSet.class.isAssignableFrom(jobType)
+                     || MatrixProject.class.isAssignableFrom(jobType)
++					|| JobGenerator.class.isAssignableFrom(jobType)
+                     || isIvyProject;
+         }
+ 
+-- 
+1.8.4.msysgit.0
+

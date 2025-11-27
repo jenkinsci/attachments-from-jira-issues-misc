@@ -1,0 +1,45 @@
+Git Polling Log
+Started on Aug 5, 2014 6:48:03 PM
+Using strategy: Default
+[poll] Last Built Revision: Revision 33ce43e454fd2447f548f18dc3bc404ff1a2b021 (origin/release)
+ > /usr/local/bin/git ls-remote -h git@github.com:everyscape/Mobile.git release # timeout=10
+FATAL: hudson.plugins.git.GitException: Error performing command: /usr/local/bin/git ls-remote -h git@github.com:everyscape/Mobile.git release
+hudson.util.IOException2: hudson.plugins.git.GitException: Error performing command: /usr/local/bin/git ls-remote -h git@github.com:everyscape/Mobile.git release
+	at hudson.plugins.git.GitSCM.compareRemoteRevisionWith(GitSCM.java:459)
+	at hudson.scm.SCM._compareRemoteRevisionWith(SCM.java:357)
+	at hudson.scm.SCM.poll(SCM.java:374)
+	at hudson.model.AbstractProject._poll(AbstractProject.java:1428)
+	at hudson.model.AbstractProject.poll(AbstractProject.java:1331)
+	at hudson.triggers.SCMTrigger$Runner.runPolling(SCMTrigger.java:477)
+	at hudson.triggers.SCMTrigger$Runner.run(SCMTrigger.java:506)
+	at hudson.util.SequentialExecutionQueue$QueueEntry.run(SequentialExecutionQueue.java:118)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at java.util.concurrent.FutureTask$Sync.innerRun(Unknown Source)
+	at java.util.concurrent.FutureTask.run(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.lang.Thread.run(Unknown Source)
+Caused by: hudson.plugins.git.GitException: Error performing command: /usr/local/bin/git ls-remote -h git@github.com:everyscape/Mobile.git release
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandIn(CliGitAPIImpl.java:1414)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandWithCredentials(CliGitAPIImpl.java:1195)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandWithCredentials(CliGitAPIImpl.java:1119)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandWithCredentials(CliGitAPIImpl.java:1110)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.getHeadRev(CliGitAPIImpl.java:2004)
+	at hudson.plugins.git.GitSCM.compareRemoteRevisionWithImpl(GitSCM.java:492)
+	at hudson.plugins.git.GitSCM.compareRemoteRevisionWith(GitSCM.java:457)
+	... 13 more
+Caused by: java.io.IOException: Cannot run program "/usr/local/bin/git": CreateProcess error=2, The system cannot find the file specified
+	at java.lang.ProcessBuilder.start(Unknown Source)
+	at hudson.Proc$LocalProc.<init>(Proc.java:244)
+	at hudson.Proc$LocalProc.<init>(Proc.java:216)
+	at hudson.Launcher$LocalLauncher.launch(Launcher.java:780)
+	at hudson.Launcher$ProcStarter.start(Launcher.java:360)
+	at org.jenkinsci.plugins.gitclient.CliGitAPIImpl.launchCommandIn(CliGitAPIImpl.java:1403)
+	... 19 more
+Caused by: java.io.IOException: CreateProcess error=2, The system cannot find the file specified
+	at java.lang.ProcessImpl.create(Native Method)
+	at java.lang.ProcessImpl.<init>(Unknown Source)
+	at java.lang.ProcessImpl.start(Unknown Source)
+	... 25 more
+Done. Took 5 ms
+No changes

@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Klocwork results</description>
+  <logRotator>
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>200</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>50</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.CustomSCM">
+    <browser class="hudson.scm.browsers.CustomViewSVN">
+      <url>https://xxx.com/plugins/scmsvn/viewvc.php/?root=XXX</url>
+    </browser>
+    <checkoutCommand>$HUDSON_HOME/xxx/custom_SCM.pl -checkout</checkoutCommand>
+    <calcRevisionCommand>$HUDSON_HOME/xxx/custom_SCM.pl -genstate</calcRevisionCommand>
+    <compareRevisionCommand>$HUDSON_HOME/xxx/custom_SCM.pl -poll</compareRevisionCommand>
+    <repoBrowserURL>https://xxx.com/plugins/scmsvn/viewvc.php/?root=XXX</repoBrowserURL>
+  </scm>
+  <assignedNode>KLOCWORK</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <authToken>Klocwork</authToken>
+  <triggers class="vector"/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>mkdir -p $WORKSPACE/save/
+JOB_DIR=$HUDSON_HOME/jobs/$JOB_NAME/builds/$BUILD_NUMBER
+[ -r &quot;$JOB_DIR/revisionstate.xml&quot; ] &amp;&amp; cp &quot;$JOB_DIR/revisionstate.xml&quot; $WORKSPACE/save/
+
+#echo SVN_REVISION=$SVN_REVISION
+[[ `wget -q --no-proxy -O- ${BUILD_URL}&apos;api/xml?xpath=//*/shortDescription&apos;` =~ &apos;Revision=&apos;([[:digit:]]+) ]] &amp;&amp; rev=${BASH_REMATCH[1]}
+[[ $JOB_NAME =~ _([^_]+)_klocwork ]] &amp;&amp; app=${BASH_REMATCH[1]}
+cp /var/fpwork/kwbts01/kw_workspace/${app}_TRUNK/reports/${rev}.xml $WORKSPACE/klocwork.xml</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>save/revisionstate.xml</artifacts>
+      <latestOnly>false</latestOnly>
+    </hudson.tasks.ArtifactArchiver>
+    <com.thalesgroup.hudson.plugins.klocwork.KloPublisher>
+      <kloConfig>
+        <klocworkReportPattern>klocwork.xml</klocworkReportPattern>
+        <configSeverityEvaluation>
+          <threshold>0</threshold>
+          <newThreshold>0</newThreshold>
+          <failureThreshold>1</failureThreshold>
+          <newFailureThreshold>1</newFailureThreshold>
+          <healthy>0</healthy>
+          <unHealthy>0</unHealthy>
+          <highSeverity>false</highSeverity>
+          <lowSeverity>true</lowSeverity>
+        </configSeverityEvaluation>
+        <configGraph>
+          <xSize>500</xSize>
+          <ySize>200</ySize>
+          <displayAllError>false</displayAllError>
+          <displayHighSeverity>true</displayHighSeverity>
+          <displayLowSeverity>true</displayLowSeverity>
+        </configGraph>
+      </kloConfig>
+    </com.thalesgroup.hudson.plugins.klocwork.KloPublisher>
+  </publishers>
+  <buildWrappers/>
+</project>

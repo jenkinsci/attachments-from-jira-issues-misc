@@ -1,0 +1,150 @@
+Index: src/main/java/hudson/plugins/createjobadvanced/CreateJobAdvancedPlugin.java
+===================================================================
+--- src/main/java/hudson/plugins/createjobadvanced/CreateJobAdvancedPlugin.java	(revision 31175)
++++ src/main/java/hudson/plugins/createjobadvanced/CreateJobAdvancedPlugin.java	(working copy)
+@@ -24,6 +24,7 @@
+     static Logger log = Logger.getLogger(CreateJobAdvancedPlugin.class.getName());
+ 
+     private boolean autoOwnerRights;
++    private boolean autoPublicBrowse;
+     private boolean replaceSpace;
+ 
+     private boolean activeLogRotator;
+@@ -54,6 +55,12 @@
+ 	    autoOwnerRights = true;
+ 	}
+ 
++	if (req.getParameter("cja.public") == null || req.getParameter("cja.public") == "false") {
++	    autoPublicBrowse = false;
++	} else {
++	    autoPublicBrowse = true;
++	}
++
+ 	if (req.getParameter("cja.jobspacesinname") == null || req.getParameter("cja.jobspacesinname") == "false") {
+ 	    replaceSpace = false;
+ 	} else {
+@@ -97,6 +104,10 @@
+ 	return autoOwnerRights;
+     }
+ 
++    public boolean isAutoPublicBrowse() {
++	return autoPublicBrowse;
++    }
++
+     public boolean isReplaceSpace() {
+ 	return replaceSpace;
+     }
+Index: src/main/java/hudson/plugins/createjobadvanced/ItemListenerImpl.java
+===================================================================
+--- src/main/java/hudson/plugins/createjobadvanced/ItemListenerImpl.java	(revision 31175)
++++ src/main/java/hudson/plugins/createjobadvanced/ItemListenerImpl.java	(working copy)
+@@ -24,6 +24,8 @@
+ public class ItemListenerImpl extends ItemListener {
+ 
+     static Logger log = Logger.getLogger(CreateJobAdvancedPlugin.class.getName());
++    private static int ownerPermissions = 1;
++    private static int anonymousPermissions = 2;
+ 
+     @DataBoundConstructor
+     public ItemListenerImpl() {
+@@ -60,9 +62,13 @@
+ 	}
+ 	
+ 	if (cja.isAutoOwnerRights()){
+-	    securityAutoOwner(job);
++	    securityGrantPermissions(job, ownerPermissions);
+ 	}
+ 	
++	if (cja.isAutoPublicBrowse()){
++	    securityGrantPermissions(job, anonymousPermissions);
++	}
++	
+ 	if (cja.isActiveLogRotator()){
+ 	    activateLogRotator(job,cja);
+ 	}
+@@ -95,7 +101,7 @@
+     }
+     
+     @SuppressWarnings("unchecked")
+-    private void securityAutoOwner(final Job job){
++    private void securityGrantPermissions(final Job job, int mode){
+ 	// hudson must activate security mode for using
+ 	if (Hudson.getInstance().getSecurity().equals(SecurityMode.UNSECURED))
+ 	    return;
+@@ -116,18 +122,30 @@
+ 	    permissions = new HashMap<Permission, Set<String>>();
+ 	}
+ 
+-	String sid = Hudson.getAuthentication().getName();
++	String sid = "";
++	if ( (mode & ownerPermissions) > 0 ) {
++	    sid = Hudson.getAuthentication().getName();
+ 
+-	configurePermission(permissions, Item.CONFIGURE, sid);
+-	configurePermission(permissions, Item.READ, sid);
+-	configurePermission(permissions, Item.BUILD, sid);
+-	configurePermission(permissions, Item.WORKSPACE, sid);
+-	configurePermission(permissions, Item.DELETE, sid);
++	    configurePermission(permissions, Item.CONFIGURE, sid);
++	    configurePermission(permissions, Item.READ, sid);
++	    configurePermission(permissions, Item.BUILD, sid);
++	    configurePermission(permissions, Item.WORKSPACE, sid);
++	    configurePermission(permissions, Item.DELETE, sid);
++	}
++	if ( (mode & anonymousPermissions) > 0 ) {
++	    if ( sid.length() != 0 ) {
++	        sid += ", anonymous";
++	    } else {
++	        sid += "anonymous";
++	    }
++	    configurePermission(permissions, Item.READ, "anonymous");
++	    configurePermission(permissions, Item.WORKSPACE, "anonymous");
++	}
+ 
+ 	try {
+ 	    AuthorizationMatrixProperty authProperty = new AuthorizationMatrixProperty(permissions);
+ 	    job.addProperty(authProperty);
+-	    log.info("Create Job " + job.getDisplayName() + " with right on " + sid);
++	    log.info("Granding rights to [" + sid + "] for newly-created job " + job.getDisplayName());
+ 	} catch (IOException e) {
+ 	    log.log(Level.SEVERE, "problem to add granted permissions", e);
+ 	}
+Index: src/main/resources/hudson/plugins/createjobadvanced/CreateJobAdvancedPlugin/config.properties
+===================================================================
+--- src/main/resources/hudson/plugins/createjobadvanced/CreateJobAdvancedPlugin/config.properties	(revision 31175)
++++ src/main/resources/hudson/plugins/createjobadvanced/CreateJobAdvancedPlugin/config.properties	(working copy)
+@@ -1,6 +1,8 @@
+ CJAInstallations=Create Job Advanced
+ security=Security
+ securitydesc=If security is activated, automatically set owner rights
++public=Allow anonymous browsing
++publicdesc=If security is activated, automatically grant anonymous browsing
+ jobspacesinname=Replace spaces in the job name with "-"
+ logrotator=Define default log rotator value
+ daysToKeep=Days to keep builds
+Index: src/main/resources/hudson/plugins/createjobadvanced/CreateJobAdvancedPlugin/config.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/createjobadvanced/CreateJobAdvancedPlugin/config.jelly	(revision 31175)
++++ src/main/resources/hudson/plugins/createjobadvanced/CreateJobAdvancedPlugin/config.jelly	(working copy)
+@@ -5,6 +5,9 @@
+     <f:entry title="${%security}" description="${%securitydesc}">
+         <f:checkbox name="cja.security"  checked="${it.autoOwnerRights}"/> 
+     </f:entry>
++    <f:entry title="${%public}" help="/plugin/createjobadvanced/public.html">
++        <f:checkbox name="cja.public"  checked="${it.autoPublicBrowse}"/> 
++    </f:entry>
+      <f:entry title="${%jobspacesinname}">
+         <f:checkbox name="cja.jobspacesinname" checked="${it.replaceSpace}"/> 
+     </f:entry>
+Index: src/main/webapp/public.html
+===================================================================
+--- src/main/webapp/public.html	(revision 0)
++++ src/main/webapp/public.html	(revision 0)
+@@ -0,0 +1,7 @@
++<div>
++  If checked, Anonymous users will be allowed to browse newly-created
++  jobs (i.e., when using "Project-based Matrix Authorization Strategy"
++  the Anonymous user will be granted
++  <tt>Read</tt> and
++  <tt>Workspace</tt> permissions).
++</div> 

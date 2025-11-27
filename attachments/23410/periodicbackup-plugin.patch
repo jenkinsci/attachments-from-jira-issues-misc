@@ -1,0 +1,129 @@
+diff --git a/src/main/java/org/jenkinsci/plugins/periodicbackup/ExcludeByPattern.java b/src/main/java/org/jenkinsci/plugins/periodicbackup/ExcludeByPattern.java
+new file mode 100644
+index 0000000..caca98d
+--- /dev/null
++++ b/src/main/java/org/jenkinsci/plugins/periodicbackup/ExcludeByPattern.java
+@@ -0,0 +1,43 @@
++package org.jenkinsci.plugins.periodicbackup;
++
++import hudson.Extension;
++
++import org.kohsuke.stapler.DataBoundConstructor;
++
++public class ExcludeByPattern extends FullBackup
++{
++  private final String excludesString;
++
++  @DataBoundConstructor
++  public ExcludeByPattern(String excludesString)
++  {
++    this.excludesString = excludesString;
++  }
++
++  public String getDisplayName()
++  {
++    return "ExcludeByPattern";
++  }
++
++  protected String[] getExcludes()
++  {
++    if (this.excludesString == null) {
++      return null;
++    }
++    return this.excludesString.split(";");
++  }
++  
++  public String getExcludesString() 
++  {
++	return excludesString;
++  }
++
++  @Extension
++  public static class DescriptorImpl extends FileManagerDescriptor
++  {
++    public String getDisplayName()
++    {
++      return "ExcludeByPattern";
++    }
++  }
++}
+\ No newline at end of file
+diff --git a/src/main/java/org/jenkinsci/plugins/periodicbackup/FullBackup.java b/src/main/java/org/jenkinsci/plugins/periodicbackup/FullBackup.java
+index 3fc4f58..750c1bc 100644
+--- a/src/main/java/org/jenkinsci/plugins/periodicbackup/FullBackup.java
++++ b/src/main/java/org/jenkinsci/plugins/periodicbackup/FullBackup.java
+@@ -56,13 +56,19 @@
+     public Iterable<File> getFilesToBackup() {
+         DirectoryScanner directoryScanner = new DirectoryScanner(); // It will scan all files inside the root directory
+         directoryScanner.setBasedir(Hudson.getInstance().getRootDir());
++        directoryScanner.setExcludes(getExcludes());
+         directoryScanner.scan();
+-        List<File> files = Lists.newArrayList();
+-        for(String s: directoryScanner.getIncludedFiles()) {
+-            files.add(new File(directoryScanner.getBasedir(), s));
++        List files = Lists.newArrayList();
++        for (String s : directoryScanner.getIncludedFiles()) {
++          files.add(new File(directoryScanner.getBasedir(), s));
+         }
+         return files;
+-    }
++      }
++
++      protected String[] getExcludes()
++      {
++        return null;
++      }
+ 
+     @Override
+     public boolean equals(Object o) {
+diff --git a/src/main/resources/org/jenkinsci/plugins/periodicbackup/ExcludeByPattern/config.jelly b/src/main/resources/org/jenkinsci/plugins/periodicbackup/ExcludeByPattern/config.jelly
+new file mode 100644
+index 0000000..f813587
+--- /dev/null
++++ b/src/main/resources/org/jenkinsci/plugins/periodicbackup/ExcludeByPattern/config.jelly
+@@ -0,0 +1,15 @@
++<!--
++  ExcludeByPattern config page
++-->
++<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
++         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
++
++    <f:entry field="excludeByPatternDescription">
++        <!-- This entry is only for help file binding -->
++    </f:entry>
++
++    <f:entry title="${%excludesString.title}" field="excludesString">
++        <f:textbox/>
++    </f:entry>
++
++</j:jelly>
+diff --git a/src/main/resources/org/jenkinsci/plugins/periodicbackup/ExcludeByPattern/config.properties b/src/main/resources/org/jenkinsci/plugins/periodicbackup/ExcludeByPattern/config.properties
+new file mode 100644
+index 0000000..15f903c
+--- /dev/null
++++ b/src/main/resources/org/jenkinsci/plugins/periodicbackup/ExcludeByPattern/config.properties
+@@ -0,0 +1,2 @@
++
++excludesString.title=Excludes list
+diff --git a/src/main/resources/org/jenkinsci/plugins/periodicbackup/ExcludeByPattern/help-excludeByPatternDescription.html b/src/main/resources/org/jenkinsci/plugins/periodicbackup/ExcludeByPattern/help-excludeByPatternDescription.html
+new file mode 100644
+index 0000000..79c393e
+--- /dev/null
++++ b/src/main/resources/org/jenkinsci/plugins/periodicbackup/ExcludeByPattern/help-excludeByPatternDescription.html
+@@ -0,0 +1,5 @@
++<div>
++    ExcludeByPattern will choose all the files in the Jenkins homedir during the backup except the files that match the excludes list.
++    During the restore it will delete all the deletable files in the Jenkins homedir
++    and then it will write with files in the selected backup.
++</div>
+\ No newline at end of file
+diff --git a/src/main/resources/org/jenkinsci/plugins/periodicbackup/ExcludeByPattern/help-excludesString.html b/src/main/resources/org/jenkinsci/plugins/periodicbackup/ExcludeByPattern/help-excludesString.html
+new file mode 100644
+index 0000000..81ddec8
+--- /dev/null
++++ b/src/main/resources/org/jenkinsci/plugins/periodicbackup/ExcludeByPattern/help-excludesString.html
+@@ -0,0 +1,3 @@
++<div>
++    A list of all excludes in ant syntax; separated by ';'.
++</div>
+\ No newline at end of file

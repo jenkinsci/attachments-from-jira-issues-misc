@@ -1,0 +1,412 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@1436.vfa_244484591f">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2214.vb_b_34b_2ea_9b_83"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2214.vb_b_34b_2ea_9b_83">
+      <jobProperties/>
+      <triggers/>
+      <parameters/>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+    <org.jenkinsci.plugins.workflow.multibranch.JobPropertyTrackerAction plugin="workflow-multibranch@795.ve0cb_1f45ca_9a_">
+      <jobPropertyDescriptors>
+        <string>hudson.model.ParametersDefinitionProperty</string>
+        <string>jenkins.model.BuildDiscarderProperty</string>
+      </jobPropertyDescriptors>
+    </org.jenkinsci.plugins.workflow.multibranch.JobPropertyTrackerAction>
+  </actions>
+  <description>Run feature branch acceptance test set</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.13">
+      <siteName>http://jira.il.innoviz.tech/</siteName>
+    </hudson.plugins.jira.JiraProjectProperty>
+    <hudson.plugins.buildblocker.BuildBlockerProperty plugin="build-blocker-plugin@166.vc82fc20b_a_ed6">
+      <useBuildBlocker>false</useBuildBlocker>
+      <blockLevel>GLOBAL</blockLevel>
+      <scanQueueFor>DISABLED</scanQueueFor>
+      <blockingJobs></blockingJobs>
+    </hudson.plugins.buildblocker.BuildBlockerProperty>
+    <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.8.1">
+      <gitLabConnection>Innoviz_gitlab</gitLabConnection>
+      <jobCredentialId></jobCredentialId>
+      <useAlternativeCredential>false</useAlternativeCredential>
+    </com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
+    <org.bstick12.jenkinsci.plugins.leastload.LeastLoadDisabledProperty plugin="leastload@3.0.0">
+      <leastLoadDisabled>false</leastLoadDisabled>
+    </org.bstick12.jenkinsci.plugins.leastload.LeastLoadDisabledProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@332.va_1ee476d8f6d">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.14">
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit></paramsToUseForLimit>
+      <configVersion>1</configVersion>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>100</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>100</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@166.vd0120849b_386">
+          <name>FIRMWARE_INFO</name>
+          <separatorStyle>
+        border: 0;
+        border-bottom: 1px dashed #ccc;
+        background: #999;
+    </separatorStyle>
+          <sectionHeader>Software Configuration</sectionHeader>
+          <sectionHeaderStyle>
+        color: white;
+        background: green;
+        font-family: Roboto, sans-serif !important;
+        padding: 5px;
+        text-align: center;
+    </sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <org.biouno.unochoice.ChoiceParameter plugin="uno-choice@2.8.3">
+          <name>PRODUCT_NAME</name>
+          <description>Choose the product FW for compilation (wait after selection, in case LIDAR_RELEASED_VERSION needs to be refreshed)</description>
+          <randomName>choice-parameter-155560519823010</randomName>
+          <visibleItemCount>1</visibleItemCount>
+          <script class="org.biouno.unochoice.model.GroovyScript">
+            <secureScript plugin="script-security@1358.vb_26663c13537">
+              <script>[&apos;one:selected&apos;, &apos;two&apos;, &apos;two_b2&apos;, &apos;i360&apos;, &apos;i360_b2&apos;]</script>
+              <sandbox>true</sandbox>
+            </secureScript>
+          </script>
+          <choiceType>PT_SINGLE_SELECT</choiceType>
+          <filterable>false</filterable>
+        </org.biouno.unochoice.ChoiceParameter>
+        <org.biouno.unochoice.CascadeChoiceParameter plugin="uno-choice@2.8.3">
+          <name>CUSTOMER_NAME</name>
+          <description>Choose the customer flavor for compilation</description>
+          <randomName>choice-parameter-155560519923439</randomName>
+          <visibleItemCount>1</visibleItemCount>
+          <script class="org.biouno.unochoice.model.GroovyScript">
+            <secureScript plugin="script-security@1358.vb_26663c13537">
+              <script>
+        choice_map = [one:[customer_1:&apos;our first customer:selected&apos;, customer_2:&apos;the second customer&apos;], two:[customer_3:&apos;third&apos;, customer_4:&apos;fourth customer&apos;], two_b2:[customer_3:&apos;third&apos;, customer_4:&apos;fourth customer&apos;, customer_5:&apos;gentle&apos;], i360:[customer_6:&apos;exhibition&apos;, customer_7:&apos;last customer&apos;], i360_b2:[customer_7:&apos;last customer&apos;]]
+        return choice_map[PRODUCT_NAME]
+    </script>
+              <sandbox>true</sandbox>
+            </secureScript>
+          </script>
+          <parameters class="linked-hash-map"/>
+          <referencedParameters>PRODUCT_NAME</referencedParameters>
+          <choiceType>PT_SINGLE_SELECT</choiceType>
+          <filterable>false</filterable>
+        </org.biouno.unochoice.CascadeChoiceParameter>
+        <org.biouno.unochoice.CascadeChoiceParameter plugin="uno-choice@2.8.3">
+          <name>LIDAR_RELEASED_VERSION</name>
+          <description>Select The lidar version to use from artifactory</description>
+          <randomName>choice-parameter-155560520027622</randomName>
+          <visibleItemCount>1</visibleItemCount>
+          <script class="org.biouno.unochoice.model.GroovyScript">
+            <secureScript plugin="script-security@1358.vb_26663c13537">
+              <script>
+        import groovy.json.JsonSlurper
+        def jsonfile = &apos;/devops_tools/jenkins/artifactory/artifact_list.json&apos;
+        def slurper = new JsonSlurper()
+        File artifact_list_file = new File(jsonfile)
+        def artifacts_list = slurper.parse(artifact_list_file)
+        def version_category = &quot;unofficial&quot;
+        ret_list = []
+        choice_map = [customer_1:&apos;one&apos;, customer_2:&apos;two&apos;, customer_3:&apos;three&apos;, customer_4:&apos;four&apos;, customer_5:&apos;five&apos;, customer_6:&apos;six&apos;, customer_7:&apos;seven&apos;]
+        artifacts_list.each {
+            if (it.customer_name == choice_map[CUSTOMER_NAME] &amp;&amp; (!version_category || version_category == it.job_category)) {
+                ret_list += &quot;${it.job_category}/${it.version}&quot;.toString()
+            }
+        }
+        ret_list = ret_list.reverse()
+        ret_list.add(0, &apos;&apos;)
+        return ret_list
+    </script>
+              <sandbox>true</sandbox>
+            </secureScript>
+          </script>
+          <parameters class="linked-hash-map"/>
+          <referencedParameters>CUSTOMER_NAME</referencedParameters>
+          <choiceType>PT_SINGLE_SELECT</choiceType>
+          <filterable>true</filterable>
+          <filterLength>1</filterLength>
+        </org.biouno.unochoice.CascadeChoiceParameter>
+        <org.biouno.unochoice.ChoiceParameter plugin="uno-choice@2.8.3">
+          <name>BRANCH</name>
+          <description>The branch to use for the embedded app code</description>
+          <randomName>choice-parameter-155560520122825</randomName>
+          <visibleItemCount>1</visibleItemCount>
+          <script class="org.biouno.unochoice.model.GroovyScript">
+            <secureScript plugin="script-security@1358.vb_26663c13537">
+              <script>
+        import groovy.json.JsonSlurper
+
+        ref_types = [&apos;tags&apos;: &apos;tag:&apos;, &apos;branches&apos;: &apos;branch:&apos;]
+        default_branch = &quot;refs/remotes/origin/integration&quot;
+        branch_lists_path = &apos;/devops_tools/jenkins/branch_lists&apos;
+        branch_map_file_path = &quot;${branch_lists_path}/fw_branch_map.json&quot;
+
+        orig_list = new JsonSlurper().parse(new File(branch_map_file_path))
+        ref_type_list = ref_types.collectEntries { type, search_term -&gt; [(type): orig_list.findAll { it.value.startsWith(search_term) }] }
+        result = [:] + [&apos;tags&apos;, &apos;branches&apos;].collectEntries { ref_type_list.get(it) }
+        result.replace(default_branch, &quot;${result[default_branch]}:selected&quot;)
+        return result
+    </script>
+              <sandbox>true</sandbox>
+            </secureScript>
+          </script>
+          <choiceType>PT_SINGLE_SELECT</choiceType>
+          <filterable>true</filterable>
+          <filterLength>1</filterLength>
+        </org.biouno.unochoice.ChoiceParameter>
+        <hudson.model.BooleanParameterDefinition>
+          <name>SKIP_VERSION_FLASHING</name>
+          <description>Skip the flashing of the version on the device during initialization</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@166.vd0120849b_386">
+          <name>AUTOMATION_TESTS_INFO</name>
+          <separatorStyle>
+        border: 0;
+        border-bottom: 1px dashed #ccc;
+        background: #999;
+    </separatorStyle>
+          <sectionHeader>Automation Tests Configuration</sectionHeader>
+          <sectionHeaderStyle>
+        color: white;
+        background: green;
+        font-family: Roboto, sans-serif !important;
+        padding: 5px;
+        text-align: center;
+    </sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <org.biouno.unochoice.ChoiceParameter plugin="uno-choice@2.8.3">
+          <name>AUTOMATION_BRANCH</name>
+          <description>The branch to use for the automation tests</description>
+          <randomName>choice-parameter-155560520242165</randomName>
+          <visibleItemCount>1</visibleItemCount>
+          <script class="org.biouno.unochoice.model.GroovyScript">
+            <secureScript plugin="script-security@1358.vb_26663c13537">
+              <script>
+        import groovy.json.JsonSlurper
+
+        ref_types = [&apos;tags&apos;: &apos;tag:&apos;, &apos;branches&apos;: &apos;branch:&apos;]
+        default_branch = &quot;refs/remotes/origin/master&quot;
+        branch_lists_path = &apos;/devops_tools/jenkins/branch_lists&apos;
+        branch_map_file_path = &quot;${branch_lists_path}/automation_branch_map.json&quot;
+
+        orig_list = new JsonSlurper().parse(new File(branch_map_file_path))
+        ref_type_list = ref_types.collectEntries { type, search_term -&gt; [(type): orig_list.findAll { it.value.startsWith(search_term) }] }
+        result = [:] + [&apos;tags&apos;, &apos;branches&apos;].collectEntries { ref_type_list.get(it) }
+        result.replace(default_branch, &quot;${result[default_branch]}:selected&quot;)
+        return result
+    </script>
+              <sandbox>true</sandbox>
+            </secureScript>
+          </script>
+          <choiceType>PT_SINGLE_SELECT</choiceType>
+          <filterable>true</filterable>
+          <filterLength>1</filterLength>
+        </org.biouno.unochoice.ChoiceParameter>
+        <io.jenkins.plugins.editable__choice.EditableChoiceParameterDefinition plugin="editable-choice@71.v02a291ebbe45">
+          <name>TEST_SET</name>
+          <description>The test set to run on the built app (either choose from list or write your own set)</description>
+          <choices>
+            <string>regression</string>
+            <string>acceptance</string>
+            <string>release</string>
+            <string>flashing</string>
+            <string>control_and_status</string>
+            <string>diagnostics</string>
+            <string>system_modes</string>
+          </choices>
+          <defaultValue>acceptance</defaultValue>
+          <restrict>false</restrict>
+          <filterConfig>
+            <prefix>false</prefix>
+            <caseInsensitive>true</caseInsensitive>
+          </filterConfig>
+        </io.jenkins.plugins.editable__choice.EditableChoiceParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>TEST_PATH</name>
+          <description>Path to the test or tests (relative to APITesting). Leave empty to run all</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>EXTRA_ARTIFACTS</name>
+          <description>name template (regular expression) for extra files to copy from the workspace to the output directory</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <org.biouno.unochoice.ChoiceParameter plugin="uno-choice@2.8.3">
+          <name>API_VERSION</name>
+          <description>The API version to use (found under S:\RnD\SW\Versions\tools_beta)</description>
+          <randomName>choice-parameter-155560520409506</randomName>
+          <visibleItemCount>1</visibleItemCount>
+          <script class="org.biouno.unochoice.model.GroovyScript">
+            <secureScript plugin="script-security@1358.vb_26663c13537">
+              <script>
+        sub_dirs = []
+        [&apos;*/API&apos;, &apos;*/API/*&apos;].forEach { packed_path -&gt;
+            expanded_path = [&apos;&apos;]
+            packed_path.split(&apos;/&apos;).each { path_part -&gt;
+                expanded_path = expanded_path.collect { first_part -&gt;
+                    path_part_as_list = path_part == &apos;*&apos; ? new File(&quot;/mnt/share_RnD/SW/Versions/tools_beta/${first_part}&quot;).listFiles({ file -&gt; file.isDirectory() } as FileFilter).collect{ [&apos;name&apos;: it.name, &apos;modified&apos;: it.lastModified()] }.sort { -it.modified }.name : [path_part]
+                    path_part_as_list.collect { second_part -&gt; &quot;${first_part}/${second_part}&quot; }
+                }.flatten()
+            }
+            sub_dirs += expanded_path
+        }
+
+        ret_list = false ? [&apos;&apos;: &apos;&apos;] : [:]
+        sub_dirs.each { sub -&gt;
+            new File(&quot;/mnt/share_RnD/SW/Versions/tools_beta/${sub}&quot;).listFiles({ file -&gt; file.isDirectory() &amp;&amp; file.name ==~ /api_[0-9\.]*_[0-9a-fA-F]*/ } as FileFilter)?.each{ ret_list[sub + &quot;/&quot; + it.name] = it.name }
+        }
+        return ret_list.collectEntries{ key, value -&gt; [(key): value ==~ /.*_5.12.0_5cdde86f/ ? &quot;${value}:selected&quot; : value] }.sort{ it1, it2 -&gt; !it2.value ? 1 : (it2.value &lt;=&gt; it1.value) }
+    </script>
+              <sandbox>false</sandbox>
+            </secureScript>
+          </script>
+          <choiceType>PT_SINGLE_SELECT</choiceType>
+          <filterable>true</filterable>
+          <filterLength>1</filterLength>
+        </org.biouno.unochoice.ChoiceParameter>
+        <org.biouno.unochoice.ChoiceParameter plugin="uno-choice@2.8.3">
+          <name>API_LOG_SEVERITY</name>
+          <description>The API log severity</description>
+          <randomName>choice-parameter-155560520497720</randomName>
+          <visibleItemCount>1</visibleItemCount>
+          <script class="org.biouno.unochoice.model.GroovyScript">
+            <secureScript plugin="script-security@1358.vb_26663c13537">
+              <script>[0:&apos;TRACE (0)&apos;, 1:&apos;DEBUG (1)&apos;, 2:&apos;INFO (2)&apos;, 3:&apos;WARNING (3):selected&apos;, 4:&apos;ERROR (4)&apos;, 5:&apos;FATAL (5)&apos;, 6:&apos;NONE (6)&apos;]</script>
+              <sandbox>true</sandbox>
+            </secureScript>
+          </script>
+          <choiceType>PT_SINGLE_SELECT</choiceType>
+          <filterable>false</filterable>
+        </org.biouno.unochoice.ChoiceParameter>
+        <hudson.model.BooleanParameterDefinition>
+          <name>ALLURE_REPORT</name>
+          <description>Should produce an allure report</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <org.biouno.unochoice.ChoiceParameter plugin="uno-choice@2.8.3">
+          <name>PYTHON_VERSION</name>
+          <description>Select Python version</description>
+          <randomName>choice-parameter-155560520586555</randomName>
+          <visibleItemCount>1</visibleItemCount>
+          <script class="org.biouno.unochoice.model.GroovyScript">
+            <secureScript plugin="script-security@1358.vb_26663c13537">
+              <script>[&apos;python3.6&apos;:&apos;Python 3.6&apos;, &apos;python3.11&apos;:&apos;Python 3.11:selected&apos;]</script>
+              <sandbox>true</sandbox>
+            </secureScript>
+          </script>
+          <choiceType>PT_RADIO</choiceType>
+        </org.biouno.unochoice.ChoiceParameter>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@166.vd0120849b_386">
+          <name>JOB_CONFIG_ATTRIBUTES</name>
+          <separatorStyle>
+        border: 0;
+        border-bottom: 1px dashed #ccc;
+        background: #999;
+    </separatorStyle>
+          <sectionHeader>Board Farm Configuration</sectionHeader>
+          <sectionHeaderStyle>
+        color: white;
+        background: green;
+        font-family: Roboto, sans-serif !important;
+        padding: 5px;
+        text-align: center;
+    </sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>group-start</name>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>checkboxTrigger-CONFIGURE_BOARD_FARM_PARAMS</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>CONFIGURE_BOARD_FARM_PARAMS</name>
+          <description>Configure/change the board farm parameters</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <org.biouno.unochoice.ChoiceParameter plugin="uno-choice@2.8.3">
+          <name>ATTRIBUTES_CHOICE</name>
+          <description>Attributes for board farm setup request. Works only if SYSTEM_CHOICE is &quot;None&quot;.</description>
+          <randomName>choice-parameter-155560520709839</randomName>
+          <visibleItemCount>1</visibleItemCount>
+          <script class="org.biouno.unochoice.model.GroovyScript">
+            <secureScript plugin="script-security@1358.vb_26663c13537">
+              <script>[&apos;CM_AUTO_GROUP:CM_AUTO_GROUP&apos;, &apos;CM_AUTO_MR_GROUP:CM_AUTO_MR_GROUP&apos;, &apos;CM_FW:0.16.250&apos;, &apos;CM_FW:0.210.14&apos;, &apos;CM_FW:0.210.4&apos;, &apos;CM_FW:0.216.0&apos;, &apos;CM_FW:I340V1_CC&apos;, &apos;CM_FW:I420V1&apos;, &apos;CM_FW:I505V1&apos;, &apos;CM_FW:I520V3&apos;, &apos;CM_FW:I550V3&apos;, &apos;CM_KPI_GROUP:CM_KPI_GROUP&apos;, &apos;CM_UT_GROUP:CM_UT_GROUP&apos;, &apos;CM_UT_MR_GROUP:CM_UT_MR_GROUP&apos;, &apos;DETECTOR_HW:DETECTOR&apos;, &apos;HEATER_HW:HEATER&apos;, &apos;MEDIA_CONVERTER:0.6&apos;, &apos;MEDIA_CONVERTER:0.7(A2)&apos;, &apos;MEDIA_CONVERTER:1.0(A2)&apos;, &apos;OM_AUTO_GROUP:OM_AUTO_GROUP:selected&apos;, &apos;OM_PRODUCT:iOne:selected&apos;, &apos;OM_PRODUCT:iTwo&apos;, &apos;OM_UT_GROUP:OM_UT_GROUP&apos;, &apos;OS:Linux:selected&apos;, &apos;OS:Windows&apos;, &apos;RDP_GROUP:RDP_GROUP&apos;]</script>
+              <sandbox>true</sandbox>
+            </secureScript>
+          </script>
+          <choiceType>PT_MULTI_SELECT</choiceType>
+          <filterable>false</filterable>
+        </org.biouno.unochoice.ChoiceParameter>
+        <org.biouno.unochoice.ChoiceParameter plugin="uno-choice@2.8.3">
+          <name>SYSTEM_CHOICE</name>
+          <description>Choose a specific board farm setup to run on. If value is not &quot;None&quot;, ATTRIBUTES_CHOICE will be ignored.</description>
+          <randomName>choice-parameter-155560520804315</randomName>
+          <visibleItemCount>1</visibleItemCount>
+          <script class="org.biouno.unochoice.model.GroovyScript">
+            <secureScript plugin="script-security@1358.vb_26663c13537">
+              <script>[&apos;bf-101&apos;, &apos;bf-102&apos;, &apos;bf-103&apos;, &apos;bf-104&apos;, &apos;bf-105&apos;, &apos;bf-106&apos;, &apos;bf-107&apos;, &apos;bf-108&apos;, &apos;bf-109&apos;, &apos;bf-110&apos;, &apos;bf-111&apos;, &apos;bf-112&apos;, &apos;bf-113&apos;, &apos;bf-114&apos;, &apos;bf-115&apos;, &apos;bf-116&apos;, &apos;bf-117&apos;, &apos;bf-118&apos;, &apos;bf-119&apos;, &apos;bf-120&apos;, &apos;bf-121&apos;, &apos;bf-122&apos;, &apos;bf-123&apos;, &apos;bf-124&apos;, &apos;bf-125&apos;, &apos;bf-126&apos;, &apos;bf-127&apos;, &apos;bf-128&apos;, &apos;bf-129&apos;, &apos;bf-132&apos;, &apos;bf-139&apos;, &apos;bf-201&apos;, &apos;bf-202&apos;, &apos;bf-203&apos;, &apos;bf-204&apos;, &apos;bf-205&apos;, &apos;bf-206&apos;, &apos;bf-207&apos;, &apos;bf-208&apos;, &apos;bf-209&apos;, &apos;bf-210&apos;, &apos;bf-211&apos;, &apos;bf-212&apos;, &apos;bf-213&apos;, &apos;bf-214&apos;, &apos;bf-215&apos;, &apos;bf-216&apos;, &apos;bf-217&apos;, &apos;bf-218&apos;, &apos;bf-219&apos;, &apos;bf-220&apos;, &apos;bf-221&apos;, &apos;bf-222&apos;, &apos;bf-223&apos;, &apos;bf-224&apos;, &apos;bf-225&apos;, &apos;bf-226&apos;, &apos;bf-227&apos;, &apos;bf-228&apos;, &apos;bf-229&apos;, &apos;bf-230&apos;, &apos;bf-231&apos;, &apos;bf-232&apos;, &apos;bf-233&apos;, &apos;bf-234&apos;, &apos;bf-235&apos;, &apos;bf-236&apos;, &apos;bf-237&apos;, &apos;bf-238&apos;, &apos;bf-239&apos;, &apos;bf-240&apos;, &apos;bf-241&apos;, &apos;None:selected&apos;]</script>
+              <sandbox>true</sandbox>
+            </secureScript>
+          </script>
+          <choiceType>PT_MULTI_SELECT</choiceType>
+          <filterable>false</filterable>
+        </org.biouno.unochoice.ChoiceParameter>
+        <hudson.plugins.validating__string__parameter.ValidatingStringParameterDefinition plugin="validating-string-parameter@183.v3748e79b_9737">
+          <name>BF_TIMEOUT</name>
+          <description>Wait timeout for an available board farm setup (according to the system/attributes request) (in minutes).</description>
+          <defaultValue>120</defaultValue>
+          <regex>^[1-9][0-9]+$</regex>
+          <failedValidationMessage>Must be an integer value</failedValidationMessage>
+        </hudson.plugins.validating__string__parameter.ValidatingStringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>group-end</name>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>-</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@3961.ve48ee2c44a_b_3">
+    <scm class="hudson.plugins.git.GitSCM" plugin="git@5.4.1">
+      <configVersion>2</configVersion>
+      <userRemoteConfigs>
+        <hudson.plugins.git.UserRemoteConfig>
+          <url>git@git.il.innoviz.tech:devops/jenkins_jobs.git</url>
+          <credentialsId>ciuser_gitlab_user_ssh_key</credentialsId>
+        </hudson.plugins.git.UserRemoteConfig>
+      </userRemoteConfigs>
+      <branches>
+        <hudson.plugins.git.BranchSpec>
+          <name>*/main</name>
+        </hudson.plugins.git.BranchSpec>
+      </branches>
+      <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+      <submoduleCfg class="empty-list"/>
+      <extensions/>
+    </scm>
+    <scriptPath>tests.jenkinsfile</scriptPath>
+    <lightweight>true</lightweight>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

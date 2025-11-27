@@ -1,0 +1,158 @@
+### Eclipse Workspace Patch 1.0
+#P hudson
+Index: hudson/main/core/src/main/java/hudson/org/apache/tools/ant/taskdefs/cvslib/ChangeLogParser.java
+===================================================================
+--- hudson/main/core/src/main/java/hudson/org/apache/tools/ant/taskdefs/cvslib/ChangeLogParser.java	(revision 17146)
++++ hudson/main/core/src/main/java/hudson/org/apache/tools/ant/taskdefs/cvslib/ChangeLogParser.java	(working copy)
+@@ -88,7 +88,13 @@
+      * "1.2.3.4") and the value is the branch name.
+      */
+     private final Map<String,String> branches = new HashMap<String,String>();
++
+     /**
++    * Maps revision to zero or more tags
++    */
++    private final Map<String, Set<String>> tags = new HashMap<String, Set<String>>();
++
++    /**
+      * True if the log record indicates deletion;
+      */
+     private boolean m_dead;
+@@ -238,9 +244,16 @@
+             }
+ 
+             String symbol = line.substring(0,idx);
+-            Matcher m = DOT_PATTERN.matcher(line.substring(idx + 2));
+-            if(!m.matches())
++            
++            // patch for tags
++            String rev = line.substring(idx + 2);
++            Matcher m = DOT_PATTERN.matcher(rev);
++            if (!m.matches()) {
++                // So we know it is NOT a branch then is must be a tag
++                addTag(rev, symbol);
++
+                 return; // not a branch name
++            }            
+ 
+             branches.put(m.group(1)+m.group(3)+'.',symbol);
+         } else
+@@ -322,9 +335,13 @@
+ 
+         String branch = findBranch(m_revision);
+ 
++        // patch for tags
++        // The entry can have zero or more
++        Set<String> allTags = getTagsByRevision(m_revision);
++
+         owner.log("Recorded a change: "+m_date+','+m_author+','+m_revision+"(branch="+branch+"),"+m_comment,Project.MSG_VERBOSE);
+ 
+-        entry.addFile(m_file, m_fullName, m_revision, m_previousRevision, branch, m_dead);
++        entry.addFile(m_file, m_fullName, m_revision, m_previousRevision, branch, m_dead, allTags);
+     }
+ 
+     /**
+@@ -340,6 +357,21 @@
+     }
+ 
+     /**
++     * Returns the set of tags assoc'd with this file or an empty set otherwise
++     *
++     * @param revision
++     * @return
++     */
++    private Set<String> getTagsByRevision(String revision) {
++        Set<String> ret = tags.get(revision);
++
++        if (ret == null)
++            ret = Collections.emptySet();
++
++        return ret;
++    }
++
++    /**
+      * Parse date out from expected format.
+      *
+      * @param date the string holding dat
+@@ -374,6 +406,9 @@
+         m_previousRevision = null;
+         m_dead = false;
+         branches.clear();
++
++        // patch for tags
++        tags.clear();
+     }
+ 
+     private static final Logger LOGGER = Logger.getLogger(ChangeLogParser.class.getName());
+Index: hudson/main/core/src/main/java/hudson/org/apache/tools/ant/taskdefs/cvslib/CVSEntry.java
+===================================================================
+--- hudson/main/core/src/main/java/hudson/org/apache/tools/ant/taskdefs/cvslib/CVSEntry.java	(revision 17146)
++++ hudson/main/core/src/main/java/hudson/org/apache/tools/ant/taskdefs/cvslib/CVSEntry.java	(working copy)
+@@ -36,8 +36,8 @@
+         m_comment = comment;
+     }
+ 
+-    public void addFile(String file, String fullName, String revision, String previousRevision, String branch, boolean dead) {
+-        m_files.addElement(new RCSFile(file, fullName, revision, previousRevision, branch, dead));
++    public void addFile(String file, String fullName, String revision, String previousRevision, String branch, boolean dead, Set<String> tags) {
++        m_files.addElement(new RCSFile(file, fullName, revision, previousRevision, branch, dead, tags));
+     }
+ 
+     // maybe null, in case of error
+@@ -69,6 +69,10 @@
+      */
+     public boolean containsBranch(String branch) {
+         for (RCSFile file : m_files) {
++            // Patch for matching tags
++            if (file.hasTag(branch))
++                return true;
++
+             String b = file.getBranch();
+             if(b==null && branch==null)
+                 return true;
+Index: hudson/main/core/src/main/java/hudson/org/apache/tools/ant/taskdefs/cvslib/RCSFile.java
+===================================================================
+--- hudson/main/core/src/main/java/hudson/org/apache/tools/ant/taskdefs/cvslib/RCSFile.java	(revision 17146)
++++ hudson/main/core/src/main/java/hudson/org/apache/tools/ant/taskdefs/cvslib/RCSFile.java	(working copy)
+@@ -28,6 +28,7 @@
+     private String m_previousRevision;
+     private boolean m_dead;
+     private String m_branch;
++    private Set<String> m_tags;
+ 
+ 
+     RCSFile(final String name,
+@@ -35,7 +36,8 @@
+                   final String revision,
+                   final String previousRevision,
+                   final String branch,
+-                  final boolean dead) {
++                  final boolean dead
++                  final Set<String> tags) {
+         m_name = name;
+         m_fullName = fullName;
+         m_revision = revision;
+@@ -44,6 +46,7 @@
+         }
+         m_branch = branch;
+         m_dead = dead;
++        m_tags = tags;
+     }
+ 
+ 
+@@ -73,5 +76,14 @@
+     String getBranch() {
+         return m_branch;
+     }
+-}
++    
++    /**
++     * Checks if the file has the given tag set
++     * 
++     * @param tagName
++     * @return
++     */
++    public boolean hasTag(String tagName) {
++        return m_tags.contains(tagName);
++    }}
+ 

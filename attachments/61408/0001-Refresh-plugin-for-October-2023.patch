@@ -1,0 +1,786 @@
+From 91b6b32490ef93336fed460720af1dd06f4a2c86 Mon Sep 17 00:00:00 2001
+From: Basil Crow <me@basilcrow.com>
+Date: Mon, 30 Oct 2023 07:47:15 -0700
+Subject: [PATCH] Refresh plugin for October 2023
+
+---
+ .mvn/extensions.xml                           |   2 +-
+ Jenkinsfile                                   |   5 +-
+ pom.xml                                       |  65 +++--------
+ .../BlockingJobsMonitorUnitTest.java          | 109 ++++++++++--------
+ .../BuildBlockerQueueTaskDispatcherTest.java  |  48 +++++---
+ ...ildBlockerQueueTaskDispatcherUnitTest.java |  53 ++++-----
+ 6 files changed, 133 insertions(+), 149 deletions(-)
+
+diff --git a/.mvn/extensions.xml b/.mvn/extensions.xml
+index 90787cb..1f36364 100644
+--- a/.mvn/extensions.xml
++++ b/.mvn/extensions.xml
+@@ -2,6 +2,6 @@
+   <extension>
+     <groupId>io.jenkins.tools.incrementals</groupId>
+     <artifactId>git-changelist-maven-extension</artifactId>
+-    <version>1.6</version>
++    <version>1.7</version>
+   </extension>
+ </extensions>
+diff --git a/Jenkinsfile b/Jenkinsfile
+index 77c9ed7..2fb0938 100644
+--- a/Jenkinsfile
++++ b/Jenkinsfile
+@@ -1,4 +1,7 @@
+ #!/usr/bin/env groovy
+ 
+ /* `buildPlugin` step provided by: https://github.com/jenkins-infra/pipeline-library */
+-buildPlugin()
++buildPlugin(useContainerAgent: true, configurations: [
++  [platform: 'linux', jdk: 21],
++  [platform: 'windows', jdk: 17],
++])
+diff --git a/pom.xml b/pom.xml
+index 689dc60..441418b 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -1,4 +1,4 @@
+-<?xml version="1.0"?>
++<?xml version="1.0" encoding="UTF-8"?>
+ 
+ <!--
+   The MIT License
+@@ -29,7 +29,7 @@
+     <parent>
+         <groupId>org.jenkins-ci.plugins</groupId>
+         <artifactId>plugin</artifactId>
+-        <version>4.16</version>
++        <version>4.75</version>
+         <relativePath />
+     </parent>
+ 
+@@ -37,12 +37,12 @@
+     <name>Build Blocker Plugin</name>
+     <version>${revision}${changelist}</version>
+     <packaging>hpi</packaging>
+-    <url>https://github.com/jenkinsci/build-blocker-plugin</url>
++    <url>https://github.com/jenkinsci/${project.artifactId}</url>
+ 
+     <licenses>
+         <license>
+             <name>The MIT license</name>
+-            <url>https://github.com/jencinsci/build-blocker-plugin/raw/master/LICENSE.txt</url>
++            <url>https://opensource.org/license/mit/</url>
+             <distribution>repo</distribution>
+         </license>
+     </licenses>
+@@ -63,7 +63,7 @@
+     <scm>
+         <connection>scm:git:https://github.com/${gitHubRepo}.git</connection>
+         <developerConnection>scm:git:git@github.com:${gitHubRepo}.git</developerConnection>
+-        <url>https://github.com/${gitHubRepo}.git</url>
++        <url>https://github.com/${gitHubRepo}</url>
+         <tag>${scmTag}</tag>
+     </scm>
+ 
+@@ -85,8 +85,8 @@
+         <dependencies>
+             <dependency>
+                 <groupId>io.jenkins.tools.bom</groupId>
+-                <artifactId>bom-${bom}</artifactId>
+-                <version>23</version>
++                <artifactId>bom-2.387.x</artifactId>
++                <version>2543.vfb_1a_5fb_9496d</version>
+                 <scope>import</scope>
+                 <type>pom</type>
+             </dependency>
+@@ -96,42 +96,20 @@
+     <properties>
+         <revision>1.7.10</revision>
+         <changelist>-SNAPSHOT</changelist>
+-        <gitHubRepo>jenkinsci/build-blocker-plugin</gitHubRepo>
+-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+-        <bom>2.222.x</bom>
+-        <jenkins.version>2.222.4</jenkins.version>
+-        <java.level>8</java.level>
+-        <maven.version>3.0.4</maven.version>
++        <gitHubRepo>jenkinsci/${project.artifactId}</gitHubRepo>
++        <jenkins.version>2.387.3</jenkins.version>
+     </properties>
+ 
+-    <build>
+-        <plugins>
+-            <plugin>
+-                <groupId>org.apache.maven.plugins</groupId>
+-                <artifactId>maven-install-plugin</artifactId>
+-            </plugin>
+-            <plugin>
+-                <groupId>org.apache.maven.plugins</groupId>
+-                <artifactId>maven-deploy-plugin</artifactId>
+-            </plugin>
+-        </plugins>
+-    </build>
+     <dependencies>
+         <dependency>
+             <groupId>org.hamcrest</groupId>
+             <artifactId>hamcrest-core</artifactId>
+-            <version>2.2</version>
+             <scope>test</scope>
+         </dependency>
+         <dependency>
+             <groupId>org.jenkins-ci.plugins</groupId>
+             <artifactId>matrix-project</artifactId>
+         </dependency>
+-        <dependency>
+-            <groupId>org.jenkins-ci</groupId>
+-            <artifactId>symbol-annotation</artifactId>
+-            <version>1.23</version>
+-        </dependency>
+         <dependency>
+             <groupId>org.mockito</groupId>
+             <artifactId>mockito-core</artifactId>
+@@ -139,38 +117,23 @@
+         </dependency>
+         <dependency>
+             <groupId>org.powermock</groupId>
+-            <artifactId>powermock-api-mockito2</artifactId>
+-            <version>2.0.2</version>
++            <artifactId>powermock-reflect</artifactId>
++            <version>2.0.9</version>
+             <scope>test</scope>
+         </dependency>
+-        <dependency>
+-            <groupId>org.powermock</groupId>
+-            <artifactId>powermock-module-junit4</artifactId>
+-            <exclusions>
+-                <exclusion>
+-                    <groupId>org.powermock</groupId>
+-                    <artifactId>powermock-reflect</artifactId>
+-                </exclusion>
+-                <exclusion>
+-                    <groupId>org.hamcrest</groupId>
+-                    <artifactId>hamcrest-core</artifactId>
+-                </exclusion>
+-            </exclusions>
+-        </dependency>
+         <dependency>
+             <groupId>org.jenkins-ci.plugins.workflow</groupId>
+-            <artifactId>workflow-cps</artifactId>
++            <artifactId>workflow-basic-steps</artifactId>
+             <scope>test</scope>
+         </dependency>
+         <dependency>
+             <groupId>org.jenkins-ci.plugins.workflow</groupId>
+-            <artifactId>workflow-job</artifactId>
++            <artifactId>workflow-cps</artifactId>
+             <scope>test</scope>
+         </dependency>
+         <dependency>
+             <groupId>org.jenkins-ci.plugins.workflow</groupId>
+-            <artifactId>workflow-aggregator</artifactId>
+-            <version>2.5</version>
++            <artifactId>workflow-job</artifactId>
+             <scope>test</scope>
+         </dependency>
+     </dependencies>
+diff --git a/src/test/java/hudson/plugins/buildblocker/BlockingJobsMonitorUnitTest.java b/src/test/java/hudson/plugins/buildblocker/BlockingJobsMonitorUnitTest.java
+index 0901163..bbff858 100644
+--- a/src/test/java/hudson/plugins/buildblocker/BlockingJobsMonitorUnitTest.java
++++ b/src/test/java/hudson/plugins/buildblocker/BlockingJobsMonitorUnitTest.java
+@@ -13,14 +13,16 @@ import hudson.model.Queue.BuildableItem;
+ import hudson.model.queue.SubTask;
+ import hudson.model.queue.WorkUnit;
+ import jenkins.model.Jenkins;
++import org.junit.After;
+ import org.junit.Before;
+ import org.junit.Test;
+ import org.junit.runner.RunWith;
+ import org.mockito.Mock;
++import org.mockito.MockedStatic;
+ import org.mockito.Mockito;
+-import org.powermock.api.mockito.PowerMockito;
+-import org.powermock.core.classloader.annotations.PrepareForTest;
+-import org.powermock.modules.junit4.PowerMockRunner;
++import org.mockito.junit.MockitoJUnitRunner;
++import org.mockito.quality.Strictness;
++import org.powermock.reflect.Whitebox;
+ 
+ import java.util.ArrayList;
+ import java.util.Collections;
+@@ -31,23 +33,24 @@ import static org.hamcrest.Matchers.equalTo;
+ import static org.hamcrest.Matchers.is;
+ import static org.hamcrest.Matchers.nullValue;
+ import static org.junit.Assert.assertThat;
+-import static org.mockito.Matchers.eq;
++import static org.mockito.ArgumentMatchers.eq;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.mockStatic;
+ import static org.mockito.Mockito.only;
+ import static org.mockito.Mockito.times;
+ import static org.mockito.Mockito.verify;
+-import static org.mockito.Mockito.verifyZeroInteractions;
++import static org.mockito.Mockito.verifyNoInteractions;
+ import static org.mockito.Mockito.when;
+-import static org.powermock.api.support.membermodification.MemberMatcher.field;
++import static org.mockito.Mockito.withSettings;
+ 
+-@PrepareForTest({Jenkins.class, BuildableItem.class, Queue.BlockedItem.class, Queue.WaitingItem.class, Project.class, WorkUnit.class})
+-@RunWith(PowerMockRunner.class)
++@RunWith(MockitoJUnitRunner.class)
+ public class BlockingJobsMonitorUnitTest {
+ 
+     @Mock
+     private Node node;
+     @Mock
+     private Computer computer;
+-    @Mock
++    @Mock(strictness = Mock.Strictness.LENIENT)
+     private Queue queue;
+     @Mock
+     private Executor idleExecutor;
+@@ -59,7 +62,7 @@ public class BlockingJobsMonitorUnitTest {
+     private OneOffExecutor oneOffExecutor;
+     @Mock
+     private Label blockingLabel;
+-    @Mock
++    @Mock(strictness = Mock.Strictness.LENIENT)
+     private Label nonBlockingLabel;
+     @Mock
+     private SubTask subTask;
+@@ -82,6 +85,7 @@ public class BlockingJobsMonitorUnitTest {
+     private WorkUnit workUnit;
+ 
+     private BlockingJobsMonitor monitor;
++    private MockedStatic<Jenkins> mockedJenkins;
+ 
+     @Before
+     public void setup() throws IllegalAccessException {
+@@ -98,9 +102,16 @@ public class BlockingJobsMonitorUnitTest {
+         trainExecutors();
+     }
+ 
++    @After
++    public void tearDown() {
++        if (mockedJenkins != null) {
++            mockedJenkins.close();
++        }
++    }
++
+     private void trainWorkUnit() throws IllegalAccessException {
+-        workUnit = PowerMockito.mock(WorkUnit.class);
+-        field(WorkUnit.class, "work").set(workUnit, subTask);
++        workUnit = mock(WorkUnit.class);
++        Whitebox.getField(WorkUnit.class, "work").set(workUnit, subTask);
+     }
+ 
+     private void trainLabels() {
+@@ -109,36 +120,36 @@ public class BlockingJobsMonitorUnitTest {
+     }
+ 
+     private void trainWaitingItems() throws IllegalAccessException {
+-        waitingItem = PowerMockito.mock(Queue.WaitingItem.class);
+-        nonBlockingWaitingItem = PowerMockito.mock(Queue.WaitingItem.class);
+-        waitingItemOnDifferentNode = PowerMockito.mock(Queue.WaitingItem.class);
+-        field(Queue.BlockedItem.class, "task").set(waitingItem, project);
+-        field(Queue.BlockedItem.class, "task").set(waitingItemOnDifferentNode, project);
+-        field(Queue.BlockedItem.class, "task").set(nonBlockingWaitingItem, nonBlockingProject);
++        waitingItem = mock(Queue.WaitingItem.class);
++        nonBlockingWaitingItem = mock(Queue.WaitingItem.class);
++        waitingItemOnDifferentNode = mock(Queue.WaitingItem.class);
++        Whitebox.getField(Queue.BlockedItem.class, "task").set(waitingItem, project);
++        Whitebox.getField(Queue.BlockedItem.class, "task").set(waitingItemOnDifferentNode, project);
++        Whitebox.getField(Queue.BlockedItem.class, "task").set(nonBlockingWaitingItem, nonBlockingProject);
+         when(waitingItem.getAssignedLabel()).thenReturn(blockingLabel);
+         when(waitingItemOnDifferentNode.getAssignedLabel()).thenReturn(nonBlockingLabel);
+         when(nonBlockingWaitingItem.getAssignedLabel()).thenReturn(blockingLabel);
+     }
+ 
+     private void trainBlockedItems() throws IllegalAccessException {
+-        blockedItem = PowerMockito.mock(Queue.BlockedItem.class);
+-        nonBlockingBlockedItem = PowerMockito.mock(Queue.BlockedItem.class);
+-        blockedItemOnDifferentNode = PowerMockito.mock(Queue.BlockedItem.class);
+-        field(Queue.BlockedItem.class, "task").set(blockedItem, project);
+-        field(Queue.BlockedItem.class, "task").set(nonBlockingBlockedItem, nonBlockingProject);
+-        field(Queue.BlockedItem.class, "task").set(blockedItemOnDifferentNode, project);
++        blockedItem = mock(Queue.BlockedItem.class);
++        nonBlockingBlockedItem = mock(Queue.BlockedItem.class);
++        blockedItemOnDifferentNode = mock(Queue.BlockedItem.class);
++        Whitebox.getField(Queue.BlockedItem.class, "task").set(blockedItem, project);
++        Whitebox.getField(Queue.BlockedItem.class, "task").set(nonBlockingBlockedItem, nonBlockingProject);
++        Whitebox.getField(Queue.BlockedItem.class, "task").set(blockedItemOnDifferentNode, project);
+         when(blockedItem.getAssignedLabel()).thenReturn(blockingLabel);
+         when(blockedItemOnDifferentNode.getAssignedLabel()).thenReturn(nonBlockingLabel);
+         when(nonBlockingBlockedItem.getAssignedLabel()).thenReturn(blockingLabel);
+     }
+ 
+     private void trainBuildableItems() throws IllegalAccessException {
+-        buildableItem = PowerMockito.mock(BuildableItem.class);
+-        buildableItemOnDifferentNode = PowerMockito.mock(BuildableItem.class);
+-        nonBlockingBuildableItem = PowerMockito.mock(BuildableItem.class);
+-        field(BuildableItem.class, "task").set(buildableItem, project);
+-        field(BuildableItem.class, "task").set(buildableItemOnDifferentNode, project);
+-        field(BuildableItem.class, "task").set(nonBlockingBuildableItem, nonBlockingProject);
++        buildableItem = mock(BuildableItem.class);
++        buildableItemOnDifferentNode = mock(BuildableItem.class);
++        nonBlockingBuildableItem = mock(BuildableItem.class);
++        Whitebox.getField(BuildableItem.class, "task").set(buildableItem, project);
++        Whitebox.getField(BuildableItem.class, "task").set(buildableItemOnDifferentNode, project);
++        Whitebox.getField(BuildableItem.class, "task").set(nonBlockingBuildableItem, nonBlockingProject);
+         when(buildableItem.getAssignedLabel()).thenReturn(blockingLabel);
+         when(buildableItemOnDifferentNode.getAssignedLabel()).thenReturn(blockingLabel);
+         when(nonBlockingBuildableItem.getAssignedLabel()).thenReturn(blockingLabel);
+@@ -160,18 +171,18 @@ public class BlockingJobsMonitorUnitTest {
+     }
+ 
+     private void trainJenkins() {
+-        PowerMockito.mockStatic(Jenkins.class);
+-        Jenkins jenkins = PowerMockito.mock(Jenkins.class);
+-        when(Jenkins.get()).thenReturn(jenkins);
++        Jenkins jenkins = mock(Jenkins.class);
+         when(jenkins.getQueue()).thenReturn(queue);
+         when(jenkins.getComputers()).thenReturn(new Computer[]{computer});
++        mockedJenkins = mockStatic(Jenkins.class);
++        mockedJenkins.when(Jenkins::get).thenReturn(jenkins);
+     }
+ 
+     private void trainProjects() {
+-        project = PowerMockito.mock(Project.class);
+-        nonBlockingProject = PowerMockito.mock(Project.class);
+-        matrixProject = PowerMockito.mock(MatrixProject.class);
+-        nonBlockingMatrixProject = PowerMockito.mock(MatrixProject.class);
++        project = mock(Project.class);
++        nonBlockingProject = mock(Project.class);
++        matrixProject = mock(MatrixProject.class);
++        nonBlockingMatrixProject = mock(MatrixProject.class);
+         when(project.getFullName()).thenReturn("blockingProject");
+         when(nonBlockingProject.getFullName()).thenReturn("harmlessProject");
+         when(matrixProject.getFullName()).thenReturn("blockingMatrixProject");
+@@ -185,7 +196,7 @@ public class BlockingJobsMonitorUnitTest {
+         assertThat(monitor.checkNodeForBuildableQueueEntries(buildableItem, node), is(nullValue()));
+ 
+         //the do not selfblock condition is hit => no interactions with the project
+-        verifyZeroInteractions(project);
++        verifyNoInteractions(project);
+     }
+ 
+     @Test
+@@ -205,13 +216,13 @@ public class BlockingJobsMonitorUnitTest {
+     @Test
+     public void testCheckNodeForBuildableQueueEntriesReturnsNullForDifferentNode() {
+         when(queue.getBuildableItems(eq(computer))).thenReturn(asList(nonBlockingBuildableItem, buildableItem));
+-        Node differentNode = PowerMockito.mock(Node.class);
+-        Computer differentComputer = PowerMockito.mock(Computer.class);
++        Node differentNode = mock(Node.class);
++        Computer differentComputer = mock(Computer.class);
+         when(differentNode.toComputer()).thenReturn(differentComputer);
+         when(queue.getBuildableItems(eq(computer))).thenReturn(asList(nonBlockingBuildableItem, buildableItem));
+         when(queue.getBuildableItems(eq(differentComputer))).thenReturn(Collections.<BuildableItem>emptyList());
+ 
+-        assertThat(monitor.checkNodeForBuildableQueueEntries(PowerMockito.mock(BuildableItem.class), differentNode), is(nullValue()));
++        assertThat(monitor.checkNodeForBuildableQueueEntries(mock(BuildableItem.class), differentNode), is(nullValue()));
+     }
+ 
+     @Test
+@@ -231,11 +242,11 @@ public class BlockingJobsMonitorUnitTest {
+     @Test
+     public void testCheckNodeForQueueEntriesReturnsNullForDifferentNode() {
+         when(queue.getItems()).thenReturn(new Queue.Item[]{nonBlockingBuildableItem, buildableItemOnDifferentNode});
+-        Node differentNode = PowerMockito.mock(Node.class);
+-        Computer differentComputer = PowerMockito.mock(Computer.class);
++        Node differentNode = mock(Node.class, withSettings().strictness(Strictness.LENIENT));
++        Computer differentComputer = mock(Computer.class);
+         when(differentNode.toComputer()).thenReturn(differentComputer);
+ 
+-        assertThat(monitor.checkNodeForQueueEntries(PowerMockito.mock(BuildableItem.class), differentNode), is(nullValue()));
++        assertThat(monitor.checkNodeForQueueEntries(mock(BuildableItem.class), differentNode), is(nullValue()));
+     }
+ 
+     @Test
+@@ -248,8 +259,8 @@ public class BlockingJobsMonitorUnitTest {
+     @Test
+     public void testCheckNodeForQueueEntriesReturnsNullForDifferentNodeCaseBlocked() {
+         when(queue.getItems()).thenReturn(new Queue.Item[]{nonBlockingBlockedItem, blockedItemOnDifferentNode});
+-        Node differentNode = PowerMockito.mock(Node.class);
+-        Computer differentComputer = PowerMockito.mock(Computer.class);
++        Node differentNode = mock(Node.class, withSettings().strictness(Strictness.LENIENT));
++        Computer differentComputer = mock(Computer.class);
+         when(differentNode.toComputer()).thenReturn(differentComputer);
+ 
+         assertThat(monitor.checkNodeForQueueEntries(Mockito.mock(BuildableItem.class), differentNode), is(nullValue()));
+@@ -265,8 +276,8 @@ public class BlockingJobsMonitorUnitTest {
+     @Test
+     public void testCheckNodeForQueueEntriesReturnsNullForDifferentNodeCaseWaiting() {
+         when(queue.getItems()).thenReturn(new Queue.Item[]{nonBlockingWaitingItem, waitingItemOnDifferentNode});
+-        Node differentNode = PowerMockito.mock(Node.class);
+-        Computer differentComputer = PowerMockito.mock(Computer.class);
++        Node differentNode = mock(Node.class, withSettings().strictness(Strictness.LENIENT));
++        Computer differentComputer = mock(Computer.class);
+         when(differentNode.toComputer()).thenReturn(differentComputer);
+ 
+         assertThat(monitor.checkNodeForQueueEntries(Mockito.mock(BuildableItem.class), differentNode), is(nullValue()));
+@@ -286,7 +297,7 @@ public class BlockingJobsMonitorUnitTest {
+         assertThat(monitor.checkNodeForBuildableQueueEntries(buildableItem, node), is(nullValue()));
+ 
+         //the do not selfblock condition is hit => no interactions with the project
+-        verifyZeroInteractions(project);
++        verifyNoInteractions(project);
+     }
+ 
+     @Test
+diff --git a/src/test/java/hudson/plugins/buildblocker/BuildBlockerQueueTaskDispatcherTest.java b/src/test/java/hudson/plugins/buildblocker/BuildBlockerQueueTaskDispatcherTest.java
+index 02af670..6c056c2 100644
+--- a/src/test/java/hudson/plugins/buildblocker/BuildBlockerQueueTaskDispatcherTest.java
++++ b/src/test/java/hudson/plugins/buildblocker/BuildBlockerQueueTaskDispatcherTest.java
+@@ -29,7 +29,6 @@ import hudson.model.Computer;
+ import hudson.model.Executor;
+ import hudson.model.FreeStyleBuild;
+ import hudson.model.FreeStyleProject;
+-import hudson.model.Hudson;
+ import hudson.model.Label;
+ import hudson.model.Queue;
+ import hudson.model.Run;
+@@ -38,34 +37,43 @@ import hudson.model.queue.CauseOfBlockage;
+ import hudson.slaves.DumbSlave;
+ import hudson.slaves.SlaveComputer;
+ import hudson.tasks.Shell;
+-import org.jvnet.hudson.test.HudsonTestCase;
++import org.junit.Rule;
++import org.junit.Test;
++import org.jvnet.hudson.test.JenkinsRule;
+ 
+ import java.io.IOException;
+ import java.util.ArrayList;
+ import java.util.Calendar;
+ import java.util.concurrent.Future;
+ 
+-import static hudson.model.Hudson.getInstance;
+ import static org.hamcrest.Matchers.lessThanOrEqualTo;
+ import static org.hamcrest.core.Is.is;
++import static org.junit.Assert.assertNotNull;
++import static org.junit.Assert.assertNull;
+ import static org.junit.Assert.assertThat;
++import static org.junit.Assert.assertTrue;
++import static org.junit.Assert.fail;
+ 
+ /**
+  * Unit tests
+  */
+-public class BuildBlockerQueueTaskDispatcherTest extends HudsonTestCase {
++public class BuildBlockerQueueTaskDispatcherTest {
++
++    @Rule
++    public JenkinsRule j = new JenkinsRule();
+ 
+     /**
+      * One test for all for faster execution.
+      *
+      * @throws Exception
+      */
++    @Test
+     public void testCanRun() throws Exception {
+         // init slave
+         LabelAtom slaveLabel = new LabelAtom("slave");
+-        LabelAtom masterLabel = new LabelAtom("master");
++        LabelAtom masterLabel = new LabelAtom("built-in");
+ 
+-        DumbSlave slave = this.createSlave(slaveLabel);
++        DumbSlave slave = j.createSlave(slaveLabel);
+         SlaveComputer c = slave.getComputer();
+         c.connect(false).get(); // wait until it's connected
+         if (c.isOffline()) {
+@@ -82,7 +90,7 @@ public class BuildBlockerQueueTaskDispatcherTest extends HudsonTestCase {
+         Future<FreeStyleBuild> future2 = createBlockingProject(blockingJobName, shell, masterLabel);
+         Future<FreeStyleBuild> future3 = createBlockingProject("yyy", shell, slaveLabel);
+         // add project to slave
+-        FreeStyleProject project = this.createFreeStyleProject();
++        FreeStyleProject project = j.createFreeStyleProject();
+         project.setAssignedLabel(slaveLabel);
+ 
+         Queue.BuildableItem item = new Queue.BuildableItem(new Queue.WaitingItem(Calendar.getInstance(), project, new ArrayList<Action>()));
+@@ -109,15 +117,16 @@ public class BuildBlockerQueueTaskDispatcherTest extends HudsonTestCase {
+         }
+     }
+ 
++    @Test
+     public void testMultipleExecutors() throws Exception {
+ 
+         // Job1 runs for 1 second, no dependencies
+-        FreeStyleProject theJob1 = createFreeStyleProject("MultipleExecutor_Job1");
++        FreeStyleProject theJob1 = j.createFreeStyleProject("MultipleExecutor_Job1");
+         theJob1.getBuildersList().add(new Shell("sleep 1; exit 0"));
+         assertTrue(theJob1.getBuilds().isEmpty());
+ 
+         // Job2 returns immediatly but can't run while Job1 is running.
+-        FreeStyleProject theJob2 = createFreeStyleProject("MultipleExecutor_Job2");
++        FreeStyleProject theJob2 = j.createFreeStyleProject("MultipleExecutor_Job2");
+         {
+             BuildBlockerProperty theProperty = new BuildBlockerPropertyBuilder()
+                     .setBlockingJobs("MultipleExecutor_Job1")
+@@ -130,8 +139,8 @@ public class BuildBlockerQueueTaskDispatcherTest extends HudsonTestCase {
+         assertTrue(theJob1.getBuilds().isEmpty());
+ 
+         // allow executing two simultanious jobs
+-        int theOldNumExecutors = getInstance().getNumExecutors();
+-        getInstance().setNumExecutors(2);
++        int theOldNumExecutors = j.jenkins.getNumExecutors();
++        j.jenkins.setNumExecutors(2);
+ 
+         Future<FreeStyleBuild> theFuture1 = theJob1.scheduleBuild2(0);
+         Future<FreeStyleBuild> theFuture2 = theJob2.scheduleBuild2(0);
+@@ -145,11 +154,12 @@ public class BuildBlockerQueueTaskDispatcherTest extends HudsonTestCase {
+         assertTrue(theRun1.getTimeInMillis() + theRun1.getDuration() <= theRun2.getTimeInMillis());
+ 
+         // restore changed settings
+-        getInstance().setNumExecutors(theOldNumExecutors);
++        j.jenkins.setNumExecutors(theOldNumExecutors);
+         theJob2.delete();
+         theJob1.delete();
+     }
+ 
++    @Test
+     public void testSelfExcludingJobs() throws Exception {
+ 
+         BuildBlockerProperty theProperty = new BuildBlockerPropertyBuilder()
+@@ -159,17 +169,17 @@ public class BuildBlockerQueueTaskDispatcherTest extends HudsonTestCase {
+                 .setScanBuildableQueueItemStates()
+                 .createBuildBlockerProperty();
+ 
+-        FreeStyleProject theJob1 = createFreeStyleProject("SelfExcluding_Job1");
++        FreeStyleProject theJob1 = j.createFreeStyleProject("SelfExcluding_Job1");
+         theJob1.addProperty(theProperty);
+         assertTrue(theJob1.getBuilds().isEmpty());
+ 
+-        FreeStyleProject theJob2 = createFreeStyleProject("SelfExcluding_Job2");
++        FreeStyleProject theJob2 = j.createFreeStyleProject("SelfExcluding_Job2");
+         theJob2.addProperty(theProperty);
+         assertTrue(theJob2.getBuilds().isEmpty());
+ 
+         // allow executing two simultanious jobs
+-        int theOldNumExecutors = getInstance().getNumExecutors();
+-        getInstance().setNumExecutors(2);
++        int theOldNumExecutors = j.jenkins.getNumExecutors();
++        j.jenkins.setNumExecutors(2);
+ 
+         Future<FreeStyleBuild> theFuture1 = theJob1.scheduleBuild2(0);
+         Future<FreeStyleBuild> theFuture2 = theJob2.scheduleBuild2(0);
+@@ -179,7 +189,7 @@ public class BuildBlockerQueueTaskDispatcherTest extends HudsonTestCase {
+         while ((!theFuture1.isDone() || !theFuture2.isDone())
+                 && theEndTime < theStartTime + 5000) {
+             int countBusy = 0;
+-            for (Computer computor : Hudson.getInstance().getComputers()) {
++            for (Computer computor : j.jenkins.getComputers()) {
+                 for (Executor executor : computor.getExecutors()) {
+                     if (executor.isBusy()) {
+                         countBusy++;
+@@ -195,7 +205,7 @@ public class BuildBlockerQueueTaskDispatcherTest extends HudsonTestCase {
+         assertTrue(theEndTime < theStartTime + 5000);
+ 
+         // restore changed settings
+-        getInstance().setNumExecutors(theOldNumExecutors);
++        j.jenkins.setNumExecutors(theOldNumExecutors);
+         theJob2.delete();
+         theJob1.delete();
+     }
+@@ -211,7 +221,7 @@ public class BuildBlockerQueueTaskDispatcherTest extends HudsonTestCase {
+      */
+     private Future<FreeStyleBuild> createBlockingProject(String blockingJobName, Shell shell, Label label) throws
+             IOException {
+-        FreeStyleProject blockingProject = this.createFreeStyleProject(blockingJobName);
++        FreeStyleProject blockingProject = j.createFreeStyleProject(blockingJobName);
+         blockingProject.setAssignedLabel(label);
+ 
+         blockingProject.getBuildersList().add(shell);
+diff --git a/src/test/java/hudson/plugins/buildblocker/BuildBlockerQueueTaskDispatcherUnitTest.java b/src/test/java/hudson/plugins/buildblocker/BuildBlockerQueueTaskDispatcherUnitTest.java
+index 9ff95a4..0dd9914 100644
+--- a/src/test/java/hudson/plugins/buildblocker/BuildBlockerQueueTaskDispatcherUnitTest.java
++++ b/src/test/java/hudson/plugins/buildblocker/BuildBlockerQueueTaskDispatcherUnitTest.java
+@@ -2,26 +2,23 @@ package hudson.plugins.buildblocker;
+ 
+ import hudson.model.AbstractProject;
+ import hudson.model.Node;
+-import hudson.model.Project;
+ import hudson.model.Queue;
+ import org.junit.Before;
+ import org.junit.Test;
+ import org.junit.runner.RunWith;
+ import org.mockito.Mock;
+-import org.powermock.api.mockito.PowerMockito;
+-import org.powermock.core.classloader.annotations.PrepareForTest;
+-import org.powermock.modules.junit4.PowerMockRunner;
++import org.mockito.junit.MockitoJUnitRunner;
++import org.powermock.reflect.Whitebox;
+ 
+-import static org.mockito.Matchers.eq;
++import static org.mockito.ArgumentMatchers.eq;
++import static org.mockito.Mockito.mock;
+ import static org.mockito.Mockito.times;
+ import static org.mockito.Mockito.verify;
++import static org.mockito.Mockito.verifyNoInteractions;
+ import static org.mockito.Mockito.verifyNoMoreInteractions;
+-import static org.mockito.Mockito.verifyZeroInteractions;
+ import static org.mockito.Mockito.when;
+-import static org.powermock.api.support.membermodification.MemberMatcher.field;
+ 
+-@PrepareForTest({Queue.BuildableItem.class, Project.class})
+-@RunWith(PowerMockRunner.class)
++@RunWith(MockitoJUnitRunner.class)
+ public class BuildBlockerQueueTaskDispatcherUnitTest {
+ 
+     @Mock
+@@ -38,9 +35,9 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
+     public void setup() throws IllegalAccessException {
+         dispatcher = new BuildBlockerQueueTaskDispatcher(new FieldReturningMonitorFactory(monitor));
+ 
+-        project = PowerMockito.mock(AbstractProject.class);
+-        item = PowerMockito.mock(Queue.BuildableItem.class);
+-        field(Queue.Item.class, "task").set(item, project);
++        project = mock(AbstractProject.class);
++        item = mock(Queue.BuildableItem.class);
++        Whitebox.getField(Queue.Item.class, "task").set(item, project);
+     }
+ 
+     @Test
+@@ -53,7 +50,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
+ 
+         dispatcher.canRun(item);
+ 
+-        verifyZeroInteractions(monitor);
++        verifyNoInteractions(monitor);
+     }
+ 
+     @Test
+@@ -66,7 +63,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
+ 
+         dispatcher.canRun(item);
+ 
+-        verifyZeroInteractions(monitor);
++        verifyNoInteractions(monitor);
+     }
+ 
+     @Test
+@@ -152,7 +149,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
+ 
+         dispatcher.canRun(item);
+ 
+-        verifyZeroInteractions(monitor);
++        verifyNoInteractions(monitor);
+     }
+ 
+     @Test
+@@ -168,7 +165,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
+ 
+         dispatcher.canRun(item);
+ 
+-        verifyZeroInteractions(monitor);
++        verifyNoInteractions(monitor);
+     }
+ 
+     @Test
+@@ -184,7 +181,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
+ 
+         dispatcher.canRun(item);
+ 
+-        verifyZeroInteractions(monitor);
++        verifyNoInteractions(monitor);
+     }
+ 
+     @Test
+@@ -201,7 +198,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
+ 
+         dispatcher.canRun(item);
+ 
+-        verifyZeroInteractions(monitor);
++        verifyNoInteractions(monitor);
+     }
+ 
+     @Test
+@@ -289,7 +286,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
+ 
+         dispatcher.canTake(node, item);
+ 
+-        verifyZeroInteractions(monitor);
++        verifyNoInteractions(monitor);
+     }
+ 
+     @Test
+@@ -302,7 +299,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
+ 
+         dispatcher.canTake(node, item);
+ 
+-        verifyZeroInteractions(monitor);
++        verifyNoInteractions(monitor);
+     }
+ 
+     @Test
+@@ -317,7 +314,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
+ 
+         dispatcher.canTake(node, item);
+ 
+-        verifyZeroInteractions(monitor);
++        verifyNoInteractions(monitor);
+     }
+ 
+     @Test
+@@ -333,7 +330,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
+ 
+         dispatcher.canTake(node, item);
+ 
+-        verifyZeroInteractions(monitor);
++        verifyNoInteractions(monitor);
+     }
+ 
+     @Test
+@@ -349,7 +346,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
+ 
+         dispatcher.canTake(node, item);
+ 
+-        verifyZeroInteractions(monitor);
++        verifyNoInteractions(monitor);
+     }
+ 
+     @Test
+@@ -366,7 +363,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
+ 
+         dispatcher.canTake(node, item);
+ 
+-        verifyZeroInteractions(monitor);
++        verifyNoInteractions(monitor);
+     }
+ 
+     @Test
+@@ -453,7 +450,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
+ 
+         dispatcher.canTake(node, item);
+ 
+-        verifyZeroInteractions(monitor);
++        verifyNoInteractions(monitor);
+     }
+ 
+     @Test
+@@ -469,7 +466,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
+ 
+         dispatcher.canTake(node, item);
+ 
+-        verifyZeroInteractions(monitor);
++        verifyNoInteractions(monitor);
+     }
+ 
+     @Test
+@@ -485,7 +482,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
+ 
+         dispatcher.canTake(node, item);
+ 
+-        verifyZeroInteractions(monitor);
++        verifyNoInteractions(monitor);
+     }
+ 
+     @Test
+@@ -502,7 +499,7 @@ public class BuildBlockerQueueTaskDispatcherUnitTest {
+ 
+         dispatcher.canTake(node, item);
+ 
+-        verifyZeroInteractions(monitor);
++        verifyNoInteractions(monitor);
+     }
+ 
+     private class FieldReturningMonitorFactory implements MonitorFactory {
+-- 
+2.34.1
+

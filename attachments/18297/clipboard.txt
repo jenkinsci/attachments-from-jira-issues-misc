@@ -1,0 +1,119 @@
+Index: C:/Users/Paulina/Projects/hudson/trunk/hudson/main/core/src/test/java/hudson/MarkupTextTest.java
+===================================================================
+--- C:/Users/Paulina/Projects/hudson/trunk/hudson/main/core/src/test/java/hudson/MarkupTextTest.java	(revision 11519)
++++ C:/Users/Paulina/Projects/hudson/trunk/hudson/main/core/src/test/java/hudson/MarkupTextTest.java	(working copy)
+@@ -3,6 +3,7 @@
+ import junit.framework.TestCase;
+ import hudson.MarkupText.SubText;
+ 
++import java.util.List;
+ import java.util.regex.Pattern;
+ 
+ /**
+@@ -14,8 +15,7 @@
+         for (SubText st : t.findTokens(pattern))
+             st.surroundWith("<$1>","<$1>");
+ 
+-        System.out.println(t);
+-        assertEquals(t.toString(),"I fixed <155>issue #155<155>. The rest is trick text: xissue #155 issue #123x");
++        assertEquals("I fixed <155>issue #155<155>. The rest is trick text: xissue #155 issue #123x", t.toString());
+     }
+ 
+     public void testBoundary() {
+@@ -23,9 +23,19 @@
+         for (SubText st : t.findTokens(pattern))
+             st.surroundWith("<$1>","<$1>");
+ 
+-        System.out.println(t);
+-        assertEquals(t.toString(),"<155>issue #155<155>---<123>issue #123<123>");
++        assertEquals("<155>issue #155<155>---<123>issue #123<123>", t.toString());
+     }
+ 
++    public void testFindTokensOnSubText() {
++        MarkupText t = new MarkupText("Fixed 2 issues in this commit, fixing issue 155, 145");
++        List<SubText> tokens = t.findTokens(Pattern.compile("issue .*"));
++        assertEquals("Expected one token", 1, tokens.size());
++        assertEquals("Expected single token was incorrect", "issue 155, 145", tokens.get(0).group(0));
++        for (SubText st : tokens.get(0).findTokens(Pattern.compile("([0-9]+)")))
++            st.surroundWith("<$1>","<$1>");
++
++        assertEquals("Fixed 2 issues in this commit, fixing issue <155>155<155>, <145>145<145>", t.toString());
++    }
++
+     private static final Pattern pattern = Pattern.compile("issue #([0-9]+)");
+ }
+Index: C:/Users/Paulina/Projects/hudson/trunk/hudson/main/core/src/main/java/hudson/MarkupText.java
+===================================================================
+--- C:/Users/Paulina/Projects/hudson/trunk/hudson/main/core/src/main/java/hudson/MarkupText.java	(revision 11519)
++++ C:/Users/Paulina/Projects/hudson/trunk/hudson/main/core/src/main/java/hudson/MarkupText.java	(working copy)
+@@ -49,20 +49,20 @@
+         private final int start,end;
+         private final int[] groups;
+ 
+-        public SubText(Matcher m) {
+-            start = m.start();
+-            end   = m.end();
++        public SubText(Matcher m, int textOffset) {
++            start = m.start() + textOffset;
++            end   = m.end() + textOffset;
+ 
+             int cnt = m.groupCount();
+             groups = new int[cnt*2];
+             for( int i=0; i<cnt; i++ ) {
+-                groups[i*2  ] = m.start(i+1);
+-                groups[i*2+1] = m.end(i+1);
++                groups[i*2  ] = m.start(i+1) + textOffset;
++                groups[i*2+1] = m.end(i+1) + textOffset;
+             }
+         }
+ 
+         /**
+-         * Surrounds this subext with the specifid start tag and the end tag.
++         * Surrounds this subtext with the specified start tag and the end tag.
+          *
+          * <p>
+          * Start/end tag text can contain special tokens "$0", "$1", ...
+@@ -145,6 +145,23 @@
+ 
+             return buf.toString();
+         }
++        
++        /**
++         * Find all "tokens" that match the given pattern in this subtext.
++         *
++         * <p>
++         * A token is like a substring, except that it's aware of word boundaries.
++         * For example, while "bc" is a string of "abc", calling {@code findTokens}
++         * with "bc" as a pattern on string "abc" won't match anything.
++         *
++         * <p>
++         * This method is convenient for finding keywords that follow a certain syntax
++         * from natural text. You can then use {@link SubText#surroundWith(String,String)}
++         * to put mark up around such text.
++         */
++        public List<SubText> findTokens(Pattern pattern) {
++            return MarkupText.this.findTokens(pattern, text.substring(start, end), start);
++        }
+     }
+ 
+     public MarkupText(String text) {
+@@ -217,6 +234,10 @@
+      * to put mark up around such text.
+      */
+     public List<SubText> findTokens(Pattern pattern) {
++        return findTokens(pattern, text, 0);
++    }
++
++    private List<SubText> findTokens(Pattern pattern, String text, int textOffset) {
+         Matcher m = pattern.matcher(text);
+         List<SubText> r = new ArrayList<SubText>();
+ 
+@@ -233,7 +254,7 @@
+                 if(Character.isLetter(ch) || Character.isDigit(ch))
+                     continue;   // not at a word boundary
+             }
+-            r.add(new SubText(m));
++            r.add(new SubText(m, textOffset));
+         }
+ 
+         return r;

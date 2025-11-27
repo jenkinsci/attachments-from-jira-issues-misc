@@ -1,0 +1,318 @@
+Index: main/java/hudson/plugins/msbuild/MsBuildBuilder.java
+===================================================================
+--- main/java/hudson/plugins/msbuild/MsBuildBuilder.java	(revision 15920)
++++ main/java/hudson/plugins/msbuild/MsBuildBuilder.java	(working copy)
+@@ -1,5 +1,6 @@
+ package hudson.plugins.msbuild;
+ 
++import hudson.CopyOnWrite;
+ import hudson.Launcher;
+ import hudson.Util;
+ import hudson.model.Build;
+@@ -8,14 +9,17 @@
+ import hudson.model.Project;
+ import hudson.tasks.Builder;
+ import hudson.util.ArgumentListBuilder;
++import hudson.util.FormFieldValidator;
+ 
++import java.io.File;
+ import java.io.IOException;
+ import java.util.Map;
+ 
+-import net.sf.json.JSONObject;
++import javax.servlet.ServletException;
+ 
+ import org.kohsuke.stapler.DataBoundConstructor;
+ import org.kohsuke.stapler.StaplerRequest;
++import org.kohsuke.stapler.StaplerResponse;
+ 
+ /**
+  * Sample {@link Builder}.
+@@ -33,55 +37,74 @@
+  * will be invoked. 
+  * 
+  * @author kyle.sweeney@valtech.com
++ * 2009/03/01 -- Gregory Boissinot - Zenika - Add the possibility to manage multiple Msbuild version
+  *
+  */
+ public class MsBuildBuilder extends Builder {
+ 
++	/**
++	 * Identifies {@link Visual Studio} to be used.
++	 */
++	private final String msBuildName;
+ 	private final String msBuildFile;
+ 	private final String cmdLineArgs;
+ 	
+ 	/**
+ 	 * When this builder is created in the project configuration step,
+ 	 * the builder object will be created from the strings below.
++	 * @param msName The Visual studio logical identifiant name
+ 	 * @param msBuildFile	The name/location of the msbuild file
+ 	 * @param targets Whitespace separated list of command line arguments
+ 	 */
+     @DataBoundConstructor
+-    public MsBuildBuilder(String msBuildFile,String cmdLineArgs) {
+-    	super();
+-    	if(msBuildFile==null || msBuildFile.trim().length()==0)
+-    		this.msBuildFile = "";
+-    	else
+-    		this.msBuildFile = msBuildFile;
+-    	if(cmdLineArgs==null || cmdLineArgs.trim().length()==0)
+-    		this.cmdLineArgs = "";
+-    	else
+-    		this.cmdLineArgs = cmdLineArgs;
++    public MsBuildBuilder(String msBuildName, String msBuildFile,String cmdLineArgs) {
++    	this.msBuildName=msBuildName;
++    	this.msBuildFile=msBuildFile;
++    	this.cmdLineArgs=cmdLineArgs;
+     }
+ 
+-    /**
+-     * We'll use these from the <tt>config.jelly</tt>.
+-     */
+     public String getCmdLineArgs(){
+         return cmdLineArgs;
+     }
++
+     public String getMsBuildFile(){
+     	return msBuildFile;
+     }
+ 
+-    public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
++    public String getMsBuildName() {
++		return msBuildName;
++	}
++    
++    public MsBuildInstallation getMsBuild() {
++        for( MsBuildInstallation i : DESCRIPTOR.getInstallations() ) {
++            if(msBuildName!=null && i.getName().equals(msBuildName))
++                return i;
++        }
++        return null;
++    }	
++
++	public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
+         Project proj = build.getProject();
+         ArgumentListBuilder args = new ArgumentListBuilder();
+-
+-        //Get the path to the nant installation
+-    	listener.getLogger().println("Path To MSBuild.exe: " + DESCRIPTOR.getPathToMsBuild());
+-    	String msbuildExe = DESCRIPTOR.getPathToMsBuild();
+         
+-    	//Create a new commandline target with the name of the executable as the first
+-    	//paramater
+-        String execName=msbuildExe;
+-        args.add(execName);
++        String execName= "msbuild.exe";        
++        MsBuildInstallation ai = getMsBuild();
++        if(ai==null) {
++        	listener.getLogger().println("Path To MSBuild.exe: " +execName);
++        	args.add(execName);
++        } else {
++            File exec = ai.getExecutable();
++            if(!ai.getExists()) {
++                listener.fatalError(exec+" doesn't exist");
++                return false;
++            }
++            listener.getLogger().println("Path To MSBuild.exe: " +exec.getPath());
++            args.add(exec.getPath());
++        }	 
+         
++        
++        
++        
+         //Remove all tabs, carriage returns, and newlines and replace them with
+         //whitespaces, so that we can add them as parameters to the executable
+         String normalizedTarget = cmdLineArgs.replaceAll("[\t\r\n]+"," ");
+@@ -130,25 +153,14 @@
+      * The class is marked as public so that it can be accessed from views.
+      */
+     public static final class DescriptorImpl extends Descriptor<Builder> {
+-        /**
+-         * To persist global configuration information,
+-         * simply store it in a field and call save().
+-         *
+-         * <p>
+-         * If you don't want fields to be persisted, use <tt>transient</tt>.
+-         */
+-    	public static String PARAMETERNAME_PATH_TO_MSBUILD = "pathToMsBuild";
+-    	private static String DEFAULT_PATH_TO_MSBUILD = "msbuild.exe";
+     	
+-        private String pathToMsBuild;
+-
++    	
++		@CopyOnWrite
++		private volatile MsBuildInstallation[] installations = new MsBuildInstallation[0];
++    	
+         DescriptorImpl() {
+         	super(MsBuildBuilder.class);
+-            load();
+-            if(pathToMsBuild==null || pathToMsBuild.length()==0){
+-            	pathToMsBuild = DEFAULT_PATH_TO_MSBUILD;
+-            	save();
+-            }
++			load();
+         }
+ 
+         /**
+@@ -160,33 +172,14 @@
+         
+         @Override
+         public boolean configure(StaplerRequest req) throws FormException{
+-        	// to persist global configuration information,
+-            // set that to properties and call save().
+-            pathToMsBuild = req.getParameter("descriptor."+PARAMETERNAME_PATH_TO_MSBUILD);
+-            if(pathToMsBuild == null || pathToMsBuild.length()==0){
+-            	pathToMsBuild = DEFAULT_PATH_TO_MSBUILD;
+-            }
+-            save();
+-            return true;
++			installations = req.bindParametersToList(MsBuildInstallation.class,"msbuild.").toArray(new MsBuildInstallation[0]);
++			save();
++			return true;            
+         }
+ 
+-        /**
+-         * This method returns the path to the msbuild.exe file for executing msbuild
+-         */
+-        public String getPathToMsBuild() {
+-            return pathToMsBuild;
+-        }
++		public MsBuildInstallation[] getInstallations() {
++			return installations;
++		}              
+ 
+-      
+-        
+-        @Override
+-		public Builder newInstance(StaplerRequest arg0, JSONObject arg1) throws FormException {
+-        	String buildFile= arg1.getString("msBuildFile");
+-        	String cmdLineArg= arg1.getString("cmdLineArgs");
+-        	MsBuildBuilder builder = new MsBuildBuilder(buildFile,cmdLineArg);
+-			
+-			return builder;
+-		}
+-
+     }
+ }
+Index: main/java/hudson/plugins/msbuild/MsBuildInstallation.java
+===================================================================
+--- main/java/hudson/plugins/msbuild/MsBuildInstallation.java	(revision 0)
++++ main/java/hudson/plugins/msbuild/MsBuildInstallation.java	(revision 0)
+@@ -0,0 +1,46 @@
++package hudson.plugins.msbuild;
++
++import org.kohsuke.stapler.DataBoundConstructor;
++
++import java.io.File;
++
++/**
++ * MsBuild installation.
++ * 
++ * @author Gregory Boissinot - Zenika
++*/
++public final class MsBuildInstallation {
++	
++	
++    private final String name;
++    private final String pathToMsBuild;
++
++    @DataBoundConstructor
++    public MsBuildInstallation(String name, String pathToMsBuild) {
++        this.name = name;
++        this.pathToMsBuild = pathToMsBuild;
++    }
++
++    
++	public String getPathToMsBuild() {
++		return pathToMsBuild;
++	}
++
++	/**
++     * Human readable display name.
++     */
++    public String getName() {
++        return name;
++    }
++
++    public File getExecutable() {
++        return new File(pathToMsBuild);
++    }
++    
++    /**
++     * Returns true if the executable exists.
++     */
++    public boolean getExists() {
++        return getExecutable().exists();
++    }
++}
+Index: main/resources/hudson/plugins/msbuild/MsBuildBuilder/config.jelly
+===================================================================
+--- main/resources/hudson/plugins/msbuild/MsBuildBuilder/config.jelly	(revision 15920)
++++ main/resources/hudson/plugins/msbuild/MsBuildBuilder/config.jelly	(working copy)
+@@ -2,6 +2,16 @@
+ 	<!--
+ 		This script defines the view on the project builders section for MSBuild Builder.
+ 	-->
++	
++   <f:entry title="MsBuild Version">
++    <select class="setting-input" name="msBuildBuilder.msBuildName">
++      <option>(Default)</option>
++      <j:forEach var="inst" items="${descriptor.installations}">
++        <f:option selected="${inst.name==instance.msBuildName}">${inst.name}</f:option>
++      </j:forEach>
++    </select>
++   </f:entry>	
++	
+ 	<f:entry title="MsBuild Build File" help="${rootURL}/../plugin/msbuild/help-BuildFile.html">
+ 		<f:textbox name="msBuildBuilder.msBuildFile" value="${instance.msBuildFile}" />
+ 	</f:entry>
+Index: main/resources/hudson/plugins/msbuild/MsBuildBuilder/global.jelly
+===================================================================
+--- main/resources/hudson/plugins/msbuild/MsBuildBuilder/global.jelly	(revision 15920)
++++ main/resources/hudson/plugins/msbuild/MsBuildBuilder/global.jelly	(working copy)
+@@ -1,16 +1,28 @@
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+-	<!--
+-		This script is the view for the global configuration for the MSBuild Builder.
+-		
+-		To set the value of a form field, you can call methods on the descriptor class
+-		using an EL-type syntax like ${descriptor.methodName()}
+-	-->
+-	<f:section title="MSBuild Builder" >
+-		<f:entry title="Path To msbuild.exe" 
+-				help="${rootURL}/../plugin/msbuild/help-globalConfig.html" 
+-				description="Location of msbuild executable">
+-			<f:textbox name="descriptor.pathToMsBuild"
+-						value="${descriptor.getPathToMsBuild()}"/>
+-		</f:entry>
+-	</f:section>
++
++  <f:section title="MSBuild Builder">
++    <f:entry title="MSBuild installation"
++      description="List of MSBuild installations on this system">
++      <f:repeatable var="inst" items="${descriptor.installations}">
++        <table width="100%">
++          
++	  <f:entry title="name">
++            <f:textbox name="msbuild.name" value="${inst.name}" />
++          </f:entry>
++
++          <f:entry title="Path To msbuild.exe" help="${rootURL}/../plugin/msbuild/help-globalConfig.html">
++            <f:textbox name="msbuild.pathToMsBuild" value="${inst.pathToMsBuild}" />
++           </f:entry>
++          
++          <f:entry title="">
++            <div align="right">
++              <f:repeatableDeleteButton />
++            </div>
++          </f:entry>
++        </table>
++      </f:repeatable>
++    </f:entry>
++  </f:section>	
++	
++	
+ </j:jelly>
+\ No newline at end of file

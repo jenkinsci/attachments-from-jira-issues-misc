@@ -1,0 +1,73 @@
+From f1b816b3deed1c5c5600be533b45b526e1718195 Mon Sep 17 00:00:00 2001
+From: Bryan Jacobs <bjacobs@woti.com>
+Date: Mon, 16 Jul 2012 11:25:53 -0400
+Subject: [PATCH] Correct branch-selection logic
+
+There are two errors in the branch selection logic. The first is that
+branches containing a "/" are truncated to after that slash, even
+where they do not begin with "refs" or a remote name. The second is
+that, with more than one configured remote, the state of a variable
+was not being reset between iterations. This resulted in remotes other
+than the first being unusable for the branch selector.
+---
+ src/main/java/hudson/plugins/git/Branch.java       |    6 +++++-
+ .../plugins/git/util/DefaultBuildChooser.java      |   20 ++++++++++++--------
+ 2 files changed, 17 insertions(+), 9 deletions(-)
+
+diff --git a/src/main/java/hudson/plugins/git/Branch.java b/src/main/java/hudson/plugins/git/Branch.java
+index 2ea7dfe..87e02c6 100644
+--- a/src/main/java/hudson/plugins/git/Branch.java
++++ b/src/main/java/hudson/plugins/git/Branch.java
+@@ -15,7 +15,11 @@ public class Branch extends GitObject {
+     }
+     
+     private static String strip(String name) {
+-        return name.substring(name.indexOf('/', 5) + 1);
++        if (name.startsWith("refs/")) {
++            return name.substring(name.indexOf('/', 5) + 1);
++        } else {
++            return name;
++        }
+     }
+     
+     public @Override String toString() {
+diff --git a/src/main/java/hudson/plugins/git/util/DefaultBuildChooser.java b/src/main/java/hudson/plugins/git/util/DefaultBuildChooser.java
+index 924ffba..5af3a82 100644
+--- a/src/main/java/hudson/plugins/git/util/DefaultBuildChooser.java
++++ b/src/main/java/hudson/plugins/git/util/DefaultBuildChooser.java
+@@ -74,20 +74,24 @@ public class DefaultBuildChooser extends BuildChooser {
+         if (!singleBranch.contains("/")) {
+             // the 'branch' could actually be a tag:
+             Set<String> tags = git.getTagNames(singleBranch);
+-            if(tags.size() != 0) {
++            if (tags.size() != 0) {
+                 verbose(listener, "{0} is a tag");
+                 return getHeadRevision(isPollCall, singleBranch, git, listener, data);
+             }
+         }
+ 
+-        Collection<Revision> revisions = new ArrayList<Revision>();
+-        for (RemoteConfig config : gitSCM.getRepositories()) {
+-            String repository = config.getName();
+-            singleBranch = repository + "/" + singleBranch;
+-            verbose(listener, "Qualifying {0} with the repository {1} a a branch", singleBranch, repository);
+-            revisions.addAll(getHeadRevision(isPollCall, singleBranch, git, listener, data));
++        if (singleBranch.startsWith("refs/")) {
++            return getHeadRevision(isPollCall, singleBranch, git, listener, data);
++        } else {
++            Collection<Revision> revisions = new ArrayList<Revision>();
++            for (RemoteConfig config : gitSCM.getRepositories()) {
++                String repository = config.getName();
++                String appBranch = repository + "/" + singleBranch;
++                verbose(listener, "Qualifying {0} with the repository {1} as a branch", appBranch, repository);
++                revisions.addAll(getHeadRevision(isPollCall, appBranch, git, listener, data));
++            }
++            return revisions;
+         }
+-        return revisions;
+     }
+ 
+     private Collection<Revision> getHeadRevision(boolean isPollCall, String singleBranch, IGitAPI git, TaskListener listener, BuildData data) {
+-- 
+1.7.9
+

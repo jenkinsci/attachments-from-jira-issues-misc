@@ -1,0 +1,16 @@
+Index: Queue.java
+===================================================================
+--- Queue.java	(revision 31052)
++++ Queue.java	(working copy)
+@@ -926,9 +926,11 @@
+             for (Node n : h.getNodes())
+                 hash.add(n,n.getNumExecutors()*100);
+             
++            Label lbl = p.task.getAssignedLabel();
+             for (Node n : hash.list(p.task.getFullDisplayName())) {
+                 Computer c = n.toComputer();
+                 if (c==null || c.isOffline())    continue;
++                if (lbl!=null && !lbl.contains(n))  continue;
+                 c.startFlyWeightTask(p);
+                 return;
+             }

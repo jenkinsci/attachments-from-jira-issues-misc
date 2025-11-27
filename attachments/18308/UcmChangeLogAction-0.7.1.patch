@@ -1,0 +1,39 @@
+Index: src/main/java/hudson/plugins/clearcase/ucm/UcmChangeLogAction.java
+===================================================================
+--- src/main/java/hudson/plugins/clearcase/ucm/UcmChangeLogAction.java	(revision 12847)
++++ src/main/java/hudson/plugins/clearcase/ucm/UcmChangeLogAction.java	(working copy)
+@@ -103,7 +103,7 @@
+                         activity.setName(activityName);
+                         activityNameToEntry.put(activityName, activity);
+                         if (activityName.length()!=0) {
+-                            callLsActivity(activity,viewname);
++                            callLsActivity(activity,viewname,1);
+                         } else {
+                             activity.setHeadline("Unknown activity");
+                             activity.setUser("Unknown");
+@@ -131,7 +131,7 @@
+         return result;
+     }
+ 
+-    private void callLsActivity(UcmActivity activity,String viewname) throws IOException, InterruptedException {
++    private void callLsActivity(UcmActivity activity,String viewname,int numberOfContributingActivitiesToFollow) throws IOException, InterruptedException {
+         ClearToolFormatHandler handler = null;
+         if (activity.isIntegrationActivity()) {
+             handler = new ClearToolFormatHandler(INTEGRATION_ACTIVITY_FORMAT);
+@@ -148,14 +148,14 @@
+             activity.setStream(matcher.group(2));
+             activity.setUser(matcher.group(3));
+ 
+-            if (activity.isIntegrationActivity()) {
++            if (activity.isIntegrationActivity() && numberOfContributingActivitiesToFollow > 0) {
+                 String contributingActivities = matcher.group(4);
+ 
+                 for (String contributing : contributingActivities.split(" ")) {
+                     UcmActivity subActivity = new UcmActivity();
+                     activity.addSubActivity(subActivity);
+                     subActivity.setName(contributing);
+-                    callLsActivity(subActivity,viewname);
++                    callLsActivity(subActivity,viewname,--numberOfContributingActivitiesToFollow);
+                 }
+             }
+         }

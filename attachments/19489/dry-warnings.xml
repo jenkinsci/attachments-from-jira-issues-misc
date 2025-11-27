@@ -1,0 +1,1785 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<annotation-array>
+  <dry>
+    <message>271 lines of duplicate code.</message>
+    <priority>HIGH</priority>
+    <key>3</key>
+    <lineRanges>
+      <range>
+        <start>31</start>
+        <end>301</end>
+      </range>
+    </lineRanges>
+    <primaryLineNumber>31</primaryLineNumber>
+    <fileName>C:/Documents and Settings/tomas.hellberg/.hudson/jobs/cpd/workspace/root/path2/main.c</fileName>
+    <moduleName>workspace</moduleName>
+    <packageName>-</packageName>
+    <category></category>
+    <type>Duplicate Code</type>
+    <contextHashCode>4</contextHashCode>
+    <origin>dry</origin>
+    <links>
+      <dry>
+        <message>271 lines of duplicate code.</message>
+        <priority>HIGH</priority>
+        <key>1</key>
+        <lineRanges>
+          <range>
+            <start>31</start>
+            <end>301</end>
+          </range>
+        </lineRanges>
+        <primaryLineNumber>31</primaryLineNumber>
+        <fileName>C:/Documents and Settings/tomas.hellberg/.hudson/jobs/cpd/workspace/root/main.c</fileName>
+        <moduleName>workspace</moduleName>
+        <packageName>-</packageName>
+        <category></category>
+        <type>Duplicate Code</type>
+        <contextHashCode>2</contextHashCode>
+        <origin>dry</origin>
+        <links>
+          <dry>
+            <message>271 lines of duplicate code.</message>
+            <priority>HIGH</priority>
+            <key>4</key>
+            <lineRanges>
+              <range>
+                <start>31</start>
+                <end>301</end>
+              </range>
+            </lineRanges>
+            <primaryLineNumber>31</primaryLineNumber>
+            <fileName>C:/Documents and Settings/tomas.hellberg/.hudson/jobs/cpd/workspace/root/path3/main.c</fileName>
+            <moduleName>workspace</moduleName>
+            <packageName>-</packageName>
+            <category></category>
+            <type>Duplicate Code</type>
+            <contextHashCode>5</contextHashCode>
+            <origin>dry</origin>
+            <links>
+              <dry reference="../../../../../.."/>
+              <dry reference="../../../.."/>
+              <dry>
+                <message>271 lines of duplicate code.</message>
+                <priority>HIGH</priority>
+                <key>5</key>
+                <lineRanges>
+                  <range>
+                    <start>31</start>
+                    <end>301</end>
+                  </range>
+                </lineRanges>
+                <primaryLineNumber>31</primaryLineNumber>
+                <fileName>C:/Documents and Settings/tomas.hellberg/.hudson/jobs/cpd/workspace/root/path4/main.c</fileName>
+                <moduleName>workspace</moduleName>
+                <packageName>-</packageName>
+                <category></category>
+                <type>Duplicate Code</type>
+                <contextHashCode>6</contextHashCode>
+                <origin>dry</origin>
+                <links>
+                  <dry reference="../../../../../../../.."/>
+                  <dry reference="../../../../../.."/>
+                  <dry reference="../../../.."/>
+                  <dry>
+                    <message>271 lines of duplicate code.</message>
+                    <priority>HIGH</priority>
+                    <key>6</key>
+                    <lineRanges>
+                      <range>
+                        <start>31</start>
+                        <end>301</end>
+                      </range>
+                    </lineRanges>
+                    <primaryLineNumber>31</primaryLineNumber>
+                    <fileName>C:/Documents and Settings/tomas.hellberg/.hudson/jobs/cpd/workspace/root/path4/path5/main.c</fileName>
+                    <moduleName>workspace</moduleName>
+                    <packageName>-</packageName>
+                    <category></category>
+                    <type>Duplicate Code</type>
+                    <contextHashCode>7</contextHashCode>
+                    <origin>dry</origin>
+                    <links>
+                      <dry reference="../../../../../../../../../.."/>
+                      <dry reference="../../../../../../../.."/>
+                      <dry reference="../../../../../.."/>
+                      <dry>
+                        <message>271 lines of duplicate code.</message>
+                        <priority>HIGH</priority>
+                        <key>2</key>
+                        <lineRanges>
+                          <range>
+                            <start>31</start>
+                            <end>301</end>
+                          </range>
+                        </lineRanges>
+                        <primaryLineNumber>31</primaryLineNumber>
+                        <fileName>C:/Documents and Settings/tomas.hellberg/.hudson/jobs/cpd/workspace/root/path1/main.c</fileName>
+                        <moduleName>workspace</moduleName>
+                        <packageName>-</packageName>
+                        <category></category>
+                        <type>Duplicate Code</type>
+                        <contextHashCode>3</contextHashCode>
+                        <origin>dry</origin>
+                        <links>
+                          <dry reference="../../../../../../../../../.."/>
+                          <dry reference="../../../../../../../.."/>
+                          <dry reference="../../../../../.."/>
+                          <dry reference="../../../.."/>
+                          <dry reference="../../../../../../../../../../../.."/>
+                        </links>
+                        <sourceCode>static void blockSigpipe()
+{
+    sigset_t mask;
+
+    sigemptyset(&amp;mask);
+    sigaddset(&amp;mask, SIGPIPE);
+    if (sigprocmask(SIG_BLOCK, &amp;mask, NULL) != 0)
+        fprintf(stderr, &quot;WARNING: SIGPIPE not blocked\n&quot;);
+}
+
+/*
+ * Create a String[] and populate it with the contents of argv.
+ */
+static jobjectArray createStringArray(JNIEnv* env, char* const argv[], int argc)
+{
+    jclass stringClass = NULL;
+    jobjectArray strArray = NULL;
+    jobjectArray result = NULL;
+    int i;
+
+    stringClass = (*env)-&gt;FindClass(env, &quot;java/lang/String&quot;);
+    if ((*env)-&gt;ExceptionCheck(env)) {
+        fprintf(stderr, &quot;Got exception while finding class String\n&quot;);
+        goto bail;
+    }
+    assert(stringClass != NULL);
+    strArray = (*env)-&gt;NewObjectArray(env, argc, stringClass, NULL);
+    if ((*env)-&gt;ExceptionCheck(env)) {
+        fprintf(stderr, &quot;Got exception while creating String array\n&quot;);
+        goto bail;
+    }
+    assert(strArray != NULL);
+
+    for (i = 0; i &lt; argc; i++) {
+        jstring argStr;
+
+        argStr = (*env)-&gt;NewStringUTF(env, argv[i]);
+        if ((*env)-&gt;ExceptionCheck(env)) {
+            fprintf(stderr, &quot;Got exception while allocating Strings\n&quot;);
+            goto bail;
+        }
+        assert(argStr != NULL);
+        (*env)-&gt;SetObjectArrayElement(env, strArray, i, argStr);
+        (*env)-&gt;DeleteLocalRef(env, argStr);
+    }
+
+    /* return the array, and ensure we don&apos;t delete the local ref to it */
+    result = strArray;
+    strArray = NULL;
+
+bail:
+    (*env)-&gt;DeleteLocalRef(env, stringClass);
+    (*env)-&gt;DeleteLocalRef(env, strArray);
+    return result;
+}
+
+/*
+ * Determine whether or not the specified method is public.
+ *
+ * Returns JNI_TRUE on success, JNI_FALSE on failure.
+ */
+static int methodIsPublic(JNIEnv* env, jclass clazz, jmethodID methodId)
+{
+    static const int PUBLIC = 0x0001;   // java.lang.reflect.Modifiers.PUBLIC
+    jobject refMethod = NULL;
+    jclass methodClass = NULL;
+    jmethodID getModifiersId;
+    int modifiers;
+    int result = JNI_FALSE;
+
+    refMethod = (*env)-&gt;ToReflectedMethod(env, clazz, methodId, JNI_FALSE);
+    if (refMethod == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to get reflected method\n&quot;);
+        goto bail;
+    }
+
+    /*
+     * We now have a Method instance.  We need to call
+     * its getModifiers() method.
+     */
+    methodClass = (*env)-&gt;FindClass(env, &quot;java/lang/reflect/Method&quot;);
+    if (methodClass == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to find class Method\n&quot;);
+        goto bail;
+    }
+    getModifiersId = (*env)-&gt;GetMethodID(env, methodClass,
+                        &quot;getModifiers&quot;, &quot;()I&quot;);
+    if (methodClass == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to find reflect.Method.getModifiers\n&quot;);
+        goto bail;
+    }
+
+    modifiers = (*env)-&gt;CallIntMethod(env, refMethod, getModifiersId);
+    if ((modifiers &amp; PUBLIC) == 0) {
+        fprintf(stderr, &quot;Dalvik VM: main() is not public\n&quot;);
+        goto bail;
+    }
+
+    result = JNI_TRUE;
+
+bail:
+    (*env)-&gt;DeleteLocalRef(env, refMethod);
+    (*env)-&gt;DeleteLocalRef(env, methodClass);
+    return result;
+}
+
+/*
+ * Parse arguments.  Most of it just gets passed through to the VM.  The
+ * JNI spec defines a handful of standard arguments.
+ */
+int main(int argc, char* const argv[])
+{
+    JavaVM* vm = NULL;
+    JNIEnv* env = NULL;
+    JavaVMInitArgs initArgs;
+    JavaVMOption* options = NULL;
+    char* slashClass = NULL;
+    int optionCount, curOpt, i, argIdx;
+    int needExtra = JNI_FALSE;
+    int result = 1;
+
+    setvbuf(stdout, NULL, _IONBF, 0);
+
+    /* ignore argv[0] */
+    argv++;
+    argc--;
+
+    /*
+     * If we&apos;re adding any additional stuff, e.g. function hook specifiers,
+     * add them to the count here.
+     *
+     * We&apos;re over-allocating, because this includes the options to the VM
+     * plus the options to the program.
+     */
+    optionCount = argc;
+
+    options = (JavaVMOption*) malloc(sizeof(JavaVMOption) * optionCount);
+    memset(options, 0, sizeof(JavaVMOption) * optionCount);
+
+    /*
+     * Copy options over.  Everything up to the name of the class starts
+     * with a &apos;-&apos; (the function hook stuff is strictly internal).
+     *
+     * [Do we need to catch &amp; handle &quot;-jar&quot; here?]
+     */
+    for (curOpt = argIdx = 0; argIdx &lt; argc; argIdx++) {
+        if (argv[argIdx][0] != &apos;-&apos; &amp;&amp; !needExtra)
+            break;
+        options[curOpt++].optionString = strdup(argv[argIdx]);
+
+        /* some options require an additional arg */
+        needExtra = JNI_FALSE;
+        if (strcmp(argv[argIdx], &quot;-classpath&quot;) == 0 ||
+            strcmp(argv[argIdx], &quot;-cp&quot;) == 0)
+            /* others? */
+        {
+            needExtra = JNI_TRUE;
+        }
+    }
+
+    if (needExtra) {
+        fprintf(stderr, &quot;Dalvik VM requires value after last option flag\n&quot;);
+        goto bail;
+    }
+
+    /* insert additional internal options here */
+
+    assert(curOpt &lt;= optionCount);
+
+    initArgs.version = JNI_VERSION_1_4;
+    initArgs.options = options;
+    initArgs.nOptions = curOpt;
+    initArgs.ignoreUnrecognized = JNI_FALSE;
+
+    //printf(&quot;nOptions = %d\n&quot;, initArgs.nOptions);
+
+    blockSigpipe();
+
+    /*
+     * Start VM.  The current thread becomes the main thread of the VM.
+     */
+    if (JNI_CreateJavaVM(&amp;vm, &amp;env, &amp;initArgs) &lt; 0) {
+        fprintf(stderr, &quot;Dalvik VM init failed (check log file)\n&quot;);
+        goto bail;
+    }
+
+    /*
+     * Make sure they provided a class name.  We do this after VM init
+     * so that things like &quot;-Xrunjdwp:help&quot; have the opportunity to emit
+     * a usage statement.
+     */
+    if (argIdx == argc) {
+        fprintf(stderr, &quot;Dalvik VM requires a class name\n&quot;);
+        goto bail;
+    }
+
+    /*
+     * We want to call main() with a String array with our arguments in it.
+     * Create an array and populate it.  Note argv[0] is not included.
+     */
+    jobjectArray strArray;
+    strArray = createStringArray(env, &amp;argv[argIdx+1], argc-argIdx-1);
+    if (strArray == NULL)
+        goto bail;
+
+    /*
+     * Find [class].main(String[]).
+     */
+    jclass startClass;
+    jmethodID startMeth;
+    char* cp;
+
+    /* convert &quot;com.android.Blah&quot; to &quot;com/android/Blah&quot; */
+    slashClass = strdup(argv[argIdx]);
+    for (cp = slashClass; *cp != &apos;\0&apos;; cp++)
+        if (*cp == &apos;.&apos;)
+            *cp = &apos;/&apos;;
+
+    startClass = (*env)-&gt;FindClass(env, slashClass);
+    if (startClass == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to locate class &apos;%s&apos;\n&quot;, slashClass);
+        goto bail;
+    }
+
+    startMeth = (*env)-&gt;GetStaticMethodID(env, startClass,
+                    &quot;main&quot;, &quot;([Ljava/lang/String;)V&quot;);
+    if (startMeth == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to find static main(String[]) in &apos;%s&apos;\n&quot;,
+            slashClass);
+        goto bail;
+    }
+
+    /*
+     * Make sure the method is public.  JNI doesn&apos;t prevent us from calling
+     * a private method, so we have to check it explicitly.
+     */
+    if (!methodIsPublic(env, startClass, startMeth))
+        goto bail;
+
+    /*
+     * Invoke main().
+     */
+    (*env)-&gt;CallStaticVoidMethod(env, startClass, startMeth, strArray);
+
+    if (!(*env)-&gt;ExceptionCheck(env))
+        result = 0;
+
+bail:
+    /*printf(&quot;Shutting down Dalvik VM\n&quot;);*/
+    if (vm != NULL) {
+        /*
+         * This allows join() and isAlive() on the main thread to work
+         * correctly, and also provides uncaught exception handling.
+         */
+        if ((*vm)-&gt;DetachCurrentThread(vm) != JNI_OK) {
+            fprintf(stderr, &quot;Warning: unable to detach main thread\n&quot;);
+            result = 1;
+        }
+
+        if ((*vm)-&gt;DestroyJavaVM(vm) != 0)
+            fprintf(stderr, &quot;Warning: Dalvik VM did not shut down cleanly\n&quot;);
+        /*printf(&quot;\nDalvik VM has exited\n&quot;);*/
+    }
+
+    for (i = 0; i &lt; optionCount; i++)
+        free((char*) options[i].optionString);
+    free(options);
+    free(slashClass);
+    /*printf(&quot;--- VM is down, process exiting\n&quot;);*/
+    return result;
+}</sourceCode>
+                      </dry>
+                      <dry reference="../../../.."/>
+                    </links>
+                    <sourceCode>static void blockSigpipe()
+{
+    sigset_t mask;
+
+    sigemptyset(&amp;mask);
+    sigaddset(&amp;mask, SIGPIPE);
+    if (sigprocmask(SIG_BLOCK, &amp;mask, NULL) != 0)
+        fprintf(stderr, &quot;WARNING: SIGPIPE not blocked\n&quot;);
+}
+
+/*
+ * Create a String[] and populate it with the contents of argv.
+ */
+static jobjectArray createStringArray(JNIEnv* env, char* const argv[], int argc)
+{
+    jclass stringClass = NULL;
+    jobjectArray strArray = NULL;
+    jobjectArray result = NULL;
+    int i;
+
+    stringClass = (*env)-&gt;FindClass(env, &quot;java/lang/String&quot;);
+    if ((*env)-&gt;ExceptionCheck(env)) {
+        fprintf(stderr, &quot;Got exception while finding class String\n&quot;);
+        goto bail;
+    }
+    assert(stringClass != NULL);
+    strArray = (*env)-&gt;NewObjectArray(env, argc, stringClass, NULL);
+    if ((*env)-&gt;ExceptionCheck(env)) {
+        fprintf(stderr, &quot;Got exception while creating String array\n&quot;);
+        goto bail;
+    }
+    assert(strArray != NULL);
+
+    for (i = 0; i &lt; argc; i++) {
+        jstring argStr;
+
+        argStr = (*env)-&gt;NewStringUTF(env, argv[i]);
+        if ((*env)-&gt;ExceptionCheck(env)) {
+            fprintf(stderr, &quot;Got exception while allocating Strings\n&quot;);
+            goto bail;
+        }
+        assert(argStr != NULL);
+        (*env)-&gt;SetObjectArrayElement(env, strArray, i, argStr);
+        (*env)-&gt;DeleteLocalRef(env, argStr);
+    }
+
+    /* return the array, and ensure we don&apos;t delete the local ref to it */
+    result = strArray;
+    strArray = NULL;
+
+bail:
+    (*env)-&gt;DeleteLocalRef(env, stringClass);
+    (*env)-&gt;DeleteLocalRef(env, strArray);
+    return result;
+}
+
+/*
+ * Determine whether or not the specified method is public.
+ *
+ * Returns JNI_TRUE on success, JNI_FALSE on failure.
+ */
+static int methodIsPublic(JNIEnv* env, jclass clazz, jmethodID methodId)
+{
+    static const int PUBLIC = 0x0001;   // java.lang.reflect.Modifiers.PUBLIC
+    jobject refMethod = NULL;
+    jclass methodClass = NULL;
+    jmethodID getModifiersId;
+    int modifiers;
+    int result = JNI_FALSE;
+
+    refMethod = (*env)-&gt;ToReflectedMethod(env, clazz, methodId, JNI_FALSE);
+    if (refMethod == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to get reflected method\n&quot;);
+        goto bail;
+    }
+
+    /*
+     * We now have a Method instance.  We need to call
+     * its getModifiers() method.
+     */
+    methodClass = (*env)-&gt;FindClass(env, &quot;java/lang/reflect/Method&quot;);
+    if (methodClass == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to find class Method\n&quot;);
+        goto bail;
+    }
+    getModifiersId = (*env)-&gt;GetMethodID(env, methodClass,
+                        &quot;getModifiers&quot;, &quot;()I&quot;);
+    if (methodClass == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to find reflect.Method.getModifiers\n&quot;);
+        goto bail;
+    }
+
+    modifiers = (*env)-&gt;CallIntMethod(env, refMethod, getModifiersId);
+    if ((modifiers &amp; PUBLIC) == 0) {
+        fprintf(stderr, &quot;Dalvik VM: main() is not public\n&quot;);
+        goto bail;
+    }
+
+    result = JNI_TRUE;
+
+bail:
+    (*env)-&gt;DeleteLocalRef(env, refMethod);
+    (*env)-&gt;DeleteLocalRef(env, methodClass);
+    return result;
+}
+
+/*
+ * Parse arguments.  Most of it just gets passed through to the VM.  The
+ * JNI spec defines a handful of standard arguments.
+ */
+int main(int argc, char* const argv[])
+{
+    JavaVM* vm = NULL;
+    JNIEnv* env = NULL;
+    JavaVMInitArgs initArgs;
+    JavaVMOption* options = NULL;
+    char* slashClass = NULL;
+    int optionCount, curOpt, i, argIdx;
+    int needExtra = JNI_FALSE;
+    int result = 1;
+
+    setvbuf(stdout, NULL, _IONBF, 0);
+
+    /* ignore argv[0] */
+    argv++;
+    argc--;
+
+    /*
+     * If we&apos;re adding any additional stuff, e.g. function hook specifiers,
+     * add them to the count here.
+     *
+     * We&apos;re over-allocating, because this includes the options to the VM
+     * plus the options to the program.
+     */
+    optionCount = argc;
+
+    options = (JavaVMOption*) malloc(sizeof(JavaVMOption) * optionCount);
+    memset(options, 0, sizeof(JavaVMOption) * optionCount);
+
+    /*
+     * Copy options over.  Everything up to the name of the class starts
+     * with a &apos;-&apos; (the function hook stuff is strictly internal).
+     *
+     * [Do we need to catch &amp; handle &quot;-jar&quot; here?]
+     */
+    for (curOpt = argIdx = 0; argIdx &lt; argc; argIdx++) {
+        if (argv[argIdx][0] != &apos;-&apos; &amp;&amp; !needExtra)
+            break;
+        options[curOpt++].optionString = strdup(argv[argIdx]);
+
+        /* some options require an additional arg */
+        needExtra = JNI_FALSE;
+        if (strcmp(argv[argIdx], &quot;-classpath&quot;) == 0 ||
+            strcmp(argv[argIdx], &quot;-cp&quot;) == 0)
+            /* others? */
+        {
+            needExtra = JNI_TRUE;
+        }
+    }
+
+    if (needExtra) {
+        fprintf(stderr, &quot;Dalvik VM requires value after last option flag\n&quot;);
+        goto bail;
+    }
+
+    /* insert additional internal options here */
+
+    assert(curOpt &lt;= optionCount);
+
+    initArgs.version = JNI_VERSION_1_4;
+    initArgs.options = options;
+    initArgs.nOptions = curOpt;
+    initArgs.ignoreUnrecognized = JNI_FALSE;
+
+    //printf(&quot;nOptions = %d\n&quot;, initArgs.nOptions);
+
+    blockSigpipe();
+
+    /*
+     * Start VM.  The current thread becomes the main thread of the VM.
+     */
+    if (JNI_CreateJavaVM(&amp;vm, &amp;env, &amp;initArgs) &lt; 0) {
+        fprintf(stderr, &quot;Dalvik VM init failed (check log file)\n&quot;);
+        goto bail;
+    }
+
+    /*
+     * Make sure they provided a class name.  We do this after VM init
+     * so that things like &quot;-Xrunjdwp:help&quot; have the opportunity to emit
+     * a usage statement.
+     */
+    if (argIdx == argc) {
+        fprintf(stderr, &quot;Dalvik VM requires a class name\n&quot;);
+        goto bail;
+    }
+
+    /*
+     * We want to call main() with a String array with our arguments in it.
+     * Create an array and populate it.  Note argv[0] is not included.
+     */
+    jobjectArray strArray;
+    strArray = createStringArray(env, &amp;argv[argIdx+1], argc-argIdx-1);
+    if (strArray == NULL)
+        goto bail;
+
+    /*
+     * Find [class].main(String[]).
+     */
+    jclass startClass;
+    jmethodID startMeth;
+    char* cp;
+
+    /* convert &quot;com.android.Blah&quot; to &quot;com/android/Blah&quot; */
+    slashClass = strdup(argv[argIdx]);
+    for (cp = slashClass; *cp != &apos;\0&apos;; cp++)
+        if (*cp == &apos;.&apos;)
+            *cp = &apos;/&apos;;
+
+    startClass = (*env)-&gt;FindClass(env, slashClass);
+    if (startClass == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to locate class &apos;%s&apos;\n&quot;, slashClass);
+        goto bail;
+    }
+
+    startMeth = (*env)-&gt;GetStaticMethodID(env, startClass,
+                    &quot;main&quot;, &quot;([Ljava/lang/String;)V&quot;);
+    if (startMeth == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to find static main(String[]) in &apos;%s&apos;\n&quot;,
+            slashClass);
+        goto bail;
+    }
+
+    /*
+     * Make sure the method is public.  JNI doesn&apos;t prevent us from calling
+     * a private method, so we have to check it explicitly.
+     */
+    if (!methodIsPublic(env, startClass, startMeth))
+        goto bail;
+
+    /*
+     * Invoke main().
+     */
+    (*env)-&gt;CallStaticVoidMethod(env, startClass, startMeth, strArray);
+
+    if (!(*env)-&gt;ExceptionCheck(env))
+        result = 0;
+
+bail:
+    /*printf(&quot;Shutting down Dalvik VM\n&quot;);*/
+    if (vm != NULL) {
+        /*
+         * This allows join() and isAlive() on the main thread to work
+         * correctly, and also provides uncaught exception handling.
+         */
+        if ((*vm)-&gt;DetachCurrentThread(vm) != JNI_OK) {
+            fprintf(stderr, &quot;Warning: unable to detach main thread\n&quot;);
+            result = 1;
+        }
+
+        if ((*vm)-&gt;DestroyJavaVM(vm) != 0)
+            fprintf(stderr, &quot;Warning: Dalvik VM did not shut down cleanly\n&quot;);
+        /*printf(&quot;\nDalvik VM has exited\n&quot;);*/
+    }
+
+    for (i = 0; i &lt; optionCount; i++)
+        free((char*) options[i].optionString);
+    free(options);
+    free(slashClass);
+    /*printf(&quot;--- VM is down, process exiting\n&quot;);*/
+    return result;
+}</sourceCode>
+                  </dry>
+                  <dry reference="../dry[4]/links/dry[4]"/>
+                </links>
+                <sourceCode>static void blockSigpipe()
+{
+    sigset_t mask;
+
+    sigemptyset(&amp;mask);
+    sigaddset(&amp;mask, SIGPIPE);
+    if (sigprocmask(SIG_BLOCK, &amp;mask, NULL) != 0)
+        fprintf(stderr, &quot;WARNING: SIGPIPE not blocked\n&quot;);
+}
+
+/*
+ * Create a String[] and populate it with the contents of argv.
+ */
+static jobjectArray createStringArray(JNIEnv* env, char* const argv[], int argc)
+{
+    jclass stringClass = NULL;
+    jobjectArray strArray = NULL;
+    jobjectArray result = NULL;
+    int i;
+
+    stringClass = (*env)-&gt;FindClass(env, &quot;java/lang/String&quot;);
+    if ((*env)-&gt;ExceptionCheck(env)) {
+        fprintf(stderr, &quot;Got exception while finding class String\n&quot;);
+        goto bail;
+    }
+    assert(stringClass != NULL);
+    strArray = (*env)-&gt;NewObjectArray(env, argc, stringClass, NULL);
+    if ((*env)-&gt;ExceptionCheck(env)) {
+        fprintf(stderr, &quot;Got exception while creating String array\n&quot;);
+        goto bail;
+    }
+    assert(strArray != NULL);
+
+    for (i = 0; i &lt; argc; i++) {
+        jstring argStr;
+
+        argStr = (*env)-&gt;NewStringUTF(env, argv[i]);
+        if ((*env)-&gt;ExceptionCheck(env)) {
+            fprintf(stderr, &quot;Got exception while allocating Strings\n&quot;);
+            goto bail;
+        }
+        assert(argStr != NULL);
+        (*env)-&gt;SetObjectArrayElement(env, strArray, i, argStr);
+        (*env)-&gt;DeleteLocalRef(env, argStr);
+    }
+
+    /* return the array, and ensure we don&apos;t delete the local ref to it */
+    result = strArray;
+    strArray = NULL;
+
+bail:
+    (*env)-&gt;DeleteLocalRef(env, stringClass);
+    (*env)-&gt;DeleteLocalRef(env, strArray);
+    return result;
+}
+
+/*
+ * Determine whether or not the specified method is public.
+ *
+ * Returns JNI_TRUE on success, JNI_FALSE on failure.
+ */
+static int methodIsPublic(JNIEnv* env, jclass clazz, jmethodID methodId)
+{
+    static const int PUBLIC = 0x0001;   // java.lang.reflect.Modifiers.PUBLIC
+    jobject refMethod = NULL;
+    jclass methodClass = NULL;
+    jmethodID getModifiersId;
+    int modifiers;
+    int result = JNI_FALSE;
+
+    refMethod = (*env)-&gt;ToReflectedMethod(env, clazz, methodId, JNI_FALSE);
+    if (refMethod == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to get reflected method\n&quot;);
+        goto bail;
+    }
+
+    /*
+     * We now have a Method instance.  We need to call
+     * its getModifiers() method.
+     */
+    methodClass = (*env)-&gt;FindClass(env, &quot;java/lang/reflect/Method&quot;);
+    if (methodClass == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to find class Method\n&quot;);
+        goto bail;
+    }
+    getModifiersId = (*env)-&gt;GetMethodID(env, methodClass,
+                        &quot;getModifiers&quot;, &quot;()I&quot;);
+    if (methodClass == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to find reflect.Method.getModifiers\n&quot;);
+        goto bail;
+    }
+
+    modifiers = (*env)-&gt;CallIntMethod(env, refMethod, getModifiersId);
+    if ((modifiers &amp; PUBLIC) == 0) {
+        fprintf(stderr, &quot;Dalvik VM: main() is not public\n&quot;);
+        goto bail;
+    }
+
+    result = JNI_TRUE;
+
+bail:
+    (*env)-&gt;DeleteLocalRef(env, refMethod);
+    (*env)-&gt;DeleteLocalRef(env, methodClass);
+    return result;
+}
+
+/*
+ * Parse arguments.  Most of it just gets passed through to the VM.  The
+ * JNI spec defines a handful of standard arguments.
+ */
+int main(int argc, char* const argv[])
+{
+    JavaVM* vm = NULL;
+    JNIEnv* env = NULL;
+    JavaVMInitArgs initArgs;
+    JavaVMOption* options = NULL;
+    char* slashClass = NULL;
+    int optionCount, curOpt, i, argIdx;
+    int needExtra = JNI_FALSE;
+    int result = 1;
+
+    setvbuf(stdout, NULL, _IONBF, 0);
+
+    /* ignore argv[0] */
+    argv++;
+    argc--;
+
+    /*
+     * If we&apos;re adding any additional stuff, e.g. function hook specifiers,
+     * add them to the count here.
+     *
+     * We&apos;re over-allocating, because this includes the options to the VM
+     * plus the options to the program.
+     */
+    optionCount = argc;
+
+    options = (JavaVMOption*) malloc(sizeof(JavaVMOption) * optionCount);
+    memset(options, 0, sizeof(JavaVMOption) * optionCount);
+
+    /*
+     * Copy options over.  Everything up to the name of the class starts
+     * with a &apos;-&apos; (the function hook stuff is strictly internal).
+     *
+     * [Do we need to catch &amp; handle &quot;-jar&quot; here?]
+     */
+    for (curOpt = argIdx = 0; argIdx &lt; argc; argIdx++) {
+        if (argv[argIdx][0] != &apos;-&apos; &amp;&amp; !needExtra)
+            break;
+        options[curOpt++].optionString = strdup(argv[argIdx]);
+
+        /* some options require an additional arg */
+        needExtra = JNI_FALSE;
+        if (strcmp(argv[argIdx], &quot;-classpath&quot;) == 0 ||
+            strcmp(argv[argIdx], &quot;-cp&quot;) == 0)
+            /* others? */
+        {
+            needExtra = JNI_TRUE;
+        }
+    }
+
+    if (needExtra) {
+        fprintf(stderr, &quot;Dalvik VM requires value after last option flag\n&quot;);
+        goto bail;
+    }
+
+    /* insert additional internal options here */
+
+    assert(curOpt &lt;= optionCount);
+
+    initArgs.version = JNI_VERSION_1_4;
+    initArgs.options = options;
+    initArgs.nOptions = curOpt;
+    initArgs.ignoreUnrecognized = JNI_FALSE;
+
+    //printf(&quot;nOptions = %d\n&quot;, initArgs.nOptions);
+
+    blockSigpipe();
+
+    /*
+     * Start VM.  The current thread becomes the main thread of the VM.
+     */
+    if (JNI_CreateJavaVM(&amp;vm, &amp;env, &amp;initArgs) &lt; 0) {
+        fprintf(stderr, &quot;Dalvik VM init failed (check log file)\n&quot;);
+        goto bail;
+    }
+
+    /*
+     * Make sure they provided a class name.  We do this after VM init
+     * so that things like &quot;-Xrunjdwp:help&quot; have the opportunity to emit
+     * a usage statement.
+     */
+    if (argIdx == argc) {
+        fprintf(stderr, &quot;Dalvik VM requires a class name\n&quot;);
+        goto bail;
+    }
+
+    /*
+     * We want to call main() with a String array with our arguments in it.
+     * Create an array and populate it.  Note argv[0] is not included.
+     */
+    jobjectArray strArray;
+    strArray = createStringArray(env, &amp;argv[argIdx+1], argc-argIdx-1);
+    if (strArray == NULL)
+        goto bail;
+
+    /*
+     * Find [class].main(String[]).
+     */
+    jclass startClass;
+    jmethodID startMeth;
+    char* cp;
+
+    /* convert &quot;com.android.Blah&quot; to &quot;com/android/Blah&quot; */
+    slashClass = strdup(argv[argIdx]);
+    for (cp = slashClass; *cp != &apos;\0&apos;; cp++)
+        if (*cp == &apos;.&apos;)
+            *cp = &apos;/&apos;;
+
+    startClass = (*env)-&gt;FindClass(env, slashClass);
+    if (startClass == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to locate class &apos;%s&apos;\n&quot;, slashClass);
+        goto bail;
+    }
+
+    startMeth = (*env)-&gt;GetStaticMethodID(env, startClass,
+                    &quot;main&quot;, &quot;([Ljava/lang/String;)V&quot;);
+    if (startMeth == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to find static main(String[]) in &apos;%s&apos;\n&quot;,
+            slashClass);
+        goto bail;
+    }
+
+    /*
+     * Make sure the method is public.  JNI doesn&apos;t prevent us from calling
+     * a private method, so we have to check it explicitly.
+     */
+    if (!methodIsPublic(env, startClass, startMeth))
+        goto bail;
+
+    /*
+     * Invoke main().
+     */
+    (*env)-&gt;CallStaticVoidMethod(env, startClass, startMeth, strArray);
+
+    if (!(*env)-&gt;ExceptionCheck(env))
+        result = 0;
+
+bail:
+    /*printf(&quot;Shutting down Dalvik VM\n&quot;);*/
+    if (vm != NULL) {
+        /*
+         * This allows join() and isAlive() on the main thread to work
+         * correctly, and also provides uncaught exception handling.
+         */
+        if ((*vm)-&gt;DetachCurrentThread(vm) != JNI_OK) {
+            fprintf(stderr, &quot;Warning: unable to detach main thread\n&quot;);
+            result = 1;
+        }
+
+        if ((*vm)-&gt;DestroyJavaVM(vm) != 0)
+            fprintf(stderr, &quot;Warning: Dalvik VM did not shut down cleanly\n&quot;);
+        /*printf(&quot;\nDalvik VM has exited\n&quot;);*/
+    }
+
+    for (i = 0; i &lt; optionCount; i++)
+        free((char*) options[i].optionString);
+    free(options);
+    free(slashClass);
+    /*printf(&quot;--- VM is down, process exiting\n&quot;);*/
+    return result;
+}</sourceCode>
+              </dry>
+              <dry reference="../dry[3]/links/dry[4]"/>
+              <dry reference="../dry[3]/links/dry[4]/links/dry[4]"/>
+            </links>
+            <sourceCode>static void blockSigpipe()
+{
+    sigset_t mask;
+
+    sigemptyset(&amp;mask);
+    sigaddset(&amp;mask, SIGPIPE);
+    if (sigprocmask(SIG_BLOCK, &amp;mask, NULL) != 0)
+        fprintf(stderr, &quot;WARNING: SIGPIPE not blocked\n&quot;);
+}
+
+/*
+ * Create a String[] and populate it with the contents of argv.
+ */
+static jobjectArray createStringArray(JNIEnv* env, char* const argv[], int argc)
+{
+    jclass stringClass = NULL;
+    jobjectArray strArray = NULL;
+    jobjectArray result = NULL;
+    int i;
+
+    stringClass = (*env)-&gt;FindClass(env, &quot;java/lang/String&quot;);
+    if ((*env)-&gt;ExceptionCheck(env)) {
+        fprintf(stderr, &quot;Got exception while finding class String\n&quot;);
+        goto bail;
+    }
+    assert(stringClass != NULL);
+    strArray = (*env)-&gt;NewObjectArray(env, argc, stringClass, NULL);
+    if ((*env)-&gt;ExceptionCheck(env)) {
+        fprintf(stderr, &quot;Got exception while creating String array\n&quot;);
+        goto bail;
+    }
+    assert(strArray != NULL);
+
+    for (i = 0; i &lt; argc; i++) {
+        jstring argStr;
+
+        argStr = (*env)-&gt;NewStringUTF(env, argv[i]);
+        if ((*env)-&gt;ExceptionCheck(env)) {
+            fprintf(stderr, &quot;Got exception while allocating Strings\n&quot;);
+            goto bail;
+        }
+        assert(argStr != NULL);
+        (*env)-&gt;SetObjectArrayElement(env, strArray, i, argStr);
+        (*env)-&gt;DeleteLocalRef(env, argStr);
+    }
+
+    /* return the array, and ensure we don&apos;t delete the local ref to it */
+    result = strArray;
+    strArray = NULL;
+
+bail:
+    (*env)-&gt;DeleteLocalRef(env, stringClass);
+    (*env)-&gt;DeleteLocalRef(env, strArray);
+    return result;
+}
+
+/*
+ * Determine whether or not the specified method is public.
+ *
+ * Returns JNI_TRUE on success, JNI_FALSE on failure.
+ */
+static int methodIsPublic(JNIEnv* env, jclass clazz, jmethodID methodId)
+{
+    static const int PUBLIC = 0x0001;   // java.lang.reflect.Modifiers.PUBLIC
+    jobject refMethod = NULL;
+    jclass methodClass = NULL;
+    jmethodID getModifiersId;
+    int modifiers;
+    int result = JNI_FALSE;
+
+    refMethod = (*env)-&gt;ToReflectedMethod(env, clazz, methodId, JNI_FALSE);
+    if (refMethod == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to get reflected method\n&quot;);
+        goto bail;
+    }
+
+    /*
+     * We now have a Method instance.  We need to call
+     * its getModifiers() method.
+     */
+    methodClass = (*env)-&gt;FindClass(env, &quot;java/lang/reflect/Method&quot;);
+    if (methodClass == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to find class Method\n&quot;);
+        goto bail;
+    }
+    getModifiersId = (*env)-&gt;GetMethodID(env, methodClass,
+                        &quot;getModifiers&quot;, &quot;()I&quot;);
+    if (methodClass == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to find reflect.Method.getModifiers\n&quot;);
+        goto bail;
+    }
+
+    modifiers = (*env)-&gt;CallIntMethod(env, refMethod, getModifiersId);
+    if ((modifiers &amp; PUBLIC) == 0) {
+        fprintf(stderr, &quot;Dalvik VM: main() is not public\n&quot;);
+        goto bail;
+    }
+
+    result = JNI_TRUE;
+
+bail:
+    (*env)-&gt;DeleteLocalRef(env, refMethod);
+    (*env)-&gt;DeleteLocalRef(env, methodClass);
+    return result;
+}
+
+/*
+ * Parse arguments.  Most of it just gets passed through to the VM.  The
+ * JNI spec defines a handful of standard arguments.
+ */
+int main(int argc, char* const argv[])
+{
+    JavaVM* vm = NULL;
+    JNIEnv* env = NULL;
+    JavaVMInitArgs initArgs;
+    JavaVMOption* options = NULL;
+    char* slashClass = NULL;
+    int optionCount, curOpt, i, argIdx;
+    int needExtra = JNI_FALSE;
+    int result = 1;
+
+    setvbuf(stdout, NULL, _IONBF, 0);
+
+    /* ignore argv[0] */
+    argv++;
+    argc--;
+
+    /*
+     * If we&apos;re adding any additional stuff, e.g. function hook specifiers,
+     * add them to the count here.
+     *
+     * We&apos;re over-allocating, because this includes the options to the VM
+     * plus the options to the program.
+     */
+    optionCount = argc;
+
+    options = (JavaVMOption*) malloc(sizeof(JavaVMOption) * optionCount);
+    memset(options, 0, sizeof(JavaVMOption) * optionCount);
+
+    /*
+     * Copy options over.  Everything up to the name of the class starts
+     * with a &apos;-&apos; (the function hook stuff is strictly internal).
+     *
+     * [Do we need to catch &amp; handle &quot;-jar&quot; here?]
+     */
+    for (curOpt = argIdx = 0; argIdx &lt; argc; argIdx++) {
+        if (argv[argIdx][0] != &apos;-&apos; &amp;&amp; !needExtra)
+            break;
+        options[curOpt++].optionString = strdup(argv[argIdx]);
+
+        /* some options require an additional arg */
+        needExtra = JNI_FALSE;
+        if (strcmp(argv[argIdx], &quot;-classpath&quot;) == 0 ||
+            strcmp(argv[argIdx], &quot;-cp&quot;) == 0)
+            /* others? */
+        {
+            needExtra = JNI_TRUE;
+        }
+    }
+
+    if (needExtra) {
+        fprintf(stderr, &quot;Dalvik VM requires value after last option flag\n&quot;);
+        goto bail;
+    }
+
+    /* insert additional internal options here */
+
+    assert(curOpt &lt;= optionCount);
+
+    initArgs.version = JNI_VERSION_1_4;
+    initArgs.options = options;
+    initArgs.nOptions = curOpt;
+    initArgs.ignoreUnrecognized = JNI_FALSE;
+
+    //printf(&quot;nOptions = %d\n&quot;, initArgs.nOptions);
+
+    blockSigpipe();
+
+    /*
+     * Start VM.  The current thread becomes the main thread of the VM.
+     */
+    if (JNI_CreateJavaVM(&amp;vm, &amp;env, &amp;initArgs) &lt; 0) {
+        fprintf(stderr, &quot;Dalvik VM init failed (check log file)\n&quot;);
+        goto bail;
+    }
+
+    /*
+     * Make sure they provided a class name.  We do this after VM init
+     * so that things like &quot;-Xrunjdwp:help&quot; have the opportunity to emit
+     * a usage statement.
+     */
+    if (argIdx == argc) {
+        fprintf(stderr, &quot;Dalvik VM requires a class name\n&quot;);
+        goto bail;
+    }
+
+    /*
+     * We want to call main() with a String array with our arguments in it.
+     * Create an array and populate it.  Note argv[0] is not included.
+     */
+    jobjectArray strArray;
+    strArray = createStringArray(env, &amp;argv[argIdx+1], argc-argIdx-1);
+    if (strArray == NULL)
+        goto bail;
+
+    /*
+     * Find [class].main(String[]).
+     */
+    jclass startClass;
+    jmethodID startMeth;
+    char* cp;
+
+    /* convert &quot;com.android.Blah&quot; to &quot;com/android/Blah&quot; */
+    slashClass = strdup(argv[argIdx]);
+    for (cp = slashClass; *cp != &apos;\0&apos;; cp++)
+        if (*cp == &apos;.&apos;)
+            *cp = &apos;/&apos;;
+
+    startClass = (*env)-&gt;FindClass(env, slashClass);
+    if (startClass == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to locate class &apos;%s&apos;\n&quot;, slashClass);
+        goto bail;
+    }
+
+    startMeth = (*env)-&gt;GetStaticMethodID(env, startClass,
+                    &quot;main&quot;, &quot;([Ljava/lang/String;)V&quot;);
+    if (startMeth == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to find static main(String[]) in &apos;%s&apos;\n&quot;,
+            slashClass);
+        goto bail;
+    }
+
+    /*
+     * Make sure the method is public.  JNI doesn&apos;t prevent us from calling
+     * a private method, so we have to check it explicitly.
+     */
+    if (!methodIsPublic(env, startClass, startMeth))
+        goto bail;
+
+    /*
+     * Invoke main().
+     */
+    (*env)-&gt;CallStaticVoidMethod(env, startClass, startMeth, strArray);
+
+    if (!(*env)-&gt;ExceptionCheck(env))
+        result = 0;
+
+bail:
+    /*printf(&quot;Shutting down Dalvik VM\n&quot;);*/
+    if (vm != NULL) {
+        /*
+         * This allows join() and isAlive() on the main thread to work
+         * correctly, and also provides uncaught exception handling.
+         */
+        if ((*vm)-&gt;DetachCurrentThread(vm) != JNI_OK) {
+            fprintf(stderr, &quot;Warning: unable to detach main thread\n&quot;);
+            result = 1;
+        }
+
+        if ((*vm)-&gt;DestroyJavaVM(vm) != 0)
+            fprintf(stderr, &quot;Warning: Dalvik VM did not shut down cleanly\n&quot;);
+        /*printf(&quot;\nDalvik VM has exited\n&quot;);*/
+    }
+
+    for (i = 0; i &lt; optionCount; i++)
+        free((char*) options[i].optionString);
+    free(options);
+    free(slashClass);
+    /*printf(&quot;--- VM is down, process exiting\n&quot;);*/
+    return result;
+}</sourceCode>
+          </dry>
+          <dry reference="../dry/links/dry[3]"/>
+          <dry reference="../dry/links/dry[3]/links/dry[4]"/>
+          <dry reference="../../../.."/>
+          <dry reference="../dry/links/dry[3]/links/dry[4]/links/dry[4]"/>
+        </links>
+        <sourceCode>static void blockSigpipe()
+{
+    sigset_t mask;
+
+    sigemptyset(&amp;mask);
+    sigaddset(&amp;mask, SIGPIPE);
+    if (sigprocmask(SIG_BLOCK, &amp;mask, NULL) != 0)
+        fprintf(stderr, &quot;WARNING: SIGPIPE not blocked\n&quot;);
+}
+
+/*
+ * Create a String[] and populate it with the contents of argv.
+ */
+static jobjectArray createStringArray(JNIEnv* env, char* const argv[], int argc)
+{
+    jclass stringClass = NULL;
+    jobjectArray strArray = NULL;
+    jobjectArray result = NULL;
+    int i;
+
+    stringClass = (*env)-&gt;FindClass(env, &quot;java/lang/String&quot;);
+    if ((*env)-&gt;ExceptionCheck(env)) {
+        fprintf(stderr, &quot;Got exception while finding class String\n&quot;);
+        goto bail;
+    }
+    assert(stringClass != NULL);
+    strArray = (*env)-&gt;NewObjectArray(env, argc, stringClass, NULL);
+    if ((*env)-&gt;ExceptionCheck(env)) {
+        fprintf(stderr, &quot;Got exception while creating String array\n&quot;);
+        goto bail;
+    }
+    assert(strArray != NULL);
+
+    for (i = 0; i &lt; argc; i++) {
+        jstring argStr;
+
+        argStr = (*env)-&gt;NewStringUTF(env, argv[i]);
+        if ((*env)-&gt;ExceptionCheck(env)) {
+            fprintf(stderr, &quot;Got exception while allocating Strings\n&quot;);
+            goto bail;
+        }
+        assert(argStr != NULL);
+        (*env)-&gt;SetObjectArrayElement(env, strArray, i, argStr);
+        (*env)-&gt;DeleteLocalRef(env, argStr);
+    }
+
+    /* return the array, and ensure we don&apos;t delete the local ref to it */
+    result = strArray;
+    strArray = NULL;
+
+bail:
+    (*env)-&gt;DeleteLocalRef(env, stringClass);
+    (*env)-&gt;DeleteLocalRef(env, strArray);
+    return result;
+}
+
+/*
+ * Determine whether or not the specified method is public.
+ *
+ * Returns JNI_TRUE on success, JNI_FALSE on failure.
+ */
+static int methodIsPublic(JNIEnv* env, jclass clazz, jmethodID methodId)
+{
+    static const int PUBLIC = 0x0001;   // java.lang.reflect.Modifiers.PUBLIC
+    jobject refMethod = NULL;
+    jclass methodClass = NULL;
+    jmethodID getModifiersId;
+    int modifiers;
+    int result = JNI_FALSE;
+
+    refMethod = (*env)-&gt;ToReflectedMethod(env, clazz, methodId, JNI_FALSE);
+    if (refMethod == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to get reflected method\n&quot;);
+        goto bail;
+    }
+
+    /*
+     * We now have a Method instance.  We need to call
+     * its getModifiers() method.
+     */
+    methodClass = (*env)-&gt;FindClass(env, &quot;java/lang/reflect/Method&quot;);
+    if (methodClass == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to find class Method\n&quot;);
+        goto bail;
+    }
+    getModifiersId = (*env)-&gt;GetMethodID(env, methodClass,
+                        &quot;getModifiers&quot;, &quot;()I&quot;);
+    if (methodClass == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to find reflect.Method.getModifiers\n&quot;);
+        goto bail;
+    }
+
+    modifiers = (*env)-&gt;CallIntMethod(env, refMethod, getModifiersId);
+    if ((modifiers &amp; PUBLIC) == 0) {
+        fprintf(stderr, &quot;Dalvik VM: main() is not public\n&quot;);
+        goto bail;
+    }
+
+    result = JNI_TRUE;
+
+bail:
+    (*env)-&gt;DeleteLocalRef(env, refMethod);
+    (*env)-&gt;DeleteLocalRef(env, methodClass);
+    return result;
+}
+
+/*
+ * Parse arguments.  Most of it just gets passed through to the VM.  The
+ * JNI spec defines a handful of standard arguments.
+ */
+int main(int argc, char* const argv[])
+{
+    JavaVM* vm = NULL;
+    JNIEnv* env = NULL;
+    JavaVMInitArgs initArgs;
+    JavaVMOption* options = NULL;
+    char* slashClass = NULL;
+    int optionCount, curOpt, i, argIdx;
+    int needExtra = JNI_FALSE;
+    int result = 1;
+
+    setvbuf(stdout, NULL, _IONBF, 0);
+
+    /* ignore argv[0] */
+    argv++;
+    argc--;
+
+    /*
+     * If we&apos;re adding any additional stuff, e.g. function hook specifiers,
+     * add them to the count here.
+     *
+     * We&apos;re over-allocating, because this includes the options to the VM
+     * plus the options to the program.
+     */
+    optionCount = argc;
+
+    options = (JavaVMOption*) malloc(sizeof(JavaVMOption) * optionCount);
+    memset(options, 0, sizeof(JavaVMOption) * optionCount);
+
+    /*
+     * Copy options over.  Everything up to the name of the class starts
+     * with a &apos;-&apos; (the function hook stuff is strictly internal).
+     *
+     * [Do we need to catch &amp; handle &quot;-jar&quot; here?]
+     */
+    for (curOpt = argIdx = 0; argIdx &lt; argc; argIdx++) {
+        if (argv[argIdx][0] != &apos;-&apos; &amp;&amp; !needExtra)
+            break;
+        options[curOpt++].optionString = strdup(argv[argIdx]);
+
+        /* some options require an additional arg */
+        needExtra = JNI_FALSE;
+        if (strcmp(argv[argIdx], &quot;-classpath&quot;) == 0 ||
+            strcmp(argv[argIdx], &quot;-cp&quot;) == 0)
+            /* others? */
+        {
+            needExtra = JNI_TRUE;
+        }
+    }
+
+    if (needExtra) {
+        fprintf(stderr, &quot;Dalvik VM requires value after last option flag\n&quot;);
+        goto bail;
+    }
+
+    /* insert additional internal options here */
+
+    assert(curOpt &lt;= optionCount);
+
+    initArgs.version = JNI_VERSION_1_4;
+    initArgs.options = options;
+    initArgs.nOptions = curOpt;
+    initArgs.ignoreUnrecognized = JNI_FALSE;
+
+    //printf(&quot;nOptions = %d\n&quot;, initArgs.nOptions);
+
+    blockSigpipe();
+
+    /*
+     * Start VM.  The current thread becomes the main thread of the VM.
+     */
+    if (JNI_CreateJavaVM(&amp;vm, &amp;env, &amp;initArgs) &lt; 0) {
+        fprintf(stderr, &quot;Dalvik VM init failed (check log file)\n&quot;);
+        goto bail;
+    }
+
+    /*
+     * Make sure they provided a class name.  We do this after VM init
+     * so that things like &quot;-Xrunjdwp:help&quot; have the opportunity to emit
+     * a usage statement.
+     */
+    if (argIdx == argc) {
+        fprintf(stderr, &quot;Dalvik VM requires a class name\n&quot;);
+        goto bail;
+    }
+
+    /*
+     * We want to call main() with a String array with our arguments in it.
+     * Create an array and populate it.  Note argv[0] is not included.
+     */
+    jobjectArray strArray;
+    strArray = createStringArray(env, &amp;argv[argIdx+1], argc-argIdx-1);
+    if (strArray == NULL)
+        goto bail;
+
+    /*
+     * Find [class].main(String[]).
+     */
+    jclass startClass;
+    jmethodID startMeth;
+    char* cp;
+
+    /* convert &quot;com.android.Blah&quot; to &quot;com/android/Blah&quot; */
+    slashClass = strdup(argv[argIdx]);
+    for (cp = slashClass; *cp != &apos;\0&apos;; cp++)
+        if (*cp == &apos;.&apos;)
+            *cp = &apos;/&apos;;
+
+    startClass = (*env)-&gt;FindClass(env, slashClass);
+    if (startClass == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to locate class &apos;%s&apos;\n&quot;, slashClass);
+        goto bail;
+    }
+
+    startMeth = (*env)-&gt;GetStaticMethodID(env, startClass,
+                    &quot;main&quot;, &quot;([Ljava/lang/String;)V&quot;);
+    if (startMeth == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to find static main(String[]) in &apos;%s&apos;\n&quot;,
+            slashClass);
+        goto bail;
+    }
+
+    /*
+     * Make sure the method is public.  JNI doesn&apos;t prevent us from calling
+     * a private method, so we have to check it explicitly.
+     */
+    if (!methodIsPublic(env, startClass, startMeth))
+        goto bail;
+
+    /*
+     * Invoke main().
+     */
+    (*env)-&gt;CallStaticVoidMethod(env, startClass, startMeth, strArray);
+
+    if (!(*env)-&gt;ExceptionCheck(env))
+        result = 0;
+
+bail:
+    /*printf(&quot;Shutting down Dalvik VM\n&quot;);*/
+    if (vm != NULL) {
+        /*
+         * This allows join() and isAlive() on the main thread to work
+         * correctly, and also provides uncaught exception handling.
+         */
+        if ((*vm)-&gt;DetachCurrentThread(vm) != JNI_OK) {
+            fprintf(stderr, &quot;Warning: unable to detach main thread\n&quot;);
+            result = 1;
+        }
+
+        if ((*vm)-&gt;DestroyJavaVM(vm) != 0)
+            fprintf(stderr, &quot;Warning: Dalvik VM did not shut down cleanly\n&quot;);
+        /*printf(&quot;\nDalvik VM has exited\n&quot;);*/
+    }
+
+    for (i = 0; i &lt; optionCount; i++)
+        free((char*) options[i].optionString);
+    free(options);
+    free(slashClass);
+    /*printf(&quot;--- VM is down, process exiting\n&quot;);*/
+    return result;
+}</sourceCode>
+      </dry>
+      <dry reference="../dry/links/dry"/>
+      <dry reference="../dry/links/dry/links/dry[3]"/>
+      <dry reference="../dry/links/dry/links/dry[3]/links/dry[4]"/>
+      <dry reference="../dry/links/dry/links/dry[3]/links/dry[4]/links/dry[4]"/>
+    </links>
+    <sourceCode>static void blockSigpipe()
+{
+    sigset_t mask;
+
+    sigemptyset(&amp;mask);
+    sigaddset(&amp;mask, SIGPIPE);
+    if (sigprocmask(SIG_BLOCK, &amp;mask, NULL) != 0)
+        fprintf(stderr, &quot;WARNING: SIGPIPE not blocked\n&quot;);
+}
+
+/*
+ * Create a String[] and populate it with the contents of argv.
+ */
+static jobjectArray createStringArray(JNIEnv* env, char* const argv[], int argc)
+{
+    jclass stringClass = NULL;
+    jobjectArray strArray = NULL;
+    jobjectArray result = NULL;
+    int i;
+
+    stringClass = (*env)-&gt;FindClass(env, &quot;java/lang/String&quot;);
+    if ((*env)-&gt;ExceptionCheck(env)) {
+        fprintf(stderr, &quot;Got exception while finding class String\n&quot;);
+        goto bail;
+    }
+    assert(stringClass != NULL);
+    strArray = (*env)-&gt;NewObjectArray(env, argc, stringClass, NULL);
+    if ((*env)-&gt;ExceptionCheck(env)) {
+        fprintf(stderr, &quot;Got exception while creating String array\n&quot;);
+        goto bail;
+    }
+    assert(strArray != NULL);
+
+    for (i = 0; i &lt; argc; i++) {
+        jstring argStr;
+
+        argStr = (*env)-&gt;NewStringUTF(env, argv[i]);
+        if ((*env)-&gt;ExceptionCheck(env)) {
+            fprintf(stderr, &quot;Got exception while allocating Strings\n&quot;);
+            goto bail;
+        }
+        assert(argStr != NULL);
+        (*env)-&gt;SetObjectArrayElement(env, strArray, i, argStr);
+        (*env)-&gt;DeleteLocalRef(env, argStr);
+    }
+
+    /* return the array, and ensure we don&apos;t delete the local ref to it */
+    result = strArray;
+    strArray = NULL;
+
+bail:
+    (*env)-&gt;DeleteLocalRef(env, stringClass);
+    (*env)-&gt;DeleteLocalRef(env, strArray);
+    return result;
+}
+
+/*
+ * Determine whether or not the specified method is public.
+ *
+ * Returns JNI_TRUE on success, JNI_FALSE on failure.
+ */
+static int methodIsPublic(JNIEnv* env, jclass clazz, jmethodID methodId)
+{
+    static const int PUBLIC = 0x0001;   // java.lang.reflect.Modifiers.PUBLIC
+    jobject refMethod = NULL;
+    jclass methodClass = NULL;
+    jmethodID getModifiersId;
+    int modifiers;
+    int result = JNI_FALSE;
+
+    refMethod = (*env)-&gt;ToReflectedMethod(env, clazz, methodId, JNI_FALSE);
+    if (refMethod == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to get reflected method\n&quot;);
+        goto bail;
+    }
+
+    /*
+     * We now have a Method instance.  We need to call
+     * its getModifiers() method.
+     */
+    methodClass = (*env)-&gt;FindClass(env, &quot;java/lang/reflect/Method&quot;);
+    if (methodClass == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to find class Method\n&quot;);
+        goto bail;
+    }
+    getModifiersId = (*env)-&gt;GetMethodID(env, methodClass,
+                        &quot;getModifiers&quot;, &quot;()I&quot;);
+    if (methodClass == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to find reflect.Method.getModifiers\n&quot;);
+        goto bail;
+    }
+
+    modifiers = (*env)-&gt;CallIntMethod(env, refMethod, getModifiersId);
+    if ((modifiers &amp; PUBLIC) == 0) {
+        fprintf(stderr, &quot;Dalvik VM: main() is not public\n&quot;);
+        goto bail;
+    }
+
+    result = JNI_TRUE;
+
+bail:
+    (*env)-&gt;DeleteLocalRef(env, refMethod);
+    (*env)-&gt;DeleteLocalRef(env, methodClass);
+    return result;
+}
+
+/*
+ * Parse arguments.  Most of it just gets passed through to the VM.  The
+ * JNI spec defines a handful of standard arguments.
+ */
+int main(int argc, char* const argv[])
+{
+    JavaVM* vm = NULL;
+    JNIEnv* env = NULL;
+    JavaVMInitArgs initArgs;
+    JavaVMOption* options = NULL;
+    char* slashClass = NULL;
+    int optionCount, curOpt, i, argIdx;
+    int needExtra = JNI_FALSE;
+    int result = 1;
+
+    setvbuf(stdout, NULL, _IONBF, 0);
+
+    /* ignore argv[0] */
+    argv++;
+    argc--;
+
+    /*
+     * If we&apos;re adding any additional stuff, e.g. function hook specifiers,
+     * add them to the count here.
+     *
+     * We&apos;re over-allocating, because this includes the options to the VM
+     * plus the options to the program.
+     */
+    optionCount = argc;
+
+    options = (JavaVMOption*) malloc(sizeof(JavaVMOption) * optionCount);
+    memset(options, 0, sizeof(JavaVMOption) * optionCount);
+
+    /*
+     * Copy options over.  Everything up to the name of the class starts
+     * with a &apos;-&apos; (the function hook stuff is strictly internal).
+     *
+     * [Do we need to catch &amp; handle &quot;-jar&quot; here?]
+     */
+    for (curOpt = argIdx = 0; argIdx &lt; argc; argIdx++) {
+        if (argv[argIdx][0] != &apos;-&apos; &amp;&amp; !needExtra)
+            break;
+        options[curOpt++].optionString = strdup(argv[argIdx]);
+
+        /* some options require an additional arg */
+        needExtra = JNI_FALSE;
+        if (strcmp(argv[argIdx], &quot;-classpath&quot;) == 0 ||
+            strcmp(argv[argIdx], &quot;-cp&quot;) == 0)
+            /* others? */
+        {
+            needExtra = JNI_TRUE;
+        }
+    }
+
+    if (needExtra) {
+        fprintf(stderr, &quot;Dalvik VM requires value after last option flag\n&quot;);
+        goto bail;
+    }
+
+    /* insert additional internal options here */
+
+    assert(curOpt &lt;= optionCount);
+
+    initArgs.version = JNI_VERSION_1_4;
+    initArgs.options = options;
+    initArgs.nOptions = curOpt;
+    initArgs.ignoreUnrecognized = JNI_FALSE;
+
+    //printf(&quot;nOptions = %d\n&quot;, initArgs.nOptions);
+
+    blockSigpipe();
+
+    /*
+     * Start VM.  The current thread becomes the main thread of the VM.
+     */
+    if (JNI_CreateJavaVM(&amp;vm, &amp;env, &amp;initArgs) &lt; 0) {
+        fprintf(stderr, &quot;Dalvik VM init failed (check log file)\n&quot;);
+        goto bail;
+    }
+
+    /*
+     * Make sure they provided a class name.  We do this after VM init
+     * so that things like &quot;-Xrunjdwp:help&quot; have the opportunity to emit
+     * a usage statement.
+     */
+    if (argIdx == argc) {
+        fprintf(stderr, &quot;Dalvik VM requires a class name\n&quot;);
+        goto bail;
+    }
+
+    /*
+     * We want to call main() with a String array with our arguments in it.
+     * Create an array and populate it.  Note argv[0] is not included.
+     */
+    jobjectArray strArray;
+    strArray = createStringArray(env, &amp;argv[argIdx+1], argc-argIdx-1);
+    if (strArray == NULL)
+        goto bail;
+
+    /*
+     * Find [class].main(String[]).
+     */
+    jclass startClass;
+    jmethodID startMeth;
+    char* cp;
+
+    /* convert &quot;com.android.Blah&quot; to &quot;com/android/Blah&quot; */
+    slashClass = strdup(argv[argIdx]);
+    for (cp = slashClass; *cp != &apos;\0&apos;; cp++)
+        if (*cp == &apos;.&apos;)
+            *cp = &apos;/&apos;;
+
+    startClass = (*env)-&gt;FindClass(env, slashClass);
+    if (startClass == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to locate class &apos;%s&apos;\n&quot;, slashClass);
+        goto bail;
+    }
+
+    startMeth = (*env)-&gt;GetStaticMethodID(env, startClass,
+                    &quot;main&quot;, &quot;([Ljava/lang/String;)V&quot;);
+    if (startMeth == NULL) {
+        fprintf(stderr, &quot;Dalvik VM unable to find static main(String[]) in &apos;%s&apos;\n&quot;,
+            slashClass);
+        goto bail;
+    }
+
+    /*
+     * Make sure the method is public.  JNI doesn&apos;t prevent us from calling
+     * a private method, so we have to check it explicitly.
+     */
+    if (!methodIsPublic(env, startClass, startMeth))
+        goto bail;
+
+    /*
+     * Invoke main().
+     */
+    (*env)-&gt;CallStaticVoidMethod(env, startClass, startMeth, strArray);
+
+    if (!(*env)-&gt;ExceptionCheck(env))
+        result = 0;
+
+bail:
+    /*printf(&quot;Shutting down Dalvik VM\n&quot;);*/
+    if (vm != NULL) {
+        /*
+         * This allows join() and isAlive() on the main thread to work
+         * correctly, and also provides uncaught exception handling.
+         */
+        if ((*vm)-&gt;DetachCurrentThread(vm) != JNI_OK) {
+            fprintf(stderr, &quot;Warning: unable to detach main thread\n&quot;);
+            result = 1;
+        }
+
+        if ((*vm)-&gt;DestroyJavaVM(vm) != 0)
+            fprintf(stderr, &quot;Warning: Dalvik VM did not shut down cleanly\n&quot;);
+        /*printf(&quot;\nDalvik VM has exited\n&quot;);*/
+    }
+
+    for (i = 0; i &lt; optionCount; i++)
+        free((char*) options[i].optionString);
+    free(options);
+    free(slashClass);
+    /*printf(&quot;--- VM is down, process exiting\n&quot;);*/
+    return result;
+}</sourceCode>
+  </dry>
+  <dry reference="../dry/links/dry"/>
+  <dry reference="../dry/links/dry/links/dry/links/dry[3]/links/dry[4]"/>
+  <dry reference="../dry/links/dry/links/dry"/>
+  <dry reference="../dry/links/dry/links/dry/links/dry[3]/links/dry[4]/links/dry[4]"/>
+  <dry reference="../dry/links/dry/links/dry/links/dry[3]"/>
+</annotation-array>

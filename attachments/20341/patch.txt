@@ -1,0 +1,163 @@
+diff --git a/src/main/java/hudson/plugins/locksandlatches/LockWrapper.java b/src/main/java/hudson/plugins/locksandlatches/LockWrapper.java
+index 1f99ac5..7bb86ec 100644
+--- a/src/main/java/hudson/plugins/locksandlatches/LockWrapper.java
++++ b/src/main/java/hudson/plugins/locksandlatches/LockWrapper.java
+@@ -34,14 +34,13 @@ import org.kohsuke.stapler.StaplerRequest;
+ 
+ import java.io.IOException;
+ import java.io.Serializable;
+-import java.util.ArrayList;
+-import java.util.Collections;
+-import java.util.Comparator;
+-import java.util.List;
++import java.util.*;
+ import java.util.concurrent.ConcurrentHashMap;
+ import java.util.concurrent.ConcurrentMap;
+ import java.util.concurrent.TimeUnit;
++import java.util.concurrent.locks.Lock;
+ import java.util.concurrent.locks.ReentrantLock;
++import java.util.concurrent.locks.ReentrantReadWriteLock;
+ import java.util.logging.Logger;
+ import org.apache.commons.collections.Closure;
+ import org.apache.commons.collections.CollectionUtils;
+@@ -83,7 +82,12 @@ public class LockWrapper extends BuildWrapper implements ResourceActivity {
+     public ResourceList getResourceList() {
+         ResourceList resources = new ResourceList();
+         for (LockWaitConfig lock : locks) {
+-            resources.w(new Resource(null, "locks-and-latches/lock/" + lock.getName(), DESCRIPTOR.getWriteLockCount()));
++            Resource resource = new Resource(null, "locks-and-latches/lock/" + lock.getName(), DESCRIPTOR.getWriteLockCount());
++            if (lock.isShared()) {
++                resources.r(resource);
++            } else {
++                resources.w(resource);
++            }
+         }
+         return resources;
+     }
+@@ -101,6 +105,7 @@ public class LockWrapper extends BuildWrapper implements ResourceActivity {
+         });
+ 
+         // build the list of "real" locks
++        final Map<String,Boolean> sharedLocks = new HashMap<String,Boolean>();
+         for (LockWaitConfig lock : locks) {
+             NamedReentrantLock backupLock;
+             do {
+@@ -110,6 +115,7 @@ public class LockWrapper extends BuildWrapper implements ResourceActivity {
+                 }
+             } while (backupLock == null);
+             backups.add(backupLock);
++            sharedLocks.put(lock.getName(), lock.isShared());
+         }
+ 
+         final StringBuilder locksToGet = new StringBuilder();
+@@ -129,8 +135,15 @@ public class LockWrapper extends BuildWrapper implements ResourceActivity {
+             DESCRIPTOR.lockingLock.lock();
+             try {
+                 for (NamedReentrantLock lock : backups) {
+-                    buildListener.getLogger().print("[locks-and-latches] Trying to get " + lock.getName() + "... ");
+-                    if (lock.tryLock()) {
++                    boolean shared = sharedLocks.get(lock.getName());
++                    buildListener.getLogger().print("[locks-and-latches] Trying to get " + lock.getName() + " in " + (shared ? "shared" : "exclusive") + " mode... ");
++                    Lock actualLock;
++                    if (shared) {
++                        actualLock = lock.readLock();
++                    } else {
++                        actualLock = lock.writeLock();
++                    }
++                    if (actualLock.tryLock()) {
+                         buildListener.getLogger().println(" Success");
+                         locked.add(lock);
+                     } else {
+@@ -141,8 +154,15 @@ public class LockWrapper extends BuildWrapper implements ResourceActivity {
+                 }
+                 if (!haveAll) {
+                     // release them all
+-                    for (ReentrantLock lock : locked) {
+-                        lock.unlock();
++                    for (NamedReentrantLock lock : locked) {
++                        boolean shared = sharedLocks.get(lock.getName());
++                        Lock actualLock;
++                        if (shared) {
++                            actualLock = lock.readLock();
++                        } else {
++                            actualLock = lock.writeLock();
++                        }
++                        actualLock.unlock();
+                     }
+                 }
+             } finally {
+@@ -161,8 +181,15 @@ public class LockWrapper extends BuildWrapper implements ResourceActivity {
+             @Override
+             public boolean tearDown(AbstractBuild abstractBuild, BuildListener buildListener) throws IOException, InterruptedException {
+                 buildListener.getLogger().println("[locks-and-latches] Releasing all the locks");
+-                for (ReentrantLock lock : backups) {
+-                    lock.unlock();
++                for (NamedReentrantLock lock : backups) {
++                    boolean shared = sharedLocks.get(lock.getName());
++                    Lock actualLock;
++                    if (shared) {
++                        actualLock = lock.readLock();
++                    } else {
++                        actualLock = lock.writeLock();
++                    }
++                    actualLock.unlock();
+                 }
+                 buildListener.getLogger().println("[locks-and-latches] All the locks released");
+                 return super.tearDown(abstractBuild, buildListener);
+@@ -319,14 +346,16 @@ public class LockWrapper extends BuildWrapper implements ResourceActivity {
+ 
+     public static final class LockWaitConfig implements Serializable {
+         private String name;
++        private boolean shared;
+         private transient LockConfig lock;
+ 
+         public LockWaitConfig() {
+         }
+ 
+         @DataBoundConstructor
+-        public LockWaitConfig(String name) {
++        public LockWaitConfig(String name, boolean shared) {
+             this.name = name;
++            this.shared = shared;
+         }
+ 
+         public LockConfig getLock() {
+@@ -340,6 +369,14 @@ public class LockWrapper extends BuildWrapper implements ResourceActivity {
+             this.lock = lock;
+         }
+ 
++        public boolean isShared() {
++            return shared;
++        }
++
++        public void setShared(boolean shared) {
++            this.shared = shared;
++        }
++
+         public String getName() {
+             if (lock == null) {
+                 return name;
+@@ -357,7 +394,7 @@ public class LockWrapper extends BuildWrapper implements ResourceActivity {
+      * Extends {@code ReentrantLock} to add a {@link #name} attribute (mainly
+      * for display purposes).
+      */
+-    public static final class NamedReentrantLock extends ReentrantLock {
++    public static final class NamedReentrantLock extends ReentrantReadWriteLock {
+         private String name;
+ 
+         public NamedReentrantLock(String name) {
+diff --git a/src/main/resources/hudson/plugins/locksandlatches/LockWrapper/config.jelly b/src/main/resources/hudson/plugins/locksandlatches/LockWrapper/config.jelly
+index 5244c8a..ee36dd7 100644
+--- a/src/main/resources/hudson/plugins/locksandlatches/LockWrapper/config.jelly
++++ b/src/main/resources/hudson/plugins/locksandlatches/LockWrapper/config.jelly
+@@ -38,6 +38,10 @@
+                                 </select>
+                             </td>
+                             <td>
++                                <f:checkbox checked="${locks.shared}" name="locks.locks.shared" />
++                                <label class="attach-previous">Shared</label>
++                            </td>
++                            <td>
+                                 <div align="left">
+                                     <f:repeatableDeleteButton/>
+                                 </div>

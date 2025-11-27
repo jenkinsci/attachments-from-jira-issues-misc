@@ -1,0 +1,115 @@
+From 2726bd7ee0d48432f1b5bf2ba04025f6f8827a90 Mon Sep 17 00:00:00 2001
+From: Matthew Ludlum <matthew.ludlum@nokia.com>
+Date: Thu, 17 Aug 2017 12:31:40 -0500
+Subject: [PATCH] Added envvars to fix missing environment variables during
+ build
+
+---
+ .../pipeline/ContainerExecDecorator.java           | 27 ++++++++++++++++++----
+ .../pipeline/ContainerStepExecution.java           |  6 ++++-
+ 2 files changed, 27 insertions(+), 6 deletions(-)
+
+diff --git a/src/main/java/org/csanchez/jenkins/plugins/kubernetes/pipeline/ContainerExecDecorator.java b/src/main/java/org/csanchez/jenkins/plugins/kubernetes/pipeline/ContainerExecDecorator.java
+index 1cc4da0..ff45b51 100755
+--- a/src/main/java/org/csanchez/jenkins/plugins/kubernetes/pipeline/ContainerExecDecorator.java
++++ b/src/main/java/org/csanchez/jenkins/plugins/kubernetes/pipeline/ContainerExecDecorator.java
+@@ -42,6 +42,7 @@ import io.fabric8.kubernetes.client.KubernetesClientTimeoutException;
+ import org.apache.commons.io.output.TeeOutputStream;
+ 
+ import com.google.common.io.NullOutputStream;
++import hudson.EnvVars;
+ 
+ import hudson.Launcher;
+ import hudson.LauncherDecorator;
+@@ -77,27 +78,33 @@ public class ContainerExecDecorator extends LauncherDecorator implements Seriali
+     private final String podName;
+     private final String namespace;
+     private final String containerName;
++    private final EnvVars env;
+ 
+-    public ContainerExecDecorator(KubernetesClient client, String podName,  String containerName, String namespace) {
++    public ContainerExecDecorator(KubernetesClient client, String podName,  String containerName, String namespace, EnvVars env) {
+         this.client = client;
+         this.podName = podName;
+         this.namespace = namespace;
+         this.containerName = containerName;
++        this.env = env;
++    }
++
++    public ContainerExecDecorator(KubernetesClient client, String podName,  String containerName, String namespace) {
++        this(client, podName, containerName, namespace, null);
+     }
+ 
+     @Deprecated
+     public ContainerExecDecorator(KubernetesClient client, String podName,  String containerName, AtomicBoolean alive, CountDownLatch started, CountDownLatch finished, String namespace) {
+-        this(client, podName, containerName, namespace);
++        this(client, podName, containerName, namespace, null);
+     }
+ 
+     @Deprecated
+     public ContainerExecDecorator(KubernetesClient client, String podName, String containerName, AtomicBoolean alive, CountDownLatch started, CountDownLatch finished) {
+-        this(client, podName, containerName, null);
++        this(client, podName, containerName, null, null);
+     }
+ 
+     @Deprecated
+     public ContainerExecDecorator(KubernetesClient client, String podName, String containerName, String path, AtomicBoolean alive, CountDownLatch started, CountDownLatch finished) {
+-        this(client, podName, containerName, null);
++        this(client, podName, containerName, null, null);
+     }
+ 
+     @Override
+@@ -197,6 +204,16 @@ public class ContainerExecDecorator extends LauncherDecorator implements Seriali
+                         watch.getInput().write(
+                                 String.format("cd \"%s\"%s", pwd, NEWLINE).getBytes(StandardCharsets.UTF_8));
+                     }
++
++                    if (env!=null)
++                    {
++                        for(Map.Entry<String, String> entry : env.entrySet())
++                        {
++                            watch.getInput().write(
++                                String.format("export %s=\"%s\"%s", entry.getKey(),entry.getValue(), NEWLINE).getBytes(StandardCharsets.UTF_8));
++                        }
++                    }
++
+                     doExec(watch, printStream, commands);
+ 
+                     ContainerExecProc proc = new ContainerExecProc(watch, alive, finished, exitCodeOutputStream::getExitCode);
+@@ -327,7 +344,7 @@ public class ContainerExecDecorator extends LauncherDecorator implements Seriali
+         private EvictingQueue<Integer> queue = EvictingQueue.create(20);
+ 
+         public ExitCodeOutputStream() {
+-            
++
+         }
+ 
+         @Override
+diff --git a/src/main/java/org/csanchez/jenkins/plugins/kubernetes/pipeline/ContainerStepExecution.java b/src/main/java/org/csanchez/jenkins/plugins/kubernetes/pipeline/ContainerStepExecution.java
+index c661e93..97e5b6c 100755
+--- a/src/main/java/org/csanchez/jenkins/plugins/kubernetes/pipeline/ContainerStepExecution.java
++++ b/src/main/java/org/csanchez/jenkins/plugins/kubernetes/pipeline/ContainerStepExecution.java
+@@ -13,6 +13,7 @@ import org.jenkinsci.plugins.workflow.steps.BodyInvoker;
+ import org.jenkinsci.plugins.workflow.steps.StepContext;
+ 
+ import hudson.AbortException;
++import hudson.EnvVars;
+ import hudson.FilePath;
+ import hudson.LauncherDecorator;
+ import hudson.model.Node;
+@@ -56,8 +57,11 @@ public class ContainerStepExecution extends AbstractStepExecutionImpl {
+             throw new AbortException(String.format("Cloud does not exist: %s", slave.getCloudName()));
+         }
+         client = cloud.connect();
++        //retrieve envVars to pass to build container
++        EnvVars env = getContext().get(EnvVars.class);
++        decorator = new ContainerExecDecorator(client, podName,  containerName, namespace, env);
++
+ 
+-        decorator = new ContainerExecDecorator(client, podName,  containerName, namespace);
+         getContext().newBodyInvoker()
+                 .withContext(BodyInvoker
+                         .mergeLauncherDecorators(getContext().get(LauncherDecorator.class), decorator))
+-- 
+2.7.4
+

@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson.plugins.warnings.WarningsDescriptor plugin="warnings@4.36-SNAPSHOT">
+  <groovyParsers>
+    <hudson.plugins.warnings.GroovyParser>
+      <name>JENKINS-19628</name>
+      <regexp>^\s*\**\s*(.*)\sL(\d+)\s+(.*)\s+(\d+)\s+(.*)</regexp>
+      <script>import hudson.plugins.warnings.parser.Warning
+import hudson.plugins.analysis.util.model.Priority
+
+String fileName = matcher.group(1)
+String lineNumber = matcher.group(2)
+String category = matcher.group(3)
+String warningNumber = matcher.group(4)
+String message = matcher.group(5)
+String type = &quot;Lintware&quot;
+
+Pri = Priority.LOW
+
+if(&apos;E&apos; == category[0]){
+    Pri = Priority.HIGH
+}else if(&apos;W&apos; == category[0]){
+    Pri = Priority.NORMAL
+}
+
+if(3000&gt;Integer.parseInt(warningNumber)){
+    Pri = Priority.HIGH
+    category = &quot;Lintware &quot; + category + &quot; &quot;+ warningNumber
+    type = &quot;Lintware&quot;
+}else if ((3000&lt;=Integer.parseInt(warningNumber)) &amp;&amp; (4000&gt;Integer.parseInt(warningNumber))){
+    category = &quot;Codeware &quot; + category + &quot; &quot; + warningNumber
+    type = &quot;Codeware&quot;
+}else if ((4000&lt;=Integer.parseInt(warningNumber))){
+    category = &quot;Checkware &quot; + category + &quot; &quot; + warningNumber
+    type = &quot;Checkware&quot;
+}
+
+return new Warning(fileName, Integer.parseInt(lineNumber), type, category, message, Pri);</script>
+      <example>E:\Projects\JenkinsRoot\workspace\ATK_Windows_Master\src\kernel\atk\urpf\urpf_icrc.c L34 Error 3355 
+        statement is too long 139 &gt;= 120, &lt; 90 is preferred.</example>
+      <linkName>JENKINS-19628</linkName>
+      <trendName>JENKINS-19628</trendName>
+    </hudson.plugins.warnings.GroovyParser>
+    <hudson.plugins.warnings.GroovyParser>
+      <name>JENKINS-20277</name>
+      <regexp>^.*(err:) (.*)at(.*\.pp):(\d+)$</regexp>
+      <script>import hudson.plugins.warnings.parser.Warning
+
+String category = matcher.group(1)
+String message = matcher.group(2)
+String fileName = matcher.group(3)
+String lineNumber = matcher.group(4)
+
+
+return new Warning(fileName, Integer.parseInt(lineNumber), &quot;Dynamic Parser&quot;, category, message);</script>
+      <example>19:35:11 err: Could not parse for environment production: Syntax error at &apos;{&apos;; expected &apos;}&apos; at /home/build/jenkins/workspace/puppet-parser-try/modules/profile/manifests/mongodb/abc/shard/master.pp:5
+</example>
+      <linkName>JENKINS-20277</linkName>
+      <trendName>JENKINS-20277</trendName>
+    </hudson.plugins.warnings.GroovyParser>
+  </groovyParsers>
+</hudson.plugins.warnings.WarningsDescriptor>

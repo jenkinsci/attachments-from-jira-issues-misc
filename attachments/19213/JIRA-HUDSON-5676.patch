@@ -1,0 +1,179 @@
+From 193695057f808cf0c0bb5163749b1710ae995d48 Mon Sep 17 00:00:00 2001
+From: Bijan Vakili <bvakili@oanda.com>
+Date: Mon, 8 Mar 2010 18:40:09 -0500
+Subject: [PATCH] JIRA HUDSON-5676:
+ Added option to Git SCM plugin to disable auto tagging
+
+---
+ src/main/java/hudson/plugins/git/GitSCM.java       |   46 ++++++++++++++-----
+ .../hudson/plugins/git/GitSCM/config.jelly         |    5 ++
+ src/main/webapp/disableAutoTagging.html            |    4 ++
+ 3 files changed, 43 insertions(+), 12 deletions(-)
+ create mode 100644 src/main/webapp/disableAutoTagging.html
+
+diff --git a/src/main/java/hudson/plugins/git/GitSCM.java b/src/main/java/hudson/plugins/git/GitSCM.java
+index 96b58e4..d3373a1 100644
+--- a/src/main/java/hudson/plugins/git/GitSCM.java
++++ b/src/main/java/hudson/plugins/git/GitSCM.java
+@@ -89,6 +89,8 @@ public class GitSCM extends SCM implements Serializable {
+     private boolean doGenerateSubmoduleConfigurations;
+ 
+ 	private boolean clean;
++	
++	private boolean disableAutoTagging = false;
+ 
+ 	private GitWeb browser;
+ 
+@@ -110,6 +112,7 @@ public class GitSCM extends SCM implements Serializable {
+ 	        boolean doGenerateSubmoduleConfigurations,
+ 	        Collection<SubmoduleConfig> submoduleCfg,
+ 	        boolean clean,
++	        boolean disableAutoTagging,
+ 	        GitWeb browser) {
+ 
+ 		// normalization
+@@ -124,6 +127,7 @@ public class GitSCM extends SCM implements Serializable {
+ 		this.submoduleCfg = submoduleCfg;
+ 
+ 		this.clean = clean;
++		this.disableAutoTagging = disableAutoTagging;
+ 
+ 		this.configVersion = 1L;
+ 	}
+@@ -141,6 +145,7 @@ public class GitSCM extends SCM implements Serializable {
+     	   remoteRepositories = new ArrayList<RemoteConfig>();
+    			branches = new ArrayList<BranchSpec>();
+    			doGenerateSubmoduleConfigurations = false;
++   			disableAutoTagging = false;
+    			mergeOptions = new PreBuildMergeOptions();
+ 
+ 
+@@ -191,6 +196,10 @@ public class GitSCM extends SCM implements Serializable {
+ 		return this.clean;
+ 	}
+ 
++	public boolean getDisableAutoTagging() {
++		return this.disableAutoTagging;
++	}
++	
+ 	public List<RemoteConfig> getRepositories() {
+ 		// Handle null-value to ensure backwards-compatibility, ie project configuration missing the <repositories/> XML element
+ 		if (remoteRepositories == null)
+@@ -326,6 +335,25 @@ public class GitSCM extends SCM implements Serializable {
+ 		}
+ 
+ 	}
++	
++	/**
++	 * Creates a tag on the local build repository
++	 * 
++	 * @param git - GitAPI instance
++	 * @param build - build information
++	 * @throws GitException
++	 */
++	private void createTag(IGitAPI git, final AbstractBuild build) throws GitException 
++	{
++		if ( !disableAutoTagging ) {
++			
++			int buildNumber = build.getNumber();
++			final String tagName = "hudson-" + build.getProject().getName() + "-" + buildNumber;
++			final String tagComment = "Hudson Build #" + buildNumber; 
++			
++			git.tag( tagName, tagComment );
++		}
++	}
+ 
+ 	public RemoteConfig getSubmoduleRepository(RemoteConfig orig, String name) throws URISyntaxException
+     {
+@@ -401,12 +429,9 @@ public class GitSCM extends SCM implements Serializable {
+ 
+ 	    listener.getLogger().println("Checkout:" + workspace.getName() + " / " + workspace.getRemote() + " - " + workspace.getChannel());
+ 
+-		final String projectName = build.getProject().getName();
+ 		final int buildNumber = build.getNumber();
+ 		final String gitExe = getDescriptor().getGitExe();
+ 
+-		final String buildnumber = "hudson-" + projectName + "-" + buildNumber;
+-
+ 		final BuildData buildData = getBuildData(build.getPreviousBuild(), true);
+ 
+ 		if( buildData != null && buildData.lastBuild != null)
+@@ -552,12 +577,8 @@ public class GitSCM extends SCM implements Serializable {
+ 							// candidate
+ 							// branch.
+ 							git.checkout(revToBuild.getSha1().name());
+-
+-							git
+-									.tag(buildnumber, "Hudson Build #"
+-											+ buildNumber);
+-
+-
++							
++							createTag(git, build);
+ 
+ 							buildChooser.revisionBuilt(revToBuild, buildNumber, Result.FAILURE);
+ 
+@@ -569,7 +590,7 @@ public class GitSCM extends SCM implements Serializable {
+ 						}
+ 
+ 						// Tag the successful merge
+-						git.tag(buildnumber, "Hudson Build #" + buildNumber);
++						createTag(git, build);
+ 
+ 						StringBuilder changeLog = new StringBuilder();
+ 
+@@ -644,7 +665,7 @@ public class GitSCM extends SCM implements Serializable {
+ 				}
+ 
+ 				// Tag the successful merge
+-                git.tag(buildnumber, "Hudson Build #" + buildNumber);
++				createTag(git, build);
+ 
+                 StringBuilder changeLog = new StringBuilder();
+ 
+@@ -838,7 +859,7 @@ public class GitSCM extends SCM implements Serializable {
+ 					throw new GitException("Error creating GitWeb", e);
+ 				}
+ 			}
+-
++			
+ 			return new GitSCM(
+ 					remoteRepositories,
+ 					branches,
+@@ -846,6 +867,7 @@ public class GitSCM extends SCM implements Serializable {
+ 				    req.getParameter("git.generate") != null,
+ 					submoduleCfg,
+ 					req.getParameter("git.clean") != null,
++					req.getParameter("git.disableAutoTagging") != null,
+ 					gitWeb);
+ 		}
+ 
+diff --git a/src/main/resources/hudson/plugins/git/GitSCM/config.jelly b/src/main/resources/hudson/plugins/git/GitSCM/config.jelly
+index 9e187b8..f598b9a 100644
+--- a/src/main/resources/hudson/plugins/git/GitSCM/config.jelly
++++ b/src/main/resources/hudson/plugins/git/GitSCM/config.jelly
+@@ -119,6 +119,11 @@
+     <f:entry title="Clean after checkout" help="/plugin/git/clean.html">
+       <f:checkbox name="git.clean" checked="${scm.clean}" />
+     </f:entry>
++    
++    <f:entry title="Disable automatic git tag" help="/plugin/git/disableAutoTagging.html">
++      <f:checkbox name="git.disableAutoTagging" checked="${scm.disableAutoTagging}" />
++    </f:entry>
++    
+   </f:advanced>
+   
+   <t:listScmBrowsers name="git.browser" />
+diff --git a/src/main/webapp/disableAutoTagging.html b/src/main/webapp/disableAutoTagging.html
+new file mode 100644
+index 0000000..c47a3cb
+--- /dev/null
++++ b/src/main/webapp/disableAutoTagging.html
+@@ -0,0 +1,4 @@
++<div>
++  Avoids tagging the local repository using 'git tag'.  This is required if your git
++  repositories use a different method of tagging that should not conflict with Hudson.
++</div>
+-- 
+1.6.5
+

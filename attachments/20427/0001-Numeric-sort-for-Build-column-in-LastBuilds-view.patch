@@ -1,0 +1,52 @@
+From f46579a79892aa9accf64df7cf0744b2d215d1ef Mon Sep 17 00:00:00 2001
+From: Matt Ranostay <mranostay@gmail.com>
+Date: Sat, 30 Apr 2011 00:11:33 -0500
+Subject: [PATCH] Numeric sort for Build column in LastBuilds view
+
+Since the the value starts with a "#" the default sorter tried to
+sort it as alphanumeric string instead of a numeric value.
+
+Signed-off-by: Matt Ranostay <mranostay@gmail.com>
+---
+ .../view/dashboard/builds/LatestBuilds.java        |    4 ++++
+ .../builds/LatestBuilds/latestbuilds.jelly         |    4 ++--
+ 2 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/src/main/java/hudson/plugins/view/dashboard/builds/LatestBuilds.java b/src/main/java/hudson/plugins/view/dashboard/builds/LatestBuilds.java
+index 872203b..4f24da6 100644
+--- a/src/main/java/hudson/plugins/view/dashboard/builds/LatestBuilds.java
++++ b/src/main/java/hudson/plugins/view/dashboard/builds/LatestBuilds.java
+@@ -58,6 +58,10 @@ public class LatestBuilds extends DashboardPortlet{
+ 		return recentBuilds;
+ 	}
+ 
++    public String getBuildColumnSortData(Run<?, ?> build) {
++        return String.valueOf(build.getNumber());
++    }
++
+ 	@Extension
+     public static class DescriptorImpl extends Descriptor<DashboardPortlet> {
+ 
+diff --git a/src/main/resources/hudson/plugins/view/dashboard/builds/LatestBuilds/latestbuilds.jelly b/src/main/resources/hudson/plugins/view/dashboard/builds/LatestBuilds/latestbuilds.jelly
+index 8ccdac6..403f1c0 100644
+--- a/src/main/resources/hudson/plugins/view/dashboard/builds/LatestBuilds/latestbuilds.jelly
++++ b/src/main/resources/hudson/plugins/view/dashboard/builds/LatestBuilds/latestbuilds.jelly
+@@ -41,7 +41,7 @@ THE SOFTWARE.
+               <!--t:jobLink job="${build.parent}"/-->
+               <dp:jobLink job="${build.parent}"/>
+             </td>
+-            <td>
++            <td data="${it.getBuildColumnSortData(build)}">
+               <!-- This tag does not generate a build link relative to view for jobs included using regexp -->
+               <!--t:buildLink job="${build.parent}" jobName="${build.parent.displayName}" number="${build.number}" /-->
+               <a href="${h.getRelativeLinkTo(build.parent)}/${build.number}" tooltip="${build.description}">
+@@ -55,4 +55,4 @@ THE SOFTWARE.
+ 				</j:forEach>
+ 			</table>
+       <!--t:buildListTable builds="${builds}" jobBaseUrl="" /-->
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>
+-- 
+1.7.0.4
+

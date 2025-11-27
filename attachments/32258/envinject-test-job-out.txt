@@ -1,0 +1,35 @@
+Started by remote host xxxxx
+[EnvInject] - Loading node environment variables.
+[EnvInject] - Preparing an environment for the build.
+[EnvInject] - Keeping Jenkins system variables.
+[EnvInject] - Keeping Jenkins build variables.
+[EnvInject] - Evaluation the following Groovy script content: 
+try {
+def envVarsMap = Thread.currentThread()?.executable.parent.builds[0].properties.get("envVars")
+
+def testvar2 = envVarsMap['TEST_VARIABLE_2']
+
+println(testvar2)
+
+if (testvar2 == null)  { testvar2  = envVarsMap['TEST_VARIABLE_1'] }
+
+println(testvar2)
+
+def myEnv = [ TEST_VARIABLE_2: testvar2 ]
+
+return myEnv
+} catch (Throwable t) {
+  println(t)
+  throw t;
+}
+
+
+
+[EnvInject] - Injecting contributions.
+Building remotely on node2 (slave slowrunner linux) in workspace /mnt/local/jenkins/slave/workspace/test-build-user
+[test-build-user] $ /bin/sh -xe /tmp/hudson5102550245072060555.sh
++ echo test1
+test1
++ echo
+
+Finished: SUCCESS

@@ -1,0 +1,78 @@
+Started by user giacomo.consonni
+Replayed #3732
+[Pipeline] Start of Pipeline
+[Pipeline] stage
+[Pipeline] { (Stage)
+[Pipeline] node
+Still waiting to schedule task
+Waiting for next available executor on ‘node-label’
+Running on i-0e57b645eb1b41cf1 in /var/jenkins/workspace/ProjectUpStream
+[Pipeline] {
+[Pipeline] checkout
+The recommended git tool is: git
+using credential 16772945-8901-400f-9478-355c530d18ed
+Cloning the remote Git repository
+Cloning repository git@bitbucket.org:company/repository.git
+ > git init /var/jenkins/workspace/ProjectUpStream # timeout=10
+Fetching upstream changes from git@bitbucket.org:company/repository.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.39.2'
+using GIT_SSH to set credentials Bitbucket user to manage Git repository
+ > git fetch --tags --force --progress -- git@bitbucket.org:company/repository.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+Avoid second fetch
+Checking out Revision dcc4ffc8897db9f074f462912a3a392f665d285d (refs/remotes/origin/release-candidate)
+ > git config remote.origin.url git@bitbucket.org:company/repository.git # timeout=10
+ > git config --add remote.origin.fetch +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/release-candidate^{commit} # timeout=10
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f dcc4ffc8897db9f074f462912a3a392f665d285d # timeout=10
+Commit message: "fix: pipelines"
+ > git rev-list --no-walk dcc4ffc8897db9f074f462912a3a392f665d285d # timeout=10
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Inner Stage)
+[Pipeline] build
+Scheduling project: ProjectDownStream
+Starting building: ProjectDownStream #5059
+Build ProjectDownStream #5059 completed: ABORTED
+[Pipeline] }
+[Pipeline] // stage
+Post stage
+[Pipeline] script
+[Pipeline] {
+[Pipeline] echo
+unsuccessful 1
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] script
+[Pipeline] {
+[Pipeline] echo
+cleanup 1
+[Pipeline] deleteDir
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Declarative: Post Actions)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] echo
+success 0
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] script
+[Pipeline] {
+[Pipeline] echo
+cleanup 0
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] End of Pipeline
+Finished: SUCCESS

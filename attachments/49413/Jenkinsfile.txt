@@ -1,0 +1,51 @@
+pipeline {
+    agent {
+    docker{ image 'registry.cn-mirrors.tuna.tsinghua/python-3.7.3:1'}}
+    environment {
+        CI_PROJECT_DIR = "."
+        PIP_CACHE_DIR = "$CI_PROJECT_DIR/.cache/pip"
+    }
+
+    stages {
+        stage ('validation'){
+            steps{
+                sh '''
+                    pwd
+                    echo $PIP_CACHE_DIR
+                    echo $HOME
+                    which python
+                    which pip
+                    mkdir -p $HOME/.pip
+                    echo "[global]\\nindex-url = https://xyz.example/pypi/simple/\\ndownload-cache = $CI_PROJECT_DIR/.cache/pip/\n" > $HOME/.pip/pip.conf
+                    echo '[easy_install]\nindex-url = https://xyz.example/pypi/simple/\n' > $HOME/.pydistutils.cfg
+                    export HASH=$(cat ./requirements.txt | md5sum | cut -d ' ' -f1)
+                    export VENV_EXIST=0
+                    echo ".venv/venv_${HASH}"
+                    mkdir -p .venv/venv_${HASH}
+                    test -d .venv/venv_${HASH}
+                    test ${VENV_EXIST} -eq 0 && pip install virtualenv
+                    test ${VENV_EXIST} -eq 0 && virtualenv -p /usr/local/bin/python .venv/venv_${HASH}
+                    chmod +x  .venv/venv_${HASH}/bin/activate
+                    .  .venv/venv_${HASH}/bin/activate
+                    test ${VENV_EXIST} -eq 0 && pip install -r ./requirements.txt
+                    mkdir -p logs
+                    pylint --load-plugins pylint_django -E --rcfile .pylintrc example
+                    flake8  example
+                    mypy --config-file .mypy.ini example
+                '''
+            }
+       }
+   }
+   post {
+       always {
+            echo 'One way or another, I have finished'
+            deleteDir() /* clean up our workspace */
+        }
+        success {
+            echo 'success'
+        }
+        failure {
+            echo 'failure'
+        }
+}
+}

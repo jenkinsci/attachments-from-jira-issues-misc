@@ -1,0 +1,106 @@
+Mar 14, 2018 3:52:35 PM hudson.util.BootFailure publish
+SEVERE: Failed to initialize Jenkins
+hudson.util.HudsonFailedToLoad: java.lang.LinkageError: loader (instance of  org/jenkinsci/plugins/workflow/cps/CpsGroovyShell$CleanGroovyClassLoader): attempted  duplicate class definition for name: "org/foo/devops/org_foo_devops"
+	at hudson.WebAppMain$3.run(WebAppMain.java:249)
+Caused by: java.lang.LinkageError: loader (instance of  org/jenkinsci/plugins/workflow/cps/CpsGroovyShell$CleanGroovyClassLoader): attempted  duplicate class definition for name: "org/foo/devops/org_foo_devops"
+	at java.lang.ClassLoader.defineClass1(Native Method)
+	at java.lang.ClassLoader.defineClass(ClassLoader.java:760)
+	at java.security.SecureClassLoader.defineClass(SecureClassLoader.java:142)
+	at groovy.lang.GroovyClassLoader.access$400(GroovyClassLoader.java:62)
+	at groovy.lang.GroovyClassLoader$ClassCollector.createClass(GroovyClassLoader.java:500)
+	at groovy.lang.GroovyClassLoader$ClassCollector.onClassNode(GroovyClassLoader.java:517)
+	at groovy.lang.GroovyClassLoader$ClassCollector.call(GroovyClassLoader.java:521)
+	at org.codehaus.groovy.control.CompilationUnit$17.call(CompilationUnit.java:834)
+	at org.codehaus.groovy.control.CompilationUnit.applyToPrimaryClassNodes(CompilationUnit.java:1065)
+	at org.codehaus.groovy.control.CompilationUnit.doPhaseOperation(CompilationUnit.java:603)
+	at org.codehaus.groovy.control.CompilationUnit.processPhaseOperations(CompilationUnit.java:581)
+	at org.codehaus.groovy.control.CompilationUnit.compile(CompilationUnit.java:558)
+	at groovy.lang.GroovyClassLoader.doParseClass(GroovyClassLoader.java:298)
+	at groovy.lang.GroovyClassLoader.parseClass(GroovyClassLoader.java:268)
+	at groovy.lang.GroovyShell.parseClass(GroovyShell.java:688)
+	at groovy.lang.GroovyShell.parse(GroovyShell.java:700)
+	at org.jenkinsci.plugins.workflow.cps.CpsGroovyShell.doParse(CpsGroovyShell.java:129)
+	at org.jenkinsci.plugins.workflow.cps.CpsGroovyShell.reparse(CpsGroovyShell.java:123)
+	at org.jenkinsci.plugins.workflow.cps.CpsFlowExecution.parseScript(CpsFlowExecution.java:519)
+	at org.jenkinsci.plugins.workflow.cps.CpsFlowExecution.loadProgramAsync(CpsFlowExecution.java:613)
+	at org.jenkinsci.plugins.workflow.cps.CpsFlowExecution.onLoad(CpsFlowExecution.java:588)
+	at org.jenkinsci.plugins.workflow.job.WorkflowRun.onLoad(WorkflowRun.java:612)
+	at hudson.model.RunMap.retrieve(RunMap.java:225)
+	at hudson.model.RunMap.retrieve(RunMap.java:57)
+	at jenkins.model.lazy.AbstractLazyLoadRunMap.load(AbstractLazyLoadRunMap.java:500)
+	at jenkins.model.lazy.AbstractLazyLoadRunMap.load(AbstractLazyLoadRunMap.java:482)
+	at jenkins.model.lazy.AbstractLazyLoadRunMap.getByNumber(AbstractLazyLoadRunMap.java:380)
+	at hudson.model.RunMap.getById(RunMap.java:205)
+	at org.jenkinsci.plugins.workflow.job.WorkflowRun$Owner.run(WorkflowRun.java:878)
+	at org.jenkinsci.plugins.workflow.job.WorkflowRun$Owner.get(WorkflowRun.java:888)
+	at org.jenkinsci.plugins.workflow.flow.FlowExecutionList$1.computeNext(FlowExecutionList.java:65)
+	at org.jenkinsci.plugins.workflow.flow.FlowExecutionList$1.computeNext(FlowExecutionList.java:57)
+	at com.google.common.collect.AbstractIterator.tryToComputeNext(AbstractIterator.java:143)
+	at com.google.common.collect.AbstractIterator.hasNext(AbstractIterator.java:138)
+	at org.jenkinsci.plugins.workflow.flow.FlowExecutionList$ItemListenerImpl.onLoaded(FlowExecutionList.java:178)
+	at jenkins.model.Jenkins.<init>(Jenkins.java:999)
+	at hudson.model.Hudson.<init>(Hudson.java:86)
+	at hudson.model.Hudson.<init>(Hudson.java:82)
+	at hudson.WebAppMain$3.run(WebAppMain.java:235)
+
+Mar 14, 2018 3:52:35 PM jenkins.model.Jenkins cleanUp
+INFO: Stopping Jenkins
+Mar 14, 2018 3:52:35 PM jenkins.model.Jenkins$21 onAttained
+INFO: Started termination
+Mar 14, 2018 3:52:36 PM hudson.model.DownloadService$Downloadable load
+INFO: Obtained the updated data file for hudson.plugins.gradle.GradleInstaller
+Mar 14, 2018 3:52:36 PM hudson.model.DownloadService$Downloadable load
+INFO: Obtained the updated data file for hudson.plugins.sonar.MsBuildSonarQubeRunnerInstaller
+Mar 14, 2018 3:52:36 PM hudson.model.DownloadService$Downloadable load
+INFO: Obtained the updated data file for hudson.plugins.sonar.SonarRunnerInstaller
+Mar 14, 2018 3:52:36 PM hudson.model.DownloadService$Downloadable load
+INFO: Obtained the updated data file for hudson.plugins.nodejs.tools.NodeJSInstaller
+Mar 14, 2018 3:52:36 PM hudson.model.DownloadService$Downloadable load
+INFO: Obtained the updated data file for hudson.tools.JDKInstaller
+Mar 14, 2018 3:52:37 PM hudson.model.DownloadService$Downloadable load
+INFO: Obtained the updated data file for org.jenkinsci.plugins.scriptler.CentralScriptJsonCatalog
+Mar 14, 2018 3:52:38 PM com.cloudbees.jenkins.plugins.assurance.model.UpdateSiteEnvelopeProvider get
+INFO: Loading envelopes embedded in UpdateSite cap-cje
+Mar 14, 2018 3:52:39 PM com.cloudbees.opscenter.client.plugin.OperationsCenterSupportComponent addContents
+INFO: Connection to CloudBees Jenkins Operation Center is not set. Either a configuration issue or the operations-center-client plugin can be uninstalled from this instance.
+Mar 14, 2018 3:52:43 PM com.cloudbees.jenkins.support.SupportPlugin writeBundle
+WARNING: Could not attach 'nodes/master/pipeline-timings.txt' to support bundle
+java.lang.LinkageError: loader (instance of  org/jenkinsci/plugins/workflow/cps/CpsGroovyShell$CleanGroovyClassLoader): attempted  duplicate class definition for name: "org/foo/devops/org_foo_devops"
+	at java.lang.ClassLoader.defineClass1(Native Method)
+	at java.lang.ClassLoader.defineClass(ClassLoader.java:760)
+	at java.security.SecureClassLoader.defineClass(SecureClassLoader.java:142)
+	at groovy.lang.GroovyClassLoader.access$400(GroovyClassLoader.java:62)
+	at groovy.lang.GroovyClassLoader$ClassCollector.createClass(GroovyClassLoader.java:500)
+	at groovy.lang.GroovyClassLoader$ClassCollector.onClassNode(GroovyClassLoader.java:517)
+	at groovy.lang.GroovyClassLoader$ClassCollector.call(GroovyClassLoader.java:521)
+	at org.codehaus.groovy.control.CompilationUnit$17.call(CompilationUnit.java:834)
+	at org.codehaus.groovy.control.CompilationUnit.applyToPrimaryClassNodes(CompilationUnit.java:1065)
+	at org.codehaus.groovy.control.CompilationUnit.doPhaseOperation(CompilationUnit.java:603)
+	at org.codehaus.groovy.control.CompilationUnit.processPhaseOperations(CompilationUnit.java:581)
+	at org.codehaus.groovy.control.CompilationUnit.compile(CompilationUnit.java:558)
+	at groovy.lang.GroovyClassLoader.doParseClass(GroovyClassLoader.java:298)
+	at groovy.lang.GroovyClassLoader.parseClass(GroovyClassLoader.java:268)
+	at groovy.lang.GroovyShell.parseClass(GroovyShell.java:688)
+	at groovy.lang.GroovyShell.parse(GroovyShell.java:700)
+	at org.jenkinsci.plugins.workflow.cps.CpsGroovyShell.doParse(CpsGroovyShell.java:129)
+	at org.jenkinsci.plugins.workflow.cps.CpsGroovyShell.reparse(CpsGroovyShell.java:123)
+	at org.jenkinsci.plugins.workflow.cps.CpsFlowExecution.parseScript(CpsFlowExecution.java:519)
+	at org.jenkinsci.plugins.workflow.cps.CpsFlowExecution.loadProgramAsync(CpsFlowExecution.java:613)
+	at org.jenkinsci.plugins.workflow.cps.CpsFlowExecution.onLoad(CpsFlowExecution.java:588)
+	at org.jenkinsci.plugins.workflow.job.WorkflowRun.onLoad(WorkflowRun.java:612)
+	at hudson.model.RunMap.retrieve(RunMap.java:225)
+	at hudson.model.RunMap.retrieve(RunMap.java:57)
+	at jenkins.model.lazy.AbstractLazyLoadRunMap.load(AbstractLazyLoadRunMap.java:500)
+	at jenkins.model.lazy.AbstractLazyLoadRunMap.load(AbstractLazyLoadRunMap.java:482)
+	at jenkins.model.lazy.AbstractLazyLoadRunMap.getByNumber(AbstractLazyLoadRunMap.java:380)
+	at jenkins.model.lazy.AbstractLazyLoadRunMap.search(AbstractLazyLoadRunMap.java:345)
+	at jenkins.model.lazy.AbstractLazyLoadRunMap.newestBuild(AbstractLazyLoadRunMap.java:275)
+	at jenkins.model.lazy.LazyBuildMixIn.getLastBuild(LazyBuildMixIn.java:245)
+	at org.jenkinsci.plugins.workflow.job.WorkflowJob.getLastBuild(WorkflowJob.java:255)
+	at org.jenkinsci.plugins.workflow.job.WorkflowJob.getLastBuild(WorkflowJob.java:113)
+	at hudson.model.Job.getLastCompletedBuild(Job.java:951)
+	at org.jenkinsci.plugins.workflow.cps.CpsFlowExecution$PipelineTimings$1.writeTo(CpsFlowExecution.java:1514)
+	at com.cloudbees.jenkins.support.SupportPlugin.writeBundle(SupportPlugin.java:359)
+	at com.cloudbees.jenkins.support.SupportPlugin.writeBundle(SupportPlugin.java:273)
+	at com.cloudbees.jenkins.support.SupportPlugin$PeriodicWorkImpl$1.run(SupportPlugin.java:761)
+	at java.lang.Thread.run(Thread.java:745)

@@ -1,0 +1,56 @@
+diff --git a/src/main/java/hudson/tasks/MailSender.java b/src/main/java/hudson/tasks/MailSender.java
+index 89e03a2..246439a 100644
+--- a/src/main/java/hudson/tasks/MailSender.java
++++ b/src/main/java/hudson/tasks/MailSender.java
+@@ -474,7 +474,7 @@ public class MailSender {
+                         if (SEND_TO_UNKNOWN_USERS) {
+                             listener.getLogger().println(Messages.MailSender_warning_unknown_user(adrs));
+                         } else {
+-                            listener.getLogger().println(Messages.MailSender_unknown_user(adrs));
++                            listener.getLogger().println(Messages.MailSender_unknown_user(a.getId(), adrs));
+                             continue;
+                         }
+                     }
+diff --git a/src/main/resources/jenkins/plugins/mailer/tasks/i18n/Messages.properties b/src/main/resources/jenkins/plugins/mailer/tasks/i18n/Messages.properties
+index 68511c7..2af4ca6 100644
+--- a/src/main/resources/jenkins/plugins/mailer/tasks/i18n/Messages.properties
++++ b/src/main/resources/jenkins/plugins/mailer/tasks/i18n/Messages.properties
+@@ -34,7 +34,7 @@ MailSender.FailureMail.FailedToAccessBuildLog=Failed to access build log
+ MailSender.Link=See <{0}>
+ MailSender.user_without_read=Not sending mail to user {0} with no permission to view {1}
+ MailSender.warning_user_without_read=Warning: user {0} has no permission to view {1}, but sending mail anyway
+-MailSender.unknown_user=Not sending mail to unregistered user {0}
++MailSender.unknown_user=Not sending mail to unregistered user {0} with address {1}
+ MailSender.warning_unknown_user=Warning: {0} is not a recognized user, but sending mail anyway
+ 
+ Mailer.DisplayName=E-mail Notification
+diff --git a/src/test/java/hudson/tasks/MailSenderTest.java b/src/test/java/hudson/tasks/MailSenderTest.java
+index 1ece77f..5367185 100644
+--- a/src/test/java/hudson/tasks/MailSenderTest.java
++++ b/src/test/java/hudson/tasks/MailSenderTest.java
+@@ -150,6 +150,7 @@ public class MailSenderTest {
+         when(unauthorizedU.impersonate()).thenReturn(unauthorized);
+         when(acl.hasPermission(unauthorized, Item.READ)).thenReturn(false);
+         User externalU = mock(User.class);
++        when(externalU.getId()).thenReturn("someone");
+         when(externalU.getProperty(Mailer.UserProperty.class)).thenReturn(new Mailer.UserProperty("someone@nowhere.net"));
+         when(externalU.impersonate()).thenThrow(new UsernameNotFoundException(""));
+         AbstractBuild<?, ?> build = mock(AbstractBuild.class);
+@@ -161,7 +162,7 @@ public class MailSenderTest {
+         assertEquals("authorized@mycorp", new MailSender("", false, true).getUserEmailList(listener, build));
+         listener.getLogger().flush();
+         assertThat(sw.toString(), containsString(Messages.MailSender_user_without_read("unauthorized@mycorp", "prj #1")));
+-        assertThat(sw.toString(), containsString(Messages.MailSender_unknown_user("someone@nowhere.net")));
++        assertThat(sw.toString(), containsString(Messages.MailSender_unknown_user("someone", "someone@nowhere.net")));
+         MailSender.SEND_TO_USERS_WITHOUT_READ = true;
+         try {
+             sw = new StringWriter();
+@@ -169,7 +170,7 @@ public class MailSenderTest {
+             assertEquals("authorized@mycorp,unauthorized@mycorp", new MailSender("", false, true).getUserEmailList(listener, build));
+             listener.getLogger().flush();
+             assertThat(sw.toString(), containsString(Messages.MailSender_warning_user_without_read("unauthorized@mycorp", "prj #1")));
+-            assertThat(sw.toString(), containsString(Messages.MailSender_unknown_user("someone@nowhere.net")));
++            assertThat(sw.toString(), containsString(Messages.MailSender_unknown_user("someone", "someone@nowhere.net")));
+             MailSender.SEND_TO_UNKNOWN_USERS = true;
+             try {
+                 sw = new StringWriter();

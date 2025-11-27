@@ -1,0 +1,22 @@
+Index: main/maven-plugin/src/main/java/hudson/maven/MavenModuleSet.java
+===================================================================
+--- main/maven-plugin/src/main/java/hudson/maven/MavenModuleSet.java	(revision 23596)
++++ main/maven-plugin/src/main/java/hudson/maven/MavenModuleSet.java	(working copy)
+@@ -709,7 +709,7 @@
+     public FormValidation doCheckFileInWorkspace(@QueryParameter String value) throws IOException, ServletException {
+         MavenModuleSetBuild lb = getLastBuild();
+         if (lb!=null) {
+-            FilePath ws = lb.getModuleRoot();
++            FilePath ws = lb.getWorkspace();
+             if(ws!=null)
+                 return ws.validateRelativePath(value,true,true);
+         }
+@@ -731,7 +731,7 @@
+         
+         MavenModuleSetBuild lb = getLastBuild();
+         if (lb!=null) {
+-            FilePath ws = lb.getModuleRoot();
++            FilePath ws = lb.getWorkspace();
+             if(ws!=null)
+                 return ws.validateRelativePath(value,true,true);
+         }

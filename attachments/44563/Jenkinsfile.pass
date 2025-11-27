@@ -1,0 +1,21 @@
+pipeline {
+    agent any
+    stages {
+      stage('first') {
+            steps {
+                sh 'pwd'
+            }
+        }
+        stage('second') {
+            agent {
+                docker {
+                    image "alpine:latest"
+                    customWorkspace "test"
+                }
+            }
+            steps {
+                sh 'pwd'
+            }
+        }
+    }
+}

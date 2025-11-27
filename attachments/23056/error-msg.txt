@@ -1,0 +1,64 @@
+Jan 15, 2013 11:08:40 AM hudson.scm.SubversionSCM$DescriptorImpl$1 onSuccess
+INFO: Persisted hudson.scm.SubversionSCM$DescriptorImpl$PasswordCredential@8b4796 for <https://repoURL:443> wandisco
+Jan 15, 2013 11:09:03 AM hudson.model.Run execute
+INFO: TestRepo #1 aborted
+java.lang.InterruptedException
+	at hudson.model.AbstractBuild$AbstractBuildExecution.defaultCheckout(AbstractBuild.java:700)
+	at jenkins.scm.SCMCheckoutStrategy.checkout(SCMCheckoutStrategy.java:88)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.run(AbstractBuild.java:587)
+	at hudson.model.Run.execute(Run.java:1543)
+	at hudson.model.FreeStyleBuild.run(FreeStyleBuild.java:46)
+	at hudson.model.ResourceController.execute(ResourceController.java:88)
+	at hudson.model.Executor.run(Executor.java:236)
+Caused by: java.io.InterruptedIOException
+	at hudson.scm.SubversionSCM$CheckOutTask.invoke(SubversionSCM.java:812)
+	at hudson.scm.SubversionSCM$CheckOutTask.invoke(SubversionSCM.java:788)
+	at hudson.FilePath.act(FilePath.java:852)
+	at hudson.FilePath.act(FilePath.java:825)
+	at hudson.scm.SubversionSCM.checkout(SubversionSCM.java:771)
+	at hudson.scm.SubversionSCM.checkout(SubversionSCM.java:713)
+	at hudson.model.AbstractProject.checkout(AbstractProject.java:1325)
+	at hudson.model.AbstractBuild$AbstractBuildExecution.defaultCheckout(AbstractBuild.java:682)
+	... 6 more
+Caused by: java.lang.InterruptedException
+	at hudson.scm.subversion.CheckoutUpdater$1.perform(CheckoutUpdater.java:102)
+	at hudson.scm.subversion.WorkspaceUpdater$UpdateTask.delegateTo(WorkspaceUpdater.java:152)
+	at hudson.scm.subversion.WorkspaceUpdater$UpdateTask.delegateTo(WorkspaceUpdater.java:160)
+	at hudson.scm.subversion.UpdateUpdater$TaskImpl.perform(UpdateUpdater.java:125)
+	at hudson.scm.subversion.WorkspaceUpdater$UpdateTask.delegateTo(WorkspaceUpdater.java:152)
+	at hudson.scm.SubversionSCM$CheckOutTask.perform(SubversionSCM.java:824)
+	at hudson.scm.SubversionSCM$CheckOutTask.invoke(SubversionSCM.java:805)
+	... 13 more
+Caused by: org.tmatesoft.svn.core.SVNCancelException: svn: E200015: OPTIONS /rg0501/hpit108485eclaims failed
+	at org.tmatesoft.svn.core.internal.io.dav.http.HTTPConnection.request(HTTPConnection.java:300)
+	at org.tmatesoft.svn.core.internal.io.dav.http.HTTPConnection.request(HTTPConnection.java:289)
+	at org.tmatesoft.svn.core.internal.io.dav.http.HTTPConnection.request(HTTPConnection.java:277)
+	at org.tmatesoft.svn.core.internal.io.dav.DAVConnection.performHttpRequest(DAVConnection.java:696)
+	at org.tmatesoft.svn.core.internal.io.dav.DAVConnection.exchangeCapabilities(DAVConnection.java:619)
+	at org.tmatesoft.svn.core.internal.io.dav.DAVConnection.open(DAVConnection.java:103)
+	at org.tmatesoft.svn.core.internal.io.dav.DAVRepository.openConnection(DAVRepository.java:1018)
+	at org.tmatesoft.svn.core.internal.io.dav.DAVRepository.getLatestRevision(DAVRepository.java:180)
+	at org.tmatesoft.svn.core.internal.wc16.SVNBasicDelegate.getRevisionNumber(SVNBasicDelegate.java:480)
+	at org.tmatesoft.svn.core.internal.wc16.SVNBasicDelegate.getLocations(SVNBasicDelegate.java:833)
+	at org.tmatesoft.svn.core.internal.wc16.SVNBasicDelegate.createRepository(SVNBasicDelegate.java:527)
+	at org.tmatesoft.svn.core.internal.wc16.SVNUpdateClient16.doCheckout(SVNUpdateClient16.java:925)
+	at org.tmatesoft.svn.core.internal.wc2.old.SvnOldCheckout.run(SvnOldCheckout.java:19)
+	at org.tmatesoft.svn.core.internal.wc2.old.SvnOldCheckout.run(SvnOldCheckout.java:8)
+	at org.tmatesoft.svn.core.internal.wc2.SvnOperationRunner.run(SvnOperationRunner.java:20)
+	at org.tmatesoft.svn.core.wc2.SvnOperationFactory.run(SvnOperationFactory.java:1221)
+	at org.tmatesoft.svn.core.wc2.SvnOperation.run(SvnOperation.java:292)
+	at org.tmatesoft.svn.core.wc.SVNUpdateClient.doCheckout(SVNUpdateClient.java:781)
+	at hudson.scm.subversion.CheckoutUpdater$1.perform(CheckoutUpdater.java:95)
+	... 19 more
+Caused by: org.tmatesoft.svn.core.SVNCancelException: svn: E200015: No credential to try. Authentication failed
+	at org.tmatesoft.svn.core.internal.wc.SVNErrorManager.cancel(SVNErrorManager.java:37)
+	at org.tmatesoft.svn.core.internal.wc.SVNErrorManager.cancel(SVNErrorManager.java:32)
+	at org.tmatesoft.svn.core.internal.wc.DefaultSVNAuthenticationManager.getFirstAuthentication(DefaultSVNAuthenticationManager.java:185)
+	at org.tmatesoft.svn.core.internal.io.dav.http.HTTPConnection._request(HTTPConnection.java:598)
+	at org.tmatesoft.svn.core.internal.io.dav.http.HTTPConnection.request(HTTPConnection.java:298)
+	... 37 more
+Caused by: svn: E200015: No credential to try. Authentication failed
+	at org.tmatesoft.svn.core.SVNErrorMessage.create(SVNErrorMessage.java:208)
+	at org.tmatesoft.svn.core.SVNErrorMessage.create(SVNErrorMessage.java:154)
+	at org.tmatesoft.svn.core.SVNErrorMessage.create(SVNErrorMessage.java:97)
+	... 42 more

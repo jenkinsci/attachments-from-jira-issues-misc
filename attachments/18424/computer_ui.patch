@@ -1,0 +1,68 @@
+Index: main/core/src/main/resources/hudson/model/Computer/sidepanel.jelly
+===================================================================
+--- main/core/src/main/resources/hudson/model/Computer/sidepanel.jelly  (revision 13596)
++++ main/core/src/main/resources/hudson/model/Computer/sidepanel.jelly  (working copy)
+@@ -6,8 +6,10 @@
+   <l:side-panel>
+     <l:tasks>
+       <l:task icon="images/24x24/up.gif" href=".." title="${%Back to List}" />
+-      <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}/builds" title="${%Build History}" />
+-      <l:task icon="images/24x24/notepad.gif" href="script" title="${%Script Console}" />
++      <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}builds" title="${%Build History}" />
++      <l:isAdmin>
++        <l:task icon="images/24x24/notepad.gif" href="script" title="${%Script Console}" />
++      </l:isAdmin>
+     </l:tasks>
+   </l:side-panel>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>
+Index: main/core/src/main/resources/hudson/model/Computer/index.jelly
+===================================================================
+--- main/core/src/main/resources/hudson/model/Computer/index.jelly      (revision 13596)
++++ main/core/src/main/resources/hudson/model/Computer/index.jelly      (working copy)
+@@ -3,6 +3,7 @@
+     <st:include page="sidepanel.jelly" />
+     <l:main-panel>
+       <!-- temporarily offline switch -->
++      <l:isAdmin>
+       <div style="float:right">
+         <form method="get" action="toggleOffline">
+           <j:if test="${it.temporarilyOffline}">
+@@ -13,6 +14,7 @@
+           </j:if>
+         </form>
+       </div>
++      </l:isAdmin>
+
+       <h1>
+         <img src="${imagesURL}/48x48/${it.icon}" width="48" height="48" />
+Index: main/core/src/main/resources/hudson/slaves/JNLPLauncher/main.jelly
+===================================================================
+--- main/core/src/main/resources/hudson/slaves/JNLPLauncher/main.jelly  (revision 13596)
++++ main/core/src/main/resources/hudson/slaves/JNLPLauncher/main.jelly  (working copy)
+@@ -1,10 +1,9 @@
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+   <j:choose>
+     <j:when test="${app.slaveAgentPort==-1}">
+-      <img src="${imagesURL}/32x32/error.gif"/>
+       <div class="error">
+         ${%slaveAgentPort.disabled}
+-        <a href="${rootURL}/configure">${%configure.link.text}</a>.
++        <l:isAdmin><a href="${rootURL}/configure">${%configure.link.text}</a>.</l:isAdmin>
+       </div>
+     </j:when>
+     <j:when test="${it.offline and !it.temporarilyOffline}">
+Index: main/core/src/main/resources/hudson/slaves/SlaveComputer/sidepanel.jelly
+===================================================================
+--- main/core/src/main/resources/hudson/slaves/SlaveComputer/sidepanel.jelly    (revision 13596)
++++ main/core/src/main/resources/hudson/slaves/SlaveComputer/sidepanel.jelly    (working copy)
+@@ -7,7 +7,7 @@
+     <l:tasks>
+       <l:task icon="images/24x24/up.gif" href=".." title="${%Back to List}" />
+       <l:task icon="images/24x24/search.gif" href="${rootURL}/computer/${it.displayName}/" title="${%Status}" />
+-      <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}/builds" title="${%Build History}" />
++      <l:task icon="images/24x24/notepad.gif" href="${rootURL}/${it.url}builds" title="${%Build History}" />
+       <l:isAdmin>
+         <l:task icon="images/24x24/clipboard.gif" href="log" title="${%Log}" />
+         <l:task icon="images/24x24/computer.gif" href="systemInfo" title="${%System Information}" />

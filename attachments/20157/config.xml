@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<maven2-moduleset>
+  <actions/>
+  <description>&lt;h3&gt;PatternTesting Libs 1.0&lt;/h3&gt;&#xd;
+</description>
+  <logRotator>
+    <daysToKeep>90</daysToKeep>
+    <numToKeep>-1</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.security.AuthorizationMatrixProperty>
+      <permission>hudson.model.Item.Read:anonymous</permission>
+    </hudson.security.AuthorizationMatrixProperty>
+  </properties>
+  <scm class="hudson.scm.CVSSCM">
+    <cvsroot>:pserver:anonymous@patterntesting.cvs.sourceforge.net:/cvsroot/patterntesting</cvsroot>
+    <module>PatternTesting10/patterntesting-libs
+PatternTesting10/patterntesting-rt
+PatternTesting10/patterntesting-check
+PatternTesting10/patterntesting-check-ct
+PatternTesting10/patterntesting-check-rt
+PatternTesting10/patterntesting-concurrent
+PatternTesting10/patterntesting-exception</module>
+    <canUseUpdate>true</canUseUpdate>
+    <flatten>false</flatten>
+    <isTag>false</isTag>
+    <excludedRegions></excludedRegions>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenUpstreamBuilding>true</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector">
+    <hudson.triggers.SCMTrigger>
+      <spec>22 2,10,18 * * *</spec>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <rootModule>
+    <groupId>org.patterntesting</groupId>
+    <artifactId>patterntesting-libs</artifactId>
+  </rootModule>
+  <goals>clean install -Dgpg.passphrase=onlyforinternaluse</goals>
+  <mavenName>Maven-3</mavenName>
+  <mavenOpts>-Xms512m -Xmx1024m -XX:MaxPermSize=256m</mavenOpts>
+  <aggregatorStyleBuild>true</aggregatorStyleBuild>
+  <incrementalBuild>false</incrementalBuild>
+  <usePrivateRepository>false</usePrivateRepository>
+  <ignoreUpstremChanges>false</ignoreUpstremChanges>
+  <archivingDisabled>false</archivingDisabled>
+  <reporters>
+    <hudson.maven.reporters.MavenMailer>
+      <recipients>boehm@javatux.de</recipients>
+      <dontNotifyEveryUnstableBuild>true</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>true</sendToIndividuals>
+    </hudson.maven.reporters.MavenMailer>
+  </reporters>
+  <publishers/>
+  <buildWrappers/>
+</maven2-moduleset>

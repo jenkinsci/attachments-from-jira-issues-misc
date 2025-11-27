@@ -1,0 +1,25 @@
+From f8f18e1caeeea021efd1f03425da013c61aa71bf Mon Sep 17 00:00:00 2001
+From: Peter Collingbourne <peter@pcc.me.uk>
+Date: Wed, 18 Nov 2009 01:10:16 -0800
+Subject: [PATCH 2/2] Convert the changeLog to a String to avoid ClassCastException
+
+---
+ src/main/java/hudson/plugins/git/GitSCM.java |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/src/main/java/hudson/plugins/git/GitSCM.java b/src/main/java/hudson/plugins/git/GitSCM.java
+index e1f614c..609c704 100644
+--- a/src/main/java/hudson/plugins/git/GitSCM.java
++++ b/src/main/java/hudson/plugins/git/GitSCM.java
+@@ -585,7 +585,7 @@ public class GitSCM extends SCM implements Serializable {
+ 						buildData.mergeRevision = gu.getRevisionForSHA1(target);
+ 
+ 						// Fetch the diffs into the changelog file
+-						return new Object[]{changeLog, buildChooser.getData()};
++						return new Object[]{changeLog.toString(), buildChooser.getData()};
+ 					}
+ 				});
+ 				BuildData returningBuildData = (BuildData)returnData[1];
+-- 
+1.6.3.3
+

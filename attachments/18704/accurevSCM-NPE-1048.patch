@@ -1,0 +1,41 @@
+Index: src/main/java/hudson/plugins/accurev/AccurevSCM.java
+===================================================================
+--- src/main/java/hudson/plugins/accurev/AccurevSCM.java	(revision 19853)
++++ src/main/java/hudson/plugins/accurev/AccurevSCM.java	(working copy)
+@@ -970,7 +970,7 @@
+          * the local machine.
+          */
+         transient static final Lock ACCUREV_LOCK = new ReentrantLock();
+-        private List<AccurevServer> servers;
++        private List<AccurevServer> servers = new ArrayList<AccurevServer>(0);
+ 
+         /**
+          * Constructs a new AccurevSCMDescriptor.
+@@ -993,7 +993,7 @@
+          */
+         @Override
+         public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
+-            servers = req.bindJSONToList(AccurevServer.class, formData.get("server"));
++            setServers(req.bindJSONToList(AccurevServer.class, formData.get("server")));
+             save();
+             return true;
+         }
+@@ -1012,9 +1012,6 @@
+          * @return Value for property 'servers'.
+          */
+         public List<AccurevServer> getServers() {
+-            if (servers == null) {
+-                servers = new ArrayList<AccurevServer>();
+-            }
+             return servers;
+         }
+ 
+@@ -1024,7 +1021,7 @@
+          * @param servers Value to set for property 'servers'.
+          */
+         public void setServers(List<AccurevServer> servers) {
+-            this.servers = servers;
++            this.servers = servers == null ? new ArrayList<AccurevServer>(0) : servers;
+         }
+ 
+         public AccurevServer getServer(String name) {

@@ -1,0 +1,33 @@
+Index: org/apache/tools/ant/taskdefs/cvslib/ChangeLogTask.java
+===================================================================
+--- org/apache/tools/ant/taskdefs/cvslib/ChangeLogTask.java	(revision 21756)
++++ org/apache/tools/ant/taskdefs/cvslib/ChangeLogTask.java	(working copy)
+@@ -437,9 +437,10 @@
+                 log("Filtering out "+cvsEntry+" because it's too late compare to "+m_stop,Project.MSG_VERBOSE);
+                 continue;
+             }
+-            if (!cvsEntry.containsBranch(branch)) {
++            //if tag was specified, it takes care of branches or HEAD, because it does not go out of one. Otherwise HEAD or specified Brach should be filtered
++            if (null == getTag() && !cvsEntry.containsBranch(branch)) {
+                 // didn't match the branch
+-                log("Filtering out "+cvsEntry+" because it didn't match the branch",Project.MSG_VERBOSE);
++                log("Filtering out "+cvsEntry+" because it didn't match the branch '"+branch+"'",Project.MSG_VERBOSE);
+                 continue;
+             }
+             results.addElement(cvsEntry);
+Index: scm/CVSSCM.java
+===================================================================
+--- scm/CVSSCM.java	(revision 21756)
++++ scm/CVSSCM.java	(working copy)
+@@ -868,6 +868,11 @@
+                     task.setFailOnError(true);
+                     BufferedOutputStream bufferedOutput = new BufferedOutputStream(out);
+                     task.setDeststream(bufferedOutput);
++                    // It's to enforce ChangeLogParser find a "branch". If tag was specified, branch does not matter (see documentation for 'cvs log -r:tag').
++                    if (!isTag()){
++                        task.setBranch(branch);
++                    }
++                    // It's to enforce ChangeLogTask use "baranch" in CVS command (cvs log -r...).
+                     task.setTag(isTag() ? ":" + branch : branch);
+                     task.setStart(startTime);
+                     task.setEnd(endTime);

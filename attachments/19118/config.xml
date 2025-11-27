@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Builds and run the MacRaTests.</description>
+  <logRotator>
+    <daysToKeep>30</daysToKeep>
+    <numToKeep>200</numToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.disk__usage.DiskUsageProperty/>
+  </properties>
+  <scm class="hudson.plugins.clearcase.ClearCaseSCM">
+    <viewName>hudson_layer23_resalloctype1_view</viewName>
+    <mkviewOptionalParam>-host selixview1.lmera.ericsson.se -stgloc selixview1_views01_ltetb</mkviewOptionalParam>
+    <filteringOutDestroySubBranchEvent>false</filteringOutDestroySubBranchEvent>
+    <useUpdate>false</useUpdate>
+    <removeViewOnRename>false</removeViewOnRename>
+    <excludedRegions></excludedRegions>
+    <loadRules>/vobs/radio_testbeds/&#xd;
+/vobs/radio_testbeds_lte/</loadRules>
+    <useDynamicView>false</useDynamicView>
+    <viewDrive>/view</viewDrive>
+    <multiSitePollBuffer>0</multiSitePollBuffer>
+    <createDynView>true</createDynView>
+    <winDynStorageDir>\\selix051\views\dynamic</winDynStorageDir>
+    <unixDynStorageDir>ltetb_hudson_layer23</unixDynStorageDir>
+    <configSpec># Show all elements that are checked out to this view, # regardless any other rules.&#xd;
+element * CHECKEDOUT&#xd;
+&#xd;
+element .../lost+found -none&#xd;
+&#xd;
+# Radio testbeds LTE&#xd;
+# Layer 23&#xd;
+element /vobs/radio_testbeds_lte/... .../li_ekimjan_res_alloc_type1/LATEST&#xd;
+element /vobs/radio_testbeds_lte/... L23_TD2.2_TD2.5_I7 -mkbranch li_ekimjan_res_alloc_type1&#xd;
+element /vobs/radio_testbeds_lte/... /main/0 -mkbranch li_ekimjan_res_alloc_type1&#xd;
+&#xd;
+# Hide everything else&#xd;
+element /vobs/radio_testbeds_lte/... cd &#xd;
+&#xd;
+# Radio testbeds&#xd;
+element /vobs/radio_testbeds/... PLATFORM_P7_0_07 -nocheckout&#xd;
+element /vobs/radio_testbeds/... -none&#xd;
+&#xd;
+</configSpec>
+    <branch></branch>
+    <doNotUpdateConfigSpec>false</doNotUpdateConfigSpec>
+    <useTimeRule>false</useTimeRule>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector">
+    <hudson.triggers.SCMTrigger>
+      <spec>* * * * *</spec>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>cd $WORKSPACE/hudson_layer23_resalloctype1_view/vobs/radio_testbeds_lte/lte/layer23/test/testCases/MacRaTest
+make clean
+make sys2atl
+make -j8</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>#cd $WORKSPACE/hudson_layer23_resalloctype1_view/vobs/radio_testbeds_lte/lte/layer23/test/testCases/MacRaTest
+#./runtests</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.plugins.warnings.WarningsPublisher>
+      <threshold></threshold>
+      <newThreshold></newThreshold>
+      <failureThreshold></failureThreshold>
+      <newFailureThreshold></newFailureThreshold>
+      <healthy></healthy>
+      <unHealthy></unHealthy>
+      <pluginName>[WARNINGS] </pluginName>
+      <thresholdLimit>low</thresholdLimit>
+      <defaultEncoding></defaultEncoding>
+      <pattern></pattern>
+      <parserNames>
+        <string>GNU compiler (gcc)</string>
+      </parserNames>
+      <canRunOnFailed>false</canRunOnFailed>
+      <ignoreConsole>false</ignoreConsole>
+    </hudson.plugins.warnings.WarningsPublisher>
+    <hudson.tasks.Mailer>
+      <recipients>christian.akerstrom@ericsson.com</recipients>
+      <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>true</sendToIndividuals>
+    </hudson.tasks.Mailer>
+  </publishers>
+  <buildWrappers/>
+</project>

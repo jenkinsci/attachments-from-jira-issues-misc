@@ -1,0 +1,40 @@
+pipeline {
+
+  agent any
+
+  stages {
+    stage("Build") {
+      steps {
+        echo "Building..."
+      }
+    }
+
+    stage("Unit Tests") {
+      steps {
+        echo "Unit Testing..."
+      }
+    }
+
+    stage("Integration Tests") {
+      steps {
+        echo "Integration Testing..."
+      }
+    }
+
+    stage("Publish") {
+      steps {
+        echo "Publishing..."
+      }
+    }
+
+    stage("Deploy") {
+      when {
+        branch '*/master'
+      }
+
+      steps {
+        echo "Deploying..."
+      }
+    }
+  }
+}

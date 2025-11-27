@@ -1,0 +1,63 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>nz.gen.akl</groupId>
+  <artifactId>buildnumberbug</artifactId>
+  <version>0.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <description>Demo of Hudson finalName glitch</description>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>tlc</id>
+      <name>TLC Repository</name>
+      <url>http://commons.ucalgary.ca/pub/m2</url>
+    </pluginRepository>
+  </pluginRepositories>
+
+   <scm>
+    <connection>scm:svn:svn://wlgvproj01/ampfsnz/PIE/TAS/trunk/</connection>
+    <developerConnection>scm:svn:svn://wlgvproj01/ampfsnz/PIE/TAS/trunk/</developerConnection>
+    <url>scm:svn:invalid</url>
+  </scm>
+
+  
+   <build>
+    <defaultGoal>install</defaultGoal>
+ <finalName>${project.artifactId}-${project.version}-r${buildNumber}</finalName>
+
+    <plugins>
+   
+
+      <plugin>
+     <groupId>org.codehaus.mojo</groupId>
+     <artifactId>maven-buildnumber-plugin</artifactId>
+     <executions>
+       <execution>
+         <phase>validate</phase>
+          <goals>
+           <goal>create</goal>
+         </goals>
+       </execution>
+     </executions>
+     <configuration>
+       <doCheck>false</doCheck>
+       <doUpdate>false</doUpdate>
+     </configuration>
+   </plugin>
+ <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <displayName>${project.artifactId}</displayName>
+          <description>
+            Name: ${project.artifactId}
+            Version: ${project.version}
+            SVN Rev: ${buildNumber}
+            Build tag: ${BUILD_TAG}
+            Built By: ${user.name} 
+          </description>
+        </configuration>
+      </plugin>
+      </plugins>
+</build>
+
+</project>

@@ -1,0 +1,183 @@
+Index: src/main/java/hudson/plugins/starteam/StarTeamSCM.java
+===================================================================
+--- src/main/java/hudson/plugins/starteam/StarTeamSCM.java	(revision 32329)
++++ src/main/java/hudson/plugins/starteam/StarTeamSCM.java	(working copy)
+@@ -6,18 +6,23 @@
+ import hudson.model.AbstractBuild;
+ import hudson.model.AbstractProject;
+ import hudson.model.BuildListener;
++import hudson.model.Run;
+ import hudson.model.TaskListener;
+ import hudson.scm.ChangeLogParser;
+ import hudson.scm.SCM;
+ import hudson.scm.SCMDescriptor;
++import hudson.scm.PollingResult;
++import hudson.scm.SCMRevisionState;
+ 
+ import java.io.File;
+ import java.io.IOException;
+ import java.util.ArrayList;
+ import java.util.Collection;
++import java.util.Date;
+ 
+ import net.sf.json.JSONObject;
+ 
++import org.kohsuke.stapler.DataBoundConstructor;
+ import org.kohsuke.stapler.StaplerRequest;
+ 
+ 
+@@ -47,6 +52,7 @@
+ 	 * 
+ 	 * @stapler-constructor
+ 	 */
++	@DataBoundConstructor
+ 	public StarTeamSCM(String hostname, int port, String projectname,
+ 			String viewname, String foldername, String username, String password) {
+ 		this.hostname = hostname;
+@@ -67,10 +73,16 @@
+ 			FilePath workspace, BuildListener listener, File changelogFile)
+ 			throws IOException, InterruptedException {
+ 		boolean status = false;
++
++		Date sinceDate = new Date();
++		if ( build != null)
++		{
++		    sinceDate= build.getTimestamp().getTime();
++		}
++		
+ 		// Create an actor to do the checkout, possibly on a remote machine
+ 		StarTeamCheckoutActor co_actor = new StarTeamCheckoutActor(hostname,
+-				port, user, passwd, projectname, viewname, foldername, build
+-						.getTimestamp().getTime(), changelogFile, listener);
++				port, user, passwd, projectname, viewname, foldername, sinceDate, changelogFile, listener);
+ 		if (workspace.act(co_actor)) {
+ 			// TODO: truly create changelog
+ 			status = createEmptyChangeLog(changelogFile, listener, "log");
+@@ -113,10 +125,16 @@
+ 			final TaskListener listener) throws IOException,
+ 			InterruptedException {
+ 		boolean status = false;
++		Run run = proj.getLastBuild();
++		Date sinceDate = new Date();
++		if ( run != null)
++		{
++		    sinceDate= run.getTimestamp().getTime();
++		}
+ 		// Create an actor to do the polling, possibly on a remote machine
+ 		StarTeamPollingActor p_actor = new StarTeamPollingActor(hostname, port,
+ 				user, passwd, projectname, viewname, foldername,
+-				proj.getLastBuild().getTimestamp().getTime(),
++				sinceDate,
+ 				listener);
+ 		if (workspace.act(p_actor)) {
+ 			status = true;
+@@ -241,4 +259,20 @@
+ 	public String getPassword() {
+ 		return passwd;
+ 	}
++	
++    protected PollingResult compareRemoteRevisionWith(AbstractProject<?, ?> project,
++    		Launcher launcher, FilePath workspace, TaskListener listener,
++    		SCMRevisionState baseline) {
++		// TODO fix Auto-generated method stub
++        return null;
++    }
++
++	@Override
++	public SCMRevisionState calcRevisionsFromBuild(AbstractBuild<?, ?> project,
++			Launcher launcher, TaskListener listener) throws IOException,
++			InterruptedException {
++		// TODO fix Auto-generated method stub
++		return null;
++	}
++
+ }
+Index: src/main/java/hudson/plugins/starteam/StarTeamPollingActor.java
+===================================================================
+--- src/main/java/hudson/plugins/starteam/StarTeamPollingActor.java	(revision 32329)
++++ src/main/java/hudson/plugins/starteam/StarTeamPollingActor.java	(working copy)
+@@ -9,6 +9,7 @@
+ 
+ import java.io.File;
+ import java.io.IOException;
++import java.io.PrintStream;
+ import java.util.Date;
+ 
+ /**
+@@ -77,7 +78,14 @@
+ 			connection.close();
+ 			return false;
+ 		}
+-		if (connection.findChangedFiles(f, listener.getLogger(), sinceDate)
++		PrintStream logger;
++		if (listener != null )
++		{
++			logger = listener.getLogger();
++		} else {
++			logger = System.out;
++		}
++		if (connection.findChangedFiles(f, logger, sinceDate)
+ 				.isEmpty()) {
+ 			connection.close();
+ 			return false;
+Index: pom.xml
+===================================================================
+--- pom.xml	(revision 32329)
++++ pom.xml	(working copy)
+@@ -5,7 +5,7 @@
+ 	<parent>
+ 		<groupId>org.jvnet.hudson.plugins</groupId>
+ 		<artifactId>plugin</artifactId>
+-		<version>1.318</version>
++		<version>1.364</version>
+ 		<relativePath>../pom.xml</relativePath>
+ 	</parent>
+ 
+@@ -72,6 +72,12 @@
+ 			<scope>provided</scope>
+ 		</dependency>
+ 		<dependency>
++			<groupId>com.rsa</groupId>
++			<artifactId>jsafe</artifactId>
++			<version>3.5</version>
++			<scope>provided</scope>
++		</dependency>
++		<dependency>
+ 			<groupId>junit</groupId>
+ 			<artifactId>junit</artifactId>
+ 			<version>4.4</version>
+@@ -126,4 +132,34 @@
+ 			</plugin>
+ 		</plugins>
+ 	</build>
++  <reporting>
++    <plugins>
++      <plugin>
++        <groupId>org.codehaus.mojo</groupId>
++        <artifactId>cobertura-maven-plugin</artifactId>
++        <version>2.4</version>
++      </plugin>
++      <plugin>
++        <groupId>org.apache.maven.plugins</groupId>
++        <artifactId>maven-pmd-plugin</artifactId>
++        <version>2.3</version>
++      </plugin>
++      <plugin>
++        <groupId>org.apache.maven.plugins</groupId>
++        <artifactId>maven-jxr-plugin</artifactId>
++        <version>2.2</version>
++      </plugin>
++      <plugin>
++        <groupId>org.apache.maven.plugins</groupId>
++        <artifactId>maven-javadoc-plugin</artifactId>
++        <version>2.7</version>
++      </plugin>
++      <plugin>
++        <groupId>org.apache.maven.plugins</groupId>
++        <artifactId>maven-surefire-report-plugin</artifactId>
++        <version>2.5</version>
++      </plugin>
++    </plugins>
++  </reporting>
++
+ </project>

@@ -1,0 +1,362 @@
+#!groovy
+node
+{
+  try
+  {
+    // add a polling sequence to the job
+    properties([pipelineTriggers([[$class: 'SCMTrigger', scmpoll_spec: 'H/5 * * * *']])])
+
+    //notifyBuild('STARTED')
+
+    // checkout the branch
+    stage("Checkout")
+    {
+      checkout scm
+    }
+
+    echo "STARTING PIPELINE FOR BRANCH ${env.BRANCH_NAME}"
+
+    // read the project json file  
+    def json = readJSON file: "${env.WORKSPACE}\\Projects.json"
+    def jsonVersion = readJSON file: "${env.WORKSPACE}\\Version.json"    
+    def projects = json.projects.project
+    def workspace = env.WORKSPACE
+
+    
+
+    def analysisDirectory = "${env.WORKSPACE}\\${env.ANALYSIS_OUTPUT}" 
+    def codecoverageDirectory = "${env.WORKSPACE}\\${env.CODECOVERAVE_OUTPUT}" 
+    def unittestDirectory = "${env.UNITTEST_OUTPUT}" 
+    def coberturaDirectory = "${env.CODECOVERAVE_OUTPUT}" 
+    
+
+    def builds = [:]
+    def nugets = [:]
+    def tests = [:]
+    def analysis = [:]
+    def archiveFiles = [:]
+    def assemblyVersion = ""
+    def productVersion = ""
+    // def majorVersion = VersionNumber(versionNumberString: '${BUILD_DATE_FORMATTED, "yyyy"}', projectStartDate : '2018-01-01', worstResultForIncrement: "SUCCESS")
+    // def minorVersion = jsonVersion.version
+    // def buildVersion = VersionNumber(versionNumberString: '${BUILD_WEEK}.${BUILD_NUMBER}', projectStartDate : '2018-01-01', worstResultForIncrement: "SUCCESS")
+    def shortCommit = commitHashForBuild(currentBuild.rawBuild)
+
+    stage("Prepearing workspace")
+    {
+      echo "VERSION: ${jsonVersion.version} COMMIT HASH: ${shortCommit}"
+
+      // create analysis directories
+      echo "CREATING ANALYSIS DIRECTORY '${analysisDirectory}'"
+      new File(analysisDirectory).mkdirs()
+
+      // create unit test code coverage directories
+      echo "CREATING CODECOVERAGE DIRECTORY '${codecoverageDirectory}'"
+      new File(codecoverageDirectory).mkdirs()
+
+      // create unit test directories
+      echo "CREATING UNITTEST DIRECTORY '${env.WORKSPACE}\\${env.UNITTEST_OUTPUT}'"
+      new File("${env.WORKSPACE}\\${env.UNITTEST_OUTPUT}").mkdirs()
+
+      // crafting assembly version
+      assemblyVersion = "${jsonVersion.version}.${env.BUILD_NUMBER}"
+
+      // setting product version
+      if(env.BRANCH_NAME == "master")
+      {
+        productVersion = "prod-" + assemblyVersion + "-${shortCommit}"
+      }
+      else
+      {
+        productVersion = "dev-" + assemblyVersion + "-${shortCommit}"
+      }
+
+      
+      echo "PRODUCT VERSION IS NOW ${productVersion}"
+      echo "ASSEMBLY VERSION IS NOW ${assemblyVersion}"
+      echo "JSON VERSION ${jsonVersion.version}"
+
+      // changing assembly versions
+      bat returnStdout: false, script: "\"${env.ASSEMBLY_CHANGER_EXE}\" -s \"${env.WORKSPACE}\" -v ${assemblyVersion} -i \"${productVersion}\" -c ${env.COMPANY} -p ${env.COPYRIGHT} -t ${env.TRADEMARK}"
+    }
+
+    for(int t = 0; t<projects.size(); t++)
+    {
+      // developer toolbox
+      def toolBox = new ToolBox()
+      def msbuildPath = toolBox.getDirectory(env.MSBUILD_EXE)        
+      
+      // get and set project.xml parts
+      def projectName = projects[t].name    
+      def solutionPath =  "${workspace}\\${projects[t].solution}"
+
+
+      // NUGET RESTORE STAGE
+      nugets["Restore ${projectName}"] = 
+      {
+        stage("Running restore stage on ${projectName}")
+        {
+          if(fileExists(solutionPath))
+          { 
+            // nuget restore
+            if(env.BRANCH == "dev")
+            {
+              echo "RESTORE NUGET FROM RELEASE SOURCE ON PROJECT ${projectName} ON SOLUTION ${solutionPath}"
+              bat returnStatus: false, script: "\"${env.NUGET_EXE}\" restore -Source ${env.NUGET_SOURCE} \"${solutionPath}\" -DisableParallelProcessing -NoCache"
+            }
+            else
+            {
+              echo "RESTORE NUGET FROM DEVELOPMENT SOURCE ON PROJECT ${projectName} ON SOLUTION ${solutionPath}"
+              bat returnStatus: false, script: "\"${env.NUGET_EXE}\" restore -Source ${env.NUGET_DEVELOPMENT_SOURCE} \"${solutionPath}\" -DisableParallelProcessing -NoCache"
+            }
+          }
+          else
+          {
+            error "ERROR: was unable to location solution file ${solutionPath}"
+          }        
+        }
+      }
+    }
+
+    // BUILD STAGE
+    for(int i = 0; i<projects.size(); i++)
+    {
+      def toolBox = new ToolBox()
+      
+      // get and set project.xml parts
+      def projectName = projects[i].name    
+      def buildOutputFolder = "${workspace}\\${env.BUILD_OUTPUT}\\${projectName}"
+      def solutionPath =  "${workspace}\\${projects[i].solution}"
+
+      builds["Build ${projectName}"] = 
+      {
+        stage ("Running build stage on ${projectName}")
+        {
+          if(fileExists(solutionPath))
+          {           
+            // build
+            echo "RUNNING MSBUILD ON SOLUTION ${solutionPath} WITH OUTDIR ${buildOutputFolder} AND PARAMETERS /v:d /m"
+            bat returnStdout: false, script: "\"${env.MSBUILD_EXE}\" \"${solutionPath}\" /p:OutDir=\"${buildOutputFolder}\" /v:d /m"                                   
+          }
+          else
+          {
+            error "ERROR: was unable to location solution file ${solutionPath}"
+          }
+        }
+      }
+    } 
+
+    // TEST STAGE
+    for(int i = 0; i<projects.size(); i++)
+    {
+      // get the project name
+      def projectName = projects[i].name 
+
+      if(projects[i].testFiles != "")
+      {
+        def toolBox = new ToolBox()
+        
+        // get and set project.xml parts         
+        def buildOutputFolder = "${workspace}\\${env.BUILD_OUTPUT}\\${projectName}"
+        def solutionPath =  "${workspace}\\${projects[i].solution}"
+        def testFiles = projects[i].testFiles
+        def testFilesWitFullPath = ""    
+            
+        codeCoverageResultOutput = codecoverageDirectory + "\\" + projectName + ".xml" 
+        coberturaResultOutput = codecoverageDirectory + "\\" + projectName + ".cob" 
+        nunitResultOutput = unittestDirectory + "\\" + projectName + ".nunit" 
+        junitResultOutput = unittestDirectory + "\\" + projectName + ".junit" 
+
+        // split the test files into an array
+        def testFilesArray = testFiles.split()
+
+        echo "the build output folder ${buildOutputFolder}"
+        echo "test files split into an array '${testFilesArray}'"
+
+        for(int e = 0; e<testFilesArray.size(); e++)
+        {
+          def testFilePath  = buildOutputFolder + "\\" + testFilesArray[e]
+          echo "test file path '${testFilePath}''"
+          testFilesWitFullPath = testFilesWitFullPath + buildOutputFolder + "\\" + testFilesArray[e]
+        }
+
+        // prep nunit arguments
+        def nUnitArgument = "\"${testFilesWitFullPath}\" --noheader --dispose-runners --result=\"${nunitResultOutput}\""
+        //def openCoverArguments = "-target:\"${env.NUNIT_EXE}\" -targetargs:\"${nUnitArgument}\" -filter:\"+[*]* -[*.Tests]*\" -excludebyattribute:\"*.ExcludeFromCodeCoverage*^\" -hideskipped:All -skipautoprops -showunvisited -log:All -output:\"${codeCoverageResultOutput}\" -mergebyhash"        
+
+        tests["Test ${projectName}"] = 
+        {
+          stage ("Running test stage on ${projectName}")
+          {
+            
+            if(testFilesWitFullPath?.trim())
+            {           
+              // unit test
+              echo "RUNNING TEST ON FILES ${testFilesWitFullPath} WITH OUTDIR ${buildOutputFolder} AND PARAMETERS"
+              
+              //bat returnStdout: false, script: "${env.OPEN_COVER} ${openCoverArguments}"
+              bat returnStatus: false, script: "${env.NUNIT_EXE} ${nUnitArgument}"
+              bat returnStdout: false, script: "\"${env.MSXSL_EXE}\" ${env.WORKSPACE}\\${nunitResultOutput} \"buildtools\\nunit3-junit.xslt\" -o \"${junitResultOutput}\""
+              
+              // if(fileExists(codeCoverageResultOutput))
+              // {
+              //   // convert code cover file
+              //   echo "RUNNING COBERTURA CONVERTER ON FILE ${codeCoverageResultOutput} WITH OUTPUT ${coberturaResultOutput} AND PARAMETERS"
+              //   bat returnStdout: false, script: "${env.OPEN_COVER_TO_COBERTURA_EXE} -input:\"${codeCoverageResultOutput}\" -output:\"${coberturaResultOutput}\""
+              // }
+            }
+          }
+        }    
+      }
+      else
+      {
+        echo "YOU HAVE NOT ADDED ANY UNIT TEST FILES FOR ${projectName}"
+      }
+    }
+
+
+    // ANALYZE STAGE
+    for(int i = 0; i<projects.size(); i++)
+    {
+      // get the project name
+      def projectName = projects[i].name 
+
+      if(projects[i].analysisFiles != "")
+      {
+        def toolBox = new ToolBox()
+        
+        // get and set project.xml parts         
+        def buildOutputFolder = "${workspace}\\${env.BUILD_OUTPUT}\\${projectName}"
+        def solutionPath =  "${workspace}\\${projects[i].solution}"
+        def analysisFiles = projects[i].analysisFiles
+        def analysisFilesWitFullPath = ""    
+        
+        analysisResultOutput = analysisDirectory + "\\" + projectName + ".xml" 
+
+        // split the analysis files into an array
+        def analysisFilesArray = analysisFiles.split()
+
+        echo "the build output folder ${buildOutputFolder}"
+        echo "analysis files split into an array '${analysisFilesArray}'"
+
+        for(int e = 0; e<analysisFilesArray.size(); e++)
+        {
+          def analysisFilePath  = buildOutputFolder + "\\" + analysisFilesArray[e]
+          echo "analysis file path '${analysisFilePath}''"
+          analysisFilesWitFullPath = analysisFilesWitFullPath + buildOutputFolder + "\\" + analysisFilesArray[e]
+        }
+
+        // prep fxcop arguments
+        def fxcopArgument = "/file:${analysisFilesWitFullPath} /out:\"${analysisResultOutput}\" /searchgac /ruleset:=${env.FXCOP_RULES}  /rulesetdirectory:${env.FXCOP_RULES_DIR} /forceoutput"        
+
+        analysis["Analysis ${projectName}"] = 
+        {
+          stage ("Running analyze stage on ${projectName}")
+          {
+            if(analysisFilesWitFullPath?.trim())
+            {           
+              // fxcop
+              echo "RUNNING ANALYSIS ON FILES ${analysisFilesWitFullPath} WITH OUTDIR ${buildOutputFolder} AND PARAMETERS"
+              bat returnStdout: false, script: "${env.FXCOP_EXE} ${fxcopArgument}"          
+            }
+          }
+        }    
+      }
+      else
+      {
+        echo "YOU HAVE NOT ADDED ANY ANALYSIS FILES FOR ${projectName}"
+      }
+    }
+
+    //OPEN_COVER_TO_COBERTURA_EXE    
+    parallel nugets
+    parallel builds
+    parallel tests
+    parallel analysis    
+
+    stage("Publish")
+    {
+      // Success or failure, always send notifications    
+      warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'MSBuild']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', parserConfigurations: [[parserName: 'FxCop', pattern: "${analysisDirectory}\\*.xml"]], unHealthy: ''
+      nunit failIfNoResults: false, testResultsPattern: "${unittestDirectory}\\*.nunit"
+      junit allowEmptyResults: true, testResults: "${unittestDirectory}\\*.junit"            
+      //[$class: 'JUnitResultArchiver', allowEmptyResults: true, testResults: '${unittestDirectory}\\*.junit']
+      //cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: "${coberturaDirectory}\\*.cob", conditionalCoverageTargets: '70, 0, 0', failNoReports: false, failUnhealthy: false, failUnstable: false, lineCoverageTargets: '80, 0, 0', maxNumberOfBuilds: 0, methodCoverageTargets: '80, 0, 0', onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
+      archiveArtifacts artifacts: "${env.BUILD_OUTPUT}\\**\\*", excludes: '*unittest* *nunit* *devexpress*desinger*', caseSensitive: false, onlyIfSuccessful: true
+    }
+  }
+  catch (e)
+  {
+    // If there was an exception thrown, the build failed
+    currentBuild.result = "FAILED"
+    throw e
+  }
+  finally
+  {
+
+    notifyBuild(currentBuild.result)
+  }
+}
+
+def notifyBuild(String buildStatus = 'STARTED', String branch) 
+{
+  // build status of null means successful
+  buildStatus =  buildStatus ?: 'SUCCESSFUL'
+
+  // Default values
+  def colorName = 'RED'
+  def colorCode = '#FF0000'
+  def subject = "*${buildStatus}:* Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'"
+  def summary = "${subject} (<${env.BUILD_URL}|Open>)"
+  def emoji = ""
+
+  // Override default values based on build status
+  if (buildStatus == 'STARTED') 
+  {
+
+    color = 'BLUE'
+    colorCode = '#5c67bc'
+    emoji = ":male-factory-worker:"
+  } 
+  else if (buildStatus == 'SUCCESSFUL') 
+  {
+    color = 'GREEN'
+    colorCode = '#00FF00'
+    emoji = ":smile:"
+  } 
+    else if (buildStatus == 'UNSTABLE') 
+  {
+    color = 'YELLOW'
+    colorCode = '#FFFF00'
+    emoji = ":worried:"
+  } 
+  else 
+  {
+    color = 'RED'
+    colorCode = '#FF0000'
+    emoji = ":cry:"
+  }
+
+  echo "Sending slack message ${summary}"
+
+  // Send notifications
+  slackSend (color: colorCode, message: emoji + " " + summary)
+}
+
+/**
+ * Gets the commit hash from a Jenkins build object, if any
+ */
+@NonCPS
+def commitHashForBuild( build ) {
+  def scmAction = build?.actions.find { action -> action instanceof jenkins.scm.api.SCMRevisionAction }
+  return scmAction?.revision?.hash
+}
+
+class ToolBox
+{
+  def getDirectory(String filePath)
+  {
+      def index = org.apache.commons.io.FilenameUtils.indexOfLastSeparator(filePath)
+      return filePath.substring(0, index)
+  }
+}

@@ -1,0 +1,52 @@
+diff --git a/src/main/java/hudson/plugins/nextexecutions/utils/NextExecutionsUtils.java b/src/main/java/hudson/plugins/nextexecutions/utils/NextExecutionsUtils.java
+old mode 100644
+new mode 100755
+index 4676421..26b3a53
+--- a/src/main/java/hudson/plugins/nextexecutions/utils/NextExecutionsUtils.java
++++ b/src/main/java/hudson/plugins/nextexecutions/utils/NextExecutionsUtils.java
+@@ -12,6 +12,7 @@
+ import hudson.plugins.nextexecutions.NextBuilds;
+ import hudson.scheduler.CronTab;
+ import hudson.scheduler.CronTabList;
++import hudson.triggers.SCMTrigger;
+ import hudson.triggers.TimerTrigger;
+ import hudson.triggers.Trigger;
+ 
+@@ -25,7 +26,36 @@
+ 	 */
+ 	public static NextBuilds getNextBuild(AbstractProject project){
+ 		if(!project.isDisabled()){
+-			Trigger trigger = project.getTrigger(TimerTrigger.class);
++			Trigger trigger = project.getTrigger(TimerTrigger.class);			
++			if(trigger != null){	
++				try{
++				Field triggerTabsField = Trigger.class.getDeclaredField("tabs");
++				triggerTabsField.setAccessible(true);
++				
++				CronTabList cronTabList = (CronTabList)triggerTabsField.get(trigger);
++				
++				Field crontablistTabsField = CronTabList.class.getDeclaredField("tabs");
++				crontablistTabsField.setAccessible(true);
++				
++				List<CronTab> crons = (Vector<CronTab>)crontablistTabsField.get(cronTabList);
++				
++				Calendar cal = null;
++				for (CronTab cronTab : crons) {
++					Date d = new Date();				
++					cal = (cal == null || cal.compareTo(cronTab.ceil(d.getTime())) > 0)? cronTab.ceil(d.getTime()) : cal;					
++				}
++				if(cal != null)
++					return new NextBuilds(project, cal);
++				}
++				catch(NoSuchFieldException e){
++					e.printStackTrace();
++				}
++				catch(IllegalAccessException e){
++					e.printStackTrace();
++				}
++				
++			}
++			trigger = project.getTrigger(SCMTrigger.class);
+ 			if(trigger != null){	
+ 				try{
+ 				Field triggerTabsField = Trigger.class.getDeclaredField("tabs");

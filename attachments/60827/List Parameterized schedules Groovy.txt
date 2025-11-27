@@ -1,0 +1,38 @@
+import hudson.model.*
+import hudson.triggers.*
+import org.jenkinsci.plugins.parameterizedscheduler.*
+TriggerDescriptor TIMER_TRIGGER_DESCRIPTOR = Hudson.instance.getDescriptorOrDie(TimerTrigger.class)
+TriggerDescriptor PARMTIMER_TRIGGER_DESCRIPTOR = Hudson.instance.getDescriptorOrDie(ParameterizedTimerTrigger.class)
+
+
+def footer = """
+### SCHEDULE SYNTAX (similar to cron) ###
+
+MINUTE HOUR DOM MONTH DOW
+
+MINUTE	Minutes within the hour (0–59)
+HOUR	The hour of the day (0–23)
+DOM	The day of the month (1–31)
+MONTH	The month (1–12)
+DOW	The day of the week (0–7) where 0 and 7 are Sunday."""
+
+
+println ( "### CONFIGURED SCHEDULES ###" )
+println ( "---------------------------------------------------------------------" )
+
+for (item in Jenkins.instance.getAllItems(Job)) {
+    def timertrigger = item.getTriggers().get(TIMER_TRIGGER_DESCRIPTOR)
+    if (timertrigger) {
+            println ( item.fullName )
+            println ( item.getTriggers().get(TIMER_TRIGGER_DESCRIPTOR).spec )
+      		println ( "---------------------------------------------------------------------" )
+    }
+    def parmtimertrigger = item.getTriggers().get(PARMTIMER_TRIGGER_DESCRIPTOR)
+    if (parmtimertrigger) {
+            println ( item.fullName )
+      		println ( item.getTriggers().get(PARMTIMER_TRIGGER_DESCRIPTOR).parameterizedSpecification )
+      		println ( "---------------------------------------------------------------------" )
+    }
+}
+
+println ( footer )

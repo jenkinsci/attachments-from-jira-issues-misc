@@ -1,0 +1,255 @@
+Index: src/main/java/hudson/plugins/jabber/im/transport/JabberPublisherDescriptor.java
+===================================================================
+--- src/main/java/hudson/plugins/jabber/im/transport/JabberPublisherDescriptor.java	(revision 28599)
++++ src/main/java/hudson/plugins/jabber/im/transport/JabberPublisherDescriptor.java	Mon Mar 22 12:08:44 MDT 2010
+@@ -47,6 +47,8 @@
+     public static final String PARAMETERNAME_PORT = JabberPublisherDescriptor.PREFIX + "port";
+     public static final String PARAMETERNAME_HOSTNAME = JabberPublisherDescriptor.PREFIX + "hostname";
+     public static final String PARAMETERNAME_SSL = JabberPublisherDescriptor.PREFIX + "ssl";
++    public static final String PARAMETERNAME_SASL = JabberPublisherDescriptor.PREFIX + "enableSASL";
++    public static final String PARAMETERNAME_SMACK_RECONNECT = JabberPublisherDescriptor.PREFIX + "smackReconnect";
+     public static final String PARAMETERNAME_PRESENCE = JabberPublisherDescriptor.PREFIX + "exposePresence";
+     public static final String PARAMETERNAME_PASSWORD = JabberPublisherDescriptor.PREFIX + "password";
+     public static final String PARAMETERNAME_JABBERID = JabberPublisherDescriptor.PREFIX + "jabberId";
+@@ -97,6 +99,8 @@
+     private String hudsonPassword;
+     private String groupChatNickname;
+     private boolean exposePresence = true;
++    private boolean enableSASL = true;
++    private boolean smackReconnect = false;
+     private String initialGroupChats;
+     private String commandPrefix = DEFAULT_COMMAND_PREFIX;
+     private String defaultIdSuffix;
+@@ -329,6 +333,14 @@
+         else            return String.valueOf(port);
+     }
+ 
++    public boolean isEnableSASL() {
++        return enableSASL;
++    }
++
++    public boolean isSmackReconnect() {
++        return smackReconnect;
++    }
++
+     public boolean isExposePresence() {
+         return this.exposePresence;
+     }
+@@ -422,6 +434,8 @@
+ 		String en = req.getParameter(PARAMETERNAME_ENABLED);
+ 		this.enabled = Boolean.valueOf(en != null);
+ 		this.exposePresence = req.getParameter(JabberPublisherDescriptor.PARAMETERNAME_PRESENCE) != null;
++        this.enableSASL = req.getParameter(JabberPublisherDescriptor.PARAMETERNAME_SASL) != null;
++        this.smackReconnect = req.getParameter(JabberPublisherDescriptor.PARAMETERNAME_SMACK_RECONNECT) != null;
+ 		this.subscriptionMode = Util.fixEmptyAndTrim(req.getParameter(JabberPublisherDescriptor.PARAMETERNAME_SUBSCRIPTION_MODE));
+         applyHostname(req);
+         applyPort(req);
+Index: src/main/resources/hudson/plugins/jabber/im/transport/JabberPublisher/global.jelly
+===================================================================
+--- src/main/resources/hudson/plugins/jabber/im/transport/JabberPublisher/global.jelly	(revision 28599)
++++ src/main/resources/hudson/plugins/jabber/im/transport/JabberPublisher/global.jelly	Mon Mar 22 13:35:28 MDT 2010
+@@ -1,64 +1,78 @@
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+-	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
++         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+ 
+-  <j:set var="base" value="/plugin/jabber"/>
++    <j:set var="base" value="/plugin/jabber"/>
+ 
+-  <f:section title="Jabber Notification">
++    <f:section title="Jabber Notification">
+-    <f:optionalBlock name="${descriptor.PARAMETERNAME_ENABLED}" title="Enable Jabber Notification" checked="${descriptor.enabled}">
++        <f:optionalBlock name="${descriptor.PARAMETERNAME_ENABLED}" title="Enable Jabber Notification"
++                         checked="${descriptor.enabled}">
+-		<f:entry title="Jabber ID" help="${base}/help-id.html">
+-			<f:textbox name="${descriptor.PARAMETERNAME_JABBERID}"
+-				value="${descriptor.jabberId}"
+-                checkUrl="'${rootURL}/publisher/JabberPublisher/jabberIdCheck?jabberId='+escape(this.value)+'&amp;port='+escape(this.form.elements['jabberPlugin.port'].value)+'&amp;hostname='+escape(this.form.elements['jabberPlugin.hostname'].value)"/>
+-		</f:entry>
+-		<f:entry title="Password">
+-           <f:password name="${descriptor.PARAMETERNAME_PASSWORD}"
+-				value="${descriptor.password}"/>
+-		</f:entry>
++            <f:entry title="Jabber ID" help="${base}/help-id.html">
++                <f:textbox name="${descriptor.PARAMETERNAME_JABBERID}"
++                           value="${descriptor.jabberId}"
++                           checkUrl="'${rootURL}/publisher/JabberPublisher/jabberIdCheck?jabberId='+escape(this.value)+'&amp;port='+escape(this.form.elements['jabberPlugin.port'].value)+'&amp;hostname='+escape(this.form.elements['jabberPlugin.hostname'].value)"/>
++            </f:entry>
++            <f:entry title="Password">
++                <f:password name="${descriptor.PARAMETERNAME_PASSWORD}"
++                            value="${descriptor.password}"/>
++            </f:entry>
+-		<f:entry title="Initial group chats" description="Group chats to automatically join on startup with a bot (whitespace separated)">
++            <f:entry title="Initial group chats"
++                     description="Group chats to automatically join on startup with a bot (whitespace separated)">
+-			<f:textbox name="${descriptor.PARAMETERNAME_INITIAL_GROUPCHATS}"
++                <f:textbox name="${descriptor.PARAMETERNAME_INITIAL_GROUPCHATS}"
+-				value="${descriptor.initialGroupChats}" />
++                           value="${descriptor.initialGroupChats}"/>
+-		</f:entry>
+-    <f:advanced>
+-      <f:entry title="Server" help="${base}/help-server.html">
+-          <f:textbox name="${descriptor.PARAMETERNAME_HOSTNAME}"
+-           value="${descriptor.hostname}"
+-           checkUrl="'${rootURL}/publisher/JabberPublisher/serverCheck?field=hostname&amp;hostname='+escape(this.value)+'&amp;port='+escape(this.form.elements['jabberPlugin.port'].value)"/>
+-      </f:entry>
+-      <f:entry title="Port" help="${base}/help-port.html">
+-        <f:textbox name="${descriptor.PARAMETERNAME_PORT}" value="${descriptor.portString}"
+-        checkUrl="'${rootURL}/publisher/JabberPublisher/serverCheck?field=port&amp;hostname='+escape(this.form.elements['jabberPlugin.hostname'].value)+'&amp;port='+escape(this.value)"/>
+-      </f:entry>
++            </f:entry>
++            <f:advanced>
++                <f:entry title="Server" help="${base}/help-server.html">
++                    <f:textbox name="${descriptor.PARAMETERNAME_HOSTNAME}"
++                               value="${descriptor.hostname}"
++                               checkUrl="'${rootURL}/publisher/JabberPublisher/serverCheck?field=hostname&amp;hostname='+escape(this.value)+'&amp;port='+escape(this.form.elements['jabberPlugin.port'].value)"/>
++                </f:entry>
++                <f:entry title="Port" help="${base}/help-port.html">
++                    <f:textbox name="${descriptor.PARAMETERNAME_PORT}" value="${descriptor.portString}"
++                               checkUrl="'${rootURL}/publisher/JabberPublisher/serverCheck?field=port&amp;hostname='+escape(this.form.elements['jabberPlugin.hostname'].value)+'&amp;port='+escape(this.value)"/>
++                </f:entry>
+-      <f:entry title="Default ID suffix" description="This suffix will be used to determine the Jabber ID from the Hudson ID, if no Jabber ID is specified in the user settings">
++                <f:entry title="Default ID suffix"
++                         description="This suffix will be used to determine the Jabber ID from the Hudson ID, if no Jabber ID is specified in the user settings">
+-			<f:textbox name="${descriptor.PARAMETERNAME_DEFAULT_ID_SUFFIX}"
++                    <f:textbox name="${descriptor.PARAMETERNAME_DEFAULT_ID_SUFFIX}"
+-				value="${descriptor.defaultIdSuffix}" />
++                               value="${descriptor.defaultIdSuffix}"/>
+-	  </f:entry>
++                </f:entry>
++                <f:entry title="Enable SASL for connection"
++                         description="Disable this if you are having connection problems that mention SASL"
++                         help="${base}/help-sasl.html">
++                    <f:checkbox name="${descriptor.PARAMETERNAME_SASL}" checked="${descriptor.enableSASL}"/>
++                </f:entry>
++                <f:entry title="Enable SMACK-based reconnection handling"
++                         description="Enable this to use the SMACK library's built-in reconnection in addition to the jabber plugins reconnection management. (experimental)"
++                         help="${base}/help-smack-reconnect.html">
++                    <f:checkbox name="${descriptor.PARAMETERNAME_SMACK_RECONNECT}"
++                                checked="${descriptor.smackReconnect}"/>
++                </f:entry>
+-      <f:entry title="Expose presence" help="${base}/help-presence.html">
+-        <f:checkbox name="${descriptor.PARAMETERNAME_PRESENCE}" checked="${descriptor.exposePresence}"/>
+-      </f:entry>
+-      <f:entry title="Acceptance mode for subscription requests" help="${base}/help-subscription-mode.html">
+-        <select class="setting-input" name="${descriptor.PARAMETERNAME_SUBSCRIPTION_MODE}">
+-	       <j:forEach var="value" items="${descriptor.PARAMETERVALUE_SUBSCRIPTION_MODE}">
+-	          <f:option selected="${instance.subscriptionMode==value}">${value}</f:option>
+-	       </j:forEach>
+-	    </select>
+-      </f:entry>
+-      <f:entry title="Bot command prefix" help="${base}/help-bot.html">
+-        <f:textbox name="${descriptor.PARAMETERNAME_COMMAND_PREFIX}"
++                <f:entry title="Expose presence" help="${base}/help-presence.html">
++                    <f:checkbox name="${descriptor.PARAMETERNAME_PRESENCE}" checked="${descriptor.exposePresence}"/>
++                </f:entry>
++                <f:entry title="Acceptance mode for subscription requests" help="${base}/help-subscription-mode.html">
++                    <select class="setting-input" name="${descriptor.PARAMETERNAME_SUBSCRIPTION_MODE}">
++                        <j:forEach var="value" items="${descriptor.PARAMETERVALUE_SUBSCRIPTION_MODE}">
++                            <f:option selected="${instance.subscriptionMode==value}">${value}</f:option>
++                        </j:forEach>
++                    </select>
++                </f:entry>
++                <f:entry title="Bot command prefix" help="${base}/help-bot.html">
++                    <f:textbox name="${descriptor.PARAMETERNAME_COMMAND_PREFIX}"
+-          value="${descriptor.commandPrefix}" />
++                               value="${descriptor.commandPrefix}"/>
+-      </f:entry>
+-      <f:entry title="Group chat nickname" help="${base}/help-group-nick.html">
+-        <f:textbox name="${descriptor.PARAMETERNAME_GROUP_NICKNAME}"
++                </f:entry>
++                <f:entry title="Group chat nickname" help="${base}/help-group-nick.html">
++                    <f:textbox name="${descriptor.PARAMETERNAME_GROUP_NICKNAME}"
+-          value="${descriptor.groupChatNickname}" />
++                               value="${descriptor.groupChatNickname}"/>
+-      </f:entry>
+-      <f:entry title="Hudson Username" help="${base}/help-hudson-login.html">
+-        <f:textbox name="${descriptor.PARAMETERNAME_HUDSON_LOGIN}"
++                </f:entry>
++                <f:entry title="Hudson Username" help="${base}/help-hudson-login.html">
++                    <f:textbox name="${descriptor.PARAMETERNAME_HUDSON_LOGIN}"
+-          value="${descriptor.hudsonUserName}" />
++                               value="${descriptor.hudsonUserName}"/>
+-      </f:entry>
+-      <f:entry title="Hudson Password">
+-        <f:password name="${descriptor.PARAMETERNAME_HUDSON_PASSWORD}"
++                </f:entry>
++                <f:entry title="Hudson Password">
++                    <f:password name="${descriptor.PARAMETERNAME_HUDSON_PASSWORD}"
+-          value="${descriptor.hudsonPassword}" />
++                                value="${descriptor.hudsonPassword}"/>
+-      </f:entry>
+-    </f:advanced>
+-    </f:optionalBlock>
+-  </f:section>
++                </f:entry>
++            </f:advanced>
++        </f:optionalBlock>
++    </f:section>
+ </j:jelly>
+Index: src/main/webapp/help-smack-reconnect.html
+===================================================================
+--- src/main/webapp/help-smack-reconnect.html	Mon Mar 22 12:08:44 MDT 2010
++++ src/main/webapp/help-smack-reconnect.html	Mon Mar 22 12:08:44 MDT 2010
+@@ -0,0 +1,3 @@
++<div>
++    The jabber plugin has its own built-in connection monitoring that should handle reconnection. SMACK also has a built-in reconnection mechanism that is disabled by default. You can enable this if you are having unstable connections to see if it helps.
++</div>
+\ No newline at end of file
+Index: src/main/webapp/help-sasl.html
+===================================================================
+--- src/main/webapp/help-sasl.html	Mon Mar 22 11:41:05 MDT 2010
++++ src/main/webapp/help-sasl.html	Mon Mar 22 11:41:05 MDT 2010
+@@ -0,0 +1,8 @@
++<div>
++    SASL authentication is enabled by default. Some connections will fail if this is set.
++    <p>
++    If your connection doesn't work, and you see an error in the logs that reads:
++    <tt>WARNING: SASL authentication failed using mechanism PLAIN</tt>
++    you should disable SASL authentication.
++    </p>
++</div>
+\ No newline at end of file
+Index: src/main/java/hudson/plugins/jabber/im/transport/JabberIMConnection.java
+===================================================================
+--- src/main/java/hudson/plugins/jabber/im/transport/JabberIMConnection.java	(revision 28598)
++++ src/main/java/hudson/plugins/jabber/im/transport/JabberIMConnection.java	Mon Mar 22 12:08:44 MDT 2010
+@@ -86,6 +86,8 @@
+ 	private IMPresence impresence;
+ 
+     private String imStatusMessage;
++    private boolean enableSASL;
++    private boolean smackReconnect;
+ 
+     private final JabberPublisherDescriptor desc;
+     private final Authentication authentication;
+@@ -101,6 +103,8 @@
+ 		this.port = desc.getPort();
+ 		this.nick = JabberUtil.getUserPart(desc.getJabberId());
+ 		this.passwd = desc.getPassword();
++        this.enableSASL = desc.isEnableSASL();
++        this.smackReconnect = desc.isSmackReconnect();
+ 		this.groupChatNick = desc.getGroupChatNickname() != null ?
+ 				desc.getGroupChatNickname() : this.nick;
+ 		this.botCommandPrefix = desc.getCommandPrefix();
+@@ -216,8 +220,10 @@
+ 		// Currently, we handle reconnects ourself.
+ 		// Maybe we should change it in the future, but currently I'm
+ 		// not sure what Smack's reconnect feature really does.
+-		cfg.setReconnectionAllowed(false);
++		cfg.setReconnectionAllowed(this.smackReconnect);
+ 		
++        cfg.setSASLAuthenticationEnabled(this.enableSASL);
++
+ 		this.connection = new XMPPConnection(cfg);
+ 		this.connection.connect();
+ 
+@@ -288,7 +294,7 @@
+ 				return c;
+ 			}
+ 		}
+-		
++
+ 		final Chat chat = this.connection.getChatManager().createChat(chatPartner, null);
+ 		Bot bot = new Bot(new JabberChat(chat, this), this.groupChatNick,
+ 					this.desc.getHost(), this.botCommandPrefix, this.authentication);

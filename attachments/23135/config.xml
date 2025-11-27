@@ -1,0 +1,90 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<matrix-project>
+  <actions/>
+  <description></description>
+  <logRotator>
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>3</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>revision</name>
+          <description></description>
+          <defaultValue>release-forms-4-2-0-1</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>release</name>
+          <description></description>
+          <defaultValue>4.2.0.1</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>major_release</name>
+          <description></description>
+          <defaultValue>4.2</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector"/>
+  <concurrentBuild>false</concurrentBuild>
+  <axes>
+    <hudson.matrix.TextAxis>
+      <name>d</name>
+      <values>
+        <string>Complete</string>
+        <string>Viewer</string>
+        <string>Layout</string>
+      </values>
+    </hudson.matrix.TextAxis>
+    <hudson.matrix.TextAxis>
+      <name>t</name>
+      <values>
+        <string>dist</string>
+        <string>srcdist</string>
+      </values>
+    </hudson.matrix.TextAxis>
+  </axes>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#env
+ROOTDIR=$(cygpath $WORKSPACE)
+cd $ROOTDIR
+rm -rf cvsroot dguide yfiles-dotnet
+/cygdrive/c/Daten/build-tools/mercurial/hg.exe clone --noupdate https://hobel.yworks.home/hg/yFiles.net/releases/${MAJOR_RELEASE}/ &quot;$WORKSPACE\cvsroot&quot;
+cd cvsroot
+/cygdrive/c/Daten/build-tools/mercurial/hg.exe update --rev ${REVISION}
+cd ..
+mv cvsroot/* .</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>ROOTDIR=$(cygpath $WORKSPACE)
+cd $ROOTDIR
+rm -rvf *.build build-xml
+cp -av yfiles-dotnet/deploy/*.build yfiles-dotnet/deploy/bootstrap/build.sh yfiles-dotnet/deploy/build-xml .
+</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>touch upload/$D-$T.txt</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>**/upload/**</artifacts>
+      <latestOnly>false</latestOnly>
+    </hudson.tasks.ArtifactArchiver>
+  </publishers>
+  <buildWrappers/>
+  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+    <runSequentially>false</runSequentially>
+  </executionStrategy>
+</matrix-project>

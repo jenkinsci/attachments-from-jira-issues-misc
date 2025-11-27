@@ -1,0 +1,694 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-build plugin="workflow-job@2.32">
+  <actions>
+    <hudson.model.CauseAction>
+      <causeBag class="linked-hash-map">
+        <entry>
+          <hudson.model.Cause_-UpstreamCause>
+            <upstreamProject>generic-product</upstreamProject>
+            <upstreamUrl>job/generic-product/</upstreamUrl>
+            <upstreamBuild>204</upstreamBuild>
+            <upstreamCauses>
+              <hudson.model.Cause_-UpstreamCause>
+                <upstreamProject>create-product-pipeline</upstreamProject>
+                <upstreamUrl>job/create-product-pipeline/</upstreamUrl>
+                <upstreamBuild>205</upstreamBuild>
+                <upstreamCauses>
+                  <hudson.model.Cause_-UpstreamCause>
+                    <upstreamProject>polling-product</upstreamProject>
+                    <upstreamUrl>job/polling-product/</upstreamUrl>
+                    <upstreamBuild>3</upstreamBuild>
+                    <upstreamCauses>
+                      <hudson.model.Cause_-UpstreamCause>
+                        <upstreamProject>polling-all-products</upstreamProject>
+                        <upstreamUrl>job/polling-all-products/</upstreamUrl>
+                        <upstreamBuild>1</upstreamBuild>
+                        <upstreamCauses>
+                          <hudson.triggers.TimerTrigger_-TimerTriggerCause/>
+                        </upstreamCauses>
+                      </hudson.model.Cause_-UpstreamCause>
+                    </upstreamCauses>
+                  </hudson.model.Cause_-UpstreamCause>
+                </upstreamCauses>
+              </hudson.model.Cause_-UpstreamCause>
+            </upstreamCauses>
+          </hudson.model.Cause_-UpstreamCause>
+          <int>1</int>
+        </entry>
+      </causeBag>
+    </hudson.model.CauseAction>
+    <org.jenkinsci.plugins.workflow.support.steps.build.BuildUpstreamNodeAction plugin="pipeline-build-step@2.8">
+      <upstreamNodeId>272</upstreamNodeId>
+      <upstreamRunId>generic-product#204</upstreamRunId>
+    </org.jenkinsci.plugins.workflow.support.steps.build.BuildUpstreamNodeAction>
+    <hudson.model.ParametersAction>
+      <safeParameters class="sorted-set"/>
+      <parameters>
+        <hudson.model.StringParameterValue>
+          <name>TEST_SPLIT_MAX</name>
+          <description>Number of the test packages.</description>
+          <value>1</value>
+        </hudson.model.StringParameterValue>
+        <hudson.model.StringParameterValue>
+          <name>RECIPE</name>
+          <description>Recipe which will be tested.</description>
+          <value>b2c_c4c</value>
+        </hudson.model.StringParameterValue>
+        <hudson.model.StringParameterValue>
+          <name>PRIORITY</name>
+          <description>Job priority (number from 1 to 5, where 1 is the highest).</description>
+          <value>3</value>
+        </hudson.model.StringParameterValue>
+        <hudson.model.StringParameterValue>
+          <name>TEST_SPLIT_IDX</name>
+          <description>Index of the test package to be performed.</description>
+          <value>1</value>
+        </hudson.model.StringParameterValue>
+        <hudson.model.StringParameterValue>
+          <name>PIPELINE_ID</name>
+          <description>Identifier of the pipeline which will be tested.</description>
+          <value>190521006</value>
+        </hudson.model.StringParameterValue>
+        <hudson.model.BooleanParameterValue>
+          <name>WEB_TESTS</name>
+          <description>Defines whether web tests should be executed instead of the non-web tests.</description>
+          <value>true</value>
+        </hudson.model.BooleanParameterValue>
+        <hudson.model.BooleanParameterValue>
+          <name>DEBUG</name>
+          <description>Defines whether test target should be executed in debug mode.</description>
+          <value>false</value>
+        </hudson.model.BooleanParameterValue>
+      </parameters>
+      <parameterDefinitionNames>
+        <string>PIPELINE_ID</string>
+        <string>RECIPE</string>
+        <string>WEB_TESTS</string>
+        <string>TEST_SPLIT_IDX</string>
+        <string>TEST_SPLIT_MAX</string>
+        <string>DEBUG</string>
+        <string>PRIORITY</string>
+      </parameterDefinitionNames>
+    </hudson.model.ParametersAction>
+    <org.jenkinsci.plugins.workflow.libs.LibrariesAction plugin="workflow-cps-global-lib@2.13">
+      <libraries>
+        <org.jenkinsci.plugins.workflow.libs.LibraryRecord>
+          <name>pipelinescriptloader</name>
+          <version>refs/heads/master</version>
+          <variables class="sorted-set">
+            <string>addTraceEntry</string>
+            <string>getCommitInfo</string>
+            <string>getEscapedCommitInfo</string>
+            <string>getEscapedTraceability</string>
+            <string>getTraceability</string>
+            <string>loadModule</string>
+            <string>loadModules</string>
+            <string>loadPlugin</string>
+            <string>loadScript</string>
+            <string>pluginLoader</string>
+            <string>recordBuildEnv</string>
+            <string>recordCommit</string>
+            <string>recordImage</string>
+          </variables>
+          <trusted>true</trusted>
+          <changelog>false</changelog>
+        </org.jenkinsci.plugins.workflow.libs.LibraryRecord>
+      </libraries>
+    </org.jenkinsci.plugins.workflow.libs.LibrariesAction>
+    <hudson.plugins.git.util.BuildData plugin="git@3.9.3">
+      <buildsByBranchName>
+        <entry>
+          <string>refs/remotes/origin/master</string>
+          <hudson.plugins.git.util.Build>
+            <marked plugin="git-client@2.7.6">
+              <sha1>d31edebff6d622ce691cfcaf839a26bc6571169a</sha1>
+              <branches class="list">
+                <hudson.plugins.git.Branch>
+                  <sha1 reference="../../../sha1"/>
+                  <name>refs/remotes/origin/master</name>
+                </hudson.plugins.git.Branch>
+              </branches>
+            </marked>
+            <revision reference="../marked"/>
+            <hudsonBuildNumber>7015</hudsonBuildNumber>
+          </hudson.plugins.git.util.Build>
+        </entry>
+      </buildsByBranchName>
+      <lastBuild reference="../buildsByBranchName/entry/hudson.plugins.git.util.Build"/>
+      <remoteUrls>
+        <string>https://example.org/jenkins-pipeline-script-loader.git</string>
+      </remoteUrls>
+    </hudson.plugins.git.util.BuildData>
+    <hudson.plugins.git.GitTagAction plugin="git@3.9.3">
+      <tags class="hudson.util.CopyOnWriteMap$Tree">
+        <entry>
+          <string>refs/remotes/origin/master</string>
+          <list/>
+        </entry>
+      </tags>
+      <ws>/var/lib/jenkins/workspace/generic-test-junit@libs/pipelinescriptloader@4</ws>
+    </hudson.plugins.git.GitTagAction>
+    <com.cloudbees.jenkins.plugins.bitbucket.FirstCheckoutCompletedInvisibleAction plugin="cloudbees-bitbucket-branch-source@2.4.2"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.ExecutionModelAction plugin="pipeline-model-definition@1.3.7">
+      <stagesUUID>d5710e96-fd43-4a5c-b10d-fc5c0d3c49e8</stagesUUID>
+      <stagesList>
+        <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStages plugin="pipeline-model-api@1.3.7">
+          <stages>
+            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStage>
+              <name>Test</name>
+              <branches>
+                <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTBranch>
+                  <name>default</name>
+                  <steps>
+                    <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStep>
+                      <name>sh</name>
+                      <args class="org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTNamedArgumentList">
+                        <arguments class="linked-hash-map">
+                          <entry>
+                            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                              <key>script</key>
+                            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-GStringValue>
+                              <value class="string">&quot;&quot;&quot;#!/bin/bash
+                                        rm -rf $HOME/.m2/repository
+                                        mkdir .repository
+                                        ln -s $WORKSPACE/.repository $HOME/.m2/repository
+                                &quot;&quot;&quot;</value>
+                            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-GStringValue>
+                          </entry>
+                        </arguments>
+                      </args>
+                    </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStep>
+                    <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStep>
+                      <name>sh</name>
+                      <args class="org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTNamedArgumentList">
+                        <arguments class="linked-hash-map">
+                          <entry>
+                            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                              <key>script</key>
+                            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-GStringValue>
+                              <value class="string">&quot;&quot;&quot;#!/bin/bash
+                                        set $BASH_OPTS
+                                        rsync -az jkmaster:${env.CSP_STORAGE}/pipeline-scripts .
+                                        ./pipeline-scripts/prepare-env.sh
+                                        rsync -az jkmaster:${env.CSP_STORAGE}/resources/${params.PIPELINE_ID}/pipeline.properties .
+                                &quot;&quot;&quot;</value>
+                            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-GStringValue>
+                          </entry>
+                        </arguments>
+                      </args>
+                    </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStep>
+                    <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTScriptBlock>
+                      <name>script</name>
+                      <args class="org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTNamedArgumentList">
+                        <arguments class="linked-hash-map">
+                          <entry>
+                            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                              <key>scriptBlock</key>
+                            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                              <value class="string">def environmentVariables = &apos;&apos;
+                                        readProperties(file: &apos;pipeline.properties&apos;)
+                                                .findAll { !params.containsKey(it.key) }
+                                                .each { k, v -&gt; environmentVariables = &quot;${environmentVariables}env.${k}=&apos;${v}&apos;\n&quot; }
+                                        writeFile file: &apos;env.groovy&apos;, text: environmentVariables</value>
+                            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                          </entry>
+                        </arguments>
+                      </args>
+                    </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTScriptBlock>
+                    <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStep>
+                      <name>load</name>
+                      <args class="org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTNamedArgumentList">
+                        <arguments class="linked-hash-map">
+                          <entry>
+                            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                              <key>path</key>
+                            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                              <value class="string">env.groovy</value>
+                            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                          </entry>
+                        </arguments>
+                      </args>
+                    </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStep>
+                    <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTScriptBlock>
+                      <name>script</name>
+                      <args class="org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTNamedArgumentList">
+                        <arguments class="linked-hash-map">
+                          <entry>
+                            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                              <key>scriptBlock</key>
+                            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                              <value class="string">currentBuild.displayName = &quot;#${env.BUILD_NUMBER}-${env.PRODUCT_NAME}-${params.PIPELINE_ID}-${params.RECIPE}-${params.WEB_TESTS ? &apos;WEB-&apos; : &apos;&apos;}${params.TEST_SPLIT_IDX}-${params.TEST_SPLIT_MAX}&quot;</value>
+                            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                          </entry>
+                        </arguments>
+                      </args>
+                    </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTScriptBlock>
+                    <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTTreeStep>
+                      <name>timestamps</name>
+                      <args class="org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTNamedArgumentList">
+                        <arguments class="linked-hash-map"/>
+                      </args>
+                      <children>
+                        <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTTreeStep>
+                          <name>lock</name>
+                          <args class="org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTNamedArgumentList">
+                            <arguments class="linked-hash-map">
+                              <entry>
+                                <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                                  <key>resource</key>
+                                </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                                <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue/>
+                              </entry>
+                              <entry>
+                                <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                                  <key>label</key>
+                                </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                                <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                                  <value class="string">rsync</value>
+                                </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                              </entry>
+                              <entry>
+                                <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                                  <key>quantity</key>
+                                </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                                <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                                  <value class="int">1</value>
+                                </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                              </entry>
+                            </arguments>
+                          </args>
+                          <children>
+                            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStep>
+                              <name>sh</name>
+                              <args class="org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTNamedArgumentList">
+                                <arguments class="linked-hash-map">
+                                  <entry>
+                                    <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                                      <key>script</key>
+                                    </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                                    <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                                      <value class="string">./pipeline-scripts/jobs/synchronize-with-jkmaster.sh</value>
+                                    </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                                  </entry>
+                                </arguments>
+                              </args>
+                            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStep>
+                          </children>
+                        </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTTreeStep>
+                      </children>
+                    </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTTreeStep>
+                    <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTTreeStep>
+                      <name>wrap</name>
+                      <args class="org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTSingleArgument">
+                        <value class="org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue$GStringValue">
+                          <value class="string">[$class: &apos;LogfilesizecheckerWrapper&apos;, failBuild: true, maxLogSize: 0, setOwn: false]</value>
+                        </value>
+                      </args>
+                      <children>
+                        <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTTreeStep>
+                          <name>wrap</name>
+                          <args class="org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTSingleArgument">
+                            <value class="org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue$GStringValue">
+                              <value class="string">[$class: &apos;Xvfb&apos;, displayNameOffset: 2]</value>
+                            </value>
+                          </args>
+                          <children>
+                            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTTreeStep>
+                              <name>timestamps</name>
+                              <args class="org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTNamedArgumentList">
+                                <arguments class="linked-hash-map"/>
+                              </args>
+                              <children>
+                                <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTTreeStep>
+                                  <name>timeout</name>
+                                  <args class="org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTNamedArgumentList">
+                                    <arguments class="linked-hash-map">
+                                      <entry>
+                                        <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                                          <key>time</key>
+                                        </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                                        <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                                          <value class="int">6</value>
+                                        </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                                      </entry>
+                                      <entry>
+                                        <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                                          <key>unit</key>
+                                        </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                                        <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                                          <value class="string">HOURS</value>
+                                        </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                                      </entry>
+                                    </arguments>
+                                  </args>
+                                  <children>
+                                    <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTTreeStep>
+                                      <name>timeout</name>
+                                      <args class="org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTNamedArgumentList">
+                                        <arguments class="linked-hash-map">
+                                          <entry>
+                                            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                                              <key>time</key>
+                                            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                                            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                                              <value class="int">15</value>
+                                            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                                          </entry>
+                                          <entry>
+                                            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                                              <key>activity</key>
+                                            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                                            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                                              <value class="boolean">true</value>
+                                            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                                          </entry>
+                                        </arguments>
+                                      </args>
+                                      <children>
+                                        <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStep>
+                                          <name>sh</name>
+                                          <args class="org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTNamedArgumentList">
+                                            <arguments class="linked-hash-map">
+                                              <entry>
+                                                <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                                                  <key>script</key>
+                                                </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                                                <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-GStringValue>
+                                                  <value class="string">&quot;./pipeline-scripts/jobs/test-junit.sh ${params.WEB_TESTS ? &apos;web&apos; : &apos;&apos;}&quot;</value>
+                                                </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-GStringValue>
+                                              </entry>
+                                            </arguments>
+                                          </args>
+                                        </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStep>
+                                      </children>
+                                    </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTTreeStep>
+                                  </children>
+                                </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTTreeStep>
+                              </children>
+                            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTTreeStep>
+                          </children>
+                        </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTTreeStep>
+                      </children>
+                    </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTTreeStep>
+                    <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStep>
+                      <name>junit</name>
+                      <args class="org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTNamedArgumentList">
+                        <arguments class="linked-hash-map">
+                          <entry>
+                            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                              <key>testResults</key>
+                            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                              <value class="string">junit/**/*.xml</value>
+                            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                          </entry>
+                        </arguments>
+                      </args>
+                    </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStep>
+                    <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStep>
+                      <name>archiveArtifacts</name>
+                      <args class="org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTNamedArgumentList">
+                        <arguments class="linked-hash-map">
+                          <entry>
+                            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                              <key>artifacts</key>
+                            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTKey>
+                            <org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                              <value class="string">junit/**/*.xml</value>
+                            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTValue_-ConstantValue>
+                          </entry>
+                        </arguments>
+                      </args>
+                    </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStep>
+                  </steps>
+                </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTBranch>
+              </branches>
+              <parallelContent/>
+            </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStage>
+          </stages>
+          <uuid>d5710e96-fd43-4a5c-b10d-fc5c0d3c49e8</uuid>
+        </org.jenkinsci.plugins.pipeline.modeldefinition.ast.ModelASTStages>
+      </stagesList>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.ExecutionModelAction>
+    <hudson.plugins.ansicolor.ColorizedAction plugin="ansicolor@0.6.2">
+      <colorMapName>xterm</colorMapName>
+    </hudson.plugins.ansicolor.ColorizedAction>
+    <org.jenkinsci.plugins.workflow.cps.EnvActionImpl plugin="workflow-cps@2.65">
+      <env class="tree-map">
+        <entry>
+          <string>CHANGED_BRANCH</string>
+          <string>update/2005/platform</string>
+        </entry>
+        <entry>
+          <string>COMMIT_ID</string>
+          <string>c9f7f8a4fd9f36ffa3f182c92a2f44024d50ff72</string>
+        </entry>
+        <entry>
+          <string>DEPLOY_ADDITIONAL_PRODUCTS</string>
+          <string>product2,product3</string>
+        </entry>
+        <entry>
+          <string>DEPLOY_GROUP_ID</string>
+          <string>oeg.example</string>
+        </entry>
+        <entry>
+          <string>INSTALLER_DIST_HOME</string>
+          <string>installer</string>
+        </entry>
+        <entry>
+          <string>JDK_VERSION</string>
+          <string>sapmachine-11</string>
+        </entry>
+        <entry>
+          <string>MODEL_T_DEPLOY_ADDITIONAL_PRODUCTS</string>
+          <string>product2</string>
+        </entry>
+        <entry>
+          <string>MODEL_T_DEPLOY_ENABLED</string>
+          <string>true</string>
+        </entry>
+        <entry>
+          <string>PIPELINE_NAME</string>
+          <string>suite</string>
+        </entry>
+        <entry>
+          <string>PLATFORM_BUILD_HOME</string>
+          <string>sources/modules/platform-module/bin/platform</string>
+        </entry>
+        <entry>
+          <string>PLATFORM_DIST_HOME</string>
+          <string>product/bin/platform</string>
+        </entry>
+        <entry>
+          <string>PRODUCT_MAJOR_VERSION</string>
+          <string>2005</string>
+        </entry>
+        <entry>
+          <string>PRODUCT_MINOR_VERSION</string>
+          <string>0</string>
+        </entry>
+        <entry>
+          <string>PRODUCT_NAME</string>
+          <string>product</string>
+        </entry>
+        <entry>
+          <string>PRODUCT_REPO_URL</string>
+          <string></string>
+        </entry>
+        <entry>
+          <string>PRODUCT_VERSION</string>
+          <string>2005.0</string>
+        </entry>
+        <entry>
+          <string>RELEASE_BRANCH</string>
+          <string>release/2005</string>
+        </entry>
+        <entry>
+          <string>TESTED_RECIPES</string>
+          <string>b2b_acc_plus,b2b_c4c,b2b_china,b2c_acc_cis,b2c_acc_plus,b2c_acc_ymkt,b2c_b2b_acc_cpq,b2c_b2b_acc_dp,b2c_b2b_acc_oms,b2c_c4c,b2c_china,marketplace_acc_china</string>
+        </entry>
+        <entry>
+          <string>TEST_SPLIT</string>
+          <string>4</string>
+        </entry>
+        <entry>
+          <string>UNPACK_ADDITIONAL_ARTIFACTS</string>
+          <string>product2</string>
+        </entry>
+      </env>
+    </org.jenkinsci.plugins.workflow.cps.EnvActionImpl>
+    <org.jenkinsci.plugins.xvfb.XvfbEnvironment plugin="xvfb@1.1.3">
+      <frameBufferDir>/var/lib/jenkins/xvfb-7015-..fbdir7624671487971937916</frameBufferDir>
+      <displayName>1</displayName>
+      <shutdownWithBuild>false</shutdownWithBuild>
+      <cookie>bd0c40ab-c96e-4ba6-a838-98f655ceb48a</cookie>
+    </org.jenkinsci.plugins.xvfb.XvfbEnvironment>
+    <hudson.tasks.junit.TestResultAction plugin="junit@1.27">
+      <descriptions class="concurrent-hash-map"/>
+      <failCount>0</failCount>
+      <skipCount>0</skipCount>
+      <totalCount>1825</totalCount>
+      <healthScaleFactor>1.0</healthScaleFactor>
+      <testData/>
+    </hudson.tasks.junit.TestResultAction>
+    <com.sonyericsson.rebuild.RebuildAction plugin="rebuild@1.30"/>
+  </actions>
+  <queueId>123068</queueId>
+  <timestamp>1558449504212</timestamp>
+  <startTime>1558449504436</startTime>
+  <result>SUCCESS</result>
+  <displayName>#7015-product-190521006-b2c_c4c-WEB-1-1</displayName>
+  <duration>1489115</duration>
+  <charset>UTF-8</charset>
+  <keepLog>false</keepLog>
+  <execution class="org.jenkinsci.plugins.workflow.cps.CpsFlowExecution">
+    <result>SUCCESS</result>
+    <script>pipeline {
+        agent {
+                label &apos;swarm&apos;
+        }
+        options {
+                ansiColor(&apos;xterm&apos;)
+        }
+        stages {
+                stage(&apos;Test&apos;) {
+                        steps {
+                                sh &quot;&quot;&quot;#!/bin/bash
+                                        rm -rf $HOME/.m2/repository
+                                        mkdir .repository
+                                        ln -s $WORKSPACE/.repository $HOME/.m2/repository
+                                &quot;&quot;&quot;
+
+                                sh &quot;&quot;&quot;#!/bin/bash
+                                        set $BASH_OPTS
+                                        rsync -az jkmaster:${env.CSP_STORAGE}/pipeline-scripts .
+                                        ./pipeline-scripts/prepare-env.sh
+                                        rsync -az jkmaster:${env.CSP_STORAGE}/resources/${params.PIPELINE_ID}/pipeline.properties .
+                                &quot;&quot;&quot;
+                                script {
+                                        def environmentVariables = &apos;&apos;
+                                        readProperties(file: &apos;pipeline.properties&apos;)
+                                                .findAll { !params.containsKey(it.key) }
+                                                .each { k, v -&gt; environmentVariables = &quot;${environmentVariables}env.${k}=&apos;${v}&apos;\n&quot; }
+                                        writeFile file: &apos;env.groovy&apos;, text: environmentVariables
+                                }
+                                load &apos;env.groovy&apos;
+                                script {
+                                        currentBuild.displayName = &quot;#${env.BUILD_NUMBER}-${env.PRODUCT_NAME}-${params.PIPELINE_ID}-${params.RECIPE}-${params.WEB_TESTS ? &apos;WEB-&apos; : &apos;&apos;}${params.TEST_SPLIT_IDX}-${params.TEST_SPLIT_MAX}&quot;
+                                }
+
+                                timestamps {
+                                        lock(resource: null, label: &apos;rsync&apos;, quantity: 1) {
+                                                sh &apos;./pipeline-scripts/jobs/synchronize-with-jkmaster.sh&apos;
+                                        }
+                                }
+                                wrap([$class: &apos;LogfilesizecheckerWrapper&apos;, failBuild: true, maxLogSize: 0, setOwn: false]) {
+                                        wrap([$class: &apos;Xvfb&apos;, displayNameOffset: 2]) {
+                                                timestamps {
+                                                        timeout(time: 6, unit: &apos;HOURS&apos;) {
+                                                                timeout(time: 15, activity: true) {
+                                                                        sh &quot;./pipeline-scripts/jobs/test-junit.sh ${params.WEB_TESTS ? &apos;web&apos; : &apos;&apos;}&quot;
+                                                                }
+                                                        }
+                                                }
+                                        }
+                                }
+                                junit &apos;junit/**/*.xml&apos;
+                                archiveArtifacts artifacts: &apos;junit/**/*.xml&apos;
+                        }
+                }
+        }
+        post {
+                always {
+                        cleanWs()
+                        sh &apos;&apos;&apos;#!/bin/bash
+                                unlink $HOME/.m2/repository
+                        &apos;&apos;&apos;
+                }
+        }
+}
+</script>
+    <loadedScripts class="map">
+      <entry>
+        <string>Script1</string>
+        <string>env.UNPACK_ADDITIONAL_ARTIFACTS=&apos;product2&apos;
+env.PLATFORM_DIST_HOME=&apos;product/bin/platform&apos;
+env.PLATFORM_BUILD_HOME=&apos;sources/modules/platform-module/bin/platform&apos;
+env.PRODUCT_MINOR_VERSION=&apos;0&apos;
+env.TESTED_RECIPES=&apos;b2b_acc_plus,b2b_c4c,b2b_china,b2c_acc_cis,b2c_acc_plus,b2c_acc_ymkt,b2c_b2b_acc_cpq,b2c_b2b_acc_dp,b2c_b2b_acc_oms,b2c_c4c,b2c_china,marketplace_acc_china&apos;
+env.TEST_SPLIT=&apos;4&apos;
+env.DEPLOY_GROUP_ID=&apos;org.example&apos;
+env.PRODUCT_NAME=&apos;product&apos;
+env.CHANGED_BRANCH=&apos;update/2005/platform&apos;
+env.INSTALLER_DIST_HOME=&apos;installer&apos;
+env.RELEASE_BRANCH=&apos;release/2005&apos;
+env.PRODUCT_VERSION=&apos;2005.0&apos;
+env.PIPELINE_NAME=&apos;suite&apos;
+env.MODEL_T_DEPLOY_ENABLED=&apos;true&apos;
+env.JDK_VERSION=&apos;sapmachine-11&apos;
+env.MODEL_T_DEPLOY_ADDITIONAL_PRODUCTS=&apos;product2&apos;
+env.COMMIT_ID=&apos;c9f7f8a4fd9f36ffa3f182c92a2f44024d50ff72&apos;
+env.DEPLOY_ADDITIONAL_PRODUCTS=&apos;product2,product3&apos;
+env.PRODUCT_REPO_URL=&apos;&apos;
+env.PRODUCT_MAJOR_VERSION=&apos;2005&apos;
+</string>
+      </entry>
+    </loadedScripts>
+    <durabilityHint>MAX_SURVIVABILITY</durabilityHint>
+    <timings class="map">
+      <entry>
+        <string>flowNode</string>
+        <long>11226330574</long>
+      </entry>
+      <entry>
+        <string>classLoad</string>
+        <long>1340613096</long>
+      </entry>
+      <entry>
+        <string>run</string>
+        <long>38572168531</long>
+      </entry>
+      <entry>
+        <string>parse</string>
+        <long>3477390210</long>
+      </entry>
+      <entry>
+        <string>saveProgram</string>
+        <long>8596507647</long>
+      </entry>
+    </timings>
+    <sandbox>true</sandbox>
+    <iota>69</iota>
+    <head>1:69</head>
+    <done>true</done>
+    <resumeBlocked>false</resumeBlocked>
+  </execution>
+  <completed>true</completed>
+  <checkouts class="hudson.util.PersistedList">
+    <org.jenkinsci.plugins.workflow.job.WorkflowRun_-SCMCheckout>
+      <scm class="hudson.plugins.git.GitSCM" plugin="git@3.9.3">
+        <configVersion>2</configVersion>
+        <userRemoteConfigs>
+          <hudson.plugins.git.UserRemoteConfig>
+            <url>https://example.org/jenkins-pipeline-script-loader.git</url>
+          </hudson.plugins.git.UserRemoteConfig>
+        </userRemoteConfigs>
+        <branches>
+          <hudson.plugins.git.BranchSpec>
+            <name>${library.pipelinescriptloader.version}</name>
+          </hudson.plugins.git.BranchSpec>
+        </branches>
+        <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+        <submoduleCfg class="list"/>
+        <extensions/>
+      </scm>
+      <node></node>
+      <workspace>/var/lib/jenkins/workspace/generic-test-junit@libs/pipelinescriptloader@4</workspace>
+    </org.jenkinsci.plugins.workflow.job.WorkflowRun_-SCMCheckout>
+  </checkouts>
+</flow-build>

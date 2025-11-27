@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <actions/>
+  <description>WAS_EAR_Deploy</description>
+  <logRotator class="hudson.tasks.LogRotator">
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>10</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.cloudbees.jenkins.plugins.cbv.ui.JobPropertyImpl plugin="cloudbees-consolidated-build-view@1.2">
+      <builders>
+        <com.cloudbees.jenkins.plugins.cbv.impl.DownstreamBuilder/>
+      </builders>
+      <columns>
+        <org.jenkinsci.plugins.build__view__column.impl.NodeColumn plugin="build-view-column@0.2"/>
+        <org.jenkinsci.plugins.build__view__column.impl.ConsoleColumn plugin="build-view-column@0.2"/>
+        <org.jenkinsci.plugins.build__view__column.impl.DurationColumn plugin="build-view-column@0.2"/>
+        <org.jenkinsci.plugins.build__view__column.impl.CauseColumn plugin="build-view-column@0.2"/>
+      </columns>
+    </com.cloudbees.jenkins.plugins.cbv.ui.JobPropertyImpl>
+    <hudson.plugins.buildblocker.BuildBlockerProperty plugin="build-blocker-plugin@1.4.1">
+      <useBuildBlocker>true</useBuildBlocker>
+      <blockingJobs>WebSphere » Admin » SND » Mainframe.*
+WebSphere » SND » Mainframe » (?!Releases).*</blockingJobs>
+    </hudson.plugins.buildblocker.BuildBlockerProperty>
+    <com.sonyericsson.jenkins.plugins.bfa.model.ScannerJobProperty plugin="build-failure-analyzer@1.9.1">
+      <doNotScan>false</doNotScan>
+    </com.sonyericsson.jenkins.plugins.bfa.model.ScannerJobProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>AO_WAS_SCRIPT</name>
+          <description/>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>deploy</string>
+              <string>verify</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>AO_WAS_SCRIPT_ARGUMENTS</name>
+          <description/>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>none</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ARTIFACT_FULLPATH</name>
+          <description/>
+          <defaultValue/>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ARM_RELEASEID</name>
+          <description/>
+          <defaultValue/>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ARM_PROJECTNAME</name>
+          <description/>
+          <defaultValue/>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ARM_REQUESTER</name>
+          <description/>
+          <defaultValue/>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.21">
+      <autoRebuild>false</autoRebuild>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.plugins.disk__usage.DiskUsageProperty plugin="disk-usage@0.23"/>
+    <com.cloudbees.hudson.plugins.modeling.impl.jobTemplate.JobPropertyImpl plugin="cloudbees-template@4.11">
+      <instance>
+        <model>WebSphere/Template_Job_WAS_EAR_Deploy</model>
+        <values>
+          <entry>
+            <string>name</string>
+            <string>IVTARMEAR</string>
+          </entry>
+        </values>
+      </instance>
+    </com.cloudbees.hudson.plugins.modeling.impl.jobTemplate.JobPropertyImpl>
+  </properties>
+  <scm class="hudson.plugins.cloneworkspace.CloneWorkspaceSCM" plugin="clone-workspace-scm@0.6">
+    <parentJobName>WebSphere/Admin/SND/Environment_Artifact_Config</parentJobName>
+    <criteria>Successful</criteria>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <jdk>WAS85</jdk>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.BatchFile>
+      <command>call %WORKSPACE%\bin\setupEnvironment.bat
+call %WORKSPACE%\bin\setupJob.bat</command>
+    </hudson.tasks.BatchFile>
+    <com.cloudbees.hudson.plugins.modeling.impl.builder.BuilderImpl plugin="cloudbees-template@4.11">
+      <model>WebSphere/Template_Builder_WSADMIN</model>
+      <values>
+        <entry>
+          <string>cell</string>
+          <com.cloudbees.hudson.plugins.modeling.impl.auxiliary.AuxInstance>
+            <model>WebSphere/Template_Auxiliary_WAS_Cells</model>
+            <values>
+              <entry>
+                <string>name</string>
+                <string>WSA</string>
+              </entry>
+            </values>
+          </com.cloudbees.hudson.plugins.modeling.impl.auxiliary.AuxInstance>
+        </entry>
+      </values>
+    </com.cloudbees.hudson.plugins.modeling.impl.builder.BuilderImpl>
+    <hudson.plugins.parameterizedtrigger.TriggerBuilder plugin="parameterized-trigger@2.25">
+      <configs>
+        <hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig>
+          <configs class="empty-list"/>
+          <projects>WebSphere/Admin/SND/IHS_PluginMerge</projects>
+          <condition>ALWAYS</condition>
+          <triggerWithNoParameters>false</triggerWithNoParameters>
+          <block>
+            <buildStepFailureThreshold>
+              <name>FAILURE</name>
+              <ordinal>2</ordinal>
+              <color>RED</color>
+              <completeBuild>true</completeBuild>
+            </buildStepFailureThreshold>
+            <unstableThreshold>
+              <name>UNSTABLE</name>
+              <ordinal>1</ordinal>
+              <color>YELLOW</color>
+              <completeBuild>true</completeBuild>
+            </unstableThreshold>
+            <failureThreshold>
+              <name>FAILURE</name>
+              <ordinal>2</ordinal>
+              <color>RED</color>
+              <completeBuild>true</completeBuild>
+            </failureThreshold>
+          </block>
+          <buildAllNodesWithLabel>false</buildAllNodesWithLabel>
+        </hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig>
+      </configs>
+    </hudson.plugins.parameterizedtrigger.TriggerBuilder>
+    <com.cloudbees.hudson.plugins.modeling.impl.builder.BuilderImpl plugin="cloudbees-template@4.11">
+      <model>Template_Builder_Deployment_Status</model>
+      <values>
+        <entry>
+          <string>status</string>
+          <string>s</string>
+        </entry>
+      </values>
+    </com.cloudbees.hudson.plugins.modeling.impl.builder.BuilderImpl>
+  </builders>
+  <publishers>
+    <com.cloudbees.hudson.plugins.modeling.impl.publisher.PublisherImpl plugin="cloudbees-template@4.11">
+      <model>Template_Publisher_ARM_Callback</model>
+      <values/>
+    </com.cloudbees.hudson.plugins.modeling.impl.publisher.PublisherImpl>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>target/**</artifacts>
+      <latestOnly>false</latestOnly>
+      <allowEmptyArchive>true</allowEmptyArchive>
+    </hudson.tasks.ArtifactArchiver>
+    <hudson.plugins.logparser.LogParserPublisher plugin="log-parser@1.0.8">
+      <unstableOnWarning>true</unstableOnWarning>
+      <failBuildOnError>true</failBuildOnError>
+      <parsingRulesPath>E:/ao/job-log-parser/WebSphere-log-parse.config</parsingRulesPath>
+    </hudson.plugins.logparser.LogParserPublisher>
+    <hudson.plugins.emailext.ExtendedEmailPublisher plugin="email-ext@2.38.1">
+      <recipientList>$DEFAULT_RECIPIENTS,DL.IT.WebAdmins@aoins.com</recipientList>
+      <configuredTriggers>
+        <hudson.plugins.emailext.plugins.trigger.FailureTrigger>
+          <email>
+            <recipientList/>
+            <subject>$PROJECT_DEFAULT_SUBJECT</subject>
+            <body>$PROJECT_DEFAULT_CONTENT</body>
+            <recipientProviders>
+              <hudson.plugins.emailext.plugins.recipients.ListRecipientProvider/>
+            </recipientProviders>
+            <attachmentsPattern/>
+            <attachBuildLog>false</attachBuildLog>
+            <compressBuildLog>false</compressBuildLog>
+            <replyTo>$PROJECT_DEFAULT_REPLYTO</replyTo>
+            <contentType>project</contentType>
+          </email>
+        </hudson.plugins.emailext.plugins.trigger.FailureTrigger>
+      </configuredTriggers>
+      <contentType>default</contentType>
+      <defaultSubject>$DEFAULT_SUBJECT</defaultSubject>
+      <defaultContent>${SCRIPT, template="managed:DeployEmail"}</defaultContent>
+      <attachmentsPattern/>
+      <presendScript/>
+      <attachBuildLog>false</attachBuildLog>
+      <compressBuildLog>false</compressBuildLog>
+      <replyTo>$DEFAULT_REPLYTO</replyTo>
+      <saveOutput>false</saveOutput>
+    </hudson.plugins.emailext.ExtendedEmailPublisher>
+  </publishers>
+  <buildWrappers>
+    <hudson.plugins.ws__cleanup.PreBuildCleanup plugin="ws-cleanup@0.21">
+      <deleteDirs>false</deleteDirs>
+      <cleanupParameter/>
+      <externalDelete/>
+    </hudson.plugins.ws__cleanup.PreBuildCleanup>
+    <hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.5.13"/>
+    <EnvInjectBuildWrapper plugin="envinject@1.89">
+      <info>
+        <propertiesContent>AO_ENVIRONMENT_WORKSPACE=${WORKSPACE}
+AO_ARTIFACT_NAME=IVTARMEAR
+				</propertiesContent>
+        <loadFilesFromMaster>false</loadFilesFromMaster>
+      </info>
+    </EnvInjectBuildWrapper>
+    <EnvInjectPasswordWrapper plugin="envinject@1.89">
+      <injectGlobalPasswords>true</injectGlobalPasswords>
+      <passwordEntries>
+        <EnvInjectPasswordEntry>
+          <name>AO_ARM_PASSWORD</name>
+          <value>fgIktGWqDH4i0s8/t/XIw6UrBsb3kDqK7mbboLirZ0k=</value>
+        </EnvInjectPasswordEntry>
+        <EnvInjectPasswordEntry>
+          <name>AO_JENKINS_PASSWORD</name>
+          <value>UI2zkl2f+Tuw+yKy8ac52aUrBsb3kDqK7mbboLirZ0k=</value>
+        </EnvInjectPasswordEntry>
+      </passwordEntries>
+    </EnvInjectPasswordWrapper>
+  </buildWrappers>
+</project>

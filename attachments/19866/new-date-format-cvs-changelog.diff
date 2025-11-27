@@ -1,0 +1,29 @@
+Index: src/main/java/hudson/org/apache/tools/ant/taskdefs/cvslib/ChangeLogTask.java
+===================================================================
+--- src/main/java/hudson/org/apache/tools/ant/taskdefs/cvslib/ChangeLogTask.java	(revision 36055)
++++ src/main/java/hudson/org/apache/tools/ant/taskdefs/cvslib/ChangeLogTask.java	(working copy)
+@@ -250,7 +250,7 @@
+             }
+             if (null != m_start) {
+                 final SimpleDateFormat outputDate =
+-                    new SimpleDateFormat("yyyy-MM-dd");
++                    new SimpleDateFormat("yyyy-MM-dd HH:mm");
+ 
+                 // Kohsuke patch:
+                 // probably due to timezone difference between server/client and
+@@ -268,7 +268,7 @@
+ 
+                 // Kohsuke patch until here
+ 
+-                // We want something of the form: -d ">=YYYY-MM-dd"
++                // We want something of the form: -d ">=YYYY-MM-dd HH:mm"
+                 final String dateRange = ">=" + outputDate.format(safeStart);
+ 
+         // Supply '-d' as a separate argument - Bug# 14397
+@@ -498,4 +498,4 @@
+             }
+         }
+     }
+-}
+\ No newline at end of file
++}

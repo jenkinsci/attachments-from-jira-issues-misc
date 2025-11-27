@@ -1,0 +1,69 @@
+Found mavenVersion 2.2.1 from file jar:file:/C:/apache-maven-2.2.1/lib/maven-2.2.1-uber.jar!/META-INF/maven/org.apache.maven/maven-core/pom.properties
+Parsing POMs
+ERROR: Failed to parse POMs
+hudson.util.IOException2: remote file operation failed: c:\jenkins-slave\workspace\AO_SISO_AT-smoketest-CIT1 at hudson.remoting.Channel@7b827b82:10.40.163.105
+	at hudson.FilePath.act(FilePath.java:752)
+	at hudson.FilePath.act(FilePath.java:738)
+	at hudson.maven.MavenModuleSetBuild$RunnerImpl.parsePoms(MavenModuleSetBuild.java:817)
+	at hudson.maven.MavenModuleSetBuild$RunnerImpl.doRun(MavenModuleSetBuild.java:617)
+	at hudson.model.AbstractBuild$AbstractRunner.run(AbstractBuild.java:429)
+	at hudson.model.Run.run(Run.java:1374)
+	at hudson.maven.MavenModuleSetBuild.run(MavenModuleSetBuild.java:467)
+	at hudson.model.ResourceController.execute(ResourceController.java:88)
+	at hudson.model.Executor.run(Executor.java:145)
+Caused by: java.io.IOException: Remote call on 10.40.163.105 failed
+	at hudson.remoting.Channel.call(Channel.java:652)
+	at hudson.FilePath.act(FilePath.java:745)
+	... 8 more
+Caused by: java.lang.ExceptionInInitializerError
+	at hudson.maven.MavenModuleSetBuild$PomParser.invoke(MavenModuleSetBuild.java:1236)
+	at hudson.maven.MavenModuleSetBuild$PomParser.invoke(MavenModuleSetBuild.java:1110)
+	at hudson.FilePath$FileCallableWrapper.call(FilePath.java:1956)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:118)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:48)
+	at hudson.remoting.Request$2.run(Request.java:270)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at java.util.concurrent.FutureTask$Sync.innerRun(Unknown Source)
+	at java.util.concurrent.FutureTask.run(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at hudson.remoting.Engine$1$1.run(Engine.java:60)
+	at java.lang.Thread.run(Unknown Source)
+Caused by: com.thoughtworks.xstream.XStream$InitializationException: Could not instantiate converter : com.thoughtworks.xstream.converters.extended.DurationConverter : null
+	at com.thoughtworks.xstream.XStream.dynamicallyRegisterConverter(XStream.java:735)
+	at com.thoughtworks.xstream.XStream.setupConverters(XStream.java:699)
+	at com.thoughtworks.xstream.XStream.<init>(XStream.java:445)
+	at com.thoughtworks.xstream.XStream.<init>(XStream.java:385)
+	at com.thoughtworks.xstream.XStream.<init>(XStream.java:323)
+	at hudson.util.XStream2.<init>(XStream2.java:62)
+	at hudson.model.Run.<clinit>(Run.java:1867)
+	... 13 more
+Caused by: java.lang.reflect.InvocationTargetException
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(Unknown Source)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(Unknown Source)
+	at java.lang.reflect.Constructor.newInstance(Unknown Source)
+	at com.thoughtworks.xstream.XStream.dynamicallyRegisterConverter(XStream.java:728)
+	... 19 more
+Caused by: javax.xml.datatype.DatatypeConfigurationException: Provider org.apache.xerces.jaxp.datatype.DatatypeFactoryImpl not found
+	at javax.xml.datatype.DatatypeFactory.newInstance(Unknown Source)
+	at com.thoughtworks.xstream.converters.extended.DurationConverter.<init>(DurationConverter.java:33)
+	... 24 more
+Caused by: java.lang.ClassNotFoundException: Classloading from system classloader disabled
+	at java.lang.Throwable.<init>(Throwable.java:56)
+	at java.lang.Throwable.<init>(Throwable.java:80)
+	at java.lang.ClassNotFoundException.<init>(ClassNotFoundException.java:80)
+	at hudson.remoting.RemoteClassLoader$ClassLoaderProxy.fetch2(RemoteClassLoader.java:399)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:64)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:615)
+	at hudson.remoting.RemoteInvocationHandler$RPCRequest.perform(RemoteInvocationHandler.java:274)
+	at hudson.remoting.Request$2.run(Request.java:270)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:432)
+	at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:284)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:138)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:665)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:690)
+	at java.lang.Thread.run(Thread.java:799)
+

@@ -1,0 +1,129 @@
+Index: src/main/java/hudson/model/AbstractProject.java
+===================================================================
+--- src/main/java/hudson/model/AbstractProject.java	(revision 14718)
++++ src/main/java/hudson/model/AbstractProject.java	(working copy)
+@@ -297,6 +297,10 @@
+         else
+             return super.getIconColor();
+     }
++    
++    public String getQueueKey() {
++    	return getName();
++    }
+ 
+     protected void updateTransientActions() {
+         synchronized(transientActions) {
+Index: src/main/java/hudson/model/ParameterizedProjectTask.java
+===================================================================
+--- src/main/java/hudson/model/ParameterizedProjectTask.java	(revision 14717)
++++ src/main/java/hudson/model/ParameterizedProjectTask.java	(working copy)
+@@ -14,6 +14,8 @@
+ 
+     private final AbstractProject<?,?> project;
+     private final List<ParameterValue> parameters;
++    private static long COUNTER = System.currentTimeMillis(); 
++    private String key = Long.toString(COUNTER++);
+ 
+     public ParameterizedProjectTask(AbstractProject<?,?> project, List<ParameterValue> parameters) {
+         super(project);
+@@ -59,4 +61,12 @@
+         }
+         return true;
+     }
++    
++    public String getUrl() {
++    	return "blablabla";
++    }
++
++	public String getQueueKey() {
++		return key;
++	}
+ }
+Index: src/main/java/hudson/model/Queue.java
+===================================================================
+--- src/main/java/hudson/model/Queue.java	(revision 14717)
++++ src/main/java/hudson/model/Queue.java	(working copy)
+@@ -32,8 +32,11 @@
+ import java.util.logging.Logger;
+ 
+ import javax.management.timer.Timer;
++import javax.servlet.ServletException;
+ 
+ import org.acegisecurity.AccessDeniedException;
++import org.kohsuke.stapler.StaplerRequest;
++import org.kohsuke.stapler.StaplerResponse;
+ import org.kohsuke.stapler.export.Exported;
+ import org.kohsuke.stapler.export.ExportedBean;
+ 
+@@ -320,7 +323,7 @@
+         // use bitwise-OR to make sure that both branches get evaluated all the time
+         return blockedProjects.remove(p)!=null | buildables.remove(p)!=null;
+     }
+-
++    
+     public synchronized boolean isEmpty() {
+         return waitingList.isEmpty() && blockedProjects.isEmpty() && buildables.isEmpty();
+     }
+@@ -343,6 +346,18 @@
+             r[idx++] = p;
+         return r;
+     }
++    
++    public Item getItem(String key) {
++        for (BlockedItem p : blockedProjects.values())
++            if (key.equals(p.task.getQueueKey())) {
++            	return p;
++            }
++        for (BuildableItem p : buildables.values())
++            if (key.equals(p.task.getQueueKey())) {
++            	return p;
++            }
++    	return null;
++    }
+ 
+     /**
+      * Gets all the {@link BuildableItem}s that are waiting for an executor in the given {@link Computer}.
+@@ -745,6 +760,8 @@
+          * instead of exception.
+          */
+         boolean hasAbortPermission();
++        
++        String getQueueKey();
+     }
+ 
+     public interface Executable extends Runnable {
+@@ -806,6 +823,14 @@
+         public boolean hasCancelPermission() {
+             return task.hasAbortPermission();
+         }
++        
++        public void doCancel(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
++        	task.checkAbortPermission();
++        	
++        	cancel(task);
++        	
++            rsp.forwardToPreviousPage(req);
++        }
+     }
+ 
+     /**
+Index: src/main/resources/lib/hudson/queue.jelly
+===================================================================
+--- src/main/resources/lib/hudson/queue.jelly	(revision 14717)
++++ src/main/resources/lib/hudson/queue.jelly	(working copy)
+@@ -41,7 +41,7 @@
+             </td>
+             <td class="pane" width="16" align="center" valign="middle">
+               <j:if test="${item.hasCancelPermission()}">
+-                <a href="${rootURL}/${item.task.url}cancelQueue"><img src="${imagesURL}/16x16/stop.gif" alt="cancel this build" /></a>
++                <a href="${rootURL}/queue/item/${item.task.queueKey}/cancel"><img src="${imagesURL}/16x16/stop.gif" alt="cancel this build" /></a>
+               </j:if>
+              </td>
+           </tr>
+@@ -55,4 +55,4 @@
+       </script>
+     </j:if>
+   </l:pane>
+-</j:jelly>
+\ No newline at end of file
++</j:jelly>

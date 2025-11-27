@@ -1,0 +1,16 @@
+Index: hudson-behavior.js
+===================================================================
+--- hudson-behavior.js	(revision 29418)
++++ hudson-behavior.js	(working copy)
+@@ -1302,8 +1302,10 @@
+ 
+     function updateBuilds() {
+         var bh = $('buildHistory');
++        var headers = new Object();
++        headers["n"] = hb.headers[1];
+         new Ajax.Request(ajaxUrl, {
+-            requestHeaders: bh.headers,
++            requestHeaders: headers,
+             onSuccess: function(rsp) {
+                 var rows = bh.rows;
+ 

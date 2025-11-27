@@ -1,0 +1,201 @@
+Index: plugins/subversion/src/test/java/hudson/scm/SubversionSCMTest.java
+===================================================================
+--- plugins/subversion/src/test/java/hudson/scm/SubversionSCMTest.java	(revision 31689)
++++ plugins/subversion/src/test/java/hudson/scm/SubversionSCMTest.java	(working copy)
+@@ -229,11 +229,12 @@
+     public void testRevisionParameter() throws Exception {
+         setJavaNetCredential();
+         FreeStyleProject p = createFreeStyleProject();
+-        String url = "https://svn.dev.java.net/svn/hudson/trunk/hudson/test-projects/trivial-ant";
++        String root = "https://svn.dev.java.net/svn/hudson";
++        String url = root + "/trunk/hudson/test-projects/trivial-ant";
+ 		p.setScm(new SubversionSCM(url));
+ 
+         FreeStyleBuild b = p.scheduleBuild2(0, new Cause.UserCause(), 
+-        		new RevisionParameterAction(new SubversionSCM.SvnInfo(url, 13000))).get();
++        		new RevisionParameterAction(new SubversionSCM.SvnInfo(root, url, 13000))).get();
+         System.out.println(b.getLog(LOG_LIMIT));
+         assertTrue(b.getLog(LOG_LIMIT).contains("At revision 13000"));
+         assertBuildStatus(Result.SUCCESS,b);
+Index: plugins/subversion/src/main/java/hudson/scm/SubversionSCM.java
+===================================================================
+--- plugins/subversion/src/main/java/hudson/scm/SubversionSCM.java	(revision 31689)
++++ plugins/subversion/src/main/java/hudson/scm/SubversionSCM.java	(working copy)
+@@ -132,6 +132,13 @@
+     private String modules;
+ 
+     /**
++     * Checkout actions
++     */
++    private final static int DO_CHECKOUT = 0;
++    private final static int DO_UPDATE = 1;
++    private final static int DO_SWITCH = 2;
++    
++    /**
+      * @deprecated as of 1.286
+      */
+     public SubversionSCM(String[] remoteLocations, String[] localLocations,
+@@ -585,8 +592,10 @@
+             }
+         }
+ 
+-        Boolean isUpdatable = useUpdate && workspace.act(new IsUpdatableTask(build, this, listener));
+-        return workspace.act(new CheckOutTask(build, this, build.getTimestamp().getTime(), isUpdatable, doRevert, listener));
++        int action = DO_CHECKOUT;
++        if (useUpdate)
++        	action = workspace.act(new IsUpdatableTask(build, this, listener));
++        return workspace.act(new CheckOutTask(build, this, build.getTimestamp().getTime(), action, doRevert, listener));
+     }
+ 
+ 
+@@ -596,17 +605,16 @@
+     private static class CheckOutTask implements FileCallable<List<External>> {
+         private final ISVNAuthenticationProvider authProvider;
+         private final Date timestamp;
+-        // true to "svn update", false to "svn checkout".
+-        private boolean update;
++        private int action; ///< @see DO_* constants
+         private boolean revert;
+         private final TaskListener listener;
+         private final ModuleLocation[] locations;
+         private final RevisionParameterAction revisions;
+ 
+-        public CheckOutTask(AbstractBuild<?, ?> build, SubversionSCM parent, Date timestamp, boolean update, boolean revert, TaskListener listener) {
++        public CheckOutTask(AbstractBuild<?, ?> build, SubversionSCM parent, Date timestamp, int action, boolean revert, TaskListener listener) {
+             this.authProvider = parent.getDescriptor().createAuthenticationProvider(build.getParent());
+             this.timestamp = timestamp;
+-            this.update = update;
++            this.action = action;
+             this.revert = revert;
+             this.listener = listener;
+             this.locations = parent.getLocations(build);
+@@ -619,26 +627,30 @@
+                 final SVNUpdateClient svnuc = manager.getUpdateClient();
+                 final SVNWCClient svnwc = manager.getWCClient();
+                 final List<External> externals = new ArrayList<External>(); // store discovered externals to here
+-                if(update) {
++                if (action != DO_CHECKOUT) {
+                     for (final ModuleLocation l : locations) {
+                         try {
+                             File local = new File(ws, l.getLocalDir());
+                             svnuc.setEventHandler(new SubversionUpdateEventHandler(listener.getLogger(), externals,local,l.getLocalDir()));
+                             
+                             SVNRevision r = getRevision(l);
+-                            
+                             if (revert) {
+                                 listener.getLogger().println("Reverting "+ l.remote);
+                             	svnwc.doRevert(new File [] { local.getCanonicalFile()}, SVNDepth.INFINITY, null);
+                             }
+-                            listener.getLogger().println("Updating "+ l.remote);                            
+-                            svnuc.doUpdate(local.getCanonicalFile(), r, SVNDepth.INFINITY, true, false);
++                            if (action == DO_UPDATE) {
++                              listener.getLogger().println("Updating "+ l.remote);                            
++                              svnuc.doUpdate(local.getCanonicalFile(), r, SVNDepth.INFINITY, true, false);
++                            } else {
++                              listener.getLogger().println("Switching to "+ l.remote);                            
++                              svnuc.doSwitch(local.getCanonicalFile(), l.getSVNURL(), SVNRevision.UNDEFINED, r, SVNDepth.INFINITY, true, false);
++                            }
+ 
+                         } catch (final SVNException e) {
+                             if(e.getErrorMessage().getErrorCode()== SVNErrorCode.WC_LOCKED) {
+                                 // work space locked. try fresh check out
+                                 listener.getLogger().println("Workspace appear to be locked, so getting a fresh workspace");
+-                                update = false;
++                                action = DO_CHECKOUT;
+                                 return invoke(ws,channel);
+                             }
+                             if(e.getErrorMessage().getErrorCode()== SVNErrorCode.WC_OBSTRUCTED_UPDATE) {
+@@ -646,7 +658,7 @@
+                                 // revert to fresh check out
+                                 listener.getLogger().println(e.getMessage()); // show why this happened. Sometimes this is caused by having a build artifact in the repository.
+                                 listener.getLogger().println("Updated failed due to local files. Getting a fresh workspace");
+-                                update = false;
++                                action = DO_CHECKOUT;
+                                 return invoke(ws,channel);
+                             }
+ 
+@@ -766,16 +778,18 @@
+         /**
+          * Decoded repository URL.
+          */
++    	public final String root;
+         public final String url;
+         public final long revision;
+ 
+-        public SvnInfo(String url, long revision) {
++        public SvnInfo(String root, String url, long revision) {
++        	this.root = root;
+             this.url = url;
+             this.revision = revision;
+         }
+ 
+         public SvnInfo(SVNInfo info) {
+-            this( info.getURL().toDecodedString(), info.getCommittedRevision().getNumber() );
++            this( info.getRepositoryRootURL().toDecodedString(), info.getURL().toDecodedString(), info.getCommittedRevision().getNumber() );
+         }
+ 
+         public SVNURL getSVNURL() throws SVNException {
+@@ -964,27 +978,29 @@
+     }
+ 
+     /**
+-     * Returns true if we can use "svn update" instead of "svn checkout"
++     * Returns DO_* constant
+      */
+-    private static class IsUpdatableTask implements FileCallable<Boolean> {
++    private static class IsUpdatableTask implements FileCallable<Integer> {
+         private final TaskListener listener;
+         private final ISVNAuthenticationProvider authProvider;
+         private final ModuleLocation[] locations;
++        private final AbstractProject project;
+ 
+         IsUpdatableTask(AbstractBuild<?, ?> build, SubversionSCM parent,TaskListener listener) {
+             this.authProvider = parent.getDescriptor().createAuthenticationProvider(build.getParent());
+             this.listener = listener;
+             this.locations = parent.getLocations(build);
++            this.project = build.getProject();
+         }
+ 
+-        public Boolean invoke(File ws, VirtualChannel channel) throws IOException {
++        public Integer invoke(File ws, VirtualChannel channel) throws IOException {
+             for (ModuleLocation l : locations) {
+                 String moduleName = l.getLocalDir();
+                 File module = new File(ws,moduleName).getCanonicalFile(); // canonicalize to remove ".." and ".". See #474
+ 
+                 if(!module.exists()) {
+                     listener.getLogger().println("Checking out a fresh workspace because "+module+" doesn't exist");
+-                    return false;
++                    return DO_CHECKOUT;
+                 }
+ 
+                 try {
+@@ -993,8 +1009,14 @@
+ 
+                     String url = l.getURL();
+                     if(!svnInfo.url.equals(url)) {
+-                        listener.getLogger().println("Checking out a fresh workspace because the workspace is not "+url);
+-                        return false;
++                    	String repositoryRoot = l.getRepositoryRoot(project).toDecodedString();
++                    	if (svnInfo.root.equals(repositoryRoot)) {
++                          listener.getLogger().println("Switching to the new repository URL because the workspace is not "+url);
++                          return DO_SWITCH;
++                    	} else {
++                          listener.getLogger().println("Checking out a fresh workspace because the repository root is not "+repositoryRoot);
++                          return DO_CHECKOUT;
++                    	}
+                     }
+                 } catch (SVNException e) {
+                     if (e.getErrorMessage().getErrorCode()==SVNErrorCode.WC_NOT_DIRECTORY) {
+@@ -1003,10 +1025,10 @@
+                         listener.getLogger().println("Checking out a fresh workspace because Hudson failed to detect the current workspace "+module);
+                         e.printStackTrace(listener.error(e.getMessage()));
+                     }
+-                    return false;
++                    return DO_CHECKOUT;
+                 }
+             }
+-            return true;
++            return DO_UPDATE;
+         }
+         private static final long serialVersionUID = 1L;
+     }

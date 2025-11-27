@@ -1,0 +1,28 @@
+Index: src/main/java/hudson/plugins/sloccount/model/SloccountReport.java
+===================================================================
+--- src/main/java/hudson/plugins/sloccount/model/SloccountReport.java	(revision 24421)
++++ src/main/java/hudson/plugins/sloccount/model/SloccountReport.java	(working copy)
+@@ -24,7 +24,8 @@
+         this.fileSeparator = System.getProperty("file.separator");
+         if(this.fileSeparator.equals("\\")){
+             // escape the backslash if required (fileSeparator is used as a regex)
+-            this.fileSeparator = "\\\\";
++            this.fileSeparator= "\\";
++        	//this.fileSeparator = "\\\\";
+         }
+     }
+ 
+@@ -116,7 +117,12 @@
+     }
+ 
+     private void updateRootFolderPath(String newFolderName){
+-        String[] newFolderPath = newFolderName.split(this.fileSeparator);
++        String[] newFolderPath;
++        
++        if(this.fileSeparator.equals("\\"))
++        	newFolderPath = newFolderName.split("\\\\");
++        else
++        	newFolderPath = newFolderName.split(this.fileSeparator);
+ 
+         if(this.rootFolderPath == null){
+             this.rootFolderPath = newFolderPath;

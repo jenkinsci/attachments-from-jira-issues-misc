@@ -1,0 +1,126 @@
+diff -r com/tek42/perforce/parse/AbstractPerforceTemplate.java /hudson/hudson/plugins/perforce/src/main/java/com/tek42/perforce/parse/AbstractPerforceTemplate.java
+32a33,34
+> import java.io.PrintWriter;
+> import java.io.StringWriter;
+253,255c255,256
+< 			try {
+< 				// get entire cmd to execute
+< 				cmd = getExtraParams(cmd);
+---
+> 			// get entire cmd to execute
+> 			cmd = getExtraParams(cmd);
+257,260c258,261
+< 				// setup information for logging...
+< 				for(String cm : cmd) {
+< 					debugCmd += cm + " ";
+< 				}
+---
+> 			// setup information for logging...
+> 			for(String cm : cmd) {
+> 				debugCmd += cm + " ";
+> 			}
+262,266c263,269
+< 				// Performe execution and IO
+< 				p4.exec(cmd);
+< 				BufferedReader reader = p4.getReader();
+< 				String line;
+< 				response = new StringBuilder();
+---
+> 			// Performe execution and IO
+> 			p4.exec(cmd);
+> 			BufferedReader reader = p4.getReader();
+> 			String line;
+> 			response = new StringBuilder();
+> 			try
+> 			{
+276,299c279,292
+< 				loop = false;
+< 				// If we failed to execute because of an authentication issue, try a p4 login.
+< 				if(attemptLogin && (mesgIndex == 1 || mesgIndex == 2 || mesgIndex == 6)) {
+< 					// password is unset means that perforce isn't using the environment var P4PASSWD
+< 					// Instead it is using tickets. We must attempt to login via p4 login, then
+< 					// retry this cmd.
+< 					p4.close();
+< 					login();
+< 					loop = true;
+< 					attemptLogin = false;
+< 					continue;
+< 				}
+< 
+< 				// We aren't using the exact message because we want to add the username for more info
+< 				if(mesgIndex == 4)
+< 					throw new PerforceException("Access for user '" + depot.getUser() + "' has not been enabled by 'p4 protect'");
+< 				if(mesgIndex != -1)
+< 					throw new PerforceException(errors[mesgIndex]);
+< 				if(count == 0)
+< 					throw new PerforceException("No output for: " + debugCmd);
+< 
+< 			} catch(IOException e) {
+< 				throw new PerforceException("Failed to communicate with p4", e);
+< 			} finally {
+---
+> 			}
+> 			catch(IOException ioe)
+> 			{
+> 				//this is generally not anything to worry about.  The underlying
+> 				//perforce process terminated and that causes java to be angry
+> 				StringWriter sw = new StringWriter();
+> 				PrintWriter pw = new PrintWriter(sw, true);
+> 				ioe.printStackTrace(pw);
+> 				pw.flush();
+> 				sw.flush();
+> 				logger.warn("Perforce process terminated suddenly");
+> 				logger.warn(sw.toString());
+> 			}
+> 			finally{
+301a295,314
+> 			loop = false;
+> 			// If we failed to execute because of an authentication issue, try a p4 login.
+> 			if(attemptLogin && (mesgIndex == 1 || mesgIndex == 2 || mesgIndex == 6)) {
+> 				// password is unset means that perforce isn't using the environment var P4PASSWD
+> 				// Instead it is using tickets. We must attempt to login via p4 login, then
+> 				// retry this cmd.
+> 				p4.close();
+> 				login();
+> 				loop = true;
+> 				attemptLogin = false;
+> 				continue;
+> 			}
+> 
+> 			// We aren't using the exact message because we want to add the username for more info
+> 			if(mesgIndex == 4)
+> 				throw new PerforceException("Access for user '" + depot.getUser() + "' has not been enabled by 'p4 protect'");
+> 			if(mesgIndex != -1)
+> 				throw new PerforceException(errors[mesgIndex]);
+> 			if(count == 0)
+> 				throw new PerforceException("No output for: " + debugCmd);
+diff -r com/tek42/perforce/parse/Changes.java /hudson/hudson/plugins/perforce/src/main/java/com/tek42/perforce/parse/Changes.java
+248c248,249
+< 		while(true) {
+---
+> 		boolean continueProcessing = true; 
+> 		while(continueProcessing) {
+273a275,276
+> 				{
+> 					logger.warn("num is " + num + " until is " + untilChange);
+274a278
+> 				}
+275a280,281
+> 				{
+> 					continueProcessing = false;
+276a283
+> 				}
+279c286,294
+< 			int next = new Integer(lastChange) - 1;
+---
+> 			int next = 0;
+> 			try {
+> 				next = new Integer(lastChange) - 1;
+> 			}
+> 			catch (NumberFormatException nfe)
+> 			{
+> 				logger.warn("Unable to parse perforce message.  Expected a number but got " + lastChange);
+> 				logger.warn("From command " + response.toString());
+> 			}
+280a296
+> 			logger.warn("running p4 changes for " + next + " until change is " + untilChange);

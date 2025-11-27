@@ -1,0 +1,36 @@
+#!/usr/bin/groovy
+
+import groovy.transform.Field
+
+@Field Map p = [ project: 'test' ]
+
+pipeline {
+	agent any;
+
+	options {
+		timestamps()
+		skipDefaultCheckout()
+		preserveStashes(buildCount: 5)
+	}
+
+	stages {
+		stage('one') {
+			steps {
+				script {
+					p.tag    = BUILD_TAG
+					println p.tag
+				}
+			}
+		}
+
+		stage('two') {
+			steps {
+				script {
+					println BUILD_TAG
+					println p.tag
+				}
+			}
+		}
+
+	}
+}

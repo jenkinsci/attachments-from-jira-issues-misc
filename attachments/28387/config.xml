@@ -1,0 +1,57 @@
+This XML file does not appear to have any style information associated with it. The document tree is shown below.
+<project>
+<actions/>
+<description/>
+<keepDependencies>false</keepDependencies>
+<properties>
+<hudson.plugins.buildblocker.BuildBlockerProperty plugin="build-blocker-plugin@1.4.1">
+<useBuildBlocker>false</useBuildBlocker>
+</hudson.plugins.buildblocker.BuildBlockerProperty>
+<hudson.plugins.disk__usage.DiskUsageProperty plugin="disk-usage@0.24"/>
+</properties>
+<scm class="hudson.scm.SubversionSCM" plugin="subversion@2.4.5">
+<locations>
+<hudson.scm.SubversionSCM_-ModuleLocation>
+<remote>http://svn.apache.org/repos/asf/spamassassin/trunk</remote>
+<credentialsId/>
+<local>.</local>
+<depthOption>infinity</depthOption>
+<ignoreExternalsOption>true</ignoreExternalsOption>
+</hudson.scm.SubversionSCM_-ModuleLocation>
+</locations>
+<excludedRegions/>
+<includedRegions/>
+<excludedUsers/>
+<excludedRevprop/>
+<excludedCommitMessages/>
+<workspaceUpdater class="hudson.scm.subversion.UpdateUpdater"/>
+<ignoreDirPropChanges>false</ignoreDirPropChanges>
+<filterChangelog>false</filterChangelog>
+</scm>
+<assignedNode>master</assignedNode>
+<canRoam>false</canRoam>
+<disabled>false</disabled>
+<blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+<blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+<triggers/>
+<concurrentBuild>false</concurrentBuild>
+<builders>
+<hudson.tasks.Shell>
+<command>mkdir .repository</command>
+</hudson.tasks.Shell>
+</builders>
+<publishers/>
+<buildWrappers>
+<hudson.plugins.ws__cleanup.PreBuildCleanup plugin="ws-cleanup@0.24">
+<patterns>
+<hudson.plugins.ws__cleanup.Pattern>
+<pattern>.repository</pattern>
+<type>EXCLUDE</type>
+</hudson.plugins.ws__cleanup.Pattern>
+</patterns>
+<deleteDirs>true</deleteDirs>
+<cleanupParameter/>
+<externalDelete/>
+</hudson.plugins.ws__cleanup.PreBuildCleanup>
+</buildWrappers>
+</project>

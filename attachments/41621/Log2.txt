@@ -1,0 +1,89 @@
+Started by user Anton Zimin
+Obtained Jenkinsfile from git ssh://gitblit.example.com/anton/jenkins-test.git
+Running in Durability level: MAX_SURVIVABILITY
+[Pipeline] node
+Running on Jenkins in C:\WORKSPACE\local-branch-test4
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Declarative: Checkout SCM)
+[Pipeline] checkout
+ > C:\Program Files\Git\bin\git.exe rev-parse --is-inside-work-tree # timeout=10
+Fetching changes from the remote Git repository
+ > C:\Program Files\Git\bin\git.exe config remote.origin.url ssh://gitblit.example.com/anton/jenkins-test.git # timeout=10
+Fetching upstream changes from ssh://gitblit.example.com/anton/jenkins-test.git
+ > C:\Program Files\Git\bin\git.exe --version # timeout=10
+using GIT_SSH to set credentials jenkins-ssh-credential
+ > C:\Program Files\Git\bin\git.exe fetch --tags --progress ssh://gitblit.example.com/anton/jenkins-test.git +refs/heads/*:refs/remotes/origin/*
+ > C:\Program Files\Git\bin\git.exe rev-parse "refs/remotes/origin/develop^{commit}" # timeout=10
+ > C:\Program Files\Git\bin\git.exe rev-parse "refs/remotes/origin/origin/develop^{commit}" # timeout=10
+Checking out Revision c37bbdccca72c03ec6403d928111b04af95d1710 (refs/remotes/origin/develop)
+ > C:\Program Files\Git\bin\git.exe config core.sparsecheckout # timeout=10
+ > C:\Program Files\Git\bin\git.exe checkout -f c37bbdccca72c03ec6403d928111b04af95d1710
+ > C:\Program Files\Git\bin\git.exe branch -a -v --no-abbrev # timeout=10
+ > C:\Program Files\Git\bin\git.exe branch -D wrong # timeout=10
+ > C:\Program Files\Git\bin\git.exe checkout -b wrong c37bbdccca72c03ec6403d928111b04af95d1710
+Commit message: "Comment out WipeWorkspace extension #MISC-194"
+ > C:\Program Files\Git\bin\git.exe rev-list --no-walk c37bbdccca72c03ec6403d928111b04af95d1710 # timeout=10
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (SCM)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] echo
+1
+[Pipeline] bat
+[local-branch-test4] Running batch script
+
+C:\WORKSPACE\local-branch-test4>git remote -v
+origin	ssh://gitblit.example.com/anton/jenkins-test.git (fetch)
+origin	ssh://gitblit.example.com/anton/jenkins-test.git (push)
+[Pipeline] bat
+[local-branch-test4] Running batch script
+
+C:\WORKSPACE\local-branch-test4>git branch
+  expected
+* wrong
+[Pipeline] checkout
+ > C:\Program Files\Git\bin\git.exe rev-parse --is-inside-work-tree # timeout=10
+Fetching changes from the remote Git repository
+ > C:\Program Files\Git\bin\git.exe config remote.origin.url ssh://gitblit.example.com/anton/jenkins-project.git # timeout=10
+Fetching upstream changes from ssh://gitblit.example.com/anton/jenkins-project.git
+ > C:\Program Files\Git\bin\git.exe --version # timeout=10
+using GIT_SSH to set credentials jenkins-ssh-credential
+ > C:\Program Files\Git\bin\git.exe fetch --tags --progress ssh://gitblit.example.com/anton/jenkins-project.git +refs/heads/*:refs/remotes/origin/*
+ > C:\Program Files\Git\bin\git.exe rev-parse "origin/develop^{commit}" # timeout=10
+Checking out Revision fd0e5f561789ffd8a16c936fdeaa7b9c9f1a3eb6 (origin/develop)
+ > C:\Program Files\Git\bin\git.exe config core.sparsecheckout # timeout=10
+ > C:\Program Files\Git\bin\git.exe checkout -f fd0e5f561789ffd8a16c936fdeaa7b9c9f1a3eb6
+ > C:\Program Files\Git\bin\git.exe branch -a -v --no-abbrev # timeout=10
+ > C:\Program Files\Git\bin\git.exe branch -D expected # timeout=10
+ > C:\Program Files\Git\bin\git.exe checkout -b expected fd0e5f561789ffd8a16c936fdeaa7b9c9f1a3eb6
+Commit message: "Add jenkins-project.txt #MISC-194"
+ > C:\Program Files\Git\bin\git.exe rev-list --no-walk fd0e5f561789ffd8a16c936fdeaa7b9c9f1a3eb6 # timeout=10
+[Pipeline] echo
+2
+[Pipeline] bat
+[local-branch-test4] Running batch script
+
+C:\WORKSPACE\local-branch-test4>git remote -v
+origin	ssh://gitblit.example.com/anton/jenkins-project.git (fetch)
+origin	ssh://gitblit.example.com/anton/jenkins-project.git (push)
+[Pipeline] bat
+[local-branch-test4] Running batch script
+
+C:\WORKSPACE\local-branch-test4>git branch
+* expected
+  wrong
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS

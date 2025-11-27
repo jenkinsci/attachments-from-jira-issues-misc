@@ -1,0 +1,45 @@
+
+[CppUnit] Recording CppUnit tests results.
+[CppUnit] Use the default CppUnit plugin stylesheet.
+[CppUnit] Processing 107 files with the pattern 'build/**/unittest-*.xml'.
+FATAL: remote file operation failed
+hudson.util.IOException2: remote file operation failed
+	at hudson.FilePath.act(FilePath.java:672)
+	at hudson.FilePath.act(FilePath.java:660)
+	at hudson.plugins.cppunit.CppUnitPublisher.perform(CppUnitPublisher.java:121)
+	at hudson.model.AbstractBuild$AbstractRunner.performAllBuildStep(AbstractBuild.java:379)
+	at hudson.model.AbstractBuild$AbstractRunner.performAllBuildStep(AbstractBuild.java:367)
+	at hudson.model.Build$RunnerImpl.post2(Build.java:183)
+	at hudson.model.AbstractBuild$AbstractRunner.post(AbstractBuild.java:352)
+	at hudson.model.Run.run(Run.java:969)
+	at hudson.model.Build.run(Build.java:112)
+	at hudson.model.ResourceController.execute(ResourceController.java:93)
+	at hudson.model.Executor.run(Executor.java:116)
+Caused by: hudson.util.IOException2: Could not transform the CppUnit report.
+	at hudson.plugins.cppunit.CppUnitArchiver.invoke(CppUnitArchiver.java:59)
+	at hudson.plugins.cppunit.CppUnitArchiver.invoke(CppUnitArchiver.java:24)
+	at hudson.FilePath$FileCallableWrapper.call(FilePath.java:2014)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:103)
+	at hudson.remoting.UserRequest.perform(UserRequest.java:47)
+	at hudson.remoting.Request$2.run(Request.java:236)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at java.util.concurrent.FutureTask$Sync.innerRun(Unknown Source)
+	at java.util.concurrent.FutureTask.run(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at hudson.remoting.Engine$1$1.run(Engine.java:54)
+	at java.lang.Thread.run(Unknown Source)
+Caused by: javax.xml.transform.TransformerException: javax.xml.transform.TransformerException: com.sun.org.apache.xml.internal.utils.WrappedRuntimeException: Premature end of file.
+	at com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl.transform(Unknown Source)
+	at com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl.transform(Unknown Source)
+	at hudson.plugins.cppunit.CppUnitTransformer.transform(CppUnitTransformer.java:64)
+	at hudson.plugins.cppunit.CppUnitArchiver.invoke(CppUnitArchiver.java:57)
+	... 12 more
+Caused by: javax.xml.transform.TransformerException: com.sun.org.apache.xml.internal.utils.WrappedRuntimeException: Premature end of file.
+	at com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl.getDOM(Unknown Source)
+	... 16 more
+Caused by: com.sun.org.apache.xml.internal.utils.WrappedRuntimeException: Premature end of file.
+	at com.sun.org.apache.xalan.internal.xsltc.dom.XSLTCDTMManager.getDTM(Unknown Source)
+	at com.sun.org.apache.xalan.internal.xsltc.dom.XSLTCDTMManager.getDTM(Unknown Source)
+	... 17 more
+

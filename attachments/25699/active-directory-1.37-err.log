@@ -1,0 +1,810 @@
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectorySecurityRealm
+
+Connecting to ldap://nt-rmna-0001:3268/
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectorySecurityRealm
+
+Failed to start TLS. Authentication will be done via plain-text LDAP
+javax.naming.CommunicationException: java.net.SocketException: Connection reset [Root exception is javax.net.ssl.SSLException: java.net.SocketException: Connection reset]
+	at com.sun.jndi.ldap.LdapCtx.extendedOperation(LdapCtx.java:3204)
+	at hudson.plugins.active_directory.ActiveDirectorySecurityRealm$DescriptorImpl.bind(ActiveDirectorySecurityRealm.java:426)
+	at hudson.plugins.active_directory.ActiveDirectorySecurityRealm$DescriptorImpl.bind(ActiveDirectorySecurityRealm.java:370)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.retrieveUser(ActiveDirectoryUnixAuthenticationProvider.java:236)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.retrieveUser(ActiveDirectoryUnixAuthenticationProvider.java:193)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.retrieveUser(ActiveDirectoryUnixAuthenticationProvider.java:137)
+	at org.acegisecurity.providers.dao.AbstractUserDetailsAuthenticationProvider.authenticate(AbstractUserDetailsAuthenticationProvider.java:122)
+	at org.acegisecurity.providers.ProviderManager.doAuthentication(ProviderManager.java:200)
+	at org.acegisecurity.AbstractAuthenticationManager.authenticate(AbstractAuthenticationManager.java:47)
+	at org.acegisecurity.ui.webapp.AuthenticationProcessingFilter.attemptAuthentication(AuthenticationProcessingFilter.java:74)
+	at org.acegisecurity.ui.AbstractProcessingFilter.doFilter(AbstractProcessingFilter.java:252)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at org.acegisecurity.ui.basicauth.BasicProcessingFilter.doFilter(BasicProcessingFilter.java:174)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at jenkins.security.ApiTokenFilter.doFilter(ApiTokenFilter.java:79)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at org.acegisecurity.context.HttpSessionContextIntegrationFilter.doFilter(HttpSessionContextIntegrationFilter.java:249)
+	at hudson.security.HttpSessionContextIntegrationFilter2.doFilter(HttpSessionContextIntegrationFilter2.java:67)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at hudson.security.ChainedServletFilter.doFilter(ChainedServletFilter.java:76)
+	at hudson.security.HudsonFilter.doFilter(HudsonFilter.java:164)
+	at winstone.FilterConfiguration.execute(FilterConfiguration.java:194)
+	at winstone.RequestDispatcher.doFilter(RequestDispatcher.java:366)
+	at org.kohsuke.stapler.compression.CompressionFilter.doFilter(CompressionFilter.java:46)
+	at winstone.FilterConfiguration.execute(FilterConfiguration.java:194)
+	at winstone.RequestDispatcher.doFilter(RequestDispatcher.java:366)
+	at hudson.util.CharacterEncodingFilter.doFilter(CharacterEncodingFilter.java:81)
+	at winstone.FilterConfiguration.execute(FilterConfiguration.java:194)
+	at winstone.RequestDispatcher.doFilter(RequestDispatcher.java:366)
+	at winstone.RequestDispatcher.forward(RequestDispatcher.java:331)
+	at winstone.RequestHandlerThread.processRequest(RequestHandlerThread.java:227)
+	at winstone.RequestHandlerThread.run(RequestHandlerThread.java:150)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)
+	at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:334)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:166)
+	at winstone.BoundedExecutorService$1.run(BoundedExecutorService.java:77)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1146)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+	at java.lang.Thread.run(Thread.java:701)
+Caused by: javax.net.ssl.SSLException: java.net.SocketException: Connection reset
+	at sun.security.ssl.Alerts.getSSLException(Alerts.java:208)
+	at sun.security.ssl.SSLSocketImpl.fatal(SSLSocketImpl.java:1715)
+	at sun.security.ssl.SSLSocketImpl.fatal(SSLSocketImpl.java:1678)
+	at sun.security.ssl.SSLSocketImpl.handleException(SSLSocketImpl.java:1642)
+	at sun.security.ssl.SSLSocketImpl.handleException(SSLSocketImpl.java:1587)
+	at sun.security.ssl.AppInputStream.read(AppInputStream.java:105)
+	at java.io.BufferedInputStream.fill(BufferedInputStream.java:235)
+	at java.io.BufferedInputStream.read1(BufferedInputStream.java:275)
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:334)
+	at com.sun.jndi.ldap.Connection.run(Connection.java:820)
+	... 1 more
+Caused by: java.net.SocketException: Connection reset
+	at java.net.SocketInputStream.read(SocketInputStream.java:185)
+	at sun.security.ssl.InputRecord.readFully(InputRecord.java:442)
+	at sun.security.ssl.InputRecord.read(InputRecord.java:480)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:883)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1208)
+	at sun.security.ssl.SSLSocketImpl.readDataRecord(SSLSocketImpl.java:838)
+	at sun.security.ssl.AppInputStream.read(AppInputStream.java:94)
+	... 5 more
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectorySecurityRealm
+
+Binding as SVCMAPBUILDPROD01@corp.ad.broadcom.com to ldap://nt-rmna-0001:3268/
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectorySecurityRealm
+
+Bound to nt-rmna-0001:3268
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+Failed to find rickliu in userPrincipalName. Trying sAMAccountName
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+Found user rickliu : {objectcategory=objectCategory: CN=Person,CN=Schema,CN=Configuration,DC=ad,DC=broadcom,DC=com, whencreated=whenCreated: 20110811132452.0Z, othertelephone=otherTelephone: 79472, mdbusedefaults=mDBUseDefaults: TRUE, employeeid=employeeID: 038221, mail=mail: rickliu@broadcom.com, objectguid=objectGUID: l?5?n?~C???f?{2?, msexchuseraccountcontrol=msExchUserAccountControl: 0, msexchmailboxsecuritydescriptor=msExchMailboxSecurityDescriptor: ? ,\
+
+0?
+?k
+?
+N
+$??=R|Wt8tx$?f?YVGq*W$??=R|Wt8t&$??=R|Wt8ts?$??=R|Wt8tS$??=R|Wt8t8?$??=R|Wt8t~?$??=R|Wt8t&$??=R|Wt8t#j$??=R|Wt8ts?$??=R|Wt8t}h$??^N.FL?J6bS$??=R|Wt8t~O$??=R|Wt8t?^$??^N.FL?J6b?$?f?YVGq*$?f?YVGq*$?f?YVGq*$?f?YVGq*H$?f?YVGq*?$??=R|Wt8tz$??=R|Wt8t|$??=R|Wt8t~?$??=R|Wt8t?$??=R|Wt8t?$??=R|Wt8t?h$??=R|Wt8t?V$?f?YVGq*@$??=R|Wt8t&K$??=R|Wt8t,V$??=R|Wt8t?t$??=R|Wt8t??$??=R|Wt8t?$??=R|Wt8t?U$?f?YVGq*?$??^N.FL?J6bS$??=R|Wt8t~O$??=R|Wt8t?t$??=R|Wt8t?$?f?YVGq*$?f?YVGq*$?f?YVGq*$?f?YVGq*G$?f?YVGq*_$??=R|Wt8t>)$??=R|Wt8t?$??^N.FL?J6bS$?f?YVGq*?$??=R|Wt8t~O$?f?YVGq*$?f?YVGq*?$??=R|Wt8t?$??=R|Wt8tS$??=R|Wt8t&K$??=R|Wt8t,V$??=R|Wt8t?"$??=R|Wt8t?"$??=R|Wt8t?"$??=R|Wt8t?U$??=R|Wt8t?V$??^N.FL?J6b?$?f?YVGq*$?f?YVGq*$?f?YVGq*@$?f?YVGq*H$?f?YVGq*V$?f?YVGq*?$??=R|Wt8tz$??=R|Wt8t|$??=R|Wt8t~?$??=R|Wt8t?$??=R|Wt8t?$??=R|Wt8t?h$?f?YVGq*$?f?YVGq*, memberof=memberOf: CN=staff-engineering-list,OU=DynamicLists,OU=Lists,OU=Messaging,DC=corp,DC=ad,DC=broadcom,DC=com, CN=MPS-worldwide,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com, CN=mxc-dev-team-list,OU=MailingLists,OU=Lists,OU=Messaging,DC=corp,DC=ad,DC=broadcom,DC=com, CN=ctxrmna,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com, CN=dept-3392,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com, CN=staff-3392-Canada-Richmond-list,OU=DynamicLists,OU=Lists,OU=Messaging,DC=corp,DC=ad,DC=broadcom,DC=com, CN=dept-3392-list,OU=DynamicLists,OU=Lists,OU=Messaging,DC=corp,DC=ad,DC=broadcom,DC=com, CN=IRVA630EmpXChina,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com, CN=map-build-team-list,OU=MailingLists,OU=Lists,OU=Messaging,DC=corp,DC=ad,DC=broadcom,DC=com, CN=mps-scm-users,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com, CN=mps-git-user-list,OU=MailingLists,OU=Lists,OU=Messaging,DC=corp,DC=ad,DC=broadcom,DC=com, CN=map-build-list,OU=MailingLists,OU=Lists,OU=Messaging,DC=corp,DC=ad,DC=broadcom,DC=com, CN=map-lkg-release-list,OU=MailingLists,OU=Lists,OU=Messaging,DC=corp,DC=ad,DC=broadcom,DC=com, CN=git-scm-admins-list,OU=MailingLists,OU=Lists,OU=Messaging,DC=corp,DC=ad,DC=broadcom,DC=com, CN=ric_hcomb,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com, CN=mxc-pkg-list,OU=MailingLists,OU=Lists,OU=Messaging,DC=corp,DC=ad,DC=broadcom,DC=com, CN=map-jira-notification-list,OU=MailingLists,OU=Lists,OU=Messaging,DC=corp,DC=ad,DC=broadcom,DC=com, CN=map-kernel-commit-list,OU=MailingLists,OU=Lists,OU=Messaging,DC=corp,DC=ad,DC=broadcom,DC=com, CN=staff-mwg-bu-all-list,OU=DynamicLists,OU=Lists,OU=Messaging,DC=corp,DC=ad,DC=broadcom,DC=com, CN=staff-mwg-bu-list,OU=DynamicLists,OU=Lists,OU=Messaging,DC=corp,DC=ad,DC=broadcom,DC=com, CN=mxc-kernel-list,OU=MailingLists,OU=Lists,OU=Messaging,DC=corp,DC=ad,DC=broadcom,DC=com, CN=Irva630XChinaUsers,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com, CN=Staff-E,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com, CN=Onephone-team,OU=MailingLists,OU=Lists,OU=Messaging,DC=corp,DC=ad,DC=broadcom,DC=com, CN=staff-espp-notification-list,OU=DynamicLists,OU=Lists,OU=Messaging,DC=corp,DC=ad,DC=broadcom,DC=com, CN=staff-worldwide-employees-only-list,OU=DynamicLists,OU=Lists,OU=Messaging,DC=corp,DC=ad,DC=broadcom,DC=com, CN=staff-worldwide-all-list,OU=DynamicLists,OU=Lists,OU=Messaging,DC=corp,DC=ad,DC=broadcom,DC=com, CN=PGP_WDEOnly,OU=PGP,DC=corp,DC=ad,DC=broadcom,DC=com, CN=staff-canada-richmond-list,OU=DynamicLists,OU=Lists,OU=Messaging,DC=corp,DC=ad,DC=broadcom,DC=com, CN=staff-canada-richmond-all-list,OU=DynamicLists,OU=Lists,OU=Messaging,DC=corp,DC=ad,DC=broadcom,DC=com, CN=IRVA630EmpAndCont,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com, CN=Staff-CA-E,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com, CN=CTXSEAA,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com, CN=Irv6300AceActiveUsers,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com, CN=IRVA630XChina,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com, CN=IRVA630XChinaBSE,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com, CN=CTXSJCA,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com, msrtcsip-optionflags=msRTCSIP-OptionFlags: 257, msexchmailboxguid=msExchMailboxGuid: ?}Q?G??G?F?8??, instancetype=instanceType: 4, msexchpoliciesincluded=msExchPoliciesIncluded: fd8ff9fd-2e55-494b-a420-daae5f2f086a, {26491cfc-9e50-4857-861b-0cb8df22b5d7}, objectsid=objectSid: [B@8f04ba5, st=st: BC, proxyaddresses=proxyAddresses: sip:rickliu@broadcom.com, X400:C=US;A= ;P=BROADCOM;O=IRVINE;S=Liu;G=Rick;, x400:C=US;A= ;P=BROADCOM;O=IRVINE;S=Liu;G=Rick (Rick Yu-Ch;, x400:C=US;A= ;P=BROADCOM;O=IRVINE;S=Liu;G=Rick Yu-Chun;, smtp:rickliu@exchange.broadcom.com, SMTP:rickliu@broadcom.com, dscorepropagationdata=dSCorePropagationData: 20140325183948.0Z, 20140325181005.0Z, 20140321060045.0Z, 20140319213308.0Z, 16010714223649.0Z, msrtcsip-primaryuseraddress=msRTCSIP-PrimaryUserAddress: sip:rickliu@broadcom.com, ipphone=ipPhone: 79472, objectclass=objectClass: top, person, organizationalPerson, user, msexchwhenmailboxcreated=msExchWhenMailboxCreated: 20111228003015.0Z, name=name: rickliu, description=description: 038221, sn=sn: Liu, extensionattribute3=extensionAttribute3: 79472, extensionattribute2=extensionAttribute2: Broadcom, extensionattribute1=extensionAttribute1: 120, telephonenumber=telephoneNumber: +1-604-233-9472, useraccountcontrol=userAccountControl: 512, primarygroupid=primaryGroupID: 513, msrtcsip-federationenabled=msRTCSIP-FederationEnabled: TRUE, usnchanged=uSNChanged: 116889997, physicaldeliveryofficename=physicalDeliveryOfficeName: 2013A, co=co: Canada, msexchrbacpolicylink=msExchRBACPolicyLink: CN=Default Role Assignment Policy,CN=Policies,CN=RBAC,CN=BROADCOM,CN=Microsoft Exchange,CN=Services,CN=Configuration,DC=ad,DC=broadcom,DC=com, msrtcsip-userenabled=msRTCSIP-UserEnabled: TRUE, msexchomaadminwirelessenable=msExchOmaAdminWirelessEnable: 4, cn=cn: rickliu, msrtcsip-deploymentlocator=msRTCSIP-DeploymentLocator: SRV:, textencodedoraddress=textEncodedORAddress: X400:C=US;A= ;P=BROADCOM;O=IRVINE;S=Liu;G=Rick;, msexchversion=msExchVersion: 44220983382016, msexchtextmessagingstate=msExchTextMessagingState: 302120705, 16842751, msrtcsip-primaryhomeserver=msRTCSIP-PrimaryHomeServer: CN=Lc Services,CN=Microsoft,CN=2:1,CN=Pools,CN=RTC Service,CN=Microsoft,CN=System,DC=ad,DC=broadcom,DC=com, title=title: Engineer, Staff II - Configuration/Release, msexchhomeservername=msExchHomeServerName: /o=BROADCOM/ou=Exchange Administrative Group (FYDIBOHF23SPDLT)/cn=Configuration/cn=Servers/cn=SJEXCHMB06, msrtcsip-userroutinggroupid=msRTCSIP-UserRoutingGroupId: u????;?]??SR?P?, homemta=homeMTA: CN=Microsoft MTA,CN=SJEXCHMB06,CN=Servers,CN=Exchange Administrative Group (FYDIBOHF23SPDLT),CN=Administrative Groups,CN=BROADCOM,CN=Microsoft Exchange,CN=Services,CN=Configuration,DC=ad,DC=broadcom,DC=com, samaccounttype=sAMAccountType: 805306368, msexchrecipienttypedetails=msExchRecipientTypeDetails: 1, legacyexchangedn=legacyExchangeDN: /o=BROADCOM/ou=Exchange Administrative Group (FYDIBOHF23SPDLT)/cn=Recipients/cn=rickliu, givenname=givenName: Rick, usncreated=uSNCreated: 4523612, displayname=displayName: Rick Liu, pwdlastset=pwdLastSet: 130413614230502271, whenchanged=whenChanged: 20140411181209.0Z, lastlogontimestamp=lastLogonTimestamp: 130415034570007383, department=department: 3392-Eng-MPS SOC AP SW CAN, l=l: Richmond, mailnickname=mailNickname: rickliu, distinguishedname=distinguishedName: CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com, msrtcsip-internetaccessenabled=msRTCSIP-InternetAccessEnabled: TRUE, msexchrecipientdisplaytype=msExchRecipientDisplayType: 1073741824, homemdb=homeMDB: CN=DB59,CN=Databases,CN=Exchange Administrative Group (FYDIBOHF23SPDLT),CN=Administrative Groups,CN=BROADCOM,CN=Microsoft Exchange,CN=Services,CN=Configuration,DC=ad,DC=broadcom,DC=com, msrtcsip-userpolicies=msRTCSIP-UserPolicies: 0=322600374, manager=manager: CN=skurji,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com, showinaddressbook=showInAddressBook: CN=Default Global Address List,CN=All Global Address Lists,CN=Address Lists Container,CN=BROADCOM,CN=Microsoft Exchange,CN=Services,CN=Configuration,DC=ad,DC=broadcom,DC=com, CN=Users with Help,CN=All Address Lists,CN=Address Lists Container,CN=BROADCOM,CN=Microsoft Exchange,CN=Services,CN=Configuration,DC=ad,DC=broadcom,DC=com, CN=All Users,CN=All Address Lists,CN=Address Lists Container,CN=BROADCOM,CN=Microsoft Exchange,CN=Services,CN=Configuration,DC=ad,DC=broadcom,DC=com, CN=GAL with Spamlab,CN=All Address Lists,CN=Address Lists Container,CN=BROADCOM,CN=Microsoft Exchange,CN=Services,CN=Configuration,DC=ad,DC=broadcom,DC=com, msexchuserculture=msExchUserCulture: en-US,zh-TW, samaccountname=sAMAccountName: rickliu}
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+Attempting to validate password for DN=CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectorySecurityRealm
+
+Connecting to ldap://nt-rmna-0001:3268/
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectorySecurityRealm
+
+Failed to start TLS. Authentication will be done via plain-text LDAP
+javax.naming.CommunicationException: Connection reset [Root exception is java.net.SocketException: Connection reset]
+	at com.sun.jndi.ldap.LdapCtx.extendedOperation(LdapCtx.java:3204)
+	at hudson.plugins.active_directory.ActiveDirectorySecurityRealm$DescriptorImpl.bind(ActiveDirectorySecurityRealm.java:426)
+	at hudson.plugins.active_directory.ActiveDirectorySecurityRealm$DescriptorImpl.bind(ActiveDirectorySecurityRealm.java:370)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.retrieveUser(ActiveDirectoryUnixAuthenticationProvider.java:283)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.retrieveUser(ActiveDirectoryUnixAuthenticationProvider.java:193)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.retrieveUser(ActiveDirectoryUnixAuthenticationProvider.java:137)
+	at org.acegisecurity.providers.dao.AbstractUserDetailsAuthenticationProvider.authenticate(AbstractUserDetailsAuthenticationProvider.java:122)
+	at org.acegisecurity.providers.ProviderManager.doAuthentication(ProviderManager.java:200)
+	at org.acegisecurity.AbstractAuthenticationManager.authenticate(AbstractAuthenticationManager.java:47)
+	at org.acegisecurity.ui.webapp.AuthenticationProcessingFilter.attemptAuthentication(AuthenticationProcessingFilter.java:74)
+	at org.acegisecurity.ui.AbstractProcessingFilter.doFilter(AbstractProcessingFilter.java:252)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at org.acegisecurity.ui.basicauth.BasicProcessingFilter.doFilter(BasicProcessingFilter.java:174)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at jenkins.security.ApiTokenFilter.doFilter(ApiTokenFilter.java:79)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at org.acegisecurity.context.HttpSessionContextIntegrationFilter.doFilter(HttpSessionContextIntegrationFilter.java:249)
+	at hudson.security.HttpSessionContextIntegrationFilter2.doFilter(HttpSessionContextIntegrationFilter2.java:67)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at hudson.security.ChainedServletFilter.doFilter(ChainedServletFilter.java:76)
+	at hudson.security.HudsonFilter.doFilter(HudsonFilter.java:164)
+	at winstone.FilterConfiguration.execute(FilterConfiguration.java:194)
+	at winstone.RequestDispatcher.doFilter(RequestDispatcher.java:366)
+	at org.kohsuke.stapler.compression.CompressionFilter.doFilter(CompressionFilter.java:46)
+	at winstone.FilterConfiguration.execute(FilterConfiguration.java:194)
+	at winstone.RequestDispatcher.doFilter(RequestDispatcher.java:366)
+	at hudson.util.CharacterEncodingFilter.doFilter(CharacterEncodingFilter.java:81)
+	at winstone.FilterConfiguration.execute(FilterConfiguration.java:194)
+	at winstone.RequestDispatcher.doFilter(RequestDispatcher.java:366)
+	at winstone.RequestDispatcher.forward(RequestDispatcher.java:331)
+	at winstone.RequestHandlerThread.processRequest(RequestHandlerThread.java:227)
+	at winstone.RequestHandlerThread.run(RequestHandlerThread.java:150)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)
+	at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:334)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:166)
+	at winstone.BoundedExecutorService$1.run(BoundedExecutorService.java:77)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1146)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+	at java.lang.Thread.run(Thread.java:701)
+Caused by: java.net.SocketException: Connection reset
+	at java.net.SocketInputStream.read(SocketInputStream.java:185)
+	at sun.security.ssl.InputRecord.readFully(InputRecord.java:442)
+	at sun.security.ssl.InputRecord.read(InputRecord.java:480)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:883)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1208)
+	at sun.security.ssl.SSLSocketImpl.writeRecord(SSLSocketImpl.java:674)
+	at sun.security.ssl.AppOutputStream.write(AppOutputStream.java:119)
+	at java.io.BufferedOutputStream.flushBuffer(BufferedOutputStream.java:82)
+	at java.io.BufferedOutputStream.flush(BufferedOutputStream.java:140)
+	at com.sun.jndi.ldap.Connection.writeRequest(Connection.java:409)
+	at com.sun.jndi.ldap.LdapClient.extendedOp(LdapClient.java:1190)
+	at com.sun.jndi.ldap.LdapCtx.extendedOperation(LdapCtx.java:3151)
+	... 38 more
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectorySecurityRealm
+
+Binding as CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com to ldap://nt-rmna-0001:3268/
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectorySecurityRealm
+
+Bound to nt-rmna-0001:3268
+
+Apr 17, 2014 11:25:42 AM FINER hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+Looking up group of CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXTLVA
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: lob-PLATFORM
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: PVG6730IT_Share_R
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXSINA
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: SCCM Reporters
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: pp_rmna_NB-ldx
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: dept-3392
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: IRVA630EmpAndCont
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: bu-Mobile Platforms
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: PGP_WDEOnly
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXRDUB
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: BLRA3762LTETestScripts_Scratch_R
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: pp_irva_pcb_home
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: EDACommunity
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: FS-IRV(sysops_bb)-R
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: ctxrmna
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CBG_CI-Migrations-w
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXBRUA
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXIRVA
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXCBGA
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXATLA
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: PP_RMNA_ENGINEERING
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: pp_rmna_NB-ipphone
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: ctxglobal
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXHYDA
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: pp_hsoa_RIF
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXUPM
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXSJCA
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXMHTB
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: Staff-CA-E
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXHSOA
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: Domain Users
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: ric_hcomb
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: mps-scm-users_by_dept
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: lob-MAINSTRM
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: Irva630XChinaUsers
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: IRVA630XChinaBSE
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: LHR3291ThamesValleyLocal-w
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXINDIA
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: IRVA630EmpXChina
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXSEAA
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: Staff-E
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: Irv6300AceActiveUsers
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: IRVA630XChina
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: MPS-worldwide
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: mps-scm-users
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: bu-Mobile and Wireless Group
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: pp_rmna_NB-onephone
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXCHINA
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: FS-IRV(mcsi)-R
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: ProjectServerTeamMembers
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: FS-IRV(MM_Tech_Test)-R
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: SJCTwiki-mimorr
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: FS-IRV(Multimedia_Content)-R
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: Users
+
+Apr 17, 2014 11:25:42 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+Stage 2: looking up via memberOf
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXSINA
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXIRVA
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXSJCA
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXHSOA
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: IRVA630XChinaBSE
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXINDIA
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: IRVA630XChina
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXATLA
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: Irv6300AceActiveUsers
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXMHTB
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXCBGA
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXSEAA
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXBRUA
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: Staff-CA-E
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXRDUB
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXTLVA
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: IRVA630EmpAndCont
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: SJCTwiki-mimorr
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: staff-canada-richmond-all-list
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: staff-canada-richmond-list
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: PGP_WDEOnly
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: staff-worldwide-all-list
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXHYDA
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: staff-worldwide-employees-only-list
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: staff-espp-notification-list
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: Onephone-team
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: MPS-worldwide-list
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: Staff-E
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: pp_irva_pcb_home
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: Irva630XChinaUsers
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: pp_rmna_NB-ipphone
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXCHINA
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: pp_rmna_NB-ldx
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: mxc-kernel-list
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: bu-Mobile Platforms
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: lob-MAINSTRM
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: bu-Mobile and Wireless Group
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: staff-mwg-bu-list
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: staff-mwg-bu-all-list
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: PP_RMNA_ENGINEERING
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: pp_rmna_NB-onephone
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: broadware-svn-linux-d-users-list
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: CTXUPM
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: map-kernel-commit-list
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: map-jira-notification-list
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: mxc-pkg-list
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: ric_hcomb
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: git-scm-admins-list
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: ctxglobal
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: map-lkg-release-list
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: map-build-list
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: EDACommunity
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: mps-git-user-list
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: mps-scm-users_by_dept
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: mps-scm-users
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: map-build-team-list
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: IRVA630EmpXChina
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: dept-3392-list
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: staff-3392-Canada-Richmond-list
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: dept-3392
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: ctxrmna
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: lob-PLATFORM
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: mxc-dev-team-list
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: MPS-worldwide
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: staff-engineering-list
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+CN=rickliu,CN=Users,DC=corp,DC=ad,DC=broadcom,DC=com is a member of cn: MPS-Canada-list
+
+Apr 17, 2014 11:27:43 AM WARNING hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider retrieveUser
+
+Failed to retrieve user information for rickliu
+javax.naming.TimeLimitExceededException: [LDAP: error code 3 - Timelimit Exceeded]; remaining name 'DC=corp,DC=ad,DC=broadcom,DC=com'
+	at com.sun.jndi.ldap.LdapCtx.mapErrorCode(LdapCtx.java:3088)
+	at com.sun.jndi.ldap.LdapCtx.processReturnCode(LdapCtx.java:2978)
+	at com.sun.jndi.ldap.LdapCtx.processReturnCode(LdapCtx.java:2785)
+	at com.sun.jndi.ldap.LdapNamingEnumeration.getNextBatch(LdapNamingEnumeration.java:147)
+	at com.sun.jndi.ldap.LdapNamingEnumeration.hasMoreImpl(LdapNamingEnumeration.java:216)
+	at com.sun.jndi.ldap.LdapNamingEnumeration.hasMore(LdapNamingEnumeration.java:189)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.parseMembers(ActiveDirectoryUnixAuthenticationProvider.java:456)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.resolveGroups(ActiveDirectoryUnixAuthenticationProvider.java:417)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.retrieveUser(ActiveDirectoryUnixAuthenticationProvider.java:293)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.retrieveUser(ActiveDirectoryUnixAuthenticationProvider.java:193)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.retrieveUser(ActiveDirectoryUnixAuthenticationProvider.java:137)
+	at org.acegisecurity.providers.dao.AbstractUserDetailsAuthenticationProvider.authenticate(AbstractUserDetailsAuthenticationProvider.java:122)
+	at org.acegisecurity.providers.ProviderManager.doAuthentication(ProviderManager.java:200)
+	at org.acegisecurity.AbstractAuthenticationManager.authenticate(AbstractAuthenticationManager.java:47)
+	at org.acegisecurity.ui.webapp.AuthenticationProcessingFilter.attemptAuthentication(AuthenticationProcessingFilter.java:74)
+	at org.acegisecurity.ui.AbstractProcessingFilter.doFilter(AbstractProcessingFilter.java:252)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at org.acegisecurity.ui.basicauth.BasicProcessingFilter.doFilter(BasicProcessingFilter.java:174)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at jenkins.security.ApiTokenFilter.doFilter(ApiTokenFilter.java:79)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at org.acegisecurity.context.HttpSessionContextIntegrationFilter.doFilter(HttpSessionContextIntegrationFilter.java:249)
+	at hudson.security.HttpSessionContextIntegrationFilter2.doFilter(HttpSessionContextIntegrationFilter2.java:67)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at hudson.security.ChainedServletFilter.doFilter(ChainedServletFilter.java:76)
+	at hudson.security.HudsonFilter.doFilter(HudsonFilter.java:164)
+	at winstone.FilterConfiguration.execute(FilterConfiguration.java:194)
+	at winstone.RequestDispatcher.doFilter(RequestDispatcher.java:366)
+	at org.kohsuke.stapler.compression.CompressionFilter.doFilter(CompressionFilter.java:46)
+	at winstone.FilterConfiguration.execute(FilterConfiguration.java:194)
+	at winstone.RequestDispatcher.doFilter(RequestDispatcher.java:366)
+	at hudson.util.CharacterEncodingFilter.doFilter(CharacterEncodingFilter.java:81)
+	at winstone.FilterConfiguration.execute(FilterConfiguration.java:194)
+	at winstone.RequestDispatcher.doFilter(RequestDispatcher.java:366)
+	at winstone.RequestDispatcher.forward(RequestDispatcher.java:331)
+	at winstone.RequestHandlerThread.processRequest(RequestHandlerThread.java:227)
+	at winstone.RequestHandlerThread.run(RequestHandlerThread.java:150)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)
+	at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:334)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:166)
+	at winstone.BoundedExecutorService$1.run(BoundedExecutorService.java:77)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1146)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+	at java.lang.Thread.run(Thread.java:701)
+
+Apr 17, 2014 11:27:43 AM WARNING hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider retrieveUser
+
+Credential exception trying to authenticate against corp.ad.broadcom.com domain
+org.acegisecurity.BadCredentialsException: Failed to retrieve user information for rickliu; nested exception is javax.naming.TimeLimitExceededException: [LDAP: error code 3 - Timelimit Exceeded]; remaining name 'DC=corp,DC=ad,DC=broadcom,DC=com'
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.retrieveUser(ActiveDirectoryUnixAuthenticationProvider.java:309)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.retrieveUser(ActiveDirectoryUnixAuthenticationProvider.java:193)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.retrieveUser(ActiveDirectoryUnixAuthenticationProvider.java:137)
+	at org.acegisecurity.providers.dao.AbstractUserDetailsAuthenticationProvider.authenticate(AbstractUserDetailsAuthenticationProvider.java:122)
+	at org.acegisecurity.providers.ProviderManager.doAuthentication(ProviderManager.java:200)
+	at org.acegisecurity.AbstractAuthenticationManager.authenticate(AbstractAuthenticationManager.java:47)
+	at org.acegisecurity.ui.webapp.AuthenticationProcessingFilter.attemptAuthentication(AuthenticationProcessingFilter.java:74)
+	at org.acegisecurity.ui.AbstractProcessingFilter.doFilter(AbstractProcessingFilter.java:252)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at org.acegisecurity.ui.basicauth.BasicProcessingFilter.doFilter(BasicProcessingFilter.java:174)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at jenkins.security.ApiTokenFilter.doFilter(ApiTokenFilter.java:79)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at org.acegisecurity.context.HttpSessionContextIntegrationFilter.doFilter(HttpSessionContextIntegrationFilter.java:249)
+	at hudson.security.HttpSessionContextIntegrationFilter2.doFilter(HttpSessionContextIntegrationFilter2.java:67)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at hudson.security.ChainedServletFilter.doFilter(ChainedServletFilter.java:76)
+	at hudson.security.HudsonFilter.doFilter(HudsonFilter.java:164)
+	at winstone.FilterConfiguration.execute(FilterConfiguration.java:194)
+	at winstone.RequestDispatcher.doFilter(RequestDispatcher.java:366)
+	at org.kohsuke.stapler.compression.CompressionFilter.doFilter(CompressionFilter.java:46)
+	at winstone.FilterConfiguration.execute(FilterConfiguration.java:194)
+	at winstone.RequestDispatcher.doFilter(RequestDispatcher.java:366)
+	at hudson.util.CharacterEncodingFilter.doFilter(CharacterEncodingFilter.java:81)
+	at winstone.FilterConfiguration.execute(FilterConfiguration.java:194)
+	at winstone.RequestDispatcher.doFilter(RequestDispatcher.java:366)
+	at winstone.RequestDispatcher.forward(RequestDispatcher.java:331)
+	at winstone.RequestHandlerThread.processRequest(RequestHandlerThread.java:227)
+	at winstone.RequestHandlerThread.run(RequestHandlerThread.java:150)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)
+	at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:334)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:166)
+	at winstone.BoundedExecutorService$1.run(BoundedExecutorService.java:77)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1146)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+	at java.lang.Thread.run(Thread.java:701)
+Caused by: javax.naming.TimeLimitExceededException: [LDAP: error code 3 - Timelimit Exceeded]; remaining name 'DC=corp,DC=ad,DC=broadcom,DC=com'
+	at com.sun.jndi.ldap.LdapCtx.mapErrorCode(LdapCtx.java:3088)
+	at com.sun.jndi.ldap.LdapCtx.processReturnCode(LdapCtx.java:2978)
+	at com.sun.jndi.ldap.LdapCtx.processReturnCode(LdapCtx.java:2785)
+	at com.sun.jndi.ldap.LdapNamingEnumeration.getNextBatch(LdapNamingEnumeration.java:147)
+	at com.sun.jndi.ldap.LdapNamingEnumeration.hasMoreImpl(LdapNamingEnumeration.java:216)
+	at com.sun.jndi.ldap.LdapNamingEnumeration.hasMore(LdapNamingEnumeration.java:189)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.parseMembers(ActiveDirectoryUnixAuthenticationProvider.java:456)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.resolveGroups(ActiveDirectoryUnixAuthenticationProvider.java:417)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.retrieveUser(ActiveDirectoryUnixAuthenticationProvider.java:293)
+	... 35 more
+
+Apr 17, 2014 11:27:43 AM FINE hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider
+
+Failed to retrieve user rickliu
+org.acegisecurity.BadCredentialsException: Failed to retrieve user information for rickliu; nested exception is javax.naming.TimeLimitExceededException: [LDAP: error code 3 - Timelimit Exceeded]; remaining name 'DC=corp,DC=ad,DC=broadcom,DC=com'
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.retrieveUser(ActiveDirectoryUnixAuthenticationProvider.java:309)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.retrieveUser(ActiveDirectoryUnixAuthenticationProvider.java:193)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.retrieveUser(ActiveDirectoryUnixAuthenticationProvider.java:137)
+	at org.acegisecurity.providers.dao.AbstractUserDetailsAuthenticationProvider.authenticate(AbstractUserDetailsAuthenticationProvider.java:122)
+	at org.acegisecurity.providers.ProviderManager.doAuthentication(ProviderManager.java:200)
+	at org.acegisecurity.AbstractAuthenticationManager.authenticate(AbstractAuthenticationManager.java:47)
+	at org.acegisecurity.ui.webapp.AuthenticationProcessingFilter.attemptAuthentication(AuthenticationProcessingFilter.java:74)
+	at org.acegisecurity.ui.AbstractProcessingFilter.doFilter(AbstractProcessingFilter.java:252)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at org.acegisecurity.ui.basicauth.BasicProcessingFilter.doFilter(BasicProcessingFilter.java:174)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at jenkins.security.ApiTokenFilter.doFilter(ApiTokenFilter.java:79)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at org.acegisecurity.context.HttpSessionContextIntegrationFilter.doFilter(HttpSessionContextIntegrationFilter.java:249)
+	at hudson.security.HttpSessionContextIntegrationFilter2.doFilter(HttpSessionContextIntegrationFilter2.java:67)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at hudson.security.ChainedServletFilter.doFilter(ChainedServletFilter.java:76)
+	at hudson.security.HudsonFilter.doFilter(HudsonFilter.java:164)
+	at winstone.FilterConfiguration.execute(FilterConfiguration.java:194)
+	at winstone.RequestDispatcher.doFilter(RequestDispatcher.java:366)
+	at org.kohsuke.stapler.compression.CompressionFilter.doFilter(CompressionFilter.java:46)
+	at winstone.FilterConfiguration.execute(FilterConfiguration.java:194)
+	at winstone.RequestDispatcher.doFilter(RequestDispatcher.java:366)
+	at hudson.util.CharacterEncodingFilter.doFilter(CharacterEncodingFilter.java:81)
+	at winstone.FilterConfiguration.execute(FilterConfiguration.java:194)
+	at winstone.RequestDispatcher.doFilter(RequestDispatcher.java:366)
+	at winstone.RequestDispatcher.forward(RequestDispatcher.java:331)
+	at winstone.RequestHandlerThread.processRequest(RequestHandlerThread.java:227)
+	at winstone.RequestHandlerThread.run(RequestHandlerThread.java:150)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)
+	at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:334)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:166)
+	at winstone.BoundedExecutorService$1.run(BoundedExecutorService.java:77)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1146)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+	at java.lang.Thread.run(Thread.java:701)
+Caused by: javax.naming.TimeLimitExceededException: [LDAP: error code 3 - Timelimit Exceeded]; remaining name 'DC=corp,DC=ad,DC=broadcom,DC=com'
+	at com.sun.jndi.ldap.LdapCtx.mapErrorCode(LdapCtx.java:3088)
+	at com.sun.jndi.ldap.LdapCtx.processReturnCode(LdapCtx.java:2978)
+	at com.sun.jndi.ldap.LdapCtx.processReturnCode(LdapCtx.java:2785)
+	at com.sun.jndi.ldap.LdapNamingEnumeration.getNextBatch(LdapNamingEnumeration.java:147)
+	at com.sun.jndi.ldap.LdapNamingEnumeration.hasMoreImpl(LdapNamingEnumeration.java:216)
+	at com.sun.jndi.ldap.LdapNamingEnumeration.hasMore(LdapNamingEnumeration.java:189)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.parseMembers(ActiveDirectoryUnixAuthenticationProvider.java:456)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.resolveGroups(ActiveDirectoryUnixAuthenticationProvider.java:417)
+	at hudson.plugins.active_directory.ActiveDirectoryUnixAuthenticationProvider.retrieveUser(ActiveDirectoryUnixAuthenticationProvider.java:293)
+	... 35 more
+

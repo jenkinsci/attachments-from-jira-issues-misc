@@ -1,0 +1,82 @@
+Triggered by file: <a href="https://artifactory.xxxxxxxxxxx.com/artifactory/rnd_ci/ci/2024-08-16_16:06:34:UTC_51866510/pipeline_status/l2_triggered.json" rel="nofollow">ci/2024-08-16_16:06:34:UTC_51866510/pipeline_status/l2_triggered.json</a>
+ Received:
+
+{"domain":"artifact","event_type":"deployed","data":{"repo_key":"rnd_ci","path":"ci/2024-08-16_16:06:34:UTC_51866510/pipeline_status/l2_triggered.json","name":"l2_triggered.json","sha256":"xxx","size":365},"subscription_key":"SOME-KEY","jpd_origin":"https://artifactory.xxxxxxxxxxx.com","source":"jfrog/jfrt@123"}
+
+
+Contributing variables:
+
+    ART_REPO = rnd_ci
+    ART_SERVER = https://artifactory.xxxxxxxxxxx.com
+    ART_TRIGGER_FILE = ci/2024-08-16_16:06:34:UTC_51866510/pipeline_status/l2_triggered.json
+
+
+Obtained Build/Jenkins/smoke/trigger.jenkinsfile from git https://link-to-repo.git
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on NODE_NAME in C:\jenkins\workspace\Smoke Trigger
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Get Artifacts)
+Resuming build at Fri Aug 16 20:02:54 CEST 2024 after Jenkins restart
+Waiting for reconnection of NODE_NAME before proceeding with build
+[Pipeline] rtDownload
+Searching for artifacts...
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Set TC Branch)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] readFile
+[Pipeline] readJSON
+[Pipeline] echo
+For Repo 'master' selected TestRepo 'master' branch
+[Pipeline] readFile
+[Pipeline] readJSON
+Found 1 artifacts.
+Beginning to resolve Build Info published dependencies.
+Downloading 'rnd_ci/ci/2024-08-16_16:06:34:UTC_51866510/artifacts/doc/BuildInfo.json'...
+Successfully downloaded 'rnd_ci/ci/2024-08-16_16:06:34:UTC_51866510/artifacts/doc/BuildInfo.json' to 'C:\jenkins\workspace\Smoke Trigger\BuildInfo.json\'
+Finished resolving Build Info published dependencies.
+Searching for artifacts...
+Found 1 artifacts.
+Beginning to resolve Build Info published dependencies.
+Downloading 'rnd_ci/ci/2024-08-16_16:06:34:UTC_51866510/pipeline_status/release_packages.json'...
+Successfully downloaded 'rnd_ci/ci/2024-08-16_16:06:34:UTC_51866510/pipeline_status/release_packages.json' to 'C:\jenkins\workspace\Smoke Trigger\release_packages.json\'
+Finished resolving Build Info published dependencies.
+[Pipeline] echo
+Generation: 7.2
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Trigger Smoke Tests)
+[Pipeline] build
+Scheduling project: Smoke Runner
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Declarative: Post Actions)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] getContext
+[Pipeline] cleanWs
+[WS-CLEANUP] Deleting project workspace...
+[WS-CLEANUP] Deferred wipeout is used...
+[WS-CLEANUP] done
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+Ready to run at Fri Aug 16 20:02:58 CEST 2024
+[Pipeline] // node
+[Pipeline] rtDownload
+[Pipeline] End of Pipeline
+Finished: SUCCESS

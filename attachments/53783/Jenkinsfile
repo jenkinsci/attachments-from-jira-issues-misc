@@ -1,0 +1,42 @@
+pipeline {
+  agent {
+    docker {
+      image 'mydockerrepository/static-analysis:latest'
+      registryCredentialsId 'docker-registry'
+      alwaysPull true
+    }
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+    stage('Analyze') {
+      parallel {
+        stage('Checkstyle') {
+          steps {
+            sh "/checkstyle/checkstyle.sh " +
+                    "-e .git " +
+                    "-e .gradle " +
+                    "-e build " +
+                    "-f xml -o checkstyle-result.xml ."
+          }
+        }
+      }
+    }
+    stage('Publish') {
+      steps {
+        recordIssues(
+          aggregatingResults: true,
+          forensicsDisabled: false,
+          failOnError: true,
+          tool: checkStyle(pattern: 'checkstyle-result.xml')
+        )
+        mineRepository()
+      }
+    }
+  }
+
+}

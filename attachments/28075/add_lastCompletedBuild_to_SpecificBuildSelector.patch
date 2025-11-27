@@ -1,0 +1,28 @@
+diff --git a/src/main/java/hudson/plugins/copyartifact/SpecificBuildSelector.java b/src/main/java/hudson/plugins/copyartifact/SpecificBuildSelector.java
+index f91f75e..98651aa 100644
+--- a/src/main/java/hudson/plugins/copyartifact/SpecificBuildSelector.java
++++ b/src/main/java/hudson/plugins/copyartifact/SpecificBuildSelector.java
+@@ -69,12 +69,17 @@ public class SpecificBuildSelector extends BuildSelector {
+             //Otherwise, check if the buildNumber value is a permalink or a display name.
+             PermalinkProjectAction.Permalink p = job.getPermalinks().get(num);
+             if (p == null) {
+-                //Not a permalink so check if the buildNumber value is a display name.
+-                for(Run<?,?> build: job.getBuilds()){
+-                    if(num.equals(build.getDisplayName())) {
+-                        //First named build found is the right one, going from latest build to oldest.
+-                        run = build;
+-                        break;
++                if (num.equals("lastCompletedBuild")) {
++                    run = job.getLastCompletedBuild();
++                } else {
++                    //Not a permalink so check if the buildNumber value is a display name.
++                    for(Run<?,?> build: job.getBuilds()){
++                        LOGGER.log(Level.FINE, "compare to {0}", build.getDisplayName());
++                        if(num.equals(build.getDisplayName())) {
++                            //First named build found is the right one, going from latest build to oldest.
++                            run = build;
++                            break;
++                        }
+                     }
+                 }
+             } else {
